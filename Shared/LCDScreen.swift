@@ -22,6 +22,10 @@ struct LCDScreen: View {
     @ObservedObject var model: GameModel
     @Environment(\.displayScale) private var displayScale
     @Environment(\.lcdPalette) private var palette
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The behaviour director lives here (a class, so stepping it never invalidates the view).
+    @State private var director = SceneDirector()
     /// Square corners and a full-strength ink hairline (the phone layout). Otherwise a softly
     /// rounded screen (watch).
     var framed = false
@@ -32,9 +36,9 @@ struct LCDScreen: View {
             let metrics = Metrics(side: side, displayScale: displayScale)
             ZStack {
                 palette.background
-                screenCanvas
+                screenCanvas(side: side)
                 modeOverlay(metrics)
-                if model.pet.asleep && !model.pet.lightOn {
+                if model.pet.asleep && !model.pet.lightOn && model.mode != .home {
                     Color.black.opacity(0.5).allowsHitTesting(false)
                 }
             }
@@ -52,21 +56,54 @@ struct LCDScreen: View {
 
     // MARK: pixels
 
-    private var screenCanvas: some View {
-        // 0.6s is the base frame; the evolution blink runs faster while it lasts.
-        TimelineView(.periodic(from: .now, by: model.evolutionFlash == nil ? 0.6 : 0.2)) { timeline in
+    private func screenCanvas(side: CGFloat) -> some View {
+        // The scene steps at 8 fps (one director tick); it pauses off screen and behind text screens.
+        let paused = scenePhase != .active || model.mode != .home
+        return TimelineView(.animation(minimumInterval: SceneState.tickLength, paused: paused)) { timeline in
             let pet = model.pet
             let flash = model.evolutionFlash
             let hatchedAt = model.hatchedAt
             let date = timeline.date
+            let raster = flash == nil
+                ? director.frame(pet: pet, date: date, reducedMotion: reduceMotion,
+                                 hatchedAt: hatchedAt)
+                : nil
             Canvas { ctx, size in
-                LCDScene.render(&ctx, size: size, pet: pet, flash: flash, hatchedAt: hatchedAt,
-                                date: date, palette: palette)
+                LCDScene.render(&ctx, size: size, raster: raster, flash: flash, date: date,
+                                palette: palette)
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { model.tapPet() }
+        .onTapGesture { location in handleTap(location, side: side) }
+        .onChange(of: model.sceneEvents) { _, events in
+            guard !events.isEmpty else { return }
+            director.events.append(contentsOf: events)
+            model.sceneEvents.removeAll()
+        }
         .accessibilityLabel(model.pet.statusLine)
+    }
+
+    /// Tap on the pet pets it; on the ground the pet walks over and looks; in the sky it looks up.
+    private func handleTap(_ location: CGPoint, side: CGFloat) {
+        guard side > 0 else { return }
+        let cx = Double(location.x / side) * Double(LCDPainter.grid)
+        let cy = Double(location.y / side) * Double(LCDPainter.grid)
+        let pet = model.pet
+        if pet.stage == .egg || !pet.isAlive {
+            model.tapPet()
+            return
+        }
+        let place = SceneRenderer.placement(pet: pet, state: director.state, frame: 0, motion: false,
+                                            override: nil)
+        let onPet = cx >= Double(place.left - 2) && cx <= Double(place.right + 2)
+            && cy >= Double(place.inkTop - 2) && cy <= Double(place.bottom + 2)
+        if onPet {
+            model.tapPet()
+        } else if cy >= 22 {
+            director.tap = .ground(x: cx)
+        } else {
+            director.tap = .sky
+        }
     }
 
     // MARK: overlays
@@ -313,13 +350,44 @@ private struct PixelMeter: View {
 
 // MARK: - animation
 
+/// Owns the scene's behaviour state between frames and turns it into a raster.
+final class SceneDirector {
+    var state = SceneState()
+    /// Events handed over by the model, played on the next step.
+    var events: [SceneEvent] = []
+    var tap: SceneTap?
+
+    /// Advance to `date` and draw. Safe to call more than once per tick.
+    func frame(pet: Pet, date: Date, reducedMotion: Bool, hatchedAt: Date?,
+               calendar: Calendar = .current) -> SceneRaster {
+        var options = SceneRenderOptions()
+        options.reducedMotion = reducedMotion
+        options.calendar = calendar
+
+        var inputs = SceneInputs()
+        inputs.events = events
+        inputs.tap = tap
+        inputs.reducedMotion = reducedMotion
+        inputs.raining = SceneAmbient(seed: pet.seed, date: date, calendar: calendar).weather == .rain
+        events = []
+        tap = nil
+        state.step(pet: pet, inputs: inputs, now: date)
+
+        // Hatching: for a few seconds the new baby alternates with a cracked shell.
+        if pet.stage == .baby, let hatchedAt, date.timeIntervalSince(hatchedAt) < 4,
+           Int(date.timeIntervalSinceReferenceDate / 0.6) % 2 == 0 {
+            options.spriteOverride = LCDPainter.crackEgg
+        }
+        return SceneRenderer.render(pet: pet, state: state, date: date, options: options)
+    }
+}
+
 /// Draws one frame of the pet screen. Not tied to a view, so it can run inside a Canvas.
 enum LCDScene {
-    static func render(_ ctx: inout GraphicsContext, size: CGSize, pet: Pet,
-                       flash: (from: String, to: String)?, hatchedAt: Date?, date: Date,
+    static func render(_ ctx: inout GraphicsContext, size: CGSize, raster: SceneRaster?,
+                       flash: (from: String, to: String)?, date: Date,
                        palette: LCDPalette = LCDStyle.light) {
         let t = date.timeIntervalSinceReferenceDate
-        let frame = Int(t / 0.6)
 
         // Evolution: old and new sprite alternate while the whole screen blinks inverted.
         if let flash {
@@ -339,17 +407,8 @@ enum LCDScene {
         }
 
         ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
-
-        // Hatching: for 20 seconds the new baby alternates with a cracked shell.
-        var override: [String]?
-        if pet.stage == .baby, let hatchedAt, date.timeIntervalSince(hatchedAt) < 20, frame % 2 == 0 {
-            override = LCDPainter.crackEgg
-        }
-        let wobble = [0, -1, 0, 1][frame % 4]
-        let ink = LCDPainter.inkPath(pet, size: size, blink: frame % 6 == 0,
-                                     bob: frame % 2 == 1, alertOn: frame % 2 == 0,
-                                     eggWobble: wobble, poopJiggle: frame % 2 == 1,
-                                     spriteOverride: override)
-        ctx.fill(ink, with: .color(palette.ink))
+        guard let raster else { return }
+        ctx.fill(LCDPainter.path(raster, shade: true, size: size), with: .color(palette.ink.opacity(0.4)))
+        ctx.fill(LCDPainter.path(raster, size: size), with: .color(palette.ink))
     }
 }

@@ -34,7 +34,7 @@ extension EnvironmentValues {
     }
 }
 
-/// Builds the 32x32 pixel scene as paths, shared by the animated screen and the static view.
+/// Builds paths for the 32x32 pixel scene (see SceneRenderer), shared by the animated screen and the static view.
 enum LCDPainter {
     static let grid = 32
 
@@ -50,55 +50,16 @@ enum LCDPainter {
         return path
     }
 
-    /// Every dark pixel of the pet and its status glyphs.
-    /// The trailing parameters have defaults, so still pictures (widgets) can ignore them.
-    /// - eggWobble: horizontal pixel offset of the egg (-1, 0, 1).
-    /// - poopJiggle: toggles the one-pixel jiggle of the poops.
-    /// - spriteOverride: draws these rows in place of the pet's sprite (hatching crack frame).
-    static func inkPath(_ pet: Pet, size: CGSize, blink: Bool, bob: Bool, alertOn: Bool,
-                        eggWobble: Int = 0, poopJiggle: Bool = false,
-                        spriteOverride: [String]? = nil) -> Path {
+    /// The dark (or, with `shade`, the dithered) pixels of a rendered scene.
+    static func path(_ raster: SceneRaster, shade: Bool = false, size: CGSize) -> Path {
         let cell = min(size.width, size.height) / CGFloat(grid)
         var path = Path()
-
-        func glyph(_ rows: [String], _ x0: Int, _ y0: Int) {
-            addGlyph(rows, x0, y0, cell, to: &path)
+        let bits = shade ? raster.shade : raster.ink
+        for y in 0..<grid {
+            for x in 0..<grid where bits[y * grid + x] {
+                path.addRect(pixelRect(x, y, cell))
+            }
         }
-
-        if pet.stage == .ghost {
-            glyph(Sprite.grave, 8, 11)
-            return path
-        }
-
-        var x = 8
-        var y = 11
-        if pet.stage == .egg {
-            x += eggWobble
-        } else if pet.asleep {
-            y = bob ? 12 : 11
-        } else if pet.happy <= 0 {
-            y = 12  // droop: sunk one pixel, no bob
-        } else if pet.happy >= Pet.maxHearts {
-            y = bob ? 9 : 11  // hop two pixels
-        } else {
-            y = bob ? 12 : 11
-        }
-        glyph(spriteOverride ?? Sprite.sprite(for: pet, blink: blink || pet.asleep), x, y)
-        guard pet.stage != .egg else { return path }
-
-        for i in 0..<Pet.maxHearts {
-            glyph(i < pet.hunger ? Sprite.heartFull : Sprite.heartEmpty, 1 + 6 * i, 0)
-            glyph(i < pet.happy ? Sprite.smileFull : Sprite.smileEmpty, 1 + 6 * i, 6)
-        }
-        for i in 0..<min(pet.poops, 3) {
-            let jiggle = ((i % 2 == 0) == poopJiggle) ? 1 : 0
-            glyph(Sprite.poop, 26 - 6 * i + jiggle, 27)
-        }
-        if pet.sick { glyph(Sprite.skull, 1, 27) }
-        if pet.asleep { glyph(Sprite.zzz, 26, 6) }
-        if pet.temp >= 2 && !pet.asleep { glyph(Sprite.drop, 26, 12) }
-        if pet.temp <= -2 && !pet.asleep { glyph(Sprite.flake, 26, 12) }
-        if pet.needsAttention && alertOn { glyph(Sprite.alert, 26, 0) }
         return path
     }
 
@@ -149,7 +110,7 @@ enum LCDPainter {
     }
 }
 
-/// A still picture of the pet on the LCD. Needs only a `Pet`, so widgets can use it.
+/// A still picture of the pet in its room on the LCD (no animation). Needs only a `Pet`, so widgets can use it.
 struct PetPixelView: View {
     let pet: Pet
     /// Explicit palette; when nil the environment's `lcdPalette` (light by default) is used.
@@ -163,16 +124,14 @@ struct PetPixelView: View {
 
     var body: some View {
         let colors = palette ?? environmentPalette
+        let raster = SceneRenderer.still(pet: pet)
         Canvas { ctx, size in
             ctx.fill(LCDPainter.gridPath(size: size), with: .color(colors.ink.opacity(0.06)))
-            ctx.fill(LCDPainter.inkPath(pet, size: size, blink: false, bob: false, alertOn: true),
-                     with: .color(colors.ink))
+            ctx.fill(LCDPainter.path(raster, shade: true, size: size), with: .color(colors.ink.opacity(0.4)))
+            ctx.fill(LCDPainter.path(raster, size: size), with: .color(colors.ink))
         }
         .aspectRatio(1, contentMode: .fit)
         .background(colors.background)
-        .overlay {
-            if pet.asleep && !pet.lightOn { Color.black.opacity(0.5) }
-        }
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         .accessibilityLabel(pet.statusLine)
     }

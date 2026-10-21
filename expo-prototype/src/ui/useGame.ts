@@ -1,13 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, Platform, Vibration } from 'react-native';
 import {
   TICK, advance, battle, clean, climate, feed, feedSnack, finishPlay, forceSpecies, giveMedicine, needsAttention,
   newEgg, newPet, petIt, scold, speciesName, toggleLight, train, type Pet,
 } from '../core/pet';
+import { AWAY_MIN_MS, awaySummary } from './away';
+import type { SceneEvent } from './scene';
 import { dexPageCount, statsPageCount, type Evo, type Mode, type PlayState } from './screens';
 import * as sound from './sound';
 
 const KEY = 'pocket-rexie-v1';
+/** Per-device, deliberately not part of the (synced) pet. */
+const SEEN_KEY = 'pocket-rexie-lastseen-v1';
 const clone = (p: Pet): Pet => JSON.parse(JSON.stringify(p));
 const rnd9 = () => 1 + Math.floor(Math.random() * 9);
 /** Shown digits stay in 2..8 so both HIGHER and LOWER can win. */
@@ -41,6 +46,11 @@ export function useGame() {
   const [msg, setMsg] = useState<string | null>(null);
   const [evo, setEvo] = useState<Evo | null>(null);
   const [muted, setMutedState] = useState(false);
+  const sceneQ = useRef<SceneEvent[]>([]);
+  const sceneEnv = useRef<{ hour: number | null; rain: boolean | null }>({ hour: null, rain: null });
+  const [forcedHour, setForcedHour] = useState<number | null>(null);
+  const [forcedRain, setForcedRain] = useState<boolean | null>(null);
+  const lastSeen = useRef<number | null>(null);
   const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,6 +62,24 @@ export function useGame() {
     msgTimer.current = setTimeout(() => setMsg(null), ms);
   }, []);
 
+  const emit = (e: SceneEvent) => { sceneQ.current.push(e); if (sceneQ.current.length > 12) sceneQ.current.shift(); };
+  const takeSceneEvents = () => { const q = sceneQ.current; sceneQ.current = []; return q; };
+
+  const writeSeen = () => {
+    lastSeen.current = now();
+    AsyncStorage.setItem(SEEN_KEY, String(lastSeen.current)).catch(() => {});
+  };
+  /** Foreground / load: summarise what happened while the player was gone and run the pet in. */
+  const checkAway = () => {
+    const p = petRef.current;
+    const ls = lastSeen.current;
+    if (p && ls !== null && now() - ls >= AWAY_MIN_MS && p.stage !== 'egg') {
+      say(awaySummary(p, ls), 8000);
+      if (p.stage !== 'ghost' && !p.asleep) emit({ kind: 'greet' });
+    }
+    writeSeen();
+  };
+
   const save = (p: Pet) => {
     AsyncStorage.setItem(KEY, JSON.stringify({ pet: p, offset: offsetRef.current })).catch(() => {});
   };
@@ -61,11 +89,11 @@ export function useGame() {
     const cur = petRef.current;
     if (cur) {
       if (cur.species === '' && p.species !== '' && cur.stage === 'egg') {
-        say('IT HATCHED!', 5000); sound.evolveJingle();
+        say('IT HATCHED!', 5000); sound.evolveJingle(); emit({ kind: 'hatched' });
       } else if (cur.species !== '' && p.species !== '' && cur.species !== p.species) {
         setEvo({ from: cur.species, to: p.species, until: Date.now() + 3000 });
         say(`${p.name.toUpperCase()} EVOLVED INTO ${speciesName(p).toUpperCase()}!`, 6000);
-        sound.evolveJingle();
+        sound.evolveJingle(); emit({ kind: 'evolved' });
       }
       if (p.call && p.call !== cur.call && needsAttention(p)) sound.callJingle();
     }
@@ -104,17 +132,32 @@ export function useGame() {
       petRef.current = p;
       setPetState(p);
       save(p);
+      try {
+        const seen = await AsyncStorage.getItem(SEEN_KEY);
+        lastSeen.current = seen ? Number(seen) || null : null;
+      } catch { /* no lastSeen */ }
+      if (!dead) checkAway();
     })();
+    let beat = 0;
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') {
+        const cur = petRef.current;
+        if (!cur) return;
+        const p = clone(cur); advance(p, now()); commit(p);
+        checkAway();
+      } else if (petRef.current) writeSeen();
+    });
     const id = setInterval(() => {
       const cur = petRef.current;
       if (!cur) return;
+      if (++beat % 15 === 0) writeSeen();
       if (now() - cur.lastTick >= TICK || cur.paused) {
         const p = clone(cur);
         advance(p, now());
         if (p.lastTick !== cur.lastTick) commit(p);
       }
     }, 1000);
-    return () => { dead = true; clearInterval(id); if (playTimer.current) clearTimeout(playTimer.current); };
+    return () => { dead = true; clearInterval(id); sub.remove(); if (playTimer.current) clearTimeout(playTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -154,7 +197,7 @@ export function useGame() {
       if (c.round >= 5) {
         const won = c.won;
         goHome();
-        mutate((p) => finishPlay(p, won));
+        mutate((p) => { const m = finishPlay(p, won); if (m !== '...') emit({ kind: 'played', wins: won }); return m; });
       } else {
         setPlay({ round: c.round + 1, shown: rnd28(), won: c.won, phase: 'guess', sel: c.sel, revealed: null, correct: null });
       }
@@ -164,7 +207,13 @@ export function useGame() {
   const confirmFeed = (i: number) => {
     if (i === 4) { goHome(); return; }
     goHome();
-    mutate((p) => (i === 0 ? feed(p, 'meat') : i === 1 ? feed(p, 'veggie') : i === 2 ? feed(p, 'pasta') : feedSnack(p)));
+    mutate((p) => {
+      if (i === 3) { const h = p.happy; const m = feedSnack(p); if (p.happy > h) emit({ kind: 'snack' }); return m; }
+      const food = i === 0 ? 'meat' : i === 1 ? 'veggie' : 'pasta';
+      const h = p.hunger; const m = feed(p, food);
+      if (p.hunger > h) emit({ kind: 'fed', food });
+      return m;
+    });
   };
 
   const canAct = (p: Pet) => p.stage !== 'egg' && p.stage !== 'ghost';
@@ -179,13 +228,17 @@ export function useGame() {
         });
         break;
       }
-      case 1: mutate(toggleLight); break;
-      case 3: mutate(train); break;
-      case 4: mutate(giveMedicine); break;
-      case 5: mutate(clean); break;
-      case 6: mutate(climate); break;
+      case 1: mutate((p) => { const m = toggleLight(p); if (m !== '...') emit({ kind: 'light', on: p.lightOn }); return m; }); break;
+      case 3: mutate((p) => { const n = p.trains; const m = train(p); if (p.trains > n) emit({ kind: 'trained' }); return m; }); break;
+      case 4: mutate((p) => { const sick = p.sick; const m = giveMedicine(p); if (sick) emit({ kind: 'medicine' }); return m; }); break;
+      case 5: mutate((p) => { const n = p.poops; const m = clean(p); if (n > 0) emit({ kind: 'cleaned' }); return m; }); break;
+      case 6: mutate((p) => { const t = p.temp; const m = climate(p); if (t !== 0 && p.temp === 0) emit({ kind: 'climate', cool: t > 0 }); return m; }); break;
       case 7: mutate(scold); break;
-      case 8: mutate(battle); break;
+      case 8: mutate((p) => {
+        const b = p.battles, w = p.wins; const m = battle(p);
+        if (p.battles > b) emit({ kind: 'battle', win: p.wins > w });
+        return m;
+      }); break;
       case 9: setStatsPage(0); setMode('stats'); break;
     }
   };
@@ -225,6 +278,20 @@ export function useGame() {
     playRef.current = { ...pl, sel: i };
     playGuess();
   };
+  /** Tap on the home scene (cell coordinates in the 32x32 grid). */
+  const tapScene = (cx: number, cy: number, onPet: boolean) => {
+    const p = petRef.current;
+    if (!p || modeRef.current !== 'home') return;
+    if (p.stage === 'egg' || p.stage === 'ghost') { sound.beep(); mutate(petIt); return; }
+    if (onPet) {
+      if (!p.asleep) { sound.chirp(); if (Platform.OS === 'android') Vibration.vibrate(8); }
+      mutate((q) => { const m = petIt(q); if (!q.asleep) emit({ kind: 'petted' }); return m; });
+    } else if (!p.asleep) {
+      sound.beep();
+      emit(cy >= 12 ? { kind: 'tapGround', x: cx } : { kind: 'tapSky' });
+    }
+  };
+  const dismissMsg = () => { if (msgTimer.current) clearTimeout(msgTimer.current); setMsg(null); };
   const tapScreen = () => {
     const m = modeRef.current;
     if (m === 'home') { sound.beep(); mutate(petIt); }
@@ -249,6 +316,17 @@ export function useGame() {
     },
     makeHungry: () => mutate((p) => { p.hunger = 0; p.call = null; return 'Made hungry'; }),
     makeDirty: () => mutate((p) => { p.poops = 3; p.poopProgress = 0; return 'Made dirty'; }),
+    makePoop: () => { setDevOpen(false); mutate((p) => { p.poops = Math.min(3, p.poops + 1); return 'Made a mess'; }); },
+    scene: (e: SceneEvent) => { goHome(); emit(e); setDevOpen(false); },
+    setRain: (r: boolean | null) => { sceneEnv.current.rain = r; setForcedRain(r); },
+    setHour: (h: number | null) => { sceneEnv.current.hour = h; setForcedHour(h); },
+    away: (ms: number) => {
+      writeSeen();
+      offsetRef.current += ms; setOffsetState(offsetRef.current);
+      mutate(() => {});
+      checkAway();
+      setDevOpen(false);
+    },
     makeSick: () => mutate((p) => { p.sick = true; p.medDoses = 0; return 'Made sick'; }),
     healAll: () => mutate((p) => {
       p.hunger = 4; p.happy = 4; p.poops = 0; p.sick = false; p.medDoses = 0; p.temp = 0;
@@ -273,7 +351,8 @@ export function useGame() {
   return {
     ready: pet !== null, pet, mode, sel, feedSel, statsPage, dexPage, play, msg, evo, offset, muted, devOpen, setDevOpen,
     needsName, setName, hatchNew,
-    pressA, pressB, pressC, selectIcon, tapFeedRow, tapPlayOption, tapScreen, dev,
+    pressA, pressB, pressC, selectIcon, tapFeedRow, tapPlayOption, tapScreen, tapScene, dismissMsg, dev,
+    takeSceneEvents, sceneEnv, forcedHour, forcedRain,
     now,
   };
 }

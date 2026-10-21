@@ -58,6 +58,11 @@ struct ContentView: View {
         }
         .onAppear {
             model.onSave = { Notifier.reschedule($0) }
+            model.onSceneEvent = { event in
+                // Hatching and evolving already buzz from the stage/species changes below.
+                if event == .petted { Haptics.tap() }
+            }
+            model.welcomeBack()
             Notifier.reschedule(model.pet)
             if model.pet.stage != .egg { Notifier.requestAuthorizationIfNeeded() }
         }
@@ -83,7 +88,13 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { model.reloadFromStore(); model.refresh() }
+            if phase == .active {
+                model.reloadFromStore()
+                model.refresh()
+                model.welcomeBack()
+            } else if phase == .background {
+                model.noteLeaving()
+            }
         }
     }
 
@@ -133,6 +144,8 @@ struct ContentView: View {
         let text = model.message.isEmpty ? model.pet.statusLine : model.message
         return PixelParagraph(text: text, pixel: 3, maxChars: max(8, Int(width / 12)), centered: true)
             .frame(width: width, height: Layout.messageHeight)
+            .contentShape(Rectangle())
+            .onTapGesture { model.dismissMessage() }
     }
 
     private func controls(width: CGFloat) -> some View {

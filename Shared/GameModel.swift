@@ -76,9 +76,21 @@ final class GameModel: ObservableObject {
     @Published var evolutionFlash: (from: String, to: String)?
     /// When this model saw the egg hatch; the screen flashes a crack frame for 20 seconds.
     @Published var hatchedAt: Date?
+    /// Transient happenings for the living scene (fed, cleaned, petted...). The screen drains this
+    /// queue and animates each one; keep rules out of it, it is only for show.
+    @Published var sceneEvents: [SceneEvent] = []
+    /// "WHILE YOU WERE AWAY: ..." (or "<NAME> MISSED YOU"), set on foreground after 15+ minutes
+    /// and shown in the message line for 8 seconds.
+    @Published private(set) var awayLine: String?
 
     /// Called after every save (the iOS app uses it to reschedule notifications).
     var onSave: ((Pet) -> Void)?
+    /// Called for every scene event as it is queued (the iOS app uses it for haptics).
+    var onSceneEvent: ((SceneEvent) -> Void)?
+
+    /// When this device last had the app in front, kept locally (not in the synced pet).
+    static let lastSeenKey = "rexie.lastSeen"
+    private var lastSeenWritten = Date.distantPast
 
     private var messageUntil = Date.distantPast
     private var flashUntil = Date.distantPast
@@ -134,7 +146,12 @@ final class GameModel: ObservableObject {
     }
 
     private func tick() {
-        if !message.isEmpty && Date() > messageUntil { message = "" }
+        let now = Date()
+        if !message.isEmpty && now > messageUntil {
+            message = ""
+            awayLine = nil
+        }
+        if now.timeIntervalSince(lastSeenWritten) >= 60 { markSeen(now) }
         if evolutionFlash != nil && Date() > flashUntil { evolutionFlash = nil }
         refresh()
     }
@@ -150,22 +167,72 @@ final class GameModel: ObservableObject {
     private func noteSpeciesChange(from old: Pet, to new: Pet) {
         guard new.isAlive, old.species != new.species, !new.species.isEmpty else { return }
         if old.species.isEmpty {
-            if new.stage == .baby { hatchedAt = Date() }
+            if new.stage == .baby {
+                hatchedAt = Date()
+                emit(.hatched)
+            }
         } else {
             evolutionFlash = (from: old.species, to: new.species)
             flashUntil = Date().addingTimeInterval(3)
+            emit(.evolved)
         }
     }
 
-    private func say(_ text: String) {
+    private func say(_ text: String, seconds: TimeInterval = 4) {
         message = text
-        messageUntil = Date().addingTimeInterval(4)
+        messageUntil = Date().addingTimeInterval(seconds)
+    }
+
+    private func emit(_ event: SceneEvent) {
+        sceneEvents.append(event)
+        if sceneEvents.count > 8 { sceneEvents.removeFirst(sceneEvents.count - 8) }
+        onSceneEvent?(event)
+    }
+
+    private func canAct(_ p: Pet) -> Bool { !p.asleep && p.stage != .egg && p.stage != .ghost }
+
+    /// Runs one engine action. `event` looks at the pet before and after and returns the scene
+    /// event to play when the action actually did something.
+    private func mutate(event: (Pet, Pet) -> SceneEvent?, _ body: (inout Pet) -> String) {
+        pet.advance(to: Date())
+        let before = pet
+        say(body(&pet))
+        persist()
+        if let e = event(before, pet) { emit(e) }
     }
 
     private func mutate(_ body: (inout Pet) -> String) {
         pet.advance(to: Date())
         say(body(&pet))
         persist()
+    }
+
+    // MARK: away from the screen
+
+    private func markSeen(_ now: Date) {
+        lastSeenWritten = now
+        UserDefaults.standard.set(now, forKey: GameModel.lastSeenKey)
+    }
+
+    /// Call when the app goes to the background.
+    func noteLeaving() { markSeen(Date()) }
+
+    /// Call on foreground after `refresh()`: summarises a long absence and sends the pet running in.
+    func welcomeBack(now: Date = Date()) {
+        let last = UserDefaults.standard.object(forKey: GameModel.lastSeenKey) as? Date
+        markSeen(now)
+        guard let last, pet.isAlive, pet.stage != .egg, !pet.paused,
+              now.timeIntervalSince(last) >= 15 * 60 else { return }
+        let line = AwaySummary.line(for: pet, since: last, now: now)
+        awayLine = line
+        say(line, seconds: 8)
+        if !pet.asleep { emit(.returned) }
+    }
+
+    /// Tap-dismiss for the message line.
+    func dismissMessage() {
+        message = ""
+        awayLine = nil
     }
 
     /// Why the pet cannot be fed or played with right now, if anything.
@@ -196,22 +263,30 @@ final class GameModel: ObservableObject {
             mode = .stats
         case .light:
             mode = .home
-            mutate { $0.toggleLight() }
+            mutate(event: { b, a in a.lightOn != b.lightOn ? SceneEvent.light : nil }) { $0.toggleLight() }
         case .medicine:
             mode = .home
-            mutate { $0.giveMedicine() }
+            mutate(event: { b, a in
+                (a.medDoses != b.medDoses || (b.sick && !a.sick)) ? SceneEvent.medicine : nil
+            }) { $0.giveMedicine() }
         case .clean:
             mode = .home
-            mutate { $0.clean() }
+            mutate(event: { b, a in
+                (b.poops > 0 && a.poops == 0) ? SceneEvent.cleaned : nil
+            }) { $0.clean() }
         case .climate:
             mode = .home
-            mutate { $0.climate() }
+            mutate(event: { b, a in
+                (b.temp != 0 && a.temp == 0) ? SceneEvent.climate : nil
+            }) { $0.climate() }
         case .train:
             mode = .home
-            mutate { $0.train() }
+            mutate(event: { b, a in a.trains > b.trains ? SceneEvent.trained : nil }) { $0.train() }
         case .battle:
             mode = .home
-            mutate { $0.battle() }
+            mutate(event: { b, a in
+                a.battles > b.battles ? SceneEvent.battle(win: a.wins > b.wins) : nil
+            }) { $0.battle() }
         case .scold:
             mode = .home
             mutate { $0.scold() }
@@ -220,12 +295,12 @@ final class GameModel: ObservableObject {
 
     func chooseFood(_ food: Food) {
         mode = .home
-        mutate { $0.feed(food) }
+        mutate(event: { b, a in a.hunger > b.hunger ? SceneEvent.fed(food) : nil }) { $0.feed(food) }
     }
 
     func chooseSnack() {
         mode = .home
-        mutate { $0.feedSnack() }
+        mutate(event: { b, a in a.happy > b.happy ? SceneEvent.snack : nil }) { $0.feedSnack() }
     }
 
     // MARK: mini-game
@@ -247,7 +322,9 @@ final class GameModel: ObservableObject {
         if s.round >= GameModel.rounds {
             let wins = s.wins
             mode = .home
-            mutate { $0.finishPlay(wins: wins) }
+            mutate(event: { [self] b, _ in
+                canAct(b) ? SceneEvent.played(wins: wins) : nil
+            }) { $0.finishPlay(wins: wins) }
         } else {
             s.round += 1
             s.shown = revealed
@@ -272,7 +349,7 @@ final class GameModel: ObservableObject {
 
     func tapPet() {
         guard mode == .home, pet.isAlive else { return }
-        mutate { $0.pet() }
+        mutate(event: { [self] b, _ in canAct(b) ? SceneEvent.petted : nil }) { $0.pet() }
     }
 
     /// Button A.

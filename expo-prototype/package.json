@@ -23,7 +23,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test:sim": "tsx test/sim.ts"
+    "test:sim": "tsx test/sim.ts",
+    "test:scene": "tsx test/scene.ts",
+    "test": "npm run test:sim && npm run test:scene"
   },
   "private": true
 }

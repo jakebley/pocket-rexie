@@ -17,6 +17,9 @@ struct PocketRexieWatchApp: App {
             if phase == .active {
                 PetSync.activate()
                 model.refresh()
+                model.welcomeBack()
+            } else if phase == .background {
+                model.noteLeaving()
             }
         }
     }

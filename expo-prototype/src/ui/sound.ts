@@ -34,3 +34,4 @@ export function beep() { if (!muted) tone(1800, 0, 0.06); }
 export function bad() { if (!muted) { tone(300, 0, 0.12); tone(220, 0.12, 0.16); } }
 export function callJingle() { if (!muted) [1568, 1319, 1568, 1319].forEach((f, i) => tone(f, i * 0.14, 0.1)); }
 export function evolveJingle() { if (!muted) [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.12, 0.1)); }
+export function chirp() { if (!muted) { tone(2200, 0, 0.05, 0.04); tone(2900, 0.06, 0.07, 0.04); } }

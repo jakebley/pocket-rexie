@@ -79,6 +79,44 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
             <Btn label="To 22:00 (bedtime)" onPress={() => d.skipToHour(22)} />
           </View>
 
+          <Text style={h}>Away (while-you-were-away line)</Text>
+          <View style={s.row}>
+            <Btn label="Away 1 hour" onPress={() => d.away(H)} />
+            <Btn label="Away 8 hours" onPress={() => d.away(8 * H)} />
+          </View>
+
+          <Text style={h}>Living scene</Text>
+          <View style={s.row}>
+            <Btn label="Fed meat" onPress={() => d.scene({ kind: 'fed', food: 'meat' })} />
+            <Btn label="Fed veggie" onPress={() => d.scene({ kind: 'fed', food: 'veggie' })} />
+            <Btn label="Fed pasta" onPress={() => d.scene({ kind: 'fed', food: 'pasta' })} />
+            <Btn label="Snack" onPress={() => d.scene({ kind: 'snack' })} />
+            <Btn label="Cleaned" onPress={() => d.scene({ kind: 'cleaned' })} />
+            <Btn label="Medicine" onPress={() => d.scene({ kind: 'medicine' })} />
+            <Btn label="Trained" onPress={() => d.scene({ kind: 'trained' })} />
+            <Btn label="Battle win" onPress={() => d.scene({ kind: 'battle', win: true })} />
+            <Btn label="Battle loss" onPress={() => d.scene({ kind: 'battle', win: false })} />
+            <Btn label="Played (win)" onPress={() => d.scene({ kind: 'played', wins: 4 })} />
+            <Btn label="Played (lose)" onPress={() => d.scene({ kind: 'played', wins: 1 })} />
+            <Btn label="Climate cool" onPress={() => d.scene({ kind: 'climate', cool: true })} />
+            <Btn label="Climate warm" onPress={() => d.scene({ kind: 'climate', cool: false })} />
+            <Btn label="Light off" onPress={() => d.scene({ kind: 'light', on: false })} />
+            <Btn label="Light on" onPress={() => d.scene({ kind: 'light', on: true })} />
+            <Btn label="Petted" onPress={() => d.scene({ kind: 'petted' })} />
+            <Btn label="Evolved" onPress={() => d.scene({ kind: 'evolved' })} />
+            <Btn label="Hatched" onPress={() => d.scene({ kind: 'hatched' })} />
+            <Btn label="Greet" onPress={() => d.scene({ kind: 'greet' })} />
+            <Btn label="Make poop" onPress={d.makePoop} />
+          </View>
+          <Text style={[s.small, { color: t.ink, fontFamily: mono, marginTop: 6 }]}>Weather and hour</Text>
+          <View style={s.row}>
+            <Btn label={`Rain: ${game.forcedRain === null ? 'auto' : game.forcedRain ? 'ON' : 'off'}`} on={game.forcedRain === true}
+              onPress={() => d.setRain(game.forcedRain === null ? true : game.forcedRain ? false : null)} />
+            {([['Auto hour', null], ['Dawn 6', 6], ['Day 12', 12], ['Dusk 19', 19], ['Night 23', 23]] as const).map(([l, hr]) => (
+              <Btn key={l} label={`${l}${game.forcedHour === hr ? ' *' : ''}`} on={game.forcedHour === hr} onPress={() => d.setHour(hr)} />
+            ))}
+          </View>
+
           <Text style={h}>State</Text>
           <View style={s.row}>
             <Btn label="Make hungry" onPress={d.makeHungry} />

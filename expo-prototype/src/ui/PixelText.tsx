@@ -26,6 +26,11 @@ export function PixelText({ text, ps = 2, color }: { text: string; ps?: number; 
 
 /** Wrap a message into at most two lines that fit `avail` points; returns lines and pixel size. */
 export function fitLines(text: string, avail: number, maxPs = 3, minPs = 2): { lines: string[]; ps: number } {
+  if (text.includes('\n')) {
+    const lines = text.split('\n').slice(0, 2);
+    const widest = Math.max(...lines.map((l) => textWidth(l)));
+    return { lines, ps: Math.max(1, Math.min(maxPs, avail / widest)) };
+  }
   const one = Math.min(maxPs, avail / textWidth(text));
   if (one >= minPs || text.length < 2) return { lines: [text], ps: Math.max(1, one) };
   const per = Math.max(1, Math.floor((avail / minPs + 1) / 4));

@@ -2,6 +2,8 @@
 import { DEX_SIZE, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, textWidth } from './pixel';
+import { initScene, type Scene } from './scene';
+import { drawScene } from './sceneDraw';
 
 export type Mode = 'home' | 'feed' | 'play' | 'stats' | 'dex' | 'dev';
 export interface PlayState {
@@ -12,7 +14,7 @@ export interface PlayState {
 export interface Evo { from: string; to: string; until: number }
 export interface ScreenCtx {
   pet: Pet; tick: number; mode: Mode; feedSel: number; play: PlayState | null;
-  statsPage: number; dexPage: number; evo: Evo | null;
+  statsPage: number; dexPage: number; evo: Evo | null; scene?: Scene | null;
 }
 export const FEED_ROWS = ['MEAT', 'VEGGIES', 'PASTA', 'SNACK', 'CANCEL'];
 
@@ -130,28 +132,12 @@ function paintPlay(b: Buf, pl: PlayState) {
 // ---- home ----
 function paintHome(b: Buf, ctx: ScreenCtx) {
   const { pet: p, tick } = ctx;
-  const beat = Math.floor(tick / 2);
-  const flip = tick % 2;
   if (p.stage === 'egg') {
     const wob = [0, 0, -1, 0, 0, 0, 1, 0][tick % 8];
     b.rows(EGG_SPRITE, 8 + wob, 9);
     return;
   }
-  hearts(b, p.hunger, GLYPHS.heartFull, GLYPHS.heartEmpty, 1, 1);
-  hearts(b, p.happy, GLYPHS.smileFull, GLYPHS.smileEmpty, 1, 26);
-  const blink = p.asleep || beat % 7 === 6;
-  const spr = spriteOf(p.species, blink);
-  const bob = p.asleep ? beat % 2 : beat % 2;
-  if (spr) b.rows(spr, 8, 8 + bob);
-  // left column status
-  if (p.sick) b.rows(GLYPHS.skull, 1, 8);
-  if (p.asleep && flip === 0) b.rows(GLYPHS.zzz, 1, 14);
-  else if (p.asleep) b.rows(GLYPHS.zzz, 1, 15);
-  if (p.temp >= 2) b.rows(GLYPHS.drop, 1, 20);
-  else if (p.temp <= -2) b.rows(GLYPHS.flake, 1, 20);
-  // right column
-  if (needsAttention(p) && flip === 0) b.rows(GLYPHS.alert, 26, 1);
-  for (let i = 0; i < Math.min(3, p.poops); i++) b.rows(GLYPHS.poop, 26, 26 - i * 6);
+  drawScene(b, ctx.scene ?? initScene(p, Date.now()), p);
 }
 
 function paintGhost(b: Buf, ctx: ScreenCtx) {
@@ -201,6 +187,5 @@ export function renderScreen(ctx: ScreenCtx): { buf: Buf; dark: boolean } {
   }
   const b = new Buf(GRID);
   paintHome(b, ctx);
-  dark = p.asleep && !p.lightOn;
   return { buf: b, dark };
 }

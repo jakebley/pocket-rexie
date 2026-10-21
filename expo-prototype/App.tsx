@@ -65,11 +65,11 @@ export default function App() {
         <View style={{ height: HEAD_H }} />
         <View style={s.main}>
           <Toy game={game} width={W} />
-          <View style={{ width: W, height: MSG_H, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <Pressable accessibilityLabel="Message" onPress={game.dismissMsg} style={{ width: W, height: MSG_H, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             {ghost ? (
               <PixelButton label="HATCH A NEW EGG" ps={2} onPress={game.hatchNew} style={{ minHeight: 34, paddingVertical: 4 }} />
             ) : fit.lines.map((l, i) => <PixelText key={i + l} text={l} ps={fit.ps} color={t.ink} />)}
-          </View>
+          </Pressable>
         </View>
         <View style={s.buttons}>
           {([['A', game.pressA], ['B', game.pressB], ['C', game.pressC]] as const).map(([l, f]) => (

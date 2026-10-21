@@ -143,6 +143,10 @@ targets:
       - Shared/Pet.swift
       - Shared/Species.swift
       - Shared/SpeciesData.swift
+      - Shared/Sprites.swift
+      - Shared/LivingScene.swift
+      - Shared/SceneGlyphs.swift
+      - Shared/SceneRenderer.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.tests
