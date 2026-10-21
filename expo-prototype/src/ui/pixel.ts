@@ -77,15 +77,15 @@ export const textWidth = (s: string, scale = 1) => (s.length === 0 ? 0 : (s.leng
 // 8x8 menu icons
 export const ICONS: Record<string, string[]> = {
   // drumstick: meat knob top-right, bone handle bottom-left
-  feed: ['...XXXX.', '..XXXXXX', '..XXXXXX', '..XXXXXX', '...XXXX.', '..XX....', 'XXX.....', 'X.X.....'],
+  feed: ['...XXXX.', '..XXXXXX', '..XXXXXX', '..XXXXXX', '...XXXX.', '..XXX...', '.XXX....', 'XX.XX...'],
   // light bulb
-  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '..XXXX..', '........', '..XXXX..'],
+  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '...XX...', '..XXXX..', '...XX...'],
   play: ['..XXXX..', '.X.XX.X.', 'X..XX..X', 'XXXXXXXX', 'XXXXXXXX', 'X..XX..X', '.X.XX.X.', '..XXXX..'],
   train: ['........', 'X......X', 'XX....XX', 'XXXXXXXX', 'XXXXXXXX', 'XX....XX', 'X......X', '........'],
   // medical cross
   medicine: ['..XXXX..', '..XXXX..', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', '..XXXX..', '..XXXX..'],
-  // sparkle (clean)
-  clean: ['...XX...', '...XX...', '.X.XX.X.', 'XXXXXXXX', '.X.XX.X.', '...XX...', '...XX...', '........'],
+  // broom (clean)
+  clean: ['......XX', '.....XX.', '....XX..', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X.X.X.'],
   climate: ['..XXX...', '..X.X...', '..X.X...', '..X.X...', '.XX.XX..', '.X.X.X..', '.XX.XX..', '..XXX...'],
   scold: ['...XX...', '...XX...', '...XX...', '...XX...', '...XX...', '........', '...XX...', '...XX...'],
   // crossed swords with hilts

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AccessibilityInfo, Platform } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { ALL_CELLS_PATH, GRID, ICONS, ICON_LABELS, ICON_ORDER, litPath } from './pixel';
-import { renderScreen } from './screens';
+import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER, litPath } from './pixel';
+import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import type { useGame } from './useGame';
 
 type Game = ReturnType<typeof useGame>;
@@ -20,8 +21,27 @@ const EGG_PATH = 'M50 2 C 80 2, 99 52, 99 100 C 99 136, 76 158, 50 158 C 24 158,
 
 export function useTick(ms = 300) {
   const [t, setT] = useState(0);
-  useEffect(() => { const id = setInterval(() => setT((x) => x + 1), ms); return () => clearInterval(id); }, [ms]);
-  return t;
+  const [still, setStill] = useState(false);
+  // Respect the system "reduce motion" setting: the pet holds one pose and the alert glyph stays lit.
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const q = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      if (!q) return;
+      setStill(q.matches);
+      const on = (e: MediaQueryListEvent) => setStill(e.matches);
+      q.addEventListener?.('change', on);
+      return () => q.removeEventListener?.('change', on);
+    }
+    AccessibilityInfo.isReduceMotionEnabled().then(setStill).catch(() => {});
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setStill);
+    return () => sub.remove();
+  }, []);
+  useEffect(() => {
+    if (still) return;
+    const id = setInterval(() => setT((x) => x + 1), ms);
+    return () => clearInterval(id);
+  }, [ms, still]);
+  return still ? 0 : t;
 }
 
 function IconBitmap({ name, size, color }: { name: string; size: number; color: string }) {
@@ -42,26 +62,24 @@ function Lcd({ game, size, tick }: { game: Game; size: number; tick: number }) {
     pet: pet!, tick, mode: game.mode, feedSel: game.feedSel, play: game.play,
     statsPage: game.statsPage, dexPage: game.dexPage, evo: game.evo,
   });
-  const lit = useMemo(() => litPath(buf.px), [buf.px.join('')]); // eslint-disable-line react-hooks/exhaustive-deps
-  const c = size / GRID;
+  const n = buf.n;
+  const lit = useMemo(() => litPath(buf.px, n), [buf.px.join(''), n]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cells = useMemo(() => allCellsPath(n), [n]);
+  const c = size / n;
   return (
     <View style={{ width: size, height: size, borderRadius: size * 0.03, overflow: 'hidden', backgroundColor: COLORS.lcd }}>
-      <Svg width={size} height={size} viewBox={`0 0 ${GRID} ${GRID}`}>
-        <Rect x={0} y={0} width={GRID} height={GRID} fill={COLORS.lcd} />
-        <Path d={ALL_CELLS_PATH} fill={COLORS.ink} opacity={0.07} />
+      <Svg width={size} height={size} viewBox={`0 0 ${n} ${n}`}>
+        <Rect x={0} y={0} width={n} height={n} fill={COLORS.lcd} />
+        <Path d={cells} fill={COLORS.ink} opacity={n > 32 ? 0.08 : 0.07} />
         <Path d={lit} fill={COLORS.ink} />
-        {dark && <Rect x={0} y={0} width={GRID} height={GRID} fill="#0b0f06" opacity={0.55} />}
-        <Rect x={0} y={0} width={GRID} height={GRID} fill="none" />
+        {dark && <Rect x={0} y={0} width={n} height={n} fill="#0b0f06" opacity={0.55} />}
       </Svg>
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (
-        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (1 + i * 6) * c, height: 6 * c }} />
+        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * c, height: FEED_ROW_H * c }} />
       ))}
-      {game.mode === 'play' && (
-        <>
-          <Pressable onPress={() => game.tapPlayOption(0)} style={{ position: 'absolute', left: 0, width: 17 * c, top: 22 * c, height: 10 * c }} />
-          <Pressable onPress={() => game.tapPlayOption(1)} style={{ position: 'absolute', left: 17 * c, width: 15 * c, top: 22 * c, height: 10 * c }} />
-        </>
-      )}
+      {game.mode === 'play' && PLAY_ROWS.map((r, i) => (
+        <Pressable key={i} onPress={() => game.tapPlayOption(i as 0 | 1)} style={{ position: 'absolute', left: 0, width: size, top: (r.y - 1) * c, height: (r.h + 2) * c }} />
+      ))}
       {(game.mode === 'home' || game.mode === 'stats' || game.mode === 'dex') && (
         <Pressable onPress={game.tapScreen} style={StyleSheet.absoluteFill} />
       )}
@@ -134,7 +152,7 @@ export function Toy({ game, width }: { game: Game; width: number }) {
       </Svg>
 
       <Text style={{ position: 'absolute', left: 0, right: 0, top: 11.5 * u, textAlign: 'center', fontSize: 3.4 * u, fontWeight: '900',
-        letterSpacing: 0.9 * u, color: COLORS.shellEdge, opacity: 0.85 }}>POCKET REXIE</Text>
+        letterSpacing: 0.9 * u, color: '#6B2F50' }}>POCKET REXIE</Text>
 
       {hasPet && ICON_ORDER.slice(0, 5).map((_, i) => iconTile(i, xs[i], 26))}
       {hasPet && ICON_ORDER.slice(5).map((_, i) => iconTile(i + 5, xs[i], 120))}

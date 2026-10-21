@@ -57,27 +57,36 @@ def scaled(rows, f):
                 g.p[oy + y][ox + x] = 1
     return g, f, ox, oy
 
+BABY_ROWS = [
+    '................',
+    '......XXXX......',
+    '....XXXXXXXX....',
+    '...XXXX.XXXXX...',
+    '..XXXXXXXXXXXX..',
+    '..X.XX.XX.XX.X..',
+    '..X..........X..',
+    '..X.......XX.X..',
+    '..X.......XX.X..',
+    '..X..........X..',
+    '..XX........XX..',
+    '...XXXXXXXXXX...',
+    '.X..XXXXXXXX....',
+    '..XXXXXXXXXX....',
+    '....XX....XX....',
+    '...XXX...XXX....',
+]
+
 def baby(r, blink):
-    """Hatchling wearing half an eggshell."""
-    g = G()
-    g.ellipse(7.5, 11, 4.2, 3.6)
-    g.line(3.5, 11, 1, 13, 1)               # tiny tail
-    g.line(3.5, 12, 1.5, 13, 1)
-    for x in (5, 6, 9, 10):                 # feet
-        g.set(x, 14.5); g.set(x, 15)
-    g.set(11, 15); g.set(12, 15)
-    g.ellipse(10, 8, 3.2, 2.7)              # head
-    for (x, y) in ((7, 4), (9, 3), (11, 4), (13, 5)):   # shell zigzag
-        g.set(x, y)
-    for x in range(7, 14): g.set(x, 5)
-    for x in range(8, 13): g.set(x, 4.5)
-    g.set(8, 5, 0); g.set(10, 5, 0); g.set(12, 5, 0)
-    g.set(8.5, 7.5, 0) if False else None
-    ex, ey = 11, 8
+    """Hatchling: big head, tiny body, eggshell cap with zigzag rim, big eye, two feet."""
+    g = G(BABY_ROWS)
+    ex, ey = 10, 7
+    if blink:
+        g.set(10, 7, 0); g.set(11, 7, 0); g.set(10, 8, 0); g.set(11, 8, 0)
+        for x in (9, 10, 11, 12): g.set(x, 8, 1)
     for e in r.get('extra', []):
         if e == 'leaf':
-            g.line(10, 3, 9, 1, 1); g.line(9, 1, 11, 0, 1); g.set(10, 1); g.set(10, 2)
-    g.set(ex, ey, 1 if blink else 0)
+            for x in (7, 8, 9): g.set(x, 0)
+            g.set(9, 1, 1)
     return g, (ex, ey)
 
 def draw(r, blink=False):

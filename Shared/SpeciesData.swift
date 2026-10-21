@@ -5,8 +5,8 @@ enum SpeciesData {
     static let all: [Species] = [
         Species(id: "pip", name: "Pip", stage: .baby, blurb: "A round little hatchling.",
             frames: [
-                ["................", "................", "................", ".........X......", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXX.XX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
-                ["................", "................", "................", ".........X......", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXXXXX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
+                ["................", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X.......XX.X..", "..X.......XX.X..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
+                ["................", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X..........X..", "..X......XXXXX..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
             ],
             evolutions: [
             Evolution(to: "mud", req: Requirement(mistMin: 1)),
@@ -16,8 +16,8 @@ enum SpeciesData {
         ]),
         Species(id: "nubb", name: "Nubb", stage: .baby, blurb: "Curious, with a tiny leaf on its head.",
             frames: [
-                ["..........XX....", ".........XX.....", ".........XX.....", ".........XX.....", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXX.XX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
-                ["..........XX....", ".........XX.....", ".........XX.....", ".........XX.....", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXXXXX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
+                [".......XXX......", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X.......XX.X..", "..X.......XX.X..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
+                [".......XXX......", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X..........X..", "..X......XXXXX..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
             ],
             evolutions: [
             Evolution(to: "mud", req: Requirement(mistMin: 1)),

@@ -62,7 +62,7 @@ export default function App() {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#DDD6F1', ...(Platform.OS === 'web' ? { minHeight: '100vh' as any } : null) },
+  page: { flex: 1, backgroundColor: '#DDD6F1', ...(Platform.OS === 'web' ? { minHeight: '100vh' as any, userSelect: 'none' as any } : null) },
   scroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 8 },
   pill: { marginTop: 6, backgroundColor: '#FFF9F0', borderRadius: 22, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center',
     borderWidth: 2, borderColor: '#B9648F' },

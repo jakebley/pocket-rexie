@@ -10,6 +10,8 @@ import * as sound from './sound';
 const KEY = 'pocket-rexie-v1';
 const clone = (p: Pet): Pet => JSON.parse(JSON.stringify(p));
 const rnd9 = () => 1 + Math.floor(Math.random() * 9);
+/** Shown digits stay in 2..8 so both HIGHER and LOWER can win. */
+const rnd28 = () => 2 + Math.floor(Math.random() * 7);
 export const DEV_HOUR = 3600000;
 
 /** useState that also keeps a ref current synchronously (handlers never see stale values). */
@@ -134,7 +136,7 @@ export function useGame() {
   };
 
   const startPlay = () => {
-    setPlay({ round: 1, shown: rnd9(), won: 0, phase: 'guess', sel: 0, revealed: null, correct: null });
+    setPlay({ round: 1, shown: rnd28(), won: 0, phase: 'guess', sel: 0, revealed: null, correct: null });
     setMode('play');
   };
 
@@ -154,7 +156,7 @@ export function useGame() {
         goHome();
         mutate((p) => finishPlay(p, won));
       } else {
-        setPlay({ round: c.round + 1, shown: c.revealed!, won: c.won, phase: 'guess', sel: c.sel, revealed: null, correct: null });
+        setPlay({ round: c.round + 1, shown: rnd28(), won: c.won, phase: 'guess', sel: c.sel, revealed: null, correct: null });
       }
     }, 1400);
   };

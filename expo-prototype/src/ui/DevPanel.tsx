@@ -65,7 +65,7 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
               </Text>
             );
           }) : <Text style={s.body}>{p.stage === 'egg' ? 'Hatches into Pip or Nubb after 10 minutes.' : 'No further evolutions.'}</Text>}
-          {sp && sp.evolutions.length > 0 && <Text style={s.small}>The first listed option whose requirements are met is chosen.</Text>}
+          {sp && sp.evolutions.length > 0 && <Text style={s.hint}>The first listed option whose requirements are met is chosen.</Text>}
 
           <Text style={s.h}>Time travel</Text>
           <View style={s.row}>
@@ -119,6 +119,7 @@ const s = StyleSheet.create({
   h: { marginTop: 12, marginBottom: 4, fontSize: 13, fontWeight: '800', color: '#B9648F', textTransform: 'uppercase', letterSpacing: 1 },
   body: { fontSize: 13, lineHeight: 19, color: '#3b3250' },
   small: { fontSize: 11, color: '#7a6f8c', marginBottom: 2, textTransform: 'capitalize' },
+  hint: { fontSize: 11, color: '#7a6f8c', marginTop: 2 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   btn: { backgroundColor: '#EADFF3', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10 },
   btnOn: { backgroundColor: '#4A3A5E' },
