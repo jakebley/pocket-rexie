@@ -244,7 +244,8 @@ enum SceneRenderer {
                 c0 = min(c0, c); c1 = max(c1, c); r0 = min(r0, r); r1 = max(r1, r)
             }
         }
-        return c1 < 0 ? nil : (c0, c1, r0, r1)
+        if c1 < 0 { return nil }
+        return (c0: c0, c1: c1, r0: r0, r1: r1)
     }
 
     static func placement(pet: Pet, state: SceneState, frame: Int, motion: Bool,
@@ -330,6 +331,21 @@ enum SceneRenderer {
             let base = Int(SceneRNG.hash(seed, UInt64(i), 11) % 41)
             let cx = ((base + drift) % 41 + 41) % 41 - 9
             r.draw(SceneGlyph.cloud, x: cx, y: rows[i])
+        }
+
+        // A butterfly crosses about every 90 seconds on fair days.
+        if motion && amb.period != .night && amb.weather != .rain {
+            let window = Int(t.rounded(.down)) / 45
+            let h = SceneRNG.hash(seed, UInt64(max(0, window)), 51)
+            if h % 2 == 0 {
+                let u = (t - Double(window * 45) - Double((h >> 8) % 30)) / 12
+                if u >= 0 && u < 1 {
+                    let fromLeft = (h >> 20) & 1 == 0
+                    let bx = Int(fromLeft ? -3 + 38 * u : 35 - 38 * u)
+                    let by = 14 + Int(3 * sin(u * 14))
+                    r.draw(Int(t * 4) % 2 == 0 ? SceneGlyph.butterflyA : SceneGlyph.butterflyB, x: bx, y: by)
+                }
+            }
         }
 
         if amb.weather == .rain {

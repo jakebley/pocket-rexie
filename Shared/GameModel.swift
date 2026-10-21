@@ -86,7 +86,7 @@ final class GameModel: ObservableObject {
     /// Called after every save (the iOS app uses it to reschedule notifications).
     var onSave: ((Pet) -> Void)?
     /// Called for every scene event as it is queued (the iOS app uses it for haptics).
-    var onSceneEvent: ((SceneEvent) -> Void)?
+    var onSceneEvent: (@MainActor (SceneEvent) -> Void)?
 
     /// When this device last had the app in front, kept locally (not in the synced pet).
     static let lastSeenKey = "rexie.lastSeen"
