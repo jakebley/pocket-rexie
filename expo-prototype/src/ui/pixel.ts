@@ -1,5 +1,7 @@
-// Pixel art tables + a tiny 32x32 bitmap buffer used by the LCD.
+// Pixel art tables + a tiny square bitmap buffer (32x32 scene, 64x64 text mode) used by the LCD.
 export const GRID = 32;
+/** Text-mode framebuffer: 64x64 so a 3x5 line holds 16 characters. */
+export const TEXT_GRID = 64;
 
 export const GLYPHS = {
   poop: ['..X..', '.XXX.', 'XXXXX', 'XXXXX', '.XXX.'],
@@ -74,36 +76,54 @@ export const textWidth = (s: string, scale = 1) => (s.length === 0 ? 0 : (s.leng
 
 // 8x8 menu icons
 export const ICONS: Record<string, string[]> = {
-  feed: ['....XXX.', '...XXXXX', '...XXXXX', '...XXXX.', '..XXX...', '.XX.....', 'XXX.....', 'XX......'],
-  light: ['..XXXX..', '.X....X.', '.X.XX.X.', '.X.XX.X.', '..X..X..', '..XXXX..', '..XXXX..', '...XX...'],
+  // drumstick: meat knob top-right, bone handle bottom-left
+  feed: ['...XXXX.', '..XXXXXX', '..XXXXXX', '..XXXXXX', '...XXXX.', '..XX....', 'XXX.....', 'X.X.....'],
+  // light bulb
+  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '..XXXX..', '........', '..XXXX..'],
   play: ['..XXXX..', '.X.XX.X.', 'X..XX..X', 'XXXXXXXX', 'XXXXXXXX', 'X..XX..X', '.X.XX.X.', '..XXXX..'],
   train: ['........', 'X......X', 'XX....XX', 'XXXXXXXX', 'XXXXXXXX', 'XX....XX', 'X......X', '........'],
+  // medical cross
   medicine: ['..XXXX..', '..XXXX..', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', '..XXXX..', '..XXXX..'],
-  clean: ['.....XX.', '....XX..', '...XX...', '..XX....', '.XXXX...', 'XXXXXX..', 'XXXXXX..', '.X.X.X..'],
+  // sparkle (clean)
+  clean: ['...XX...', '...XX...', '.X.XX.X.', 'XXXXXXXX', '.X.XX.X.', '...XX...', '...XX...', '........'],
   climate: ['..XXX...', '..X.X...', '..X.X...', '..X.X...', '.XX.XX..', '.X.X.X..', '.XX.XX..', '..XXX...'],
   scold: ['...XX...', '...XX...', '...XX...', '...XX...', '...XX...', '........', '...XX...', '...XX...'],
-  battle: ['X......X', 'XX....XX', '.XX..XX.', '..XXXX..', '...XX...', '..XXXX..', '.XX..XX.', 'XX....XX'],
+  // crossed swords with hilts
+  battle: ['X......X', '.X....X.', '..X..X..', '...XX...', '..XXXX..', '.XX..XX.', 'XX....XX', 'X......X'],
   stats: ['.......X', '.......X', '....X..X', '....X..X', '.X..X..X', '.X..X..X', '.X..X..X', 'XXXXXXXX'],
 };
 export const ICON_ORDER = ['feed', 'light', 'play', 'train', 'medicine', 'clean', 'climate', 'scold', 'battle', 'stats'] as const;
 export const ICON_LABELS = ['FEED', 'LIGHT', 'PLAY', 'TRAIN', 'MEDICINE', 'CLEAN', 'CLIMATE', 'SCOLD', 'BATTLE', 'STATS'];
 
-/** 32x32 on/off bitmap. */
+/** Square on/off bitmap (n x n). */
 export class Buf {
-  px = new Uint8Array(GRID * GRID);
-  set(x: number, y: number, v = 1) { if (x >= 0 && y >= 0 && x < GRID && y < GRID) this.px[y * GRID + x] = v; }
+  readonly n: number;
+  px: Uint8Array;
+  constructor(n = GRID) { this.n = n; this.px = new Uint8Array(n * n); }
+  set(x: number, y: number, v = 1) { if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] = v; }
   rows(rows: string[], x0: number, y0: number, ink = 'X') {
     for (let y = 0; y < rows.length; y++) {
       const r = rows[y];
       for (let x = 0; x < r.length; x++) if (r[x] === ink) this.set(x0 + x, y0 + y);
     }
   }
+  /** Same as rows() but every source pixel becomes a k x k block. */
+  rowsScaled(rows: string[], x0: number, y0: number, k = 2) {
+    for (let y = 0; y < rows.length; y++) {
+      const r = rows[y];
+      for (let x = 0; x < r.length; x++) if (r[x] === 'X') this.rect(x0 + x * k, y0 + y * k, k, k);
+    }
+  }
   rect(x0: number, y0: number, w: number, h: number, v = 1) {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) this.set(x, y, v);
   }
+  frame(x0: number, y0: number, w: number, h: number) {
+    for (let x = x0; x < x0 + w; x++) { this.set(x, y0); this.set(x, y0 + h - 1); }
+    for (let y = y0; y < y0 + h; y++) { this.set(x0, y); this.set(x0 + w - 1, y); }
+  }
   invert(x0: number, y0: number, w: number, h: number) {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
-      if (x >= 0 && y >= 0 && x < GRID && y < GRID) this.px[y * GRID + x] ^= 1;
+      if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] ^= 1;
     }
   }
   text(s: string, x0: number, y0: number, scale = 1) {
@@ -117,15 +137,13 @@ export class Buf {
     }
   }
   /** Text that marquees horizontally when wider than the window. */
-  ticker(s: string, y: number, tick: number, x0 = 1, w = 30) {
+  ticker(s: string, y: number, tick: number, x0 = 0, w = this.n) {
     const tw = textWidth(s);
     if (tw <= w) { this.text(s, x0, y); return; }
-    if (tw <= GRID) { this.text(s, 0, y); return; }
     const span = tw + 8;
-    const off = (Math.floor(tick / 2) % span);
-    // render directly into a wide scratch row then copy a window
-    const wide = new Uint8Array(span * 2 * 5);
+    const off = Math.floor(tick / 2) % span;
     const W = span * 2;
+    const wide = new Uint8Array(W * 5);
     const put = (str: string, ox: number) => {
       let x = ox;
       for (const ch of str.toUpperCase()) {
@@ -139,15 +157,20 @@ export class Buf {
   }
 }
 
-export function litPath(px: Uint8Array): string {
+const cellPaths = new Map<number, string>();
+export function litPath(px: Uint8Array, n = GRID): string {
   let d = '';
   for (let i = 0; i < px.length; i++) {
-    if (px[i]) { const x = i % GRID, y = (i / GRID) | 0; d += `M${x + 0.06} ${y + 0.06}h0.88v0.88h-0.88z`; }
+    if (px[i]) { const x = i % n, y = (i / n) | 0; d += `M${x + 0.06} ${y + 0.06}h0.88v0.88h-0.88z`; }
   }
   return d;
 }
-export const ALL_CELLS_PATH = (() => {
-  let d = '';
-  for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) d += `M${x + 0.06} ${y + 0.06}h0.88v0.88h-0.88z`;
+export function allCellsPath(n = GRID): string {
+  let d = cellPaths.get(n);
+  if (d === undefined) {
+    d = '';
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) d += `M${x + 0.06} ${y + 0.06}h0.88v0.88h-0.88z`;
+    cellPaths.set(n, d);
+  }
   return d;
-})();
+}
