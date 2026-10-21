@@ -87,6 +87,68 @@ struct Pet: Codable, Equatable {
         self.seed = UInt64.random(in: 1...UInt64(Int32.max))
     }
 
+    /// Tolerant decoding: a save written by an older version (missing newer fields) still loads,
+    /// with defaults filling the gaps, instead of resetting the pet.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let birthDate = try c.decodeIfPresent(Date.self, forKey: .birth) ?? Date()
+        self.init(now: birthDate)
+        if let v = try c.decodeIfPresent(String.self, forKey: .name) { name = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .named) { named = v }
+        if let v = try c.decodeIfPresent(UInt64.self, forKey: .seed) { seed = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .generation) { generation = v }
+        if let v = try c.decodeIfPresent(Date.self, forKey: .birth) { birth = v }
+        if let v = try c.decodeIfPresent(Date.self, forKey: .lastTick) { lastTick = v }
+        if let v = try c.decodeIfPresent(Date.self, forKey: .modified) { modified = v }
+        if let v = try c.decodeIfPresent(Stage.self, forKey: .stage) { stage = v }
+        if let v = try c.decodeIfPresent(String.self, forKey: .species) { species = v }
+        if let v = try c.decodeIfPresent([String].self, forKey: .dex) { dex = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .hunger) { hunger = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .happy) { happy = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .weight) { weight = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .smarts) { smarts = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .discipline) { discipline = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .poops) { poops = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .sick) { sick = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .medDoses) { medDoses = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .asleep) { asleep = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .lightOn) { lightOn = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .careMistakes) { careMistakes = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .gentle) { gentle = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .paused) { paused = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .temp) { temp = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .dietMeat) { dietMeat = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .dietVeg) { dietVeg = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .dietPasta) { dietPasta = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .trains) { trains = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .battles) { battles = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .wins) { wins = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stageMistakes) { stageMistakes = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stageMeat) { stageMeat = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stageVeg) { stageVeg = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stagePasta) { stagePasta = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stageTrain) { stageTrain = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stageWins) { stageWins = v }
+        lastTrain = try c.decodeIfPresent(Date.self, forKey: .lastTrain)
+        lastBattle = try c.decodeIfPresent(Date.self, forKey: .lastBattle)
+        call = try c.decodeIfPresent(Call.self, forKey: .call)
+        callSince = try c.decodeIfPresent(Date.self, forKey: .callSince)
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .callMistaken) { callMistaken = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .hungerProgress) { hungerProgress = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .happyProgress) { happyProgress = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .poopProgress) { poopProgress = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .tempProgress) { tempProgress = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .petProgress) { petProgress = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .starveTicks) { starveTicks = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .sickTicks) { sickTicks = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .lightTicks) { lightTicks = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .napMistaken) { napMistaken = v }
+        diedAt = try c.decodeIfPresent(Date.self, forKey: .diedAt)
+        causeOfDeath = try c.decodeIfPresent(String.self, forKey: .causeOfDeath)
+        if let v = try c.decodeIfPresent([String].self, forKey: .legacy) { legacy = v }
+        if seed == 0 { seed = 1 }
+    }
+
     // MARK: derived
 
     var age: TimeInterval { lastTick.timeIntervalSince(birth) }

@@ -10,7 +10,10 @@ enum PetStore {
     private static var defaults: UserDefaults { UserDefaults(suiteName: groupID) ?? .standard }
 
     static func load(now: Date = Date()) -> Pet {
-        guard let data = defaults.data(forKey: key), var pet = try? JSONDecoder().decode(Pet.self, from: data) else {
+        guard let data = defaults.data(forKey: key) else { return Pet(now: now) }
+        guard var pet = try? JSONDecoder().decode(Pet.self, from: data) else {
+            // Unreadable save: keep the bytes for recovery instead of overwriting them silently.
+            defaults.set(data, forKey: key + ".unreadable")
             return Pet(now: now)
         }
         pet.advance(to: now)

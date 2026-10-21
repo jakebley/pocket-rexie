@@ -19,7 +19,11 @@ targets:
   PocketRexie:
     type: application
     platform: iOS
-    sources: [iOS, Shared]
+    sources:
+      - iOS
+      - Shared
+      - path: config/privacy/iOS
+        buildPhase: resources
     dependencies:
       - target: PocketRexieWidget
         embed: true
@@ -52,7 +56,11 @@ targets:
   PocketRexieWidget:
     type: app-extension
     platform: iOS
-    sources: [Widget, Shared]
+    sources:
+      - Widget
+      - Shared
+      - path: config/privacy/Widget
+        buildPhase: resources
     entitlements:
       path: config/Widget.entitlements
     settings:
@@ -72,7 +80,11 @@ targets:
   PocketRexieWatch:
     type: application
     platform: watchOS
-    sources: [Watch, Shared]
+    sources:
+      - Watch
+      - Shared
+      - path: config/privacy/Watch
+        buildPhase: resources
     dependencies:
       - target: PocketRexieWatchWidget
         embed: true
@@ -101,7 +113,11 @@ targets:
   PocketRexieWatchWidget:
     type: app-extension
     platform: watchOS
-    sources: [Widget, Shared]
+    sources:
+      - Widget
+      - Shared
+      - path: config/privacy/WatchWidget
+        buildPhase: resources
     entitlements:
       path: config/WatchWidget.entitlements
     settings:
@@ -119,11 +135,28 @@ targets:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
 
+  PocketRexieTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests
+      - Shared/Pet.swift
+      - Shared/Species.swift
+      - Shared/SpeciesData.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.tests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   PocketRexie:
     build:
       targets:
         PocketRexie: all
+    test:
+      config: Debug
+      targets:
+        - PocketRexieTests
     run:
       config: Debug
     archive:

@@ -48,6 +48,12 @@ jobs:
           xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= build 2>&1 | tee build-ios.log | tail -n 60
+      - name: Unit tests (game engine)
+        run: |
+          set -o pipefail
+          xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee test-ios.log | tail -n 80
       - name: Build watch app
         run: |
           set -o pipefail
