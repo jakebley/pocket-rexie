@@ -135,9 +135,10 @@ enum PixelFont {
 struct PixelText: View {
     let text: String
     let pixel: CGFloat
-    let color: Color
+    let color: Color?
+    @Environment(\.lcdPalette) private var palette
 
-    init(_ text: String, pixel: CGFloat, color: Color = LCDStyle.ink) {
+    init(_ text: String, pixel: CGFloat, color: Color? = nil) {
         self.text = text
         self.pixel = pixel
         self.color = color
@@ -145,9 +146,10 @@ struct PixelText: View {
 
     var body: some View {
         let shown = text.uppercased()
+        let ink = color ?? palette.ink
         let width = CGFloat(PixelFont.width(of: shown)) * pixel
         Canvas { ctx, _ in
-            ctx.fill(PixelFont.path(text: shown, pixel: pixel), with: .color(color))
+            ctx.fill(PixelFont.path(text: shown, pixel: pixel), with: .color(ink))
         }
         .frame(width: width, height: CGFloat(PixelFont.glyphHeight) * pixel)
         .accessibilityElement()
@@ -160,7 +162,7 @@ struct PixelParagraph: View {
     let text: String
     let pixel: CGFloat
     let maxChars: Int
-    var color: Color = LCDStyle.ink
+    var color: Color? = nil
     var centered = false
 
     var body: some View {
@@ -207,15 +209,27 @@ private struct PixelButtonStyle: ButtonStyle {
     let outlined: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        let inverted = selected || configuration.isPressed
-        return PixelText(title, pixel: pixel, color: inverted ? LCDStyle.background : LCDStyle.ink)
+        PixelButtonBody(title: title, pixel: pixel, outlined: outlined,
+                        inverted: selected || configuration.isPressed)
+    }
+}
+
+private struct PixelButtonBody: View {
+    let title: String
+    let pixel: CGFloat
+    let outlined: Bool
+    let inverted: Bool
+    @Environment(\.lcdPalette) private var palette
+
+    var body: some View {
+        PixelText(title, pixel: pixel, color: inverted ? palette.background : palette.ink)
             .padding(.horizontal, pixel)
             .padding(.vertical, pixel * 1.5)
             .frame(maxWidth: .infinity)
-            .background(inverted ? LCDStyle.ink : Color.clear)
+            .background(inverted ? palette.ink : Color.clear)
             .overlay {
                 if outlined && !inverted {
-                    Rectangle().strokeBorder(LCDStyle.ink, lineWidth: pixel)
+                    Rectangle().strokeBorder(palette.ink, lineWidth: pixel)
                 }
             }
             .contentShape(Rectangle())

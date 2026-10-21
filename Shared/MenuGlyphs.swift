@@ -122,9 +122,10 @@ extension MenuIcon {
 struct PixelGlyphView: View {
     let rows: [String]
     let pixel: CGFloat
-    var color: Color = LCDStyle.ink
+    var color: Color?
+    @Environment(\.lcdPalette) private var palette
 
-    init(rows: [String], pixel: CGFloat, color: Color = LCDStyle.ink) {
+    init(rows: [String], pixel: CGFloat, color: Color? = nil) {
         self.rows = rows
         self.pixel = pixel
         self.color = color
@@ -133,9 +134,23 @@ struct PixelGlyphView: View {
     var body: some View {
         let columns = rows.map { $0.count }.max() ?? 0
         Canvas { ctx, _ in
-            ctx.fill(PixelBitmap.path(rows: rows, pixel: pixel), with: .color(color))
+            ctx.fill(PixelBitmap.path(rows: rows, pixel: pixel), with: .color(color ?? palette.ink))
         }
         .frame(width: CGFloat(columns) * pixel, height: CGFloat(rows.count) * pixel)
         .accessibilityHidden(true)
     }
+}
+
+extension PixelBitmap {
+    /// An 8x8 gear for the settings button.
+    static let gear: [String] = [
+        "...XX...",
+        ".X.XX.X.",
+        "..XXXX..",
+        "XXX..XXX",
+        "XXX..XXX",
+        "..XXXX..",
+        ".X.XX.X.",
+        "...XX...",
+    ]
 }

@@ -21,13 +21,17 @@ private struct Metrics {
 struct LCDScreen: View {
     @ObservedObject var model: GameModel
     @Environment(\.displayScale) private var displayScale
+    @Environment(\.lcdPalette) private var palette
+    /// Square corners and a full-strength ink hairline (the phone layout). Otherwise a softly
+    /// rounded screen (watch).
+    var framed = false
 
     var body: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
             let metrics = Metrics(side: side, displayScale: displayScale)
             ZStack {
-                LCDStyle.background
+                palette.background
                 screenCanvas
                 modeOverlay(metrics)
                 if model.pet.asleep && !model.pet.lightOn {
@@ -35,10 +39,10 @@ struct LCDScreen: View {
                 }
             }
             .frame(width: side, height: side)
-            .clipShape(RoundedRectangle(cornerRadius: side * 0.04, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: framed ? 0 : side * 0.04, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: side * 0.04, style: .continuous)
-                    .stroke(LCDStyle.ink.opacity(0.35), lineWidth: 1)
+                RoundedRectangle(cornerRadius: framed ? 0 : side * 0.04, style: .continuous)
+                    .stroke(palette.ink.opacity(framed ? 1 : 0.35), lineWidth: 1)
                     .allowsHitTesting(false)
             )
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
@@ -56,7 +60,8 @@ struct LCDScreen: View {
             let hatchedAt = model.hatchedAt
             let date = timeline.date
             Canvas { ctx, size in
-                LCDScene.render(&ctx, size: size, pet: pet, flash: flash, hatchedAt: hatchedAt, date: date)
+                LCDScene.render(&ctx, size: size, pet: pet, flash: flash, hatchedAt: hatchedAt,
+                                date: date, palette: palette)
             }
         }
         .contentShape(Rectangle())
@@ -87,7 +92,7 @@ struct LCDScreen: View {
         VStack(spacing: spacing ?? m.unit * 2) { content() }
             .padding(m.pad)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(LCDStyle.background)
+            .background(palette.background)
     }
 
     private func deadPanel(_ m: Metrics) -> some View {
@@ -288,6 +293,7 @@ private struct PixelMeter: View {
     let full: [String]
     let empty: [String]
     let pixel: CGFloat
+    @Environment(\.lcdPalette) private var palette
 
     var body: some View {
         Canvas { ctx, _ in
@@ -297,7 +303,7 @@ private struct PixelMeter: View {
                                 origin: CGPoint(x: CGFloat(i * 6) * pixel, y: 0),
                                 pixel: pixel, to: &path)
             }
-            ctx.fill(path, with: .color(LCDStyle.ink))
+            ctx.fill(path, with: .color(palette.ink))
         }
         .frame(width: CGFloat(max(total, 1) * 6 - 1) * pixel, height: 5 * pixel)
         .accessibilityElement()
@@ -310,7 +316,8 @@ private struct PixelMeter: View {
 /// Draws one frame of the pet screen. Not tied to a view, so it can run inside a Canvas.
 enum LCDScene {
     static func render(_ ctx: inout GraphicsContext, size: CGSize, pet: Pet,
-                       flash: (from: String, to: String)?, hatchedAt: Date?, date: Date) {
+                       flash: (from: String, to: String)?, hatchedAt: Date?, date: Date,
+                       palette: LCDPalette = LCDStyle.light) {
         let t = date.timeIntervalSinceReferenceDate
         let frame = Int(t / 0.6)
 
@@ -322,16 +329,16 @@ enum LCDScene {
             let rows = Species.named(id)?.frames.first ?? Sprite.egg
             let sprite = LCDPainter.glyphPath(rows, x: 8, y: 11, size: size)
             if inverted {
-                ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(LCDStyle.ink))
-                ctx.fill(sprite, with: .color(LCDStyle.background))
+                ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(palette.ink))
+                ctx.fill(sprite, with: .color(palette.background))
             } else {
-                ctx.fill(LCDPainter.gridPath(size: size), with: .color(LCDStyle.ink.opacity(0.06)))
-                ctx.fill(sprite, with: .color(LCDStyle.ink))
+                ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+                ctx.fill(sprite, with: .color(palette.ink))
             }
             return
         }
 
-        ctx.fill(LCDPainter.gridPath(size: size), with: .color(LCDStyle.ink.opacity(0.06)))
+        ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
 
         // Hatching: for 20 seconds the new baby alternates with a cracked shell.
         var override: [String]?
@@ -343,6 +350,6 @@ enum LCDScene {
                                      bob: frame % 2 == 1, alertOn: frame % 2 == 0,
                                      eggWobble: wobble, poopJiggle: frame % 2 == 1,
                                      spriteOverride: override)
-        ctx.fill(ink, with: .color(LCDStyle.ink))
+        ctx.fill(ink, with: .color(palette.ink))
     }
 }

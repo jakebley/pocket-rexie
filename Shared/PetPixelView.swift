@@ -1,9 +1,37 @@
 import SwiftUI
 
-/// Colors of the fake LCD.
+/// A pair of LCD colors: the ground and the ink drawn on it.
+struct LCDPalette: Sendable {
+    let background: Color
+    let ink: Color
+}
+
+/// Colors of the fake LCD. `background` and `ink` are the light palette (the default
+/// everywhere, including widgets and the watch). Dark mode on iPhone is a backlit look:
+/// dark ground, with the light LCD green as ink.
 enum LCDStyle {
     static let background = Color(red: 0xB5 / 255.0, green: 0xC1 / 255.0, blue: 0x9A / 255.0)
     static let ink = Color(red: 0x2B / 255.0, green: 0x33 / 255.0, blue: 0x20 / 255.0)
+    static let backlitGround = Color(red: 0x1E / 255.0, green: 0x24 / 255.0, blue: 0x18 / 255.0)
+
+    static let light = LCDPalette(background: background, ink: ink)
+    static let dark = LCDPalette(background: backlitGround, ink: background)
+
+    static func palette(for scheme: ColorScheme) -> LCDPalette {
+        scheme == .dark ? dark : light
+    }
+}
+
+private struct LCDPaletteKey: EnvironmentKey {
+    static let defaultValue = LCDStyle.light
+}
+
+extension EnvironmentValues {
+    /// The palette used by LCD views. Defaults to the light palette.
+    var lcdPalette: LCDPalette {
+        get { self[LCDPaletteKey.self] }
+        set { self[LCDPaletteKey.self] = newValue }
+    }
 }
 
 /// Builds the 32x32 pixel scene as paths, shared by the animated screen and the static view.
@@ -124,17 +152,24 @@ enum LCDPainter {
 /// A still picture of the pet on the LCD. Needs only a `Pet`, so widgets can use it.
 struct PetPixelView: View {
     let pet: Pet
+    /// Explicit palette; when nil the environment's `lcdPalette` (light by default) is used.
+    let palette: LCDPalette?
+    @Environment(\.lcdPalette) private var environmentPalette
 
-    init(pet: Pet) { self.pet = pet }
+    init(pet: Pet, palette: LCDPalette? = nil) {
+        self.pet = pet
+        self.palette = palette
+    }
 
     var body: some View {
+        let colors = palette ?? environmentPalette
         Canvas { ctx, size in
-            ctx.fill(LCDPainter.gridPath(size: size), with: .color(LCDStyle.ink.opacity(0.06)))
+            ctx.fill(LCDPainter.gridPath(size: size), with: .color(colors.ink.opacity(0.06)))
             ctx.fill(LCDPainter.inkPath(pet, size: size, blink: false, bob: false, alertOn: true),
-                     with: .color(LCDStyle.ink))
+                     with: .color(colors.ink))
         }
         .aspectRatio(1, contentMode: .fit)
-        .background(LCDStyle.background)
+        .background(colors.background)
         .overlay {
             if pet.asleep && !pet.lightOn { Color.black.opacity(0.5) }
         }
