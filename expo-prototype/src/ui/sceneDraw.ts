@@ -32,6 +32,11 @@ export const ART: Record<string, Rows> = {
   tuft0: ['.X.', 'X.X', 'X.X'],
   tuft1: ['..X', '.XX', 'X.X'],
   pebble: ['.X.', 'XXX'],
+  heartS: ['X.X', 'XXX', '.X.'],
+  heartSE: ['X.X', '...', '.X.'],
+  smileS: ['X.X', '...', 'XXX'],
+  smileSE: ['X.X', '...', '...'],
+  skullS: ['XXX', 'X.X', '.X.'],
   bubble: ['.XXXXXXX.', 'X.......X', 'X.......X', 'X.......X', 'X.......X', 'X.......X', '.XXXXXXX.'],
 };
 
@@ -102,6 +107,11 @@ function drawPet(b: Buf, s: Scene, pet: Pet) {
 }
 
 // ---------- sky ----------
+/** Like b.rows but only paints columns >= minX (keeps clouds out from behind the HUD). */
+function stampClip(b: Buf, rows: Rows, x: number, y: number, minX: number) {
+  for (let j = 0; j < rows.length; j++) for (let i = 0; i < rows[j].length; i++) if (rows[j][i] === 'X' && x + i >= minX) b.set(x + i, y + j);
+}
+
 function drawSky(b: Buf, s: Scene) {
   const phase = phaseOf(s.hour);
   const hf = s.hour + s.minute / 60;
@@ -109,30 +119,30 @@ function drawSky(b: Buf, s: Scene) {
   const amb = s.still ? 0 : s.nowMs;
   if (phase !== 'night') {
     const p = Math.min(1, Math.max(0, (hf - 5) / 16));
-    const cx = Math.round(3 + p * 26), cy = 13 - Math.round(6 * Math.sin(Math.PI * p));
+    const cx = Math.round(3 + p * 26), cy = Math.max(cx <= 20 ? 10 : 4, 12 - Math.round(9 * Math.sin(Math.PI * p)));
     b.rows(ART.sunDisc, cx - 2, cy - 2);
     if (Math.floor(amb / FRAME_MS) % 2 === 0) { b.set(cx - 4, cy); b.set(cx + 4, cy); b.set(cx, cy - 4); b.set(cx, cy + 4); }
     else { b.set(cx - 3, cy - 3); b.set(cx + 3, cy - 3); b.set(cx - 3, cy + 3); b.set(cx + 3, cy + 3); }
   } else {
     const q = Math.min(1, ((hf - 21 + 24) % 24) / 8);
-    const cx = Math.round(28 - q * 24), cy = 13 - Math.round(6 * Math.sin(Math.PI * q));
+    const cx = Math.round(28 - q * 24), cy = Math.max(cx <= 20 ? 10 : 4, 12 - Math.round(9 * Math.sin(Math.PI * q)));
     b.rows(ART.moon, cx - 2, cy - 2);
-    const stars: [number, number][] = [[2, 12], [8, 11], [14, 12], [20, 11], [26, 12], [30, 11]];
+    const stars: [number, number][] = [[18, 2], [27, 3], [3, 9], [11, 11], [21, 10], [30, 8]];
     stars.forEach(([x, y], i) => { if ((Math.floor(tickN / 5) + i * 2) % 5 !== 0) b.set(x, y); });
   }
-  if (phase === 'dawn' || phase === 'dusk') for (let x = 0; x < 32; x += 2) b.set(x + (phase === 'dawn' ? 0 : 1), 12);
+  if (phase === 'dawn' || phase === 'dusk') for (let x = 0; x < 32; x += 4) { b.set(x + (phase === 'dawn' ? 0 : 2), 12); b.set(x + (phase === 'dawn' ? 2 : 0), 11); }
   // clouds drift one cell every 10 s
   const drift = Math.floor(amb / 10000);
   const o = s.seed % 48;
   const wide = (v: number) => ((v % 48) + 48) % 48 - 12;
   if (s.weather === 'clear') {
-    if (phase !== 'night') b.rows(ART.cloudS, wide(o + 30 + drift), 11);
+    if (phase !== 'night') stamp(b, ART.cloudS, wide(o + 30 + drift), 10, true);
   } else {
-    b.rows(ART.cloudL, wide(o + drift), 10);
-    b.rows(ART.cloudL, wide(o + 24 + drift), 3);
+    stamp(b, ART.cloudL, wide(o + drift), 9, true);
+    stampClip(b, ART.cloudL, wide(o + 24 + drift), 2, 17);
   }
   if (s.weather === 'rain') {
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 9; i++) {
       const x = (i * 7 + (s.seed % 5)) % 32;
       const y = (tickN * 2 + i * 5) % 26;
       b.set(x, y); b.set(x, y + 1);
@@ -153,15 +163,16 @@ function drawDim(b: Buf) {
   for (let y = 0; y < 28; y++) for (let x = 0; x < 32; x++) if ((x + y) % 2 === 0) b.set(x, y);
 }
 
+/** HUD: 3x3 mini hearts (hunger) and smiles (happy) in the top-left corner; status glyphs just right of them. */
 function drawHud(b: Buf, s: Scene, pet: Pet) {
   for (let i = 0; i < 4; i++) {
-    stamp(b, i < pet.hunger ? GLYPHS.heartFull : GLYPHS.heartEmpty, i * 6, 0, true);
-    stamp(b, i < pet.happy ? GLYPHS.smileFull : GLYPHS.smileEmpty, i * 6, 6, true);
+    stamp(b, ART[i < pet.hunger ? 'heartS' : 'heartSE'], i * 4, 0, true);
+    stamp(b, ART[i < pet.happy ? 'smileS' : 'smileSE'], i * 4, 4, true);
   }
   const flip = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS) % 2;
-  const tempG = pet.temp >= 2 ? GLYPHS.drop : pet.temp <= -2 ? GLYPHS.flake : null;
-  if (pet.sick && (!tempG || flip === 0)) stamp(b, GLYPHS.skull, 26, 8, true);
-  else if (tempG) stamp(b, tempG, 26, 8, true);
+  const tempG = pet.temp >= 2 ? ART.dropS : pet.temp <= -2 ? ART.flakeS : null;
+  if (pet.sick) stamp(b, ART.skullS, 16, 0, true);
+  if (tempG && (!pet.sick || flip === 0)) stamp(b, tempG, 16, 4, true);
 }
 
 function popArt(g: Pop['g']): Rows {
@@ -209,18 +220,21 @@ function bubbleIcon(pet: Pet): Rows | null {
   }
 }
 
+export const bubbleX = (s: Scene) => Math.max(19, Math.min(22, Math.round(s.x) + 4));
+
 function drawBubble(b: Buf, s: Scene, pet: Pet) {
   const show = pet.call !== null && (!pet.asleep || pet.call === 'light');
   if (!show) return;
   const on = s.still || Math.floor(s.nowMs / 300) % 4 !== 3;
+  const bx = bubbleX(s);
   if (on) {
     const icon = bubbleIcon(pet);
-    b.rect(23, 0, 9, 7, 0);
-    b.rows(ART.bubble, 23, 0);
-    b.set(25, 7); b.set(24, 8);
-    if (icon) b.rows(icon, 25, 1);
+    b.rect(bx, 1, 9, 7, 0);
+    b.rows(ART.bubble, bx, 1);
+    b.set(bx + 2, 8); b.set(bx + 1, 9);
+    if (icon) b.rows(icon, bx + 2, 2);
   } else if (needsAttention(pet)) {
-    stamp(b, GLYPHS.alert, 27, 1, true);
+    stamp(b, GLYPHS.alert, bx + 2, 2, true);
   }
 }
 
@@ -255,7 +269,7 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
   }
   // poops sit on the ground in front of the pet
   const jig = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) stamp(b, GLYPHS.poop, POOP_X[i] + ((jig + i) % 2), 23, true);
+  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) b.rows(GLYPHS.poop, POOP_X[i] + ((jig + i) % 2), 23);
   for (const p of s.props) drawProp(b, p);
   // state effects around the head
   const t = s.t;
