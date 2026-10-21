@@ -1,0 +1,19 @@
+<title>Pocket Rexie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Layout: the whole page is the toy, centered at phone width on any screen. */
+  :root { --ground: #e4e0f5; color-scheme: light; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    overflow: hidden;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+  #root { display: flex; height: 100%; flex: 1; }
+</style>
+<div id="root"></div>
+<noscript>Pocket Rexie needs JavaScript.</noscript>
+<script src="app.js" defer></script>

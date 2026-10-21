@@ -67,8 +67,8 @@ function paintStats(b: Buf, ctx: ScreenCtx) {
   const { pet: p, statsPage, tick } = ctx;
   if (statsPage === 0) {
     b.text('HUNGER', 1, 1); hearts(b, p.hunger, GLYPHS.heartFull, GLYPHS.heartEmpty, 1, 7);
-    b.text('HAPPY', 1, 14); hearts(b, p.happy, GLYPHS.smileFull, GLYPHS.smileEmpty, 1, 20);
-    b.text(`DISC ${p.discipline}`, 1, 27);
+    b.text('HAPPY', 1, 13); hearts(b, p.happy, GLYPHS.smileFull, GLYPHS.smileEmpty, 1, 19);
+    b.text(`DISC ${p.discipline}`, 1, 26);
   } else if (statsPage === 1) {
     b.text('WEIGHT', 1, 2); b.text(`${p.weight}G`, 1, 8, 2);
     b.text('AGE', 1, 20);
@@ -81,8 +81,8 @@ function paintStats(b: Buf, ctx: ScreenCtx) {
 
 // ---- play ----
 function paintPlay(b: Buf, pl: PlayState) {
-  b.text(`RND ${pl.round}/5`, 1, 1);
-  b.text(`${pl.won}W`, 25, 1);
+  b.text(`R${pl.round}/5`, 1, 1);
+  b.text(`W:${pl.won}`, 20, 1);
   if (pl.phase === 'guess') {
     b.text(String(pl.shown), 10, 8, 3);
     const hi = pl.sel === 0;
@@ -90,7 +90,7 @@ function paintPlay(b: Buf, pl: PlayState) {
     if (hi) b.invert(0, 24, 18, 8); else b.invert(17, 24, 15, 8);
   } else {
     b.text(String(pl.shown), 2, 11, 2);
-    b.text(pl.correct ? '>' : 'X', 12, 12);
+    b.text(pl.revealed! > pl.shown ? '<' : '>', 12, 12);
     b.text(String(pl.revealed), 17, 8, 3);
     const msg = pl.correct ? 'RIGHT!' : 'WRONG!';
     b.text(msg, (32 - textWidth(msg)) >> 1, 26);

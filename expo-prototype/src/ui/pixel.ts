@@ -17,19 +17,19 @@ export const GLYPHS = {
 export const EGG_SPRITE = [
   '................',
   '.....XXXXXX.....',
-  '....XXXXXXXX....',
-  '...XXXX..XXXX...',
   '...XXX....XXX...',
-  '..XXXXX..XXXXX..',
-  '..XXXXXXXXXXXX..',
-  '..XXX.XXXX.XXX..',
-  '..XXXXXXXXXXXX..',
-  '..XXXXXXXXXXXX..',
-  '..XX.XXXXXX.XX..',
-  '...XXXXXXXXXX...',
-  '...XXXXXXXXXX...',
-  '....XXXXXXXX....',
+  '..XX..XX....XX..',
+  '..X...XX......X.',
+  '.XX..........XX.',
+  '.X.......XX...X.',
+  '.X......XXXX..X.',
+  '.X.......XX...X.',
+  '.XX..XX......XX.',
+  '..X..XX......X..',
+  '..XX........XX..',
+  '...XXX....XXX...',
   '.....XXXXXX.....',
+  '................',
   '................',
 ];
 
@@ -75,11 +75,11 @@ export const textWidth = (s: string, scale = 1) => (s.length === 0 ? 0 : (s.leng
 // 8x8 menu icons
 export const ICONS: Record<string, string[]> = {
   feed: ['....XXX.', '...XXXXX', '...XXXXX', '...XXXX.', '..XXX...', '.XX.....', 'XXX.....', 'XX......'],
-  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '...XX...', '..XXXX..', '...XX...'],
+  light: ['..XXXX..', '.X....X.', '.X.XX.X.', '.X.XX.X.', '..X..X..', '..XXXX..', '..XXXX..', '...XX...'],
   play: ['..XXXX..', '.X.XX.X.', 'X..XX..X', 'XXXXXXXX', 'XXXXXXXX', 'X..XX..X', '.X.XX.X.', '..XXXX..'],
   train: ['........', 'X......X', 'XX....XX', 'XXXXXXXX', 'XXXXXXXX', 'XX....XX', 'X......X', '........'],
   medicine: ['..XXXX..', '..XXXX..', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', '..XXXX..', '..XXXX..'],
-  clean: ['....XX..', '....XX..', '...XX...', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X.X.X.'],
+  clean: ['.....XX.', '....XX..', '...XX...', '..XX....', '.XXXX...', 'XXXXXX..', 'XXXXXX..', '.X.X.X..'],
   climate: ['..XXX...', '..X.X...', '..X.X...', '..X.X...', '.XX.XX..', '.X.X.X..', '.XX.XX..', '..XXX...'],
   scold: ['...XX...', '...XX...', '...XX...', '...XX...', '...XX...', '........', '...XX...', '...XX...'],
   battle: ['X......X', 'XX....XX', '.XX..XX.', '..XXXX..', '...XX...', '..XXXX..', '.XX..XX.', 'XX....XX'],
@@ -120,6 +120,7 @@ export class Buf {
   ticker(s: string, y: number, tick: number, x0 = 1, w = 30) {
     const tw = textWidth(s);
     if (tw <= w) { this.text(s, x0, y); return; }
+    if (tw <= GRID) { this.text(s, 0, y); return; }
     const span = tw + 8;
     const off = (Math.floor(tick / 2) % span);
     // render directly into a wide scratch row then copy a window

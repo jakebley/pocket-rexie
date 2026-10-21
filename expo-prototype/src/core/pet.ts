@@ -141,7 +141,7 @@ export function advance(p: Pet, now: number, hourOf: (t: number) => number = (t)
     t += TICK;
     step(p, t, hourOf(t));
     steps++;
-    if (p.stage === 'ghost') break;
+    if ((p.stage as Stage) === 'ghost') break;
   }
   p.lastTick = t;
 }
