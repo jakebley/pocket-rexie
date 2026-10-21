@@ -83,7 +83,8 @@ struct Pet: Codable, Equatable {
         self.birth = now; self.lastTick = now; self.modified = now
         self.generation = generation; self.name = name; self.legacy = legacy
         self.gentle = gentle; self.dex = dex
-        self.seed = UInt64.random(in: 1...UInt64.max)
+        // Kept small so JSON round-trips it exactly on every platform.
+        self.seed = UInt64.random(in: 1...UInt64(Int32.max))
     }
 
     // MARK: derived
@@ -140,7 +141,9 @@ struct Pet: Codable, Equatable {
         guard now > lastTick else { return }
         guard stage != .ghost else { lastTick = now; return }
         if paused {
-            birth = birth.addingTimeInterval(now.timeIntervalSince(lastTick))
+            let gap = now.timeIntervalSince(lastTick)
+            birth = birth.addingTimeInterval(gap)
+            if let s = callSince { callSince = s.addingTimeInterval(gap) }
             lastTick = now
             return
         }
@@ -316,6 +319,7 @@ struct Pet: Codable, Equatable {
         case .veggie: dietVeg += 1; stageVeg += 1
         case .pasta: dietPasta += 1; stagePasta += 1
         }
+        refreshCall(at: lastTick)
         return "Yum!"
     }
 
@@ -326,6 +330,7 @@ struct Pet: Codable, Equatable {
         if asleep { return "Shh, \(name) is asleep" }
         if happy >= Pet.maxHearts { return "\(name) is too happy to eat" }
         happy += 1; weight += 2; modified = lastTick
+        refreshCall(at: lastTick)
         return "Sweet!"
     }
 
@@ -346,7 +351,7 @@ struct Pet: Codable, Equatable {
         modified = lastTick
         guard sick else { return "\(name) is not sick" }
         medDoses += 1
-        if medDoses >= 2 { sick = false; medDoses = 0; sickTicks = 0; return "\(name) feels better!" }
+        if medDoses >= 2 { sick = false; medDoses = 0; sickTicks = 0; refreshCall(at: lastTick); return "\(name) feels better!" }
         return "One more dose"
     }
 
@@ -355,6 +360,7 @@ struct Pet: Codable, Equatable {
         modified = lastTick
         if poops == 0 { return "Already clean" }
         poops = 0; poopProgress = 0
+        refreshCall(at: lastTick)
         return "Squeaky clean"
     }
 
@@ -372,6 +378,7 @@ struct Pet: Codable, Equatable {
         if temp == 0 { return "Already comfy" }
         let msg = temp > 0 ? "Ahh, nice and cool" : "Toasty warm now"
         temp = 0; tempProgress = 0
+        refreshCall(at: lastTick)
         return msg
     }
 
@@ -396,6 +403,7 @@ struct Pet: Codable, Equatable {
         modified = lastTick
         lightOn.toggle()
         if !lightOn { lightTicks = 0 }
+        refreshCall(at: lastTick)
         return lightOn ? "Lights on" : "Lights off"
     }
 

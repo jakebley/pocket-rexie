@@ -110,7 +110,8 @@ final class GameModel: ObservableObject {
                 say("\(p.name) evolved into \(p.speciesName)!")
             }
             pet = p
-            persist()
+            // While on vacation the clock only slides forward; no need to write it every second.
+            if !p.paused { persist() }
         }
     }
 
@@ -129,6 +130,7 @@ final class GameModel: ObservableObject {
     }
 
     private func persist() {
+        pet.modified = Date()
         PetStore.save(pet)
         PetSync.push(pet)
         onSave?(pet)

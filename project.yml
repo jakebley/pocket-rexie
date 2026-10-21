@@ -91,6 +91,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
+        WKCompanionAppBundleIdentifier: com.pocketrexie.app
         WKRunsIndependentlyOfCompanionApp: true
         UIBackgroundModes: []
         CFBundleURLTypes:

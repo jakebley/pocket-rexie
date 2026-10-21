@@ -35,7 +35,7 @@ struct WatchContentView: View {
                             .frame(maxWidth: .infinity, minHeight: 52)
                         }
                         .buttonStyle(.bordered)
-                        .tint(icon == model.selected ? .green : .gray)
+                        .tint(icon == model.selected ? Color.green : Color.gray)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.green, lineWidth: icon == model.selected ? 2 : 0)
@@ -53,6 +53,7 @@ struct WatchContentView: View {
             if icons[index] != model.selected { model.selected = icons[index] }
         }
         .onChange(of: model.message) { _, text in
+            guard !text.isEmpty else { return }
             WKInterfaceDevice.current().play(hapticFor(text))
         }
         .onChange(of: model.pet.call) { old, new in
