@@ -5,8 +5,8 @@ enum SpeciesData {
     static let all: [Species] = [
         Species(id: "pip", name: "Pip", stage: .baby, blurb: "A round little hatchling.",
             frames: [
-                ["................", "................", "................", "................", "................", "................", ".........XX.....", "........XXXX....", ".....XXXXX.XX...", "....XXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXXX.....", "..XXXXXXXXX.....", ".....XXXXXX.....", "......X..XX.....", "......X.XXXX...."],
-                ["................", "................", "................", "................", "................", "................", ".........XX.....", "........XXXX....", ".....XXXXXXXX...", "....XXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXXX.....", "..XXXXXXXXX.....", ".....XXXXXX.....", "......X..XX.....", "......X.XXXX...."],
+                ["................", "................", "................", ".........X......", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXX.XX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
+                ["................", "................", "................", ".........X......", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXXXXX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
             ],
             evolutions: [
             Evolution(to: "mud", req: Requirement(mistMin: 4)),
@@ -16,8 +16,8 @@ enum SpeciesData {
         ]),
         Species(id: "nubb", name: "Nubb", stage: .baby, blurb: "Curious, with a tiny leaf on its head.",
             frames: [
-                ["................", "................", "..........X.....", ".........XX.....", "........XXX.....", ".........X......", ".........XX.....", "........XXXX....", ".....XXXXX.XX...", "....XXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXXX.....", "..XXXXXXXXX.....", ".....XXXXXX.....", "......X..XX.....", "......X.XXXX...."],
-                ["................", "................", "..........X.....", ".........XX.....", "........XXX.....", ".........X......", ".........XX.....", "........XXXX....", ".....XXXXXXXX...", "....XXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXXX.....", "..XXXXXXXXX.....", ".....XXXXXX.....", "......X..XX.....", "......X.XXXX...."],
+                ["..........XX....", ".........XX.....", ".........XX.....", ".........XX.....", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXX.XX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
+                ["..........XX....", ".........XX.....", ".........XX.....", ".........XX.....", ".......XXXXXX...", ".......X.X.X.X..", "........XXXXX...", "........XXXXX...", "......XXXXXXXX..", ".....XXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", ".XX..XXXXXX.....", ".....XXXXXX.....", ".....XX..XXXX..."],
             ],
             evolutions: [
             Evolution(to: "mud", req: Requirement(mistMin: 4)),
@@ -27,8 +27,8 @@ enum SpeciesData {
         ]),
         Species(id: "rawr", name: "Rawr", stage: .child, blurb: "Loves meat and shows off its fangs.",
             frames: [
-                ["................", "................", "................", "................", "................", ".........XXXX...", "........XXXX.XXX", "........XXXXXX..", "....XXXXXXXXXXXX", "...XXXXXXXX.....", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "................", "................", "................", ".........XXXX...", "........XXXXXXXX", "........XXXXXX..", "....XXXXXXXXXXXX", "...XXXXXXXX.....", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "................", "................", "................", "..........XXX...", "..........X.X...", "..........XXX...", ".........XXXX...", "...X.....XXX....", "...XXX..XXXXX...", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".....XXXXXX....."],
+                ["................", "................", "................", "................", "................", "................", "..........XXX...", "..........XXX...", "..........XXX...", ".........XXXX...", "...X.....XXX....", "...XXX..XXXXX...", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".....XXXXXX....."],
             ],
             evolutions: [
             Evolution(to: "grime", req: Requirement(mistMin: 5)),
@@ -38,8 +38,8 @@ enum SpeciesData {
         ]),
         Species(id: "sprig", name: "Sprig", stage: .child, blurb: "A leafy nibbler.",
             frames: [
-                ["................", "..........XXX...", "..........X.X...", "..........X.....", "..........X.....", ".........XXXX...", "........XXXX.X..", "........XXXXXX..", "....XXXXXXXXX...", "...XXXXXXXX.....", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "..........XXX...", "..........X.X...", "..........X.....", "..........X.....", ".........XXXX...", "........XXXXXX..", "........XXXXXX..", "....XXXXXXXXX...", "...XXXXXXXX.....", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "............X...", "..........XX....", "..........X.....", "..........X.....", "..........XXX...", "..........X.X...", "..........XX....", ".........XXX....", "........XXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
+                ["................", "................", "............X...", "..........XX....", "..........X.....", "..........X.....", "..........XXX...", "..........XXX...", "..........XX....", ".........XXX....", "........XXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
             ],
             evolutions: [
             Evolution(to: "grime", req: Requirement(mistMin: 5)),
@@ -49,8 +49,8 @@ enum SpeciesData {
         ]),
         Species(id: "twirl", name: "Twirl", stage: .child, blurb: "Noodle-obsessed, with curly hair.",
             frames: [
-                ["............X...", "........X.X.....", "..........X.X...", "........X.....X.", "................", ".........XXXX...", "XX......XXXX.X..", "X.......XXXXXX..", ".X..XXXXXXXXX...", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["............X...", "........X.X.....", "..........X.X...", "........X.....X.", "................", ".........XXXX...", "XX......XXXXXX..", "X.......XXXXXX..", ".X..XXXXXXXXX...", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "XXXXXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "................", "................", "..........X.X.X.", "........XXX.X...", ".......XXXXXX...", ".......XXXXXX...", ".......XXX.XX...", "....XXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXX....", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
+                ["................", "................", "................", "................", "................", "..........X.X.X.", "........XXX.X...", ".......XXXXXX...", ".......XXXXXX...", ".......XXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXX....", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
             ],
             evolutions: [
             Evolution(to: "grime", req: Requirement(mistMin: 5)),
@@ -60,8 +60,8 @@ enum SpeciesData {
         ]),
         Species(id: "mud", name: "Mudpie", stage: .child, blurb: "Scruffy and in need of a bath.",
             frames: [
-                ["................", "................", "................", "................", "................", ".........XXXX...", ".....X.XXXXX.X..", "...X....XXXXXX..", "....XXXXXXXXX...", "...XXXXX.XX.....", ".XXX.XXXXXX.....", "XXXXXXXXXXX.....", ".....X.XXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "................", "................", "................", ".........XXXX...", ".....X.XXXXXXX..", "...X....XXXXXX..", "....XXXXXXXXX...", "...XXXXX.XX.....", ".XXX.XXXXXX.....", "XXXXXXXXXXX.....", ".....X.XXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "................", "................", "................", "........XXXXX...", "........XX.XX...", ".........XXX....", "...XX....X.X....", "...XX.X.XXXX....", "....XXXXXXXXX...", ".....XXXX.XX....", "......XXXXX.....", "......XXXXX.....", "......XXXX......"],
+                ["................", "................", "................", "................", "................", "................", "........XXXXX...", "........XXXXX...", ".........XXX....", "...XX....X.X....", "...XX.X.XXXX....", "....XXXXXXXXX...", ".....XXXX.XX....", "......XXXXX.....", "......XXXXX.....", "......XXXX......"],
             ],
             evolutions: [
             Evolution(to: "scrap", req: Requirement(train: 3)),
@@ -69,8 +69,8 @@ enum SpeciesData {
         ]),
         Species(id: "fang", name: "Fangler", stage: .teen, blurb: "Strong jaws, spiky back.",
             frames: [
-                ["................", "................", "................", "......X...XXX...", "......X.XXXX.X..", "..X.X.X.XXXXXX..", "..X.X....XXXXXXX", "..X.XXXXXXXXXX..", "...XXXXXXXXXX.X.", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "................", "......X...XXX...", "......X.XXXXXX..", "..X.X.X.XXXXXX..", "..X.X....XXXXXXX", "..X.XXXXXXXXXX..", "...XXXXXXXXXX.X.", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XX.X..", ".........XXXXX..", ".........XXXXX..", ".X.X...X.XXXX...", ".XXX...XXXXXXX..", ".XXXXX.XXXXXXX..", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
+                ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XXXX..", ".........XXXXX..", ".........XXXXX..", ".X.X...X.XXXX...", ".XXX...XXXXXXX..", ".XXXXX.XXXXXXX..", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -79,8 +79,8 @@ enum SpeciesData {
         ]),
         Species(id: "brute", name: "Brutus", stage: .teen, blurb: "Heavy and proud of it.",
             frames: [
-                ["................", "................", "................", "..........XXX...", ".........XXX.X..", ".........XXXXX..", ".....XXXXXXXXXXX", "...XXXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXXX..."],
-                ["................", "................", "................", "..........XXX...", ".........XXXXX..", ".........XXXXX..", ".....XXXXXXXXXXX", "...XXXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "................", "................", "................", ".....XXXX.......", ".XXXXXXXXXX.....", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX.X..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
+                ["................", "................", "................", "................", "................", "................", ".....XXXX.......", ".XXXXXXXXXX.....", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -89,8 +89,8 @@ enum SpeciesData {
         ]),
         Species(id: "dash", name: "Dasher", stage: .teen, blurb: "Light, quick, crested.",
             frames: [
-                ["................", "................", "..........X.X...", "..........XXX...", ".........XXX.X..", ".........XXXXX..", ".........XXXXX..", "....XXXXXXXXXX..", "...XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "..........X.X...", "..........XXX...", ".........XXXXX..", ".........XXXXX..", ".........XXXXX..", "....XXXXXXXXXX..", "...XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "...........X....", "..........XXX...", ".........XXXXX..", "........XXXXXX..", "........XXX.XX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
+                ["................", "...........X....", "..........XXX...", ".........XXXXX..", "........XXXXXX..", "........XXXXXX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -99,8 +99,8 @@ enum SpeciesData {
         ]),
         Species(id: "moss", name: "Mossback", stage: .teen, blurb: "Thoughtful, with a mossy shell.",
             frames: [
-                ["................", "................", "................", "..........XXX...", ".....XXX.XXX.X..", "...XXXXXXXXXXX..", "..XX.X.X.XXXXX..", "..XXXXXXXXXXXX..", "..XXXX.X.XXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["................", "................", "................", "..........XXX...", ".....XXX.XXXXX..", "...XXXXXXXXXXX..", "..XX.X.X.XXXXX..", "..XXXXXXXXXXXX..", "..XXXX.X.XXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "................", "................", "................", ".....XXXX.......", "..XXXXX.X.X.....", ".XXXX.XXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX.X..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
+                ["................", "................", "................", "................", "................", "................", ".....XXXX.......", "..XXXXX.X.X.....", ".XXXX.XXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -109,17 +109,17 @@ enum SpeciesData {
         ]),
         Species(id: "horn", name: "Hornet", stage: .teen, blurb: "Charges first, asks later.",
             frames: [
-                ["..............X.", ".............XX.", ".............X..", "..........XXX...", "......X.XXXX.X..", "....X.X.XXXXXX..", "..X.X....XXXXX..", "..X.XXXXXXXXXX..", "...XXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["..............X.", ".............XX.", ".............X..", "..........XXX...", "......X.XXXXXX..", "....X.X.XXXXXX..", "..X.X....XXXXX..", "..X.XXXXXXXXXX..", "...XXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "........XX...X..", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXX.XX..", "..XXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
+                ["................", "................", "................", "........XX...X..", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXXXXX..", "..XXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
             Evolution(to: "plated", req: Requirement())
         ]),
-        Species(id: "bloom", name: "Bloomer", stage: .teen, blurb: "Friendly with a frilly collar.",
+        Species(id: "bloom", name: "Bloomer", stage: .teen, blurb: "Friendly, with a leaf on its head.",
             frames: [
-                ["..........XXX...", "........XXX.....", ".......XXXXX....", ".......XXXXXX...", "......XXXXXX.X..", "......XXXXXXXX..", ".......XXXXXXX..", "....XXXXXXXXXX..", "...XXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["..........XXX...", "........XXX.....", ".......XXXXX....", ".......XXXXXX...", "......XXXXXXXX..", "......XXXXXXXX..", ".......XXXXXXX..", "....XXXXXXXXXX..", "...XXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["..........XXX...", "..........XX....", "..........XX....", "..........XXXX..", "..........XXXX..", "..........XX.X..", "..........XXX...", ".........XXXX...", "........XXXXX...", ".X....XXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
+                ["..........XXX...", "..........XX....", "..........XX....", "..........XXXX..", "..........XXXX..", "..........XXXX..", "..........XXX...", ".........XXXX...", "........XXXXX...", ".X....XXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -127,8 +127,8 @@ enum SpeciesData {
         ]),
         Species(id: "curlie", name: "Curlie", stage: .teen, blurb: "Spaghetti curls everywhere.",
             frames: [
-                [".........XX.....", "...........XX...", "........XX....X.", "..........XXX...", ".........XXX.X..", ".........XXXXX..", "XX.......XXXXX..", "XX..XXXXXXXXXX..", "XX.XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                [".........XX.....", "...........XX...", "........XX....X.", "..........XXX...", ".........XXXXX..", ".........XXXXX..", "XX.......XXXXX..", "XX..XXXXXXXXXX..", "XX.XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "..........X.X.X.", ".........X.X.X..", ".........XXXXX..", ".XX.....XXXXXX..", ".X......XXX.XX..", ".X.......XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
+                ["................", "..........X.X.X.", ".........X.X.X..", ".........XXXXX..", ".XX.....XXXXXX..", ".X......XXXXXX..", ".X.......XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -137,8 +137,8 @@ enum SpeciesData {
         ]),
         Species(id: "ravi", name: "Raviolo", stage: .teen, blurb: "Plump, stuffed and cheerful.",
             frames: [
-                ["................", "................", "................", "..........XXX...", ".........XXX.X..", ".........XXXXX..", "......XX.XXXXX..", "...XX.XX.XXXXX..", "...XX.XX.XXXX...", ".X.XX.XX.XXXX...", "XX.XX.XX.XXXX...", "XX.XX.XX.XXXX...", "...XX.XX.XXX....", "...XXXXXXXX.....", ".....XXXX.X.....", ".....XXXX.X....."],
-                ["................", "................", "................", "..........XXX...", ".........XXXXX..", ".........XXXXX..", "......XX.XXXXX..", "...XX.XX.XXXXX..", "...XX.XX.XXXX...", ".X.XX.XX.XXXX...", "XX.XX.XX.XXXX...", "XX.XX.XX.XXXX...", "...XX.XX.XXX....", "...XXXXXXXX.....", ".....XXXX.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "........XX......", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXX.XX..", "...XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
+                ["................", "................", "................", "........XX......", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXXXXX..", "...XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -146,8 +146,8 @@ enum SpeciesData {
         ]),
         Species(id: "zest", name: "Zesty", stage: .teen, blurb: "Sharp mind, antenna up.",
             frames: [
-                ["..........X.....", "..........XX....", "...........X....", "..........XXXX..", ".........XX...X.", ".........XXXXX..", ".........XXXXX..", "....XXXXXXXXXX..", "...XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["..........X.....", "..........XX....", "...........X....", "..........XXXX..", ".........XX.X.X.", ".........XXXXX..", ".........XXXXX..", "....XXXXXXXXXX..", "...XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                [".........X......", ".........X......", ".........XX.....", ".........XXXXX..", "........XXXXXX..", "........XXX.XX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
+                [".........X......", ".........X......", ".........XX.....", ".........XXXXX..", "........XXXXXX..", "........XXXXXX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
             ],
             evolutions: [
             Evolution(to: "gremlin", req: Requirement(mistMin: 5)),
@@ -156,8 +156,8 @@ enum SpeciesData {
         ]),
         Species(id: "grime", name: "Grimey", stage: .teen, blurb: "Neglected but tough.",
             frames: [
-                ["................", "................", "................", "..........XXX...", ".........XXX.X..", "......X.XXXXXX..", "....X....XXXXX..", "..X.XXXXXXXXXX..", "...XXXXX.XXXX...", "..XXXXXXXXXX....", "XXXX.XXXXXXX....", "...XXXXXXXX.....", ".....X.XXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "................", "..........XXX...", ".........XXXXX..", "......X.XXXXXX..", "....X....XXXXX..", "..X.XXXXXXXXXX..", "...XXXXX.XXXX...", "..XXXXXXXXXX....", "XXXX.XXXXXXX....", "...XXXXXXXX.....", ".....X.XXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XX.X..", ".........XXXXX..", ".........XXXX...", ".X.......XXXX...", ".XXX...X.XXXXX..", ".XXXX..XXXXXXX..", "..XXXXXXXXXXX...", "....XXX.XXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
+                ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XXXX..", ".........XXXXX..", ".........XXXX...", ".X.......XXXX...", ".XXX...X.XXXXX..", ".XXXX..XXXXXXX..", "..XXXXXXXXXXX...", "....XXX.XXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "scrapper", req: Requirement(train: 3)),
@@ -165,16 +165,16 @@ enum SpeciesData {
         ]),
         Species(id: "scrap", name: "Scrappy", stage: .teen, blurb: "Rough, horned, always fighting.",
             frames: [
-                [".........X....X.", ".........X....X.", "..........X..X..", "......X...XXXX..", "......X.XXXX.X..", "..X.X.X.XXXXXX..", "..X.X....XXXXX..", "..X.XXXXXXXXXX..", "XX.XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                [".........X....X.", ".........X....X.", "..........X..X..", "......X...XXXX..", "......X.XXXXXX..", "..X.X.X.XXXXXX..", "..X.X....XXXXX..", "..X.XXXXXXXXXX..", "XX.XXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "................", "................", "................", "................", "................", ".....XX.XX......", ".X.XXXXXXXXX....", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXX.X..", "..XXXXXXXXXXXX..", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "................", "................", "................", ".....XX.XX......", ".X.XXXXXXXXX....", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX..."],
             ],
             evolutions: [
             Evolution(to: "scrapper", req: Requirement())
         ]),
         Species(id: "chomper", name: "Chompasaur", stage: .adult, blurb: "A proud T-Rex-style hunter.",
             frames: [
-                ["................", "................", ".....X.....XX...", ".....X.X.XXXXX..", "...X.X.X.XXX.XXX", "...X.....XXXXXX.", ".X..XXXXXXXXXXXX", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX.X..", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", ".....X.....XX...", ".....X.X.XXXXX..", "...X.X.X.XXXXXXX", "...X.....XXXXXX.", ".X..XXXXXXXXXXXX", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX.X..", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["............XXXX", "...........XXXXX", "...........XX.XX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X.........XXXX..", "XX.......XXXXX.X", "XXX.....XXXXXXXX", ".XXXX..XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
+                ["............XXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X.........XXXX..", "XX.......XXXXX.X", "XXX.....XXXXXXXX", ".XXXX..XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
             ],
             evolutions: [
             Evolution(to: "skywing", req: Requirement(smarts: 30)),
@@ -182,8 +182,8 @@ enum SpeciesData {
         ]),
         Species(id: "razor", name: "Razorclaw", stage: .adult, blurb: "A clever crested raptor.",
             frames: [
-                ["..........XXX...", "................", "..........XXX...", "..........XXXX..", ".........XX...X.", ".........XXXXXX.", "....XXXXXXXXXX..", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX.X..", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["..........XXX...", "................", "..........XXX...", "..........XXXX..", ".........XX.X.X.", ".........XXXXXX.", "....XXXXXXXXXX..", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX.X..", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["..........XXXXX.", ".........XXXXXXX", ".........XXX.XXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                ["..........XXXXX.", ".........XXXXXXX", ".........XXXXXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "sage", req: Requirement(smarts: 30)),
@@ -191,8 +191,8 @@ enum SpeciesData {
         ]),
         Species(id: "bruiser", name: "Bruiser", stage: .adult, blurb: "A walking boulder with a club tail.",
             frames: [
-                ["..........X...X.", "..........X...X.", "..........XXXX..", "..........XXXX..", ".........XXX.XX.", ".....XXXXXXXXXX.", "...XXXXXXXXXXX..", "..XXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["..........X...X.", "..........X...X.", "..........XXXX..", "..........XXXX..", ".........XXXXXX.", ".....XXXXXXXXXX.", "...XXXXXXXXXXX..", "..XXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "................", "....XXXXXX......", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXX.X", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXXXXXX", "...XXXXXXXXXXXX.", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["................", "................", "................", "................", "....XXXXXX......", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXXXXXX", "...XXXXXXXXXXXX.", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: [
             Evolution(to: "tyrannox", req: Requirement(wins: 5)),
@@ -200,16 +200,16 @@ enum SpeciesData {
         ]),
         Species(id: "sprinter", name: "Sprintosaur", stage: .adult, blurb: "Built for speed.",
             frames: [
-                ["................", "................", "...........XX...", "..........XXXX..", ".........XXX.XX.", ".........XXXXXX.", "X...XXXXXXXXXXXX", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX.X..", "X...XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "...........XX...", "..........XXXX..", ".........XXXXXX.", ".........XXXXXX.", "X...XXXXXXXXXXXX", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX.X..", "X...XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                [".........XXXXXX.", ".........XXXXXXX", ".........XX..XXX", ".........XXXXXX.", ".......XX.XXXX..", "X......XX.XXXX..", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                [".........XXXXXX.", ".........XXXXXXX", ".........XX.XXXX", ".........XXXXXX.", ".......XX.XXXX..", "X......XX.XXXX..", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "skywing", req: Requirement())
         ]),
         Species(id: "longneck", name: "Longneck", stage: .adult, blurb: "A gentle brontosaurus type.",
             frames: [
-                ["................", "...........X....", ".........XXX.X..", ".........XXXXX..", ".........XXXXX..", "..........XXX...", "....XXXXXXXXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["................", "...........X....", ".........XXXXX..", ".........XXXXX..", ".........XXXXX..", "..........XXX...", "....XXXXXXXXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["...........XXXX.", "...........XXXXX", "...........X..XX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["...........XXXX.", "...........XXXXX", "...........X.XXX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: [
             Evolution(to: "sage", req: Requirement(smarts: 30)),
@@ -217,16 +217,16 @@ enum SpeciesData {
         ]),
         Species(id: "shellback", name: "Shellback", stage: .adult, blurb: "Patient, domed and armoured.",
             frames: [
-                ["................", "................", "...........XX...", ".....XXX..XXXX..", "...XXXXXXXXX.XX.", "..XXXX.XXXXXXXX.", "..XX.XXX.XXXXX..", ".XXXXX.X.XXXX...", ".XXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["................", "................", "...........XX...", ".....XXX..XXXX..", "...XXXXXXXXXXXX.", "..XXXX.XXXXXXXX.", "..XX.XXX.XXXXX..", ".XXXXX.X.XXXX...", ".XXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXX.X", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: [
             Evolution(to: "bulwark", req: Requirement())
         ]),
         Species(id: "petalrex", name: "Petal Rex", stage: .adult, blurb: "Flower-collared and calm.",
             frames: [
-                ["........XXXXX...", ".......XXXXX....", ".......XXXXXX...", ".....X.XXXXXXX..", "...X.X.XXXXX.XX.", "...X...XXXXXXXX.", "....XXXXXXXXXX..", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["........XXXXX...", ".......XXXXX....", ".......XXXXXX...", ".....X.XXXXXXX..", "...X.X.XXXXXXXX.", "...X...XXXXXXXX.", "....XXXXXXXXXX..", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["...........XXXXX", "...........XXXXX", "...........XX.XX", "...........XXXXX", "...........XXXX.", ".........X.XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX.X.XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
+                ["...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXX.", ".........X.XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX.X.XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
             ],
             evolutions: [
             Evolution(to: "sage", req: Requirement(smarts: 30)),
@@ -234,8 +234,8 @@ enum SpeciesData {
         ]),
         Species(id: "plated", name: "Platesaur", stage: .adult, blurb: "A plated stegosaurus type.",
             frames: [
-                ["................", "................", "...........XX...", ".....X.X..XXXX..", "...X.X.X.XXX.XX.", "...X.....XXXXXX.", "....XXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["................", "................", "...........XX...", ".....X.X..XXXX..", "...X.X.X.XXXXXX.", "...X.....XXXXXX.", "....XXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXX..", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
+                ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
             ],
             evolutions: [
             Evolution(to: "bulwark", req: Requirement(wins: 3)),
@@ -243,98 +243,98 @@ enum SpeciesData {
         ]),
         Species(id: "tricera", name: "Tricerapop", stage: .adult, blurb: "A noodle-fed triceratops type.",
             frames: [
-                ["........XXX.....", ".......XXXXX....", ".......XXXXXX...", ".......XXXXXXX..", ".......XXXXX.XX.", ".......XXXXXXXX.", "....XX.XX.XXXX..", "..X.XX.XX.XXX...", "..X.XX.XX.XX....", "XXX.XX.XX.XXX...", "XXX.XX.XX.XX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["........XXX.....", ".......XXXXX....", ".......XXXXXX...", ".......XXXXXXX..", ".......XXXXXXXX.", ".......XXXXXXXX.", "....XX.XX.XXXX..", "..X.XX.XX.XXX...", "..X.XX.XX.XX....", "XXX.XX.XX.XXX...", "XXX.XX.XX.XX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["..............X.", "........XXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXX.XXX", "..XX..XXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["..............X.", "........XXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXXXXXX", "..XX..XXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: [
             Evolution(to: "triceron", req: Requirement())
         ]),
         Species(id: "noodlord", name: "Noodlord", stage: .adult, blurb: "Rules the spaghetti realm.",
             frames: [
-                ["........X.X.X.X.", "............X...", "...........XX...", "..........XXXX..", ".........XXX.XX.", "XX.......XXXXXX.", "X...XXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["........X.X.X.X.", "............X...", "...........XX...", "..........XXXX..", ".........XXXXXX.", "XX.......XXXXXX.", "X...XXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["..........XXXXX.", ".........XXXXXXX", "XX.......XX..XXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                ["..........XXXXX.", ".........XXXXXXX", "XX.......XX.XXXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "noodlemancer", req: Requirement())
         ]),
         Species(id: "plumpkin", name: "Plumpkin", stage: .adult, blurb: "Round, jolly, and proud of dinner.",
             frames: [
-                ["................", "................", "...........XX...", "..........XXXX..", ".........XXX.XX.", "......XX.XXXXXX.", "...XX.XX.XXXXX..", "...XX.XX.XXXX...", ".X.XX.XX.XXXX...", "XX.XX.XX.XXXX...", "XX.XX.XX.XXXX...", ".X.XX.XX.XXXX...", "...XX.XX.XXX....", "...X.....XX.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["................", "................", "...........XX...", "..........XXXX..", ".........XXXXXX.", "......XX.XXXXXX.", "...XX.XX.XXXXX..", "...XX.XX.XXXX...", ".X.XX.XX.XXXX...", "XX.XX.XX.XXXX...", "XX.XX.XX.XXXX...", ".X.XX.XX.XXXX...", "...XX.XX.XXX....", "...X.....XX.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["................", "........XXXX..X.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXX.XXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..X......XXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["................", "........XXXX..X.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXXXXXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..X......XXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: [
             Evolution(to: "plumpking", req: Requirement())
         ]),
         Species(id: "professor", name: "Professor", stage: .adult, blurb: "Glasses, antenna, big ideas.",
             frames: [
-                ["...........X....", "...........X....", "...........XX...", "..........XXXX..", ".........XX...X.", ".........XXXXXX.", "....XXXXXXXXXX..", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["...........X....", "...........X....", "...........XX...", "..........XXXX..", ".........XX.X.X.", ".........XXXXXX.", "....XXXXXXXXXX..", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["..........XXXXX.", ".........XXXXXXX", ".........XXX.XXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                ["..........XXXXX.", ".........XXXXXXX", ".........XXXXXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "sage", req: Requirement())
         ]),
         Species(id: "gremlin", name: "Gremlin", stage: .adult, blurb: "Mischievous and ragged.",
             frames: [
-                ["..........X...X.", "..........X...X.", "..........XXXX..", "..........XXXX..", ".....X.X.XXX.XX.", "...X.....XXXXXX.", "....XXXXXXXXXX..", "..XXXXXXXXXXX...", ".XXXXXXX.XXX....", "XXXX.XXXXXXXX...", "XXXXXXXXXXXX....", "..XX.X.XXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["..........X...X.", "..........X...X.", "..........XXXX..", "..........XXXX..", ".....X.X.XXXXXX.", "...X.....XXXXXX.", "....XXXXXXXXXX..", "..XXXXXXXXXXX...", ".XXXXXXX.XXX....", "XXXX.XXXXXXXX...", "XXXXXXXXXXXX....", "..XX.X.XXXXX....", "....XXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                [".........XXXXXX.", ".........XXXXXXX", ".........XX..XXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XXX...XXXXXXXX.", ".XXXXX.XXXXXXXXX", "..XXXXXX.XXXXXX.", "...XX.XXXXXXXX..", "....XXXXXXXXX...", ".....XX.XXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                [".........XXXXXX.", ".........XXXXXXX", ".........XX.XXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XXX...XXXXXXXX.", ".XXXXX.XXXXXXXXX", "..XXXXXX.XXXXXX.", "...XX.XXXXXXXX..", "....XXXXXXXXX...", ".....XX.XXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: [
             Evolution(to: "wreckage", req: Requirement())
         ]),
         Species(id: "scrapper", name: "Scrapper", stage: .adult, blurb: "Dented armour, spiked tail.",
             frames: [
-                ["..........X...X.", "..........X...X.", ".....X....XXXX..", ".....X.X.XXXXX..", "...X.X.X.XXX.XX.", "...X.....XXXXXX.", ".X..XXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["..........X...X.", "..........X...X.", ".....X....XXXX..", ".....X.X.XXXXX..", "...X.X.X.XXXXXX.", "...X.....XXXXXX.", ".X..XXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXX..", ".XXXXXXX.XXXXXXX", "..XXX.XXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXX.XXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
+                ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXX.", ".XXXXXXX.XXXXXXX", "..XXX.XXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXX.XXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
             ],
             evolutions: [
             Evolution(to: "wreckage", req: Requirement())
         ]),
         Species(id: "tyrannox", name: "Tyrannox", stage: .ultimate, blurb: "King of the old forest.",
             frames: [
-                ["..........X.X.X.", "................", ".....X...XXXXX..", ".....X.X.XXX.XX.", ".X.X.X.X.XXXXXXX", ".X.X.....XXXXXXX", ".X.XXXXXXXXXXXX.", "..XXXXXXXXXXX...", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX..X.", "...XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["..........X.X.X.", "................", ".....X...XXXXX..", ".....X.X.XXXXXX.", ".X.X.X.X.XXXXXXX", ".X.X.....XXXXXXX", ".X.XXXXXXXXXXXX.", "..XXXXXXXXXXX...", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX..X.", "...XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["...........XXXXX", "...........XXXXX", "...........XX.XX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
+                ["...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
             ],
             evolutions: []),
         Species(id: "skywing", name: "Skywing", stage: .ultimate, blurb: "Took to the sky at last.",
             frames: [
-                ["XXX.............", ".XXX............", ".XXXXXX...XXXX..", ".X.XX....XXX.XX.", ".XX.XX...XXXXXX.", "....XXX..XXXXXXX", "X.XXXXXXXXXXXX..", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX..X.", "X..XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["XXX.............", ".XXX............", ".XXXXXX...XXXX..", ".X.XX....XXXXXX.", ".XX.XX...XXXXXX.", "....XXX..XXXXXXX", "X.XXXXXXXXXXXX..", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXX..X.", "X..XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["..........XXXXX.", "...X.....XXXXXXX", "...XX....XX..XXX", "X.XXXX...XXXXXX.", "X.X..X....XXXX..", "X.XX.XX...XXXX..", "XX..XXX..XXXXX..", "XXX....XXXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                ["..........XXXXX.", "...X.....XXXXXXX", "...XX....XX.XXXX", "X.XXXX...XXXXXX.", "X.X..X....XXXX..", "X.XX.XX...XXXX..", "XX..XXX..XXXXX..", "XXX....XXXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: []),
         Species(id: "bulwark", name: "Bulwark", stage: .ultimate, blurb: "An unmovable fortress.",
             frames: [
-                [".............XX.", "............XX..", "..........XXXX..", "....XXXXXXXX.XX.", "...XXXXXXXXXXXX.", "..XXXX.XXXXXXXX.", ".XXX.XXX.XXXXX..", ".XXXXX.X.XXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                [".............XX.", "............XX..", "..........XXXX..", "....XXXXXXXXXXX.", "...XXXXXXXXXXXX.", "..XXXX.XXXXXXXX.", ".XXX.XXX.XXXXX..", ".XXXXX.X.XXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXX.X", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: []),
         Species(id: "triceron", name: "Triceron", stage: .ultimate, blurb: "Horned, frilled and fearless.",
             frames: [
-                [".......XXXX.....", ".......XXXXX....", ".......XXXXXXX..", ".....XXXXXXX.XX.", "...X.X.XXXXXXXX.", ".X.X...XXXXXXXX.", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX..X.", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                [".......XXXX.....", ".......XXXXX....", ".......XXXXXXX..", ".....XXXXXXXXXX.", "...X.X.XXXXXXXX.", ".X.X...XXXXXXXX.", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX..X.", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                [".......X.X....X.", ".......XXXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "...X..XXXXXXXXXX", ".X.X.XXXXXXX.XXX", ".XXX.XXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "...XX.XX.XXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                [".......X.X....X.", ".......XXXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "...X..XXXXXXXXXX", ".X.X.XXXXXXXXXXX", ".XXX.XXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "...XX.XX.XXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: []),
         Species(id: "sage", name: "Sage", stage: .ultimate, blurb: "Wise, haloed and calm.",
             frames: [
-                ["..........XXX.X.", "............X...", "..........XXXX..", ".........XX...X.", ".........XXXXXX.", ".........XXXXXX.", "...XXXXXXXXXXX..", "..XXXXXXXXXXX...", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["..........XXX.X.", "............X...", "..........XXXX..", ".........XX.X.X.", ".........XXXXXX.", ".........XXXXXX.", "...XXXXXXXXXXX..", "..XXXXXXXXXXX...", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["...........XXXX.", "...........XXXXX", "...........XX.XX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["...........XXXX.", "...........XXXXX", "...........XXXXX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: []),
         Species(id: "noodlemancer", name: "Noodlemancer", stage: .ultimate, blurb: "Casts spells in spaghetti.",
             frames: [
-                ["........X.X.X.X.", "................", "..........XXXX..", ".........XXX.XX.", ".........XXXXXX.", "XX.......XXXXXX.", "X..XXXXXXXXXXX..", ".XXXXX.XXXXXX...", "XXXXXX.XXXXXX...", "XXXXXX.XXXXXX...", "XXXXXX.XXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
-                ["........X.X.X.X.", "................", "..........XXXX..", ".........XXXXXX.", ".........XXXXXX.", "XX.......XXXXXX.", "X..XXXXXXXXXXX..", ".XXXXX.XXXXXX...", "XXXXXX.XXXXXX...", "XXXXXX.XXXXXX...", "XXXXXX.XXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXX.....", ".....XX.X.X.....", ".....XX.X.X.....", ".....XXXX.X....."],
+                ["..........XXXXX.", ".........XXXXXXX", "XX.......XX..XXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX...XXXXXXXX", "..XXXXXX.XXXXXX.", "...XXXX.XXXXXX..", "....XXXX.XXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
+                ["..........XXXXX.", ".........XXXXXXX", "XX.......XX.XXXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX...XXXXXXXX", "..XXXXXX.XXXXXX.", "...XXXX.XXXXXX..", "....XXXX.XXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: []),
         Species(id: "plumpking", name: "Plumpking", stage: .ultimate, blurb: "Crowned, round and unstoppable.",
             frames: [
-                ["..........X.X.X.", "................", "..........XXXX..", ".........XXX.XX.", ".........XXXXXX.", ".....XX.XX.XXXX.", "..XX.XX.XX.XXX..", "..XX.XX.XX.XX...", "X.XX.XX.XX.XXX..", "X.XX.XX.XX.XXX..", "X.XX.XX.XX.XXX..", "..XX.XX.XX.XX...", "..XX.XX.XX.XX...", "...XXXXXXXX.....", ".....XXXX.X.....", ".....XXXX.X....."],
-                ["..........X.X.X.", "................", "..........XXXX..", ".........XXXXXX.", ".........XXXXXX.", ".....XX.XX.XXXX.", "..XX.XX.XX.XXX..", "..XX.XX.XX.XX...", "X.XX.XX.XX.XXX..", "X.XX.XX.XX.XXX..", "X.XX.XX.XX.XXX..", "..XX.XX.XX.XX...", "..XX.XX.XX.XX...", "...XXXXXXXX.....", ".....XXXX.X.....", ".....XXXX.X....."],
+                ["..........X.X.X.", "........XXXXXXX.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXX.XXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
+                ["..........X.X.X.", "........XXXXXXX.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXXXXXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: []),
         Species(id: "wreckage", name: "Wreckage", stage: .ultimate, blurb: "Leaves a trail of chaos.",
             frames: [
-                ["XXX.......X...X.", ".XXX......X..X..", ".XXXXXX..XXXXX..", ".X.XXX.X.XXX.XX.", ".XXXXX.X.XXXXXX.", "XX.XXXX..XXXXXX.", ".XXXXXXXXXXXXX..", "X.XXXXXXXXXXX...", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
-                ["XXX.......X...X.", ".XXX......X..X..", ".XXXXXX..XXXXX..", ".X.XXX.X.XXXXXX.", ".XXXXX.X.XXXXXX.", "XX.XXXX..XXXXXX.", ".XXXXXXXXXXXXX..", "X.XXXXXXXXXXX...", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXX.XXXX....", "...XXXX.XXXX....", "...XXXXXXXXXX..."],
+                ["...........XXXXX", "...X.......XXXXX", "...XX......XX.XX", "X.XXXX.....XXXXX", ".XX..X.....XXXX.", "X.XX.XX....XX.X.", "XX..XXX..XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
+                ["...........XXXXX", "...X.......XXXXX", "...XX......XXXXX", "X.XXXX.....XXXXX", ".XX..X.....XXXX.", "X.XX.XX....XX.X.", "XX..XXX..XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
             ],
             evolutions: []),
     ]
