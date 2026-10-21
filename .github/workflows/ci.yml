@@ -54,6 +54,12 @@ jobs:
           xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee test-ios.log | tail -n 80
+      - name: Report test results
+        run: |
+          summary=$(grep -E "Executed [0-9]+ tests" test-ios.log | tail -1)
+          echo "::notice title=XCTest::${summary}"
+          n=$(echo "$summary" | sed -E 's/.*Executed ([0-9]+) tests.*/\1/')
+          test "${n:-0}" -ge 10
       - name: Build watch app
         run: |
           set -o pipefail
@@ -67,4 +73,6 @@ jobs:
         if: always()
         with:
           name: build-logs
-          path: build-*.log
+          path: |
+            build-*.log
+            test-*.log
