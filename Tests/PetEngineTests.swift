@@ -151,6 +151,16 @@ final class PetEngineTests: XCTestCase {
         }
     }
 
+    func testEventsRecordWhatHappenedWhileAway() {
+        var p = newPet()
+        run(&p, days: 3)
+        let kinds = Set(p.events.map { $0.kind })
+        XCTAssertTrue(kinds.isSuperset(of: ["hatched", "sleep", "wake"]), "got \(kinds)")
+        XCTAssertLessThanOrEqual(p.events.count, 40)
+        XCTAssertEqual(p.events.first?.kind, "hatched")
+        XCTAssertEqual(p.events, p.events.sorted { $0.at < $1.at })
+    }
+
     func testSpritesAreSixteenBySixteen() {
         for sp in Species.all {
             XCTAssertEqual(sp.frames.count, 2)

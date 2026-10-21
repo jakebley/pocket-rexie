@@ -9,6 +9,12 @@ const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 8, child: 36, teen: 
 export const SPECIES_BY_ID: Record<string, SpeciesDef> = Object.fromEntries(SPECIES.map((s) => [s.id, s]));
 export const DEX_SIZE = SPECIES.length;
 
+export interface PetEvent {
+  kind: 'hatched' | 'evolved' | 'poop' | 'sick' | 'sleep' | 'wake' | 'call' | 'died';
+  detail: string;
+  at: number;
+}
+
 export interface Pet {
   name: string;
   named: boolean;
@@ -60,6 +66,7 @@ export interface Pet {
   diedAt: number | null;
   causeOfDeath: string | null;
   legacy: string[];
+  events: PetEvent[];
 }
 
 export function newPet(now: number, opts: { generation?: number; name?: string; legacy?: string[]; gentle?: boolean; dex?: string[]; seed?: number } = {}): Pet {
@@ -76,7 +83,7 @@ export function newPet(now: number, opts: { generation?: number; name?: string; 
     call: null, callSince: null, callMistaken: false,
     hungerProgress: 0, happyProgress: 0, poopProgress: 0, tempProgress: 0, petProgress: 0,
     starveTicks: 0, sickTicks: 0, lightTicks: 0, napMistaken: false,
-    diedAt: null, causeOfDeath: null, legacy: opts.legacy ?? [],
+    diedAt: null, causeOfDeath: null, legacy: opts.legacy ?? [], events: [],
   };
 }
 
@@ -146,28 +153,33 @@ export function advance(p: Pet, now: number, hourOf: (t: number) => number = (t)
   p.lastTick = t;
 }
 
+function log(p: Pet, kind: PetEvent['kind'], detail: string, at: number) {
+  p.events.push({ kind, detail, at });
+  if (p.events.length > 40) p.events.splice(0, p.events.length - 40);
+}
+
 function mistake(p: Pet) { p.careMistakes++; p.stageMistakes++; }
 
 function step(p: Pet, t: number, hour: number) {
   const age = t - p.birth;
   if (p.stage === 'egg') {
-    if (age >= 10 * 60 * 1000) hatch(p);
+    if (age >= 10 * 60 * 1000) hatch(p, t);
     return;
   }
   const shouldSleep = hour >= 21 || hour < 8;
-  if (shouldSleep && !p.asleep) { p.asleep = true; p.lightOn = true; p.lightTicks = 0; p.napMistaken = false; }
-  if (!shouldSleep && p.asleep) { p.asleep = false; p.lightOn = true; p.lightTicks = 0; }
+  if (shouldSleep && !p.asleep) { p.asleep = true; p.lightOn = true; p.lightTicks = 0; p.napMistaken = false; log(p, 'sleep', '', t); }
+  if (!shouldSleep && p.asleep) { p.asleep = false; p.lightOn = true; p.lightTicks = 0; log(p, 'wake', '', t); }
 
   if (p.asleep) {
     if (p.lightOn) {
       p.lightTicks++;
-      if (p.lightTicks >= 6 && !p.napMistaken) { mistake(p); p.napMistaken = true; p.sick = true; p.medDoses = 0; }
+      if (p.lightTicks >= 6 && !p.napMistaken) { mistake(p); p.napMistaken = true; p.sick = true; p.medDoses = 0; log(p, 'sick', 'light', t); }
     }
     refreshCall(p, t);
     return;
   }
 
-  checkEvolution(p, age);
+  checkEvolution(p, age, t);
 
   const rate = p.stage === 'baby' ? 16 : 24;
   p.hungerProgress++;
@@ -175,7 +187,7 @@ function step(p: Pet, t: number, hour: number) {
   p.happyProgress++;
   if (p.happyProgress >= rate + 4) { p.happy = Math.max(0, p.happy - 1); p.happyProgress = 0; }
   p.poopProgress++;
-  if (p.poopProgress >= 48 && p.poops < 3) { p.poops++; p.poopProgress = 0; }
+  if (p.poopProgress >= 48 && p.poops < 3) { p.poops++; p.poopProgress = 0; log(p, 'poop', '', t); }
 
   p.tempProgress++;
   if (p.tempProgress >= 24 && roll(p, t, 6, 2)) {
@@ -187,7 +199,7 @@ function step(p: Pet, t: number, hour: number) {
   if (!p.sick) {
     if ((p.poops >= 2 && roll(p, t, 1, 70)) || (p.hunger === 0 && roll(p, t, 2, 90)) ||
         (overweight(p) && roll(p, t, 3, 120)) || (Math.abs(p.temp) >= 2 && roll(p, t, 5, 100))) {
-      p.sick = true; p.medDoses = 0;
+      p.sick = true; p.medDoses = 0; log(p, 'sick', 'ill', t);
     }
   }
 
@@ -205,7 +217,7 @@ function step(p: Pet, t: number, hour: number) {
   if (age > 21 * 86400000 && p.stage === 'ultimate') { retire(p, t); return; }
 
   if (p.call === null && p.hunger >= 2 && p.happy >= 2 && !p.sick && roll(p, t, 4, 220)) {
-    p.call = 'naughty'; p.callSince = t; p.callMistaken = false;
+    p.call = 'naughty'; p.callSince = t; p.callMistaken = false; log(p, 'call', 'naughty', t);
   }
   refreshCall(p, t);
 }
@@ -227,7 +239,7 @@ function refreshCall(p: Pet, t: number) {
   if (p.call && p.call !== 'naughty' && !holds(p, p.call)) { p.call = null; p.callSince = null; p.callMistaken = false; }
   if (p.call === null) {
     const order: Call[] = p.asleep ? ['light'] : ['sick', 'hungry', 'hot', 'cold', 'poop', 'bored'];
-    for (const c of order) if (holds(p, c)) { p.call = c; p.callSince = t; p.callMistaken = false; break; }
+    for (const c of order) if (holds(p, c)) { p.call = c; p.callSince = t; p.callMistaken = false; log(p, 'call', c, t); break; }
   }
   if (p.call && p.callSince !== null && !p.callMistaken && t - p.callSince >= 1800000 && p.call !== 'light') {
     mistake(p); p.callMistaken = true;
@@ -242,35 +254,36 @@ export function requirementMet(r: Requirement, p: Pet): boolean {
     (!r.heavy || overweight(p)) && (r.lead === undefined || leadFood(p) === r.lead);
 }
 
-function hatch(p: Pet) {
-  evolve(p, BABIES[p.seed % BABIES.length]);
+function hatch(p: Pet, t: number) {
+  evolve(p, BABIES[p.seed % BABIES.length], t, true);
   p.hunger = 4; p.happy = 4;
 }
 
-function checkEvolution(p: Pet, age: number) {
+function checkEvolution(p: Pet, age: number, t: number) {
   const hours = STAGE_HOURS[p.stage];
   const sp = speciesOf(p);
   if (hours === undefined || age < hours * 3600000 || !sp) return;
   const next = sp.evolutions.find((e) => requirementMet(e.req, p));
-  if (next) evolve(p, next.to);
+  if (next) evolve(p, next.to, t);
 }
 
-function evolve(p: Pet, id: string) {
+function evolve(p: Pet, id: string, t: number, hatching = false) {
   const sp = SPECIES_BY_ID[id];
   if (!sp) return;
   p.species = id; p.stage = sp.stage;
   p.weight = Math.max(p.weight, baseWeight(p));
   p.stageMistakes = 0; p.stageMeat = 0; p.stageVeg = 0; p.stagePasta = 0; p.stageTrain = 0; p.stageWins = 0;
   if (!p.dex.includes(id)) p.dex.push(id);
+  log(p, hatching ? 'hatched' : 'evolved', id, t);
 }
 
 function die(p: Pet, t: number, cause: string) {
-  p.stage = 'ghost'; p.diedAt = t; p.causeOfDeath = cause; p.call = null; p.sick = false;
+  p.stage = 'ghost'; p.diedAt = t; p.causeOfDeath = cause; p.call = null; p.sick = false; log(p, 'died', cause, t);
   p.legacy.push(`${p.name} the ${speciesName(p)}: ${ageDays(p)}d, ${cause}`);
 }
 
 function retire(p: Pet, t: number) {
-  p.stage = 'ghost'; p.diedAt = t; p.causeOfDeath = 'lived a full, happy life'; p.call = null; p.sick = false;
+  p.stage = 'ghost'; p.diedAt = t; p.causeOfDeath = 'lived a full, happy life'; p.call = null; p.sick = false; log(p, 'died', 'lived a full, happy life', t);
   p.legacy.push(`${p.name} the ${speciesName(p)}: ${ageDays(p)}d, a full happy life`);
 }
 
@@ -385,6 +398,6 @@ export function forceSpecies(p: Pet, id: string): void {
   if (!SPECIES_BY_ID[id]) return;
   const wasEgg = p.stage === 'egg' || p.stage === 'ghost';
   if (p.stage === 'ghost') { p.diedAt = null; p.causeOfDeath = null; p.sickTicks = 0; p.starveTicks = 0; }
-  evolve(p, id);
+  evolve(p, id, p.lastTick);
   if (wasEgg) { p.hunger = 4; p.happy = 4; }
 }
