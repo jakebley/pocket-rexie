@@ -25,8 +25,12 @@ struct WatchContentView: View {
                             tap(icon)
                         } label: {
                             VStack(spacing: 2) {
-                                Image(systemName: icon.symbol)
-                                    .font(.title3)
+                                PixelGlyphView(rows: icon.glyph, pixel: 2,
+                                               color: icon == model.selected ? LCDStyle.ink : LCDStyle.background)
+                                    .padding(4)
+                                    .background(
+                                        Rectangle().fill(icon == model.selected ? LCDStyle.background : Color.clear)
+                                    )
                                 Text(icon.title)
                                     .font(.system(size: 11))
                                     .lineLimit(1)

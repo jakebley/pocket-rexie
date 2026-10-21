@@ -62,17 +62,26 @@ final class GameModel: ObservableObject {
 
     static let rounds = 5
 
-    @Published var pet: Pet
+    @Published var pet: Pet {
+        didSet { noteSpeciesChange(from: oldValue, to: pet) }
+    }
     @Published var message = ""
     @Published var mode: Mode = .home
     @Published var selected: MenuIcon = .feed
     /// Highlighted row in the feed menu: 0 meat, 1 veggies, 2 pasta, 3 snack, 4 cancel.
     @Published var menuIndex = 0
+    /// Which stats page is showing: 0 is the status page, 1 the detail list.
+    @Published var statsPage = 0
+    /// Set for 3 seconds after the species changes (ids of the old and new species).
+    @Published var evolutionFlash: (from: String, to: String)?
+    /// When this model saw the egg hatch; the screen flashes a crack frame for 20 seconds.
+    @Published var hatchedAt: Date?
 
     /// Called after every save (the iOS app uses it to reschedule notifications).
     var onSave: ((Pet) -> Void)?
 
     private var messageUntil = Date.distantPast
+    private var flashUntil = Date.distantPast
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -126,6 +135,7 @@ final class GameModel: ObservableObject {
 
     private func tick() {
         if !message.isEmpty && Date() > messageUntil { message = "" }
+        if evolutionFlash != nil && Date() > flashUntil { evolutionFlash = nil }
         refresh()
     }
 
@@ -134,6 +144,17 @@ final class GameModel: ObservableObject {
         PetStore.save(pet)
         PetSync.push(pet)
         onSave?(pet)
+    }
+
+    /// Runs on every change of `pet`, wherever it came from (tick, button, sync).
+    private func noteSpeciesChange(from old: Pet, to new: Pet) {
+        guard new.isAlive, old.species != new.species, !new.species.isEmpty else { return }
+        if old.species.isEmpty {
+            if new.stage == .baby { hatchedAt = Date() }
+        } else {
+            evolutionFlash = (from: old.species, to: new.species)
+            flashUntil = Date().addingTimeInterval(3)
+        }
     }
 
     private func say(_ text: String) {
@@ -171,6 +192,7 @@ final class GameModel: ObservableObject {
             mode = .play(PlayState())
         case .stats:
             pet.advance(to: Date())
+            statsPage = 0
             mode = .stats
         case .light:
             mode = .home
@@ -287,7 +309,10 @@ final class GameModel: ObservableObject {
             }
         case .play(let s):
             if s.revealed == nil { guess(higher: s.pickHigher) } else { continuePlay() }
-        case .stats, .dex:
+        case .stats:
+            // B pages through the status screens: status, details, dex, then back home.
+            if statsPage == 0 { statsPage = 1 } else { openDex() }
+        case .dex:
             cancel()
         }
     }
@@ -311,6 +336,7 @@ final class GameModel: ObservableObject {
 
     func openDex() { mode = .dex }
     func openStats() { mode = .stats }
+    func setStatsPage(_ page: Int) { statsPage = page; mode = .stats }
 
     func setPaused(_ on: Bool) {
         pet.advance(to: Date())

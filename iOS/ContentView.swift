@@ -117,7 +117,9 @@ struct ContentView: View {
     }
 
     private func iconRow(_ icons: [MenuIcon], width: CGFloat) -> some View {
-        HStack(spacing: 0) {
+        // Whole points per glyph pixel keep the 8x8 icons crisp.
+        let glyphPixel = max(2, (width * 0.1 / 8).rounded(.down))
+        return HStack(spacing: 0) {
             ForEach(icons) { icon in
                 let isSelected = model.selected == icon
                 Button {
@@ -125,12 +127,11 @@ struct ContentView: View {
                     Beeper.shared.blip()
                     model.perform(icon)
                 } label: {
-                    Image(systemName: icon.symbol)
-                        .font(.system(size: width * 0.085, weight: .semibold))
-                        .foregroundStyle(isSelected ? LCDStyle.background : Color.black.opacity(0.7))
+                    PixelGlyphView(rows: icon.glyph, pixel: glyphPixel,
+                                   color: isSelected ? LCDStyle.background : LCDStyle.ink)
                         .frame(width: width / 5, height: width * 0.16)
                         .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            Rectangle()
                                 .fill(isSelected ? LCDStyle.ink : Color.clear)
                                 .padding(2)
                         )
