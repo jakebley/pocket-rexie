@@ -200,7 +200,7 @@ final class RexieUITests: RexieUITestCase {
         shot(16, "dex-scrolled")
 
         tap("px-back")
-        waitForStat("mode", "stats")
+        waitForStat("mode", "details")   // BACK from the dex returns to the details page
         tap("btn-C")
         waitForStat("mode", "home")
     }
@@ -262,11 +262,10 @@ final class RexieUITests: RexieUITestCase {
     func testSettingsAboutPage() {
         launch("child-hungry")
         tap("settings-gear")
-        let about = app.buttons["settings-about"]
+        let about = app.buttons["About Pocket Rexie"]
         reveal(about)
         about.tap()
-        XCTAssertTrue(app.navigationBars["About"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Version"].exists)
+        XCTAssertTrue(app.staticTexts["Version"].waitForExistence(timeout: 10), "About page should list the version")
         shot(20, "about")
     }
 

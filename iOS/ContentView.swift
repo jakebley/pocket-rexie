@@ -53,6 +53,8 @@ struct ContentView: View {
             .frame(width: geo.size.width, height: geo.size.height)
         }
         .background(palette.background.ignoresSafeArea())
+        // The naming alert raises the keyboard; the layout must not squeeze to fit above it.
+        .ignoresSafeArea(.keyboard)
         .environment(\.lcdPalette, palette)
         .environment(\.sceneDate, clock)
         .tint(palette.ink)
