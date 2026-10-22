@@ -13,7 +13,7 @@ final class Beeper {
 
     private var enabled: Bool {
         if Beeper.muted { return false }
-        UserDefaults.standard.object(forKey: Beeper.enabledKey) as? Bool ?? true
+        return UserDefaults.standard.object(forKey: Beeper.enabledKey) as? Bool ?? true
     }
 
     /// Short blip for a button press.

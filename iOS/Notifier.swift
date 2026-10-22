@@ -14,7 +14,7 @@ enum Notifier {
 
     static var enabled: Bool {
         if disabled { return false }
-        UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true
+        return UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true
     }
 
     /// Ask once, right after the first hatch (never at launch).
