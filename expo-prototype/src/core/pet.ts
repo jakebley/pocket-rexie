@@ -5,7 +5,7 @@ import type { Call, Food, Requirement, SpeciesDef, Stage } from './types';
 export const TICK = 5 * 60 * 1000;
 export const MAX_HEARTS = 4;
 /** Care tuning: how long a call may wait before it counts as a mistake, and how long the light may stay on at night. */
-export const MISTAKE_AFTER_MS = 6 * 3600000;
+export const MISTAKE_AFTER_TICKS = 72; // 6 awake hours
 export const LIGHT_MISTAKE_TICKS = 24;
 const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 11, child: 36, teen: 72, adult: 168 };
 
@@ -60,6 +60,7 @@ export interface Pet {
   call: Call | null;
   callSince: number | null;
   callMistaken: boolean;
+  callTicks: number;
   hungerProgress: number;
   happyProgress: number;
   poopProgress: number;
@@ -86,7 +87,7 @@ export function newPet(now: number, opts: { generation?: number; name?: string; 
     trains: 0, battles: 0, wins: 0,
     stageMistakes: 0, stageMeat: 0, stageVeg: 0, stagePasta: 0, stageTrain: 0, stageWins: 0, stageSmarts: 0, lastFood: null, weightTicks: 0,
     lastTrain: null, lastBattle: null,
-    call: null, callSince: null, callMistaken: false,
+    call: null, callSince: null, callMistaken: false, callTicks: 0,
     hungerProgress: 0, happyProgress: 0, poopProgress: 0, tempProgress: 0, petProgress: 0,
     starveTicks: 0, sickTicks: 0, lightTicks: 0, napMistaken: false,
     diedAt: null, causeOfDeath: null, legacy: opts.legacy ?? [], events: [],
@@ -194,14 +195,14 @@ function step(p: Pet, t: number, hour: number) {
 
   checkEvolution(p, age, t);
 
-  const rate = p.stage === 'baby' ? 16 : 24;
+  const rate = p.stage === 'baby' ? 24 : 36;
   p.hungerProgress++;
   if (p.hungerProgress >= rate) { p.hunger = Math.max(0, p.hunger - 1); p.hungerProgress = 0; }
   p.happyProgress++;
-  if (p.happyProgress >= rate + 4) { p.happy = Math.max(0, p.happy - 1); p.happyProgress = 0; }
-  // Digestion: an overfed pet slowly slims back to its stage weight (a snack adds two, so snackers get heavy).
+  if (p.happyProgress >= rate + 6) { p.happy = Math.max(0, p.happy - 1); p.happyProgress = 0; }
+  // Digestion is slow (one unit per 6 awake hours); playing and training burn the rest, so a pet that is fed but never exercised gets heavy.
   p.weightTicks++;
-  if (p.weightTicks >= 24) { p.weightTicks = 0; if (p.weight > baseWeight(p)) p.weight--; }
+  if (p.weightTicks >= 72) { p.weightTicks = 0; if (p.weight > baseWeight(p)) p.weight--; }
   p.poopProgress++;
   if (p.poopProgress >= 48 && p.poops < 3) { p.poops++; p.poopProgress = 0; log(p, 'poop', '', t); }
 
@@ -233,7 +234,7 @@ function step(p: Pet, t: number, hour: number) {
   if (age > 21 * 86400000 && p.stage === 'ultimate') { retire(p, t); return; }
 
   if (p.call === null && p.hunger >= 2 && p.happy >= 2 && !p.sick && roll(p, t, 4, 220)) {
-    p.call = 'naughty'; p.callSince = t; p.callMistaken = false; log(p, 'call', 'naughty', t);
+    p.call = 'naughty'; p.callSince = t; p.callMistaken = false; p.callTicks = 0; log(p, 'call', 'naughty', t);
   }
   refreshCall(p, t);
 }
@@ -252,13 +253,15 @@ function holds(p: Pet, c: Call): boolean {
 }
 
 function refreshCall(p: Pet, t: number) {
-  if (p.call && p.call !== 'naughty' && !holds(p, p.call)) { p.call = null; p.callSince = null; p.callMistaken = false; }
+  if (p.call && p.call !== 'naughty' && !holds(p, p.call)) { p.call = null; p.callSince = null; p.callMistaken = false; p.callTicks = 0; }
   if (p.call === null) {
     const order: Call[] = p.asleep ? ['light'] : ['sick', 'hungry', 'hot', 'cold', 'poop', 'bored'];
-    for (const c of order) if (holds(p, c)) { p.call = c; p.callSince = t; p.callMistaken = false; log(p, 'call', c, t); break; }
+    for (const c of order) if (holds(p, c)) { p.call = c; p.callSince = t; p.callMistaken = false; p.callTicks = 0; log(p, 'call', c, t); break; }
   }
-  if (p.call && p.callSince !== null && !p.callMistaken && t - p.callSince >= MISTAKE_AFTER_MS && p.call !== 'light') {
-    mistake(p); p.callMistaken = true;
+  if (p.call && !p.asleep && p.call !== 'light') {
+    // Only awake time counts: a call that comes in at bedtime cannot be answered in the night.
+    p.callTicks++;
+    if (!p.callMistaken && p.callTicks >= MISTAKE_AFTER_TICKS) { mistake(p); p.callMistaken = true; }
   }
 }
 

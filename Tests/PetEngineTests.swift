@@ -120,7 +120,7 @@ final class PetEngineTests: XCTestCase {
                 if p.poops > 0 { _ = p.clean() }
                 if p.sick { _ = p.giveMedicine(); _ = p.giveMedicine() }
                 if p.temp != 0 { _ = p.climate() }
-                if p.happy < 3 { _ = p.finishPlay(wins: 4) }
+                for _ in 0..<4 where p.happy < Pet.maxHearts { _ = p.finishPlay(wins: 4) }
             }
             if p.dex.contains("mud") || p.dex.contains("grime") || p.dex.contains("gremlin") { neglectLines += 1 }
         }

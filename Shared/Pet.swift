@@ -17,7 +17,7 @@ struct Pet: Codable, Equatable {
     static let tick: TimeInterval = 300
     static let maxHearts = 4
     /// How long a call may wait before it counts as a care mistake, and how long the light may stay on at night (in ticks).
-    static let mistakeAfter: TimeInterval = 6 * 3600
+    static let mistakeAfterTicks = 72   // 6 awake hours
     static let lightMistakeTicks = 24
     /// Hours of age at which each stage ends and an evolution is checked (at the next wake-up).
     static let stageHours: [Stage: Double] = [.baby: 11, .child: 36, .teen: 72, .adult: 168]
@@ -76,6 +76,7 @@ struct Pet: Codable, Equatable {
     var call: Call?
     var callSince: Date?
     var callMistaken = false
+    var callTicks = 0
 
     var hungerProgress = 0
     var happyProgress = 0
@@ -151,6 +152,7 @@ struct Pet: Codable, Equatable {
         call = try c.decodeIfPresent(Call.self, forKey: .call)
         callSince = try c.decodeIfPresent(Date.self, forKey: .callSince)
         if let v = try c.decodeIfPresent(Bool.self, forKey: .callMistaken) { callMistaken = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .callTicks) { callTicks = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .hungerProgress) { hungerProgress = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .happyProgress) { happyProgress = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .poopProgress) { poopProgress = v }
@@ -290,14 +292,14 @@ struct Pet: Codable, Equatable {
         // Growth is checked once awake, like the original's morning check.
         checkEvolution(age: age, at: t)
 
-        let rate = stage == .baby ? 16 : 24
+        let rate = stage == .baby ? 24 : 36
         hungerProgress += 1
         if hungerProgress >= rate { hunger = max(0, hunger - 1); hungerProgress = 0 }
         happyProgress += 1
-        if happyProgress >= rate + 4 { happy = max(0, happy - 1); happyProgress = 0 }
-        // Digestion: an overfed pet slowly slims back to its stage weight (a snack adds two, so snackers get heavy).
+        if happyProgress >= rate + 6 { happy = max(0, happy - 1); happyProgress = 0 }
+        // Digestion is slow (one unit per 6 awake hours); playing and training burn the rest, so a pet that is fed but never exercised gets heavy.
         weightTicks += 1
-        if weightTicks >= 24 { weightTicks = 0; if weight > baseWeight { weight -= 1 } }
+        if weightTicks >= 72 { weightTicks = 0; if weight > baseWeight { weight -= 1 } }
         poopProgress += 1
         if poopProgress >= 48 && poops < 3 { poops += 1; poopProgress = 0; log("poop", at: t) }
 
@@ -333,7 +335,7 @@ struct Pet: Codable, Equatable {
         }
 
         if call == nil && hunger >= 2 && happy >= 2 && !sick && roll(t, 4, 220) {
-            call = .naughty; callSince = t; callMistaken = false; log("call", "naughty", at: t)
+            call = .naughty; callSince = t; callMistaken = false; callTicks = 0; log("call", "naughty", at: t)
         }
         refreshCall(at: t)
     }
@@ -353,14 +355,16 @@ struct Pet: Codable, Equatable {
 
     private mutating func refreshCall(at t: Date) {
         if let c = call {
-            if c != .naughty && !conditionHolds(c) { call = nil; callSince = nil; callMistaken = false }
+            if c != .naughty && !conditionHolds(c) { call = nil; callSince = nil; callMistaken = false; callTicks = 0 }
         }
         if call == nil {
             let order: [Call] = asleep ? [.light] : [.sick, .hungry, .hot, .cold, .poop, .bored]
-            for c in order where conditionHolds(c) { call = c; callSince = t; callMistaken = false; log("call", c.rawValue, at: t); break }
+            for c in order where conditionHolds(c) { call = c; callSince = t; callMistaken = false; callTicks = 0; log("call", c.rawValue, at: t); break }
         }
-        if let since = callSince, call != nil, !callMistaken, t.timeIntervalSince(since) >= Pet.mistakeAfter, call != .light {
-            mistake(); callMistaken = true
+        if call != nil, !asleep, call != .light {
+            // Only awake time counts: a call that comes in at bedtime cannot be answered in the night.
+            callTicks += 1
+            if !callMistaken && callTicks >= Pet.mistakeAfterTicks { mistake(); callMistaken = true }
         }
     }
 

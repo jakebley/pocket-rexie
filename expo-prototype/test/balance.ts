@@ -17,14 +17,14 @@ const fullCare = (p: Pet, food: () => Food) => {
   if (p.sick) { giveMedicine(p); giveMedicine(p); }
   if (p.temp) climate(p);
   if (p.call === 'naughty') scold(p);
-  if (p.happy < 3) finishPlay(p, 4);
+  for (let i = 0; i < 4 && p.happy < 4; i++) finishPlay(p, 4);
 };
 
 const STYLES: Style[] = [
   { name: 'devoted (hourly)', checks: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], care: (p, f) => fullCare(p, f) },
   { name: 'casual (3x/day)', checks: [9, 13, 19], care: (p, f) => { fullCare(p, f); petIt(p); } },
   { name: 'busy (2x/day)', checks: [8, 19], care: (p, f) => fullCare(p, f) },
-  { name: 'trainer (3x/day)', checks: [9, 13, 19], care: (p, f) => { fullCare(p, f); train(p); battle(p); } },
+  { name: 'trainer (3x/day)', checks: [9, 13, 19], care: (p, f) => { for (let i = 0; i < 4 && p.hunger < 4; i++) feed(p, f()); if (p.poops) clean(p); if (p.sick) { giveMedicine(p); giveMedicine(p); } if (p.temp) climate(p); for (let i = 0; i < 3; i++) petIt(p); train(p); battle(p); } },
   { name: 'scholar (3x/day)', checks: [9, 13, 19], care: (p, f) => { fullCare(p, f); petIt(p); petIt(p); petIt(p); finishPlay(p, 4); finishPlay(p, 4); } },
   { name: 'snacker (3x/day)', checks: [9, 13, 19], care: (p, f) => { for (let i = 0; i < 4 && p.hunger < 4; i++) feed(p, f()); if (p.poops) clean(p); if (p.sick) { giveMedicine(p); giveMedicine(p); } if (p.temp) climate(p); for (let i = 0; i < 4 && p.happy < 4; i++) feedSnack(p); } },
   { name: 'delinquent (1x/day, trains)', checks: [18, 18], care: (p, f) => { fullCare(p, f); train(p); battle(p); } },
