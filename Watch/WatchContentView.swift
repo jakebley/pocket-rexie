@@ -43,8 +43,9 @@ struct WatchContentView: View {
             ScrollView { column }
         } else {
             // Fixed-clock renders (ImageRenderer draws ScrollView as nothing): show the top of the column.
-            column.fixedSize(horizontal: false, vertical: true)
-                .frame(maxHeight: .infinity, alignment: .top).clipped()
+            Color.clear
+                .overlay(alignment: .top) { column.fixedSize(horizontal: false, vertical: true) }
+                .clipped()
         }
     }
 

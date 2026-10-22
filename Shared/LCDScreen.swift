@@ -327,9 +327,10 @@ struct MaybeScroll<Content: View>: View {
         if sceneDate == nil {
             ScrollView(showsIndicators: false) { content() }
         } else {
-            content()
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxHeight: .infinity, alignment: .top)
+            Color.clear
+                .overlay(alignment: .top) {
+                    content().fixedSize(horizontal: false, vertical: true)
+                }
                 .clipped()
         }
     }
