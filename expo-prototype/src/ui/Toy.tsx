@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER, litPath } from './pixel';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';

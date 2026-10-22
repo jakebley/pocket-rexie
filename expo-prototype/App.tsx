@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, SafeAreaView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { statusLine } from './src/core/pet';
 import { DevPanel } from './src/ui/DevPanel';
