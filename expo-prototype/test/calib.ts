@@ -1,11 +1,10 @@
-import { advance, newPet, feed, train, battle, petIt, finishPlay, leadFood, type Pet } from '../src/core/pet';
+import { advance, newPet, feed, petIt, finishPlay, leadFood, type Pet } from '../src/core/pet';
 const base = Date.UTC(2026, 0, 5, 9, 0, 0);
 const hourOf = (t: number) => new Date(t).getUTCHours();
 function trace(label: string, policy: (p: Pet, t: number) => void) {
   const p = newPet(base, { seed: 777 });
   let t = base, last = '';
   const rows: string[] = [];
-  let snap = { m: 0, tr: 0, w: 0, s: 0, wt: 0, lead: '' };
   for (let i = 0; i < 25 * 288 && p.stage !== 'ghost'; i++) {
     t += 300000; 
     const before = { m: p.stageMistakes, tr: p.stageTrain, w: p.stageWins, s: p.smarts, wt: p.weight - 0, lead: leadFood(p) };
