@@ -50,6 +50,9 @@ struct LCDScreen: View {
             ZStack {
                 palette.background
                 screenCanvas(side: side)
+                if palette.backlit && !model.pet.lightOn && model.pet.isAlive {
+                    palette.background.opacity(0.55).allowsHitTesting(false)
+                }
                 modeOverlay(metrics)
                 if model.pet.asleep && !model.pet.lightOn && model.mode != .home {
                     Color.black.opacity(0.5).allowsHitTesting(false)

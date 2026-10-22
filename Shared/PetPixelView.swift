@@ -4,6 +4,8 @@ import SwiftUI
 struct LCDPalette: Sendable {
     let background: Color
     let ink: Color
+    /// Light ink on a dark ground. There the "lights off" dither would brighten the screen, so it is dimmed instead.
+    var backlit = false
 }
 
 /// Colors of the fake LCD. `background` and `ink` are the light palette (the default
@@ -15,7 +17,7 @@ enum LCDStyle {
     static let backlitGround = Color(red: 0x1E / 255.0, green: 0x24 / 255.0, blue: 0x18 / 255.0)
 
     static let light = LCDPalette(background: background, ink: ink)
-    static let dark = LCDPalette(background: backlitGround, ink: background)
+    static let dark = LCDPalette(background: backlitGround, ink: background, backlit: true)
 
     static func palette(for scheme: ColorScheme) -> LCDPalette {
         scheme == .dark ? dark : light
