@@ -5,7 +5,7 @@ import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER, litPath } from './pixel';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
-import { HEAD_Y } from './sceneDraw';
+import { GROUND_Y, HEAD_Y } from './sceneDraw';
 import { useTheme } from './theme';
 import type { useGame } from './useGame';
 
@@ -64,7 +64,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
   const stillRef = useRef(still); stillRef.current = still;
   const sceneRef = useRef<Scene | null>(null);
   const lastKey = useRef('');
-  const [fr, setFr] = useState<{ lit: string; n: number; dark: boolean }>({ lit: '', n: 32, dark: false });
+  const [fr, setFr] = useState<{ lit: string; n: number; dark: boolean }>({ lit: '', n: 48, dark: false });
 
   const render = useCallback(() => {
     const g = gameRef.current;
@@ -102,11 +102,11 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     let lx = ne.locationX, ly = ne.locationY;
     const r = (e.currentTarget as any)?.getBoundingClientRect?.();
     if (Platform.OS === 'web' && r && ne.clientX !== undefined) { lx = ne.clientX - r.left; ly = ne.clientY - r.top; }
-    const cx = Math.max(0, Math.min(31, Math.floor((lx ?? 0) / c)));
-    const cy = Math.max(0, Math.min(31, Math.floor((ly ?? 0) / c)));
+    const cx = Math.max(0, Math.min(47, Math.floor((lx ?? 0) / c)));
+    const cy = Math.max(0, Math.min(47, Math.floor((ly ?? 0) / c)));
     const sc = sceneRef.current;
     const px = sc ? Math.round(sc.x) : 8;
-    const onPet = !!sc && cx >= px && cx <= px + 15 && cy >= HEAD_Y - 3 && cy <= 29;
+    const onPet = !!sc && cx >= px && cx <= px + 15 && cy >= HEAD_Y - 3 && cy <= GROUND_Y;
     game.tapScene(cx, cy, onPet);
   };
 
@@ -114,7 +114,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     <View style={{ width: size, height: size, overflow: 'hidden', backgroundColor: th.ground }}>
       <Svg width={size} height={size} viewBox={`0 0 ${n} ${n}`}>
         <Rect x={0} y={0} width={n} height={n} fill={th.ground} />
-        <Path d={cells} fill={th.ink} opacity={n > 32 ? 0.08 : 0.07} />
+        <Path d={cells} fill={th.ink} opacity={n > 48 ? 0.08 : 0.07} />
         <Path d={fr.lit} fill={th.ink} />
       </Svg>
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (

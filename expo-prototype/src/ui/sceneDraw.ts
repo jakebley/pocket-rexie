@@ -1,8 +1,8 @@
-// Draws the 32x32 living scene into a Buf (ink only). Pure: everything comes from Scene + Pet.
+// Draws the 48x48 living scene into a Buf (ink only). Pure: everything comes from Scene + Pet.
 import { SPECIES_BY_ID, needsAttention, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
 import { Buf, GLYPHS } from './pixel';
-import { BED_X, MAX_X, POOP_X, TICK_MS, phaseOf, type Pop, type Prop, type Scene } from './scene';
+import { BED_X, MAX_X, POOP_X, SCENE_N, TICK_MS, maxXFor, phaseOf, type Pop, type Prop, type Scene } from './scene';
 
 type Rows = string[];
 
@@ -41,8 +41,9 @@ export const ART: Record<string, Rows> = {
 };
 
 const FRAME_MS = 600;
-export const HEAD_Y = 13; // sprite row 0 sits here, so sprite row 15 (the feet) lands on y=28
-const HOP = [0, -3, -4, -3, 0];
+export const HEAD_Y = 28; // sprite row 0 sits here, so sprite row 15 (the feet) lands on y=43, just above the ground
+export const GROUND_Y = 44; // solid 2-row ground line at y=44..45, dirt dither at 46..47
+const HOP = [0, -5, -6, -5, 0];
 
 function flipRows(rows: Rows): Rows { return rows.map((r) => [...r].reverse().join('')); }
 
@@ -95,7 +96,9 @@ function drawPet(b: Buf, s: Scene, pet: Pet) {
   const spr = spriteRows(pet, blinkNow);
   if (!spr) return;
   const rows = pose.facing === 1 ? spr : flipRows(spr);
-  const px = Math.round(s.x + pose.dx * pose.facing);
+  let px = Math.round(s.x + pose.dx * pose.facing);
+  // pose wiggles (squat, shiver, sneeze) must not push the ink into a poop; the sleeper stays on the bed
+  if (s.state !== 'sleep') px = Math.min(px, maxXFor(pet.species, s.poopMask));
   const py = HEAD_Y + pose.dy;
   for (let j = 0; j < rows.length; j++) {
     const r = rows[j];
@@ -107,11 +110,6 @@ function drawPet(b: Buf, s: Scene, pet: Pet) {
 }
 
 // ---------- sky ----------
-/** Like b.rows but only paints columns >= minX (keeps clouds out from behind the HUD). */
-function stampClip(b: Buf, rows: Rows, x: number, y: number, minX: number) {
-  for (let j = 0; j < rows.length; j++) for (let i = 0; i < rows[j].length; i++) if (rows[j][i] === 'X' && x + i >= minX) b.set(x + i, y + j);
-}
-
 function drawSky(b: Buf, s: Scene) {
   const phase = phaseOf(s.hour);
   const hf = s.hour + s.minute / 60;
@@ -119,60 +117,64 @@ function drawSky(b: Buf, s: Scene) {
   const amb = s.still ? 0 : s.nowMs;
   if (phase !== 'night') {
     const p = Math.min(1, Math.max(0, (hf - 5) / 16));
-    const cx = Math.round(3 + p * 26), cy = Math.max(cx <= 20 ? 10 : 4, 12 - Math.round(9 * Math.sin(Math.PI * p)));
+    const cx = Math.round(3 + p * 40), cy = 38 - Math.round(21 * Math.sin(Math.PI * p));
     b.rows(ART.sunDisc, cx - 2, cy - 2);
     if (Math.floor(amb / FRAME_MS) % 2 === 0) { b.set(cx - 4, cy); b.set(cx + 4, cy); b.set(cx, cy - 4); b.set(cx, cy + 4); }
     else { b.set(cx - 3, cy - 3); b.set(cx + 3, cy - 3); b.set(cx - 3, cy + 3); b.set(cx + 3, cy + 3); }
   } else {
     const q = Math.min(1, ((hf - 21 + 24) % 24) / 8);
-    const cx = Math.round(28 - q * 24), cy = Math.max(cx <= 20 ? 10 : 4, 12 - Math.round(9 * Math.sin(Math.PI * q)));
+    const cx = Math.round(43 - q * 38), cy = 38 - Math.round(21 * Math.sin(Math.PI * q));
     b.rows(ART.moon, cx - 2, cy - 2);
-    const stars: [number, number][] = [[18, 2], [27, 3], [3, 9], [11, 11], [21, 10], [30, 8]];
+    const stars: [number, number][] = [[18, 15], [38, 14], [4, 22], [14, 18], [30, 21], [44, 25], [24, 30], [8, 34]];
     stars.forEach(([x, y], i) => { if ((Math.floor(tickN / 5) + i * 2) % 5 !== 0) b.set(x, y); });
   }
-  if (phase === 'dawn' || phase === 'dusk') for (let x = 0; x < 32; x += 4) { b.set(x + (phase === 'dawn' ? 0 : 2), 12); b.set(x + (phase === 'dawn' ? 2 : 0), 11); }
+  if (phase === 'dawn' || phase === 'dusk') for (let x = 0; x < SCENE_N; x += 4) { b.set(x + (phase === 'dawn' ? 0 : 2), 40); b.set(x + (phase === 'dawn' ? 2 : 0), 39); }
   // clouds drift one cell every 10 s
   const drift = Math.floor(amb / 10000);
   const o = s.seed % 48;
-  const wide = (v: number) => ((v % 48) + 48) % 48 - 12;
+  const wide = (v: number) => ((v % 60) + 60) % 60 - 12;
   if (s.weather === 'clear') {
-    if (phase !== 'night') stamp(b, ART.cloudS, wide(o + 30 + drift), 10, true);
+    if (phase !== 'night') stamp(b, ART.cloudS, wide(o + 30 + drift), 16, true);
   } else {
-    stamp(b, ART.cloudL, wide(o + drift), 9, true);
-    stampClip(b, ART.cloudL, wide(o + 24 + drift), 2, 17);
+    stamp(b, ART.cloudL, wide(o + drift), 17, true);
+    stamp(b, ART.cloudL, wide(o + 32 + drift), 14, true);
+    if (s.weather === 'rain') stamp(b, ART.cloudL, wide(o + 16 + drift), 21, true);
   }
   if (s.weather === 'rain') {
-    for (let i = 0; i < 9; i++) {
-      const x = (i * 7 + (s.seed % 5)) % 32;
-      const y = (tickN * 2 + i * 5) % 26;
+    for (let i = 0; i < 14; i++) {
+      const x = (i * 7 + (s.seed % 5)) % SCENE_N;
+      const y = 13 + (tickN * 2 + i * 5) % 28;
       b.set(x, y); b.set(x, y + 1);
     }
   }
 }
 
 function drawGround(b: Buf, s: Scene) {
-  b.rect(0, 28, 32, 2);
-  for (let x = 0; x < 32; x += 2) b.set(x, 30);
-  for (let x = 1; x < 32; x += 4) b.set(x, 31);
+  b.rect(0, GROUND_Y, SCENE_N, 2);
+  for (let x = 0; x < SCENE_N; x += 2) b.set(x, GROUND_Y + 2);
+  for (let x = 1; x < SCENE_N; x += 4) b.set(x, GROUND_Y + 3);
   const sway = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  [1, 10, 20, 28].forEach((x, i) => b.rows(ART[(sway + i) % 2 ? 'tuft1' : 'tuft0'], x, 25));
-  [6, 24].forEach((x) => b.rows(ART.pebble, x, 26));
+  [1, 14, 27, 40].forEach((x, i) => b.rows(ART[(sway + i) % 2 ? 'tuft1' : 'tuft0'], x, GROUND_Y - 3));
+  [8, 33].forEach((x) => b.rows(ART.pebble, x, GROUND_Y - 2));
 }
 
 function drawDim(b: Buf) {
-  for (let y = 0; y < 28; y++) for (let x = 0; x < 32; x++) if ((x + y) % 2 === 0) b.set(x, y);
+  for (let y = 0; y < GROUND_Y; y++) for (let x = 0; x < SCENE_N; x++) if ((x + y) % 2 === 0) b.set(x, y);
 }
 
-/** HUD: 3x3 mini hearts (hunger) and smiles (happy) in the top-left corner; status glyphs just right of them. */
+/** HUD: full 5x5 hearts (hunger, y=1) and smiles (happy, y=7) top-left; skull, climate and alert glyphs stacked top-right. */
 function drawHud(b: Buf, s: Scene, pet: Pet) {
   for (let i = 0; i < 4; i++) {
-    stamp(b, ART[i < pet.hunger ? 'heartS' : 'heartSE'], i * 4, 0, true);
-    stamp(b, ART[i < pet.happy ? 'smileS' : 'smileSE'], i * 4, 4, true);
+    stamp(b, i < pet.hunger ? GLYPHS.heartFull : GLYPHS.heartEmpty, 1 + i * 6, 1, true);
+    stamp(b, i < pet.happy ? GLYPHS.smileFull : GLYPHS.smileEmpty, 1 + i * 6, 7, true);
   }
   const flip = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS) % 2;
-  const tempG = pet.temp >= 2 ? ART.dropS : pet.temp <= -2 ? ART.flakeS : null;
-  if (pet.sick) stamp(b, ART.skullS, 16, 0, true);
-  if (tempG && (!pet.sick || flip === 0)) stamp(b, tempG, 16, 4, true);
+  const tempG = pet.temp >= 2 ? GLYPHS.drop : pet.temp <= -2 ? GLYPHS.flake : null;
+  const icons: Rows[] = [];
+  if (pet.sick) icons.push(GLYPHS.skull);
+  if (tempG && (!pet.sick || flip === 0)) icons.push(tempG);
+  if (needsAttention(pet)) icons.push(GLYPHS.alert);
+  icons.slice(0, 3).forEach((g, k) => stamp(b, g, 41, 1 + k * 6, true));
 }
 
 function popArt(g: Pop['g']): Rows {
@@ -195,7 +197,7 @@ function foeRows(idx: number, flip: boolean): Rows {
 }
 
 function drawProp(b: Buf, p: Prop) {
-  if (p.g === 'foe') { stamp(b, foeRows(p.n ?? 0, p.x > 12), p.x, p.y, true); return; }
+  if (p.g === 'foe') { stamp(b, foeRows(p.n ?? 0, p.x > 24), p.x, p.y, true); return; }
   let rows = ART[p.g];
   if (!rows) return;
   if (p.g.startsWith('food:') && p.n) {
@@ -220,21 +222,28 @@ function bubbleIcon(pet: Pet): Rows | null {
   }
 }
 
-export const bubbleX = (s: Scene) => Math.max(19, Math.min(22, Math.round(s.x) + 4));
+/** Thought bubble spot: over the head when it fits in the sky (y >= 13), else beside the head. */
+export function bubblePos(s: Scene): { x: number; y: number; beside: boolean } {
+  const hx = Math.round(s.x);
+  const y = HEAD_Y - 12;
+  if (y >= 13) return { x: Math.max(0, Math.min(SCENE_N - 9, hx + 4)), y, beside: false };
+  const right = hx + 16 + 9 <= SCENE_N;
+  return { x: right ? hx + 16 : Math.max(0, hx - 9), y: 13, beside: true };
+}
 
 function drawBubble(b: Buf, s: Scene, pet: Pet) {
   const show = pet.call !== null && (!pet.asleep || pet.call === 'light');
   if (!show) return;
   const on = s.still || Math.floor(s.nowMs / 300) % 4 !== 3;
-  const bx = bubbleX(s);
+  const { x: bx, y: by, beside } = bubblePos(s);
   if (on) {
     const icon = bubbleIcon(pet);
-    b.rect(bx, 1, 9, 7, 0);
-    b.rows(ART.bubble, bx, 1);
-    b.set(bx + 2, 8); b.set(bx + 1, 9);
-    if (icon) b.rows(icon, bx + 2, 2);
+    b.rect(bx, by, 9, 7, 0);
+    b.rows(ART.bubble, bx, by);
+    if (!beside) { b.set(bx + 2, by + 7); b.set(bx + 1, by + 8); }
+    if (icon) b.rows(icon, bx + 2, by + 1);
   } else if (needsAttention(pet)) {
-    stamp(b, GLYPHS.alert, bx + 2, 2, true);
+    stamp(b, GLYPHS.alert, bx + 2, by + 1, true);
   }
 }
 
@@ -247,8 +256,8 @@ function drawButterfly(b: Buf, s: Scene) {
   if (dt < 0 || dt > 14000) return;
   const dir = ((s.seed + w) % 2) ? 1 : -1;
   const u = dt / 14000;
-  const x = Math.round(dir === 1 ? -3 + u * 38 : 34 - u * 38);
-  const y = Math.round(20 + 3 * Math.sin(dt / 700) - 3 * Math.sin(Math.PI * u));
+  const x = Math.round(dir === 1 ? -3 + u * 54 : 50 - u * 54);
+  const y = Math.round(33 + 4 * Math.sin(dt / 700) - 5 * Math.sin(Math.PI * u));
   stamp(b, ART[Math.floor(dt / 250) % 2 ? 'butterfly1' : 'butterfly0'], x, y, true);
 }
 
@@ -263,13 +272,13 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
   const hx = Math.round(s.x);
   // bed: a woven mat in front of the sleeping pet's feet
   if (s.state === 'sleep' || pet.asleep) {
-    const mx = hx + 2;
-    b.rect(mx - 1, 28, 14, 2, 0);
-    for (let i = 0; i < 12; i++) { b.set(mx + i, 28, i % 2 === 0 ? 1 : 0); b.set(mx + i, 29); }
+    const mx = hx + 2; // x=10 when the pet is on the bed
+    b.rect(mx - 1, GROUND_Y, 14, 2, 0);
+    for (let i = 0; i < 12; i++) { b.set(mx + i, GROUND_Y, i % 2 === 0 ? 1 : 0); b.set(mx + i, GROUND_Y + 1); }
   }
-  // poops sit on the ground in front of the pet
+  // poops stand on the ground, right of the pet's allowed range
   const jig = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) b.rows(GLYPHS.poop, POOP_X[i] + ((jig + i) % 2), 23);
+  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) b.rows(GLYPHS.poop, POOP_X[i] + ((jig + i) % 2), GROUND_Y - 5); // 1 px jiggle
   for (const p of s.props) drawProp(b, p);
   // state effects around the head
   const t = s.t;
@@ -277,41 +286,41 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
   switch (s.state) {
     case 'sleep': {
       const k = s.still ? 0 : Math.floor((s.nowMs) / 1200) % 3;
-      stamp(b, GLYPHS.zzz, Math.min(26, hx + 11), 10 - k * 2, true);
+      stamp(b, GLYPHS.zzz, Math.min(42, hx + 11), 25 - k * 2, true);
       break;
     }
     case 'sweat':
-      stamp(b, ART.dropS, headX + (s.facing === 1 ? 4 : 0), 9 + (Math.floor(t / 3) % 2), true);
-      if (t % 2) { b.set(hx - 1, 18); b.set(hx + 16, 18); } else { b.set(hx - 1, 20); b.set(hx + 16, 20); }
+      stamp(b, ART.dropS, headX + (s.facing === 1 ? 4 : 0), 24 + (Math.floor(t / 3) % 2), true);
+      if (t % 2) { b.set(hx - 1, 33); b.set(hx + 16, 33); } else { b.set(hx - 1, 35); b.set(hx + 16, 35); }
       break;
     case 'shiver':
-      if (pet.temp <= -2) stamp(b, ART.flakeS, headX + 2, 9 + (Math.floor(t / 4) % 2), true);
+      if (pet.temp <= -2) stamp(b, ART.flakeS, headX + 2, 24 + (Math.floor(t / 4) % 2), true);
       break;
     case 'dance':
-      stamp(b, ART.note, headX + (Math.floor(t / 3) % 2 ? 6 : -2), 6 + (t % 3 === 0 ? 1 : 0), true);
+      stamp(b, ART.note, headX + (Math.floor(t / 3) % 2 ? 6 : -2), 21 + (t % 3 === 0 ? 1 : 0), true);
       break;
     case 'greet': {
       const fx = s.facing === 1 ? hx + 15 : hx - 2;
       const up = t % 2 === 0;
-      b.set(fx, up ? 14 : 15); b.set(fx + (s.facing === 1 ? 1 : -1), up ? 13 : 16); b.set(fx, up ? 13 : 16);
+      b.set(fx, up ? 29 : 30); b.set(fx + (s.facing === 1 ? 1 : -1), up ? 28 : 31); b.set(fx, up ? 28 : 31);
       break;
     }
     case 'look':
-      if (s.lookUp) { b.set(hx + 7, 9); b.set(hx + 9, 8); }
+      if (s.lookUp) { b.set(hx + 7, 24); b.set(hx + 9, 23); }
       break;
     case 'react': {
       const fx = hx + (s.facing === 1 ? 15 : -1);
-      if (t < 4) { b.set(fx, 16); b.set(fx, 18); }
+      if (t < 4) { b.set(fx, 31); b.set(fx, 33); }
       break;
     }
     case 'train': {
-      if (t % 5 === 2) { b.set(hx - 1, 16); b.set(hx - 2, 15); b.set(hx + 16, 16); b.set(hx + 17, 15); }
+      if (t % 5 === 2) { b.set(hx - 1, 31); b.set(hx - 2, 30); b.set(hx + 16, 31); b.set(hx + 17, 30); }
       break;
     }
   }
   for (const p of s.pops) stamp(b, popArt(p.g), p.x, p.y - Math.floor(p.age / 2), true);
   drawBubble(b, s, pet);
-  if (s.flash > 0) b.invert(0, 0, 32, 32);
+  if (s.flash > 0) b.invert(0, 0, SCENE_N, SCENE_N);
 }
 
 export { BED_X, MAX_X };

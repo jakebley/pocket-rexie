@@ -278,7 +278,7 @@ export function useGame() {
     playRef.current = { ...pl, sel: i };
     playGuess();
   };
-  /** Tap on the home scene (cell coordinates in the 32x32 grid). */
+  /** Tap on the home scene (cell coordinates in the 48x48 grid). */
   const tapScene = (cx: number, cy: number, onPet: boolean) => {
     const p = petRef.current;
     if (!p || modeRef.current !== 'home') return;
@@ -288,7 +288,7 @@ export function useGame() {
       mutate((q) => { const m = petIt(q); if (!q.asleep) emit({ kind: 'petted' }); return m; });
     } else if (!p.asleep) {
       sound.beep();
-      emit(cy >= 12 ? { kind: 'tapGround', x: cx } : { kind: 'tapSky' });
+      emit(cy >= 40 ? { kind: 'tapGround', x: cx } : { kind: 'tapSky' });
     }
   };
   const dismissMsg = () => { if (msgTimer.current) clearTimeout(msgTimer.current); setMsg(null); };

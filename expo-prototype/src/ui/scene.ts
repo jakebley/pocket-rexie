@@ -6,12 +6,48 @@ import { SPECIES } from '../core/speciesData';
 import type { Food } from '../core/types';
 
 export const TICK_MS = 125;
-export const MAX_X = 16;
-export const BED_X = 4;
-export const POOP_X = [3, 11, 24] as const;
+/** The home scene is a 48x48 grid; sprites stay 16x16, drawn 1:1. */
+export const SCENE_N = 48;
+export const MAX_X = 32;
+export const BED_X = 8; // pet x on the bed; the mat is drawn at x=10
+/** Poop spots (left edge of the 5x5 glyph), filled right to left so mess accumulates from the right edge. */
+export const POOP_X = [41, 35, 29] as const;
+
+const INK_CACHE = new Map<string, number>();
+/**
+ * Columns the species' ink reaches from the sprite's left edge, for either facing, over all its frames
+ * (computed once per species). It is measured from the sprite box edge rather than as a bare occupied
+ * width so a mirrored sprite with a left margin cannot reach into a poop.
+ */
+export function inkWidth(speciesId: string): number {
+  let w = INK_CACHE.get(speciesId);
+  if (w === undefined) {
+    const sp = SPECIES.find((q) => q.id === speciesId);
+    let lo = 99, hi = -1, size = 16;
+    for (const f of sp ? sp.frames : []) {
+      for (const row of f) {
+        size = Math.max(size, row.length);
+        for (let i = 0; i < row.length; i++) if (row[i] === 'X') { lo = Math.min(lo, i); hi = Math.max(hi, i); }
+      }
+    }
+    w = hi < 0 ? size : Math.max(hi + 1, size - lo);
+    INK_CACHE.set(speciesId, w);
+  }
+  return w;
+}
+/** x of the leftmost poop on the ground for a poop mask (Infinity when none). */
+export function leftmostPoopX(mask: number): number {
+  let m = Infinity;
+  for (let i = 0; i < POOP_X.length; i++) if (mask & (1 << i)) m = Math.min(m, POOP_X[i]);
+  return m;
+}
+/** Furthest-right sprite x the wandering pet may use: min(32, leftmostPoopX - inkWidth - 1), at least 0. */
+export function maxXFor(speciesId: string, mask: number): number {
+  return Math.max(0, Math.min(MAX_X, leftmostPoopX(mask) - inkWidth(speciesId) - 1));
+}
 const MAX_CATCHUP = 80; // ticks (10 s); a longer gap (tab was hidden, clock jump) resyncs instead of replaying
-const HOP = [0, -3, -4, -3, 0];
-const SPEED: Record<string, number> = { egg: 0, baby: 2.2, child: 3, teen: 3.5, adult: 3, ultimate: 2.5, ghost: 0 };
+const HOP = [0, -5, -6, -5, 0];
+const SPEED: Record<string, number> = { egg: 0, baby: 3.3, child: 4.5, teen: 5.2, adult: 4.5, ultimate: 3.8, ghost: 0 };
 
 export type SceneName =
   | 'idle' | 'walk' | 'look' | 'hop' | 'sit' | 'eat' | 'poop' | 'dance' | 'droop' | 'shiver' | 'sweat' | 'sneeze'
@@ -52,7 +88,7 @@ export interface Scene {
   state: SceneName; x: number; facing: 1 | -1; t: number; left: number; target: number | null; lookUp: boolean; slow: boolean;
   act: Act | null; queue: SceneEvent[]; props: Prop[]; pops: Pop[];
   flash: number; shift: number; pdx: number; pdy: number; sneezeIn: number;
-  poopMask: number; still: boolean; dim: boolean;
+  poopMask: number; limit: number; still: boolean; dim: boolean;
   hour: number; minute: number; dayKey: number; weather: Weather;
 }
 
@@ -97,15 +133,18 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 export function initScene(pet: Pet, nowMs: number, hour?: number): Scene {
   const r = mkRng(pet.seed, 0);
   const c = clockOf(nowMs);
-  return {
+  const sc: Scene = {
     seed: pet.seed, bucket: Math.floor(nowMs / TICK_MS) - 1, nowMs,
-    state: pet.asleep ? 'sleep' : 'idle', x: pet.asleep ? BED_X : 4 + Math.floor(r() * 9), facing: r() < 0.5 ? 1 : -1,
+    state: pet.asleep ? 'sleep' : 'idle', x: pet.asleep ? BED_X : 6 + Math.floor(r() * 19), facing: r() < 0.5 ? 1 : -1,
     t: 0, left: 16 + Math.floor(r() * 16), target: null, lookUp: false, slow: false,
     act: null, queue: [], props: [], pops: popFn(),
     flash: 0, shift: 0, pdx: 0, pdy: 0, sneezeIn: 48 + Math.floor(r() * 32),
-    poopMask: (1 << Math.min(3, pet.poops)) - 1, still: false, dim: !pet.lightOn,
+    poopMask: (1 << Math.min(3, pet.poops)) - 1, limit: MAX_X, still: false, dim: !pet.lightOn,
     hour: hour ?? c.hour, minute: c.minute, dayKey: c.dayKey, weather: weatherOf(pet.seed, c.dayKey),
   };
+  sc.limit = maxXFor(pet.species, sc.poopMask);
+  sc.x = Math.min(sc.x, sc.limit);
+  return sc;
 }
 
 function cloneScene(s: Scene): Scene {
@@ -126,7 +165,7 @@ function pop(s: Scene, g: Pop['g'], x: number, y: number, life = 8) { s.pops.pus
 
 /** Move toward tx at `speed` cells/s. Returns true when there (or when reduced motion forbids moving). */
 function moveToward(s: Scene, tx: number, speed: number): boolean {
-  tx = clamp(tx, 0, MAX_X);
+  tx = clamp(tx, 0, s.limit);
   if (s.still) return true;
   const d = tx - s.x;
   const stepLen = speed * (TICK_MS / 1000) * (s.slow ? 0.5 : 1);
@@ -141,11 +180,11 @@ function intake(s: Scene, e: SceneEvent, pet: Pet, rnd: () => number) {
   const idle = !s.act;
   switch (e.kind) {
     case 'petted':
-      pop(s, 'heart', Math.round(s.x) + 7, 10, 10);
+      pop(s, 'heart', Math.round(s.x) + 7, 25, 10);
       if (idle && !pet.asleep) startAct(s, 'petted', pet, rnd);
       return;
     case 'tapGround':
-      if (idle && !pet.asleep) { startAct(s, 'tapGround', pet, rnd); s.act!.tx = clamp(Math.round(e.x - 8), 0, MAX_X); }
+      if (idle && !pet.asleep) { startAct(s, 'tapGround', pet, rnd); s.act!.tx = clamp(Math.round(e.x - 8), 0, s.limit); }
       return;
     case 'tapSky':
       if (idle && !pet.asleep) startAct(s, 'tapSky', pet, rnd);
@@ -167,31 +206,35 @@ function intake(s: Scene, e: SceneEvent, pet: Pet, rnd: () => number) {
 }
 
 function startAct(s: Scene, kind: string, pet: Pet, rnd: () => number, e?: SceneEvent) {
-  const a: Act = { kind, t: 0, ph: 0, pt: 0, fx: 0, fy: -5, tx: 0, glyph: '', side: 1, win: false, n: 0, foe: 0, foeX: 40 };
+  const a: Act = { kind, t: 0, ph: 0, pt: 0, fx: 0, fy: 14, tx: 0, glyph: '', side: 1, win: false, n: 0, foe: 0, foeX: 56 };
   s.act = a; s.lookUp = false; s.target = null;
   switch (kind) {
     case 'fed': case 'snack': {
       const food = e && e.kind === 'fed' ? e.food : 'snack';
       a.glyph = food;
-      a.side = s.x <= 8 ? 1 : -1;
+      a.side = s.x <= 16 ? 1 : -1;
       if (s.still) { a.side = s.facing; a.tx = s.x; a.fx = a.side === 1 ? s.x + 14 : s.x - 3; }
-      else { a.fx = a.side === 1 ? 24 : 3; a.tx = a.side === 1 ? a.fx - 14 : a.fx + 3; }
-      a.fx = clamp(Math.round(a.fx), 0, 27);
+      else {
+        a.fx = a.side === 1 ? 36 : 4; a.tx = a.side === 1 ? a.fx - 14 : a.fx + 3;
+        a.tx = clamp(a.tx, 0, s.limit); // poops shorten the pet's range; the food drops where it can still reach it
+        a.fx = a.side === 1 ? a.tx + 14 : a.fx;
+      }
+      a.fx = clamp(Math.round(a.fx), 0, 43);
       break;
     }
-    case 'battle': a.win = e?.kind === 'battle' ? e.win : false; a.foe = Math.floor(rnd() * SPECIES.length); a.side = s.x <= 8 ? 1 : -1; a.foeX = a.side === 1 ? 40 : -12; break;
+    case 'battle': a.win = e?.kind === 'battle' ? e.win : false; a.foe = Math.floor(rnd() * SPECIES.length); a.side = s.x <= 16 ? 1 : -1; a.foeX = a.side === 1 ? 56 : -12; break;
     case 'played': a.win = e?.kind === 'played' ? e.wins >= 3 : false; break;
     case 'climate': a.win = e?.kind === 'climate' ? e.cool : true; break;
     case 'light': a.win = e?.kind === 'light' ? e.on : false; break;
     case 'poop': {
       const idx = (s.poopMask & 1) === 0 ? 0 : (s.poopMask & 2) === 0 ? 1 : 2;
       a.n = idx;
-      a.tx = clamp(POOP_X[idx] - 3, 0, MAX_X);
+      a.tx = clamp(POOP_X[idx] - inkWidth(pet.species) - 1, 0, MAX_X); // just left of the spot, not onto it
       break;
     }
     case 'greet': {
-      if (!s.still) { const left = rnd() < 0.5; s.x = left ? 0 : MAX_X; s.facing = left ? 1 : -1; }
-      a.tx = 6 + Math.floor(rnd() * 5);
+      if (!s.still) { const left = rnd() < 0.5; s.x = left ? 0 : s.limit; s.facing = left ? 1 : -1; }
+      a.tx = 9 + Math.floor(rnd() * 8);
       break;
     }
     case 'hatched': break;
@@ -225,22 +268,22 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
   switch (a.kind) {
     case 'fed': case 'snack': {
       if (a.ph === 0) {
-        a.fy = Math.min(23, a.fy + 2);
+        a.fy = Math.min(39, a.fy + 2);
         const arrived = moveToward(s, a.tx, sp * 1.2);
         if (!arrived) setState(s, 'walk'); else { s.facing = a.fx + 2 > s.x + 8 ? 1 : -1; setState(s, 'idle'); }
         s.props.push({ g: `food:${a.glyph}`, x: a.fx, y: a.fy, n: 0, side: a.side });
-        if (a.fy >= 23 && arrived) { a.ph = 1; a.pt = 0; s.facing = a.fx + 2 > s.x + 8 ? 1 : -1; }
+        if (a.fy >= 39 && arrived) { a.ph = 1; a.pt = 0; s.facing = a.fx + 2 > s.x + 8 ? 1 : -1; }
       } else if (a.ph === 1) {
         setState(s, 'eat');
         const bites = Math.min(3, Math.floor(a.pt / 4));
         if (a.pt % 4 === 0 && a.pt > 0) {
           const fxm = a.side === 1 ? a.fx : a.fx + 4;
-          pop(s, 'dot', fxm + (a.side === 1 ? -1 : 1), 24, 4); pop(s, 'dot', fxm + (a.side === 1 ? -2 : 2), 22, 4);
+          pop(s, 'dot', fxm + (a.side === 1 ? -1 : 1), 40, 4); pop(s, 'dot', fxm + (a.side === 1 ? -2 : 2), 38, 4);
         }
-        if (bites < 3) s.props.push({ g: `food:${a.glyph}`, x: a.fx, y: 23, n: bites, side: a.side });
+        if (bites < 3) s.props.push({ g: `food:${a.glyph}`, x: a.fx, y: 39, n: bites, side: a.side });
         if (a.pt >= 12) {
           a.ph = 2; a.pt = 0;
-          pop(s, a.kind === 'snack' || a.glyph === 'snack' ? 'smile' : 'heart', hx + 7, 9, 10);
+          pop(s, a.kind === 'snack' || a.glyph === 'snack' ? 'smile' : 'heart', hx + 7, 24, 10);
         }
       } else {
         setState(s, 'idle');
@@ -249,15 +292,15 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
       return false;
     }
     case 'cleaned': {
-      const bx = -5 + a.pt * 3.7;
+      const bx = -5 + a.pt * 5.4;
       if (a.ph === 0) {
         setState(s, 'idle');
-        s.props.push({ g: 'broom', x: Math.floor(bx), y: 23 });
-        for (let i = 0; i < 3; i++) pop(s, 'dot', Math.floor(bx) - 1 - Math.floor(rnd() * 4), 22 + Math.floor(rnd() * 6), 3);
+        s.props.push({ g: 'broom', x: Math.floor(bx), y: 39 });
+        for (let i = 0; i < 3; i++) pop(s, 'dot', Math.floor(bx) - 1 - Math.floor(rnd() * 4), 38 + Math.floor(rnd() * 6), 3);
         let m = s.poopMask;
         for (let i = 0; i < 3; i++) if (POOP_X[i] + 2 <= bx) m &= ~(1 << i);
         s.poopMask = m;
-        if (bx > 34) { s.poopMask = 0; a.ph = 1; a.pt = 0; }
+        if (bx > 52) { s.poopMask = 0; a.ph = 1; a.pt = 0; }
       } else {
         setState(s, 'hop');
         if (a.pt >= 10) return true;
@@ -268,14 +311,14 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
       const hxm = hx + (s.facing === 1 ? 11 : 0);
       if (a.ph === 0) {
         const u = a.pt / 8;
-        s.props.push({ g: 'syringe', x: Math.round(31 - u * (31 - hxm)), y: Math.round(2 + u * 13 - 5 * Math.sin(Math.PI * u)) });
+        s.props.push({ g: 'syringe', x: Math.round(47 - u * (47 - hxm)), y: Math.round(17 + u * 13 - 5 * Math.sin(Math.PI * u)) });
         setState(s, 'idle');
         if (a.pt >= 8) { a.ph = 1; a.pt = 0; }
       } else if (a.ph === 1) {
         setState(s, 'react');
-        s.props.push({ g: 'syringe', x: hxm, y: 15 });
-        if (a.pt === 1) { s.flash = 1; pop(s, 'spark', hxm - 3, 12, 4); pop(s, 'spark', hxm + 3, 16, 4); }
-        if (a.pt >= 5) { a.ph = 2; a.pt = 0; pop(s, 'heart', hx + 7, 10, 10); }
+        s.props.push({ g: 'syringe', x: hxm, y: 30 });
+        if (a.pt === 1) { s.flash = 1; pop(s, 'spark', hxm - 3, 27, 4); pop(s, 'spark', hxm + 3, 31, 4); }
+        if (a.pt >= 5) { a.ph = 2; a.pt = 0; pop(s, 'heart', hx + 7, 25, 10); }
       } else {
         setState(s, 'idle');
         if (a.pt >= 8) return true;
@@ -285,12 +328,12 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
     case 'trained': {
       setState(s, 'train');
       const dy = HOP[(a.t - 1) % 5];
-      s.props.push({ g: 'dumbbell', x: hx + 5, y: 8 + dy });
-      if ((a.t - 1) % 5 === 2) { pop(s, 'dot', hx + 1, 16, 3); pop(s, 'dot', hx + 14, 16, 3); }
+      s.props.push({ g: 'dumbbell', x: hx + 5, y: 23 + dy });
+      if ((a.t - 1) % 5 === 2) { pop(s, 'dot', hx + 1, 31, 3); pop(s, 'dot', hx + 14, 31, 3); }
       return a.t >= 16;
     }
     case 'battle': {
-      const foeTarget = a.side === 1 ? 23 : 1;
+      const foeTarget = a.side === 1 ? 36 : 1;
       const foeSpr = foeSprite(a.foe);
       if (a.ph === 0) {
         setState(s, 'idle');
@@ -299,40 +342,40 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
         if (a.pt >= 4) { a.ph = 1; a.pt = 0; }
       } else if (a.ph === 1) {
         setState(s, 'idle');
-        a.foeX = Math.round(a.side === 1 ? 40 - (a.pt / 6) * (40 - foeTarget) : -12 + (a.pt / 6) * (foeTarget + 12));
-        s.props.push({ g: 'foe', x: a.foeX, y: 20, n: foeSpr });
+        a.foeX = Math.round(a.side === 1 ? 56 - (a.pt / 6) * (56 - foeTarget) : -12 + (a.pt / 6) * (foeTarget + 12));
+        s.props.push({ g: 'foe', x: a.foeX, y: 36, n: foeSpr });
         if (a.pt >= 6) { a.ph = 2; a.pt = 0; }
       } else if (a.ph === 2) {
         setState(s, 'battle');
         const c = (a.pt - 1) % 6;
         s.pdx = c === 2 || c === 3 ? 3 : 0; // lunge
         const shake = c === 3 || c === 4 ? (a.pt % 2 ? 1 : -1) : 0;
-        s.props.push({ g: 'foe', x: foeTarget + shake, y: 20, n: foeSpr });
-        if (c === 3) { s.flash = 1; s.props.push({ g: 'spark', x: a.side === 1 ? hx + 15 : hx - 4, y: 14 }); }
+        s.props.push({ g: 'foe', x: foeTarget + shake, y: 36, n: foeSpr });
+        if (c === 3) { s.flash = 1; s.props.push({ g: 'spark', x: a.side === 1 ? hx + 15 : hx - 4, y: 29 }); }
         if (a.pt >= 18) { a.ph = 3; a.pt = 0; }
       } else {
         const fade = a.win ? a.pt < 5 && a.pt % 2 === 0 : a.pt < 13;
         setState(s, a.win ? 'dance' : 'droop');
-        if (fade) s.props.push({ g: 'foe', x: foeTarget, y: 20, n: foeSpr });
-        else if (!a.win && a.pt < 17) s.props.push({ g: 'foe', x: foeTarget + (a.side === 1 ? (a.pt - 12) * 4 : -(a.pt - 12) * 4), y: 20, n: foeSpr });
-        if (a.win && a.pt % 5 === 1) pop(s, 'note', hx + (a.pt % 10 === 1 ? 2 : 11), 8, 6);
+        if (fade) s.props.push({ g: 'foe', x: foeTarget, y: 36, n: foeSpr });
+        else if (!a.win && a.pt < 17) s.props.push({ g: 'foe', x: foeTarget + (a.side === 1 ? (a.pt - 12) * 4 : -(a.pt - 12) * 4), y: 36, n: foeSpr });
+        if (a.win && a.pt % 5 === 1) pop(s, 'note', hx + (a.pt % 10 === 1 ? 2 : 11), 23, 6);
         if (a.pt >= 17) return true;
       }
       return false;
     }
     case 'played': {
       if (a.ph === 0) {
-        const bx = 2 + a.pt;
-        const h = Math.abs(Math.sin((Math.PI * (a.pt % 9)) / 9)) * 8;
-        s.props.push({ g: 'ball', x: Math.round(bx), y: Math.round(25 - h) });
+        const bx = 2 + a.pt * 1.5;
+        const h = Math.abs(Math.sin((Math.PI * (a.pt % 9)) / 9)) * 12;
+        s.props.push({ g: 'ball', x: Math.round(bx), y: Math.round(41 - h) });
         const arrived = moveToward(s, bx - 11, sp * 1.4);
         if (!arrived) setState(s, 'play'); else { setState(s, 'idle'); s.facing = 1; }
         if (a.pt >= 26) { a.ph = 1; a.pt = 0; }
       } else {
-        s.props.push({ g: 'ball', x: 28, y: 25 });
+        s.props.push({ g: 'ball', x: 40, y: 41 });
         if (a.win) {
           setState(s, 'dance');
-          if (a.pt % 5 === 1) pop(s, 'note', hx + (a.pt % 10 === 1 ? 2 : 11), 8, 6);
+          if (a.pt % 5 === 1) pop(s, 'note', hx + (a.pt % 10 === 1 ? 2 : 11), 23, 6);
           if (a.pt >= 16) return true;
         } else {
           setState(s, 'sit');
@@ -345,13 +388,13 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
       if (a.ph === 0) {
         setState(s, 'stretch');
         if (a.win) {
-          for (let k = 0; k < 2; k++) s.props.push({ g: 'puff', x: Math.round(-6 + a.pt * 2.6 - k * 12), y: 11 + k * 3 });
+          for (let k = 0; k < 2; k++) s.props.push({ g: 'puff', x: Math.round(-6 + a.pt * 3.9 - k * 18), y: 18 + k * 4 });
         } else {
           for (let k = 0; k < 3; k++) {
-            if ((a.pt + k) % 2 === 0) s.props.push({ g: 'glint', x: Math.floor(rnd() * 28) + 1, y: 11 + Math.floor(rnd() * 3) });
+            if ((a.pt + k) % 2 === 0) s.props.push({ g: 'glint', x: Math.floor(rnd() * 44) + 1, y: 18 + Math.floor(rnd() * 4) });
           }
         }
-        if (a.pt >= 14) { a.ph = 1; a.pt = 0; pop(s, 'smile', hx + 7, 10, 10); }
+        if (a.pt >= 14) { a.ph = 1; a.pt = 0; pop(s, 'smile', hx + 7, 25, 10); }
       } else {
         setState(s, 'idle');
         if (a.pt >= 7) return true;
@@ -379,7 +422,7 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
         if (a.pt >= 24) { a.ph = 1; a.pt = 0; }
       } else {
         setState(s, 'greet');
-        if (a.pt === 1) pop(s, 'heart', hx + 7, 10, 10);
+        if (a.pt === 1) pop(s, 'heart', hx + 7, 25, 10);
         if (a.pt >= 15) return true;
       }
       return false;
@@ -388,8 +431,8 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
       if (a.ph === 0) {
         setState(s, 'idle');
         const u = a.pt / 8;
-        s.props.push({ g: 'shell', x: hx + 2 - Math.round(u * 3), y: Math.round(18 + u * 9), n: 0 });
-        s.props.push({ g: 'shell', x: hx + 11 + Math.round(u * 3), y: Math.round(18 + u * 9), n: 1 });
+        s.props.push({ g: 'shell', x: hx + 2 - Math.round(u * 3), y: Math.round(34 + u * 9), n: 0 });
+        s.props.push({ g: 'shell', x: hx + 11 + Math.round(u * 3), y: Math.round(34 + u * 9), n: 1 });
         if (a.pt >= 9) { a.ph = 1; a.pt = 0; }
       } else {
         setState(s, 'hop');
@@ -412,7 +455,7 @@ function runAct(s: Scene, pet: Pet, rnd: () => number): boolean {
       if (a.ph === 0) {
         const arrived = moveToward(s, a.tx, sp);
         setState(s, arrived ? 'idle' : 'walk');
-        if (arrived) { a.ph = 1; a.pt = 0; s.facing = POOP_X[a.n] + 2 < s.x + 8 ? 1 : -1; }
+        if (arrived) { a.ph = 1; a.pt = 0; s.facing = -1; } // squat with the new spot behind it
       } else {
         setState(s, 'poop');
         if (a.pt === 8) {
@@ -457,9 +500,10 @@ function pick<T>(rnd: () => number, items: [T, number][]): T {
 const between = (rnd: () => number, a: number, b: number) => a + Math.floor(rnd() * (b - a + 1));
 
 function walkTarget(s: Scene, rnd: () => number): number {
-  let tx = Math.round(rnd() * MAX_X);
-  if (Math.abs(tx - s.x) < 3) tx = s.x < 8 ? MAX_X - Math.round(rnd() * 4) : Math.round(rnd() * 4);
-  return tx;
+  const lim = s.limit;
+  let tx = Math.round(rnd() * lim);
+  if (Math.abs(tx - s.x) < 4) tx = s.x < lim / 2 ? lim - Math.round(rnd() * 6) : Math.round(rnd() * 6);
+  return clamp(tx, 0, lim);
 }
 
 function choose(s: Scene, pet: Pet, rnd: () => number) {
@@ -499,7 +543,7 @@ function choose(s: Scene, pet: Pet, rnd: () => number) {
   switch (opt) {
     case 'walk': s.target = walkTarget(s, rnd); setState(s, 'walk', 400); break;
     case 'walkslow': s.slow = true; s.target = walkTarget(s, rnd); setState(s, 'walk', 400); break;
-    case 'pace': s.target = s.x > 8 ? 2 : 14; setState(s, 'walk', 400); break;
+    case 'pace': s.target = s.x > s.limit / 2 ? Math.min(4, s.limit) : Math.max(0, s.limit - 4); setState(s, 'walk', 400); break;
     case 'lookup': s.lookUp = true; setState(s, 'look', between(rnd, 12, 24)); if (rnd() < 0.5) s.facing = (s.facing * -1) as 1 | -1; break;
     case 'look': setState(s, 'look', between(rnd, 12, 24)); s.facing = rnd() < 0.5 ? 1 : -1; break;
     case 'hop': setState(s, 'hop', 5 * between(rnd, 1, 2)); break;
@@ -521,7 +565,8 @@ function tick(s: Scene, pet: Pet, tk: number) {
   if (s.shift > 0) s.shift--;
   s.pops = s.pops.filter((p) => ++p.age < p.life);
   s.dim = !pet.lightOn;
-  const sp = SPEED[pet.stage] || 3;
+  const sp = SPEED[pet.stage] || 4.5;
+  s.limit = maxXFor(pet.species, s.poopMask);
 
   if (pet.stage === 'egg' || pet.stage === 'ghost') {
     s.state = 'idle'; s.act = null; s.queue = []; s.poopMask = 0; return;
@@ -539,6 +584,15 @@ function tick(s: Scene, pet: Pet, tk: number) {
   if (pet.poops > count) {
     if (pet.asleep) s.poopMask = (1 << Math.min(3, pet.poops)) - 1;
     else if (count < 3) { startAct(s, 'poop', pet, rnd); runAct(s, pet, rnd); return; }
+  }
+
+  s.limit = maxXFor(pet.species, s.poopMask);
+  // a pet beyond the new limit walks left before doing anything else
+  if (!pet.asleep && !s.still && s.x > s.limit) {
+    s.lookUp = false; s.target = null; s.slow = false;
+    moveToward(s, s.limit, sp);
+    setState(s, 'walk', 8);
+    return;
   }
 
   if (pet.asleep) {

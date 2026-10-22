@@ -34,9 +34,9 @@ extension EnvironmentValues {
     }
 }
 
-/// Builds paths for the 32x32 pixel scene (see SceneRenderer), shared by the animated screen and the static view.
+/// Builds paths for the 48x48 pixel scene (see SceneRenderer), shared by the animated screen and the static view.
 enum LCDPainter {
-    static let grid = 32
+    static let grid = SceneRaster.side
 
     /// Faint "unlit" pixels, for the LCD look.
     static func gridPath(size: CGSize) -> Path {
@@ -63,7 +63,7 @@ enum LCDPainter {
         return path
     }
 
-    /// A single bitmap placed on the 32x32 grid (used for full-screen effects).
+    /// A single bitmap placed on the 48x48 grid (used for full-screen effects).
     static func glyphPath(_ rows: [String], x: Int, y: Int, size: CGSize) -> Path {
         let cell = min(size.width, size.height) / CGFloat(grid)
         var path = Path()

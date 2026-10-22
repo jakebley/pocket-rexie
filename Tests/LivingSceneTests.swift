@@ -78,7 +78,7 @@ final class LivingSceneTests: XCTestCase {
             first.events = [.battle(win: true), .fed(.meat), .cleaned, .played(wins: 4), .returned]
             run(&s, pet: p, ticks: 900, first: first) { st in
                 XCTAssertGreaterThanOrEqual(st.x, 0)
-                XCTAssertLessThanOrEqual(st.x, 16)
+                XCTAssertLessThanOrEqual(st.x, 32)
                 XCTAssertTrue(st.facing == 1 || st.facing == -1)
             }
         }
@@ -100,8 +100,8 @@ final class LivingSceneTests: XCTestCase {
         var s = SceneState()
         var lo = 99.0, hi = -1.0
         run(&s, pet: p, ticks: 900) { st in lo = min(lo, st.x); hi = max(hi, st.x) }
-        XCTAssertLessThanOrEqual(lo, 4)
-        XCTAssertGreaterThanOrEqual(hi, 12)
+        XCTAssertLessThanOrEqual(lo, 6)
+        XCTAssertGreaterThanOrEqual(hi, 24)
     }
 
     func testPoopIncreaseProducesPoopState() {
@@ -163,6 +163,119 @@ final class LivingSceneTests: XCTestCase {
         p.stage = .ghost
         run(&s, pet: p, from: 100, ticks: 100)
         XCTAssertEqual(s.x, SceneState.homeX)
+    }
+
+
+    // MARK: poop spacing
+
+    func testSceneGridAndPoopSpots() {
+        XCTAssertEqual(SceneRaster.side, 48)
+        XCTAssertEqual(SceneState.maxX, 32)
+        XCTAssertEqual(SceneState.poopSpots, [41, 35, 29])
+        XCTAssertEqual(SceneState.bedX, 8)
+    }
+
+    func testPoopLimitShrinksAsPoopsGrow() {
+        for sp in Species.all {
+            var lo = Int.max, hi = -1
+            for f in sp.frames { for row in f { for (c, ch) in row.enumerated() where ch == "X" { lo = min(lo, c); hi = max(hi, c) } } }
+            let w = SceneState.inkWidth(species: sp.id)
+            XCTAssertGreaterThanOrEqual(w, hi - lo + 1, sp.id)
+            XCTAssertGreaterThanOrEqual(w, hi + 1, sp.id)
+            XCTAssertGreaterThanOrEqual(w, 16 - lo, sp.id)
+            XCTAssertLessThanOrEqual(w, 16, sp.id)
+            let lims = (0...3).map { SceneState.limit(species: sp.id, poops: $0) }
+            XCTAssertEqual(lims[0], 32, sp.id)
+            for n in 1...3 {
+                let expect = max(0, min(32, Double(SceneState.poopSpots[n - 1] - w - 1)))
+                XCTAssertEqual(lims[n], expect, "\(sp.id) \(n)")
+                XCTAssertLessThanOrEqual(lims[n], lims[n - 1], "\(sp.id) shrinks")
+            }
+            XCTAssertLessThan(lims[1], lims[0], sp.id)
+        }
+        XCTAssertEqual(SceneState.limit(species: "", poops: 3), 12)   // unknown sprite counts as a whole 16 columns
+    }
+
+    func testInkNeverOverlapsPoopsWhileWandering() {
+        for sp in Species.all {
+            for n in 1...3 {
+                var p = makePet(seed: UInt64(sp.id.count * 31 + n), stage: sp.stage, species: sp.id)
+                p.poops = n
+                if n == 2 { p.happy = 4; p.hunger = 4 }
+                if n == 3 && sp.id.count % 2 == 1 { p.hunger = 0 }
+                var s = SceneState.still(for: p)
+                let spot = SceneState.poopSpots[n - 1]
+                let limit = SceneState.limit(species: sp.id, poops: n)
+                var walked = false
+                var worst = -1
+                run(&s, pet: p, ticks: 3000) { st in
+                    if st.action == .walk { walked = true }
+                    XCTAssertLessThanOrEqual(st.x, limit + 0.0001, "\(sp.id) x with \(n) poops")
+                    let place = SceneRenderer.placement(pet: p, state: st, frame: 0, motion: true, override: nil)
+                    worst = max(worst, place.right)
+                }
+                XCTAssertLessThan(worst, spot, "\(sp.id) ink reached column \(worst), poop at \(spot), \(n) poops")
+                XCTAssertTrue(walked || limit < 4, "\(sp.id) still wanders with \(n) poops")
+            }
+        }
+    }
+
+    func testPetBeyondTheNewLimitWalksLeftFirst() {
+        var p = makePet()
+        p.poops = 3
+        var s = SceneState.still(for: p)
+        s.x = 31
+        let limit = SceneState.limit(species: p.species, poops: 3)
+        var xs: [Double] = []
+        var actions: [SceneAction] = []
+        run(&s, pet: p, ticks: 60) { st in
+            if st.x > limit + 0.001 { actions.append(st.action) }
+            xs.append(st.x)
+        }
+        XCTAssertFalse(actions.isEmpty)
+        XCTAssertTrue(actions.allSatisfy { $0 == .walk }, "only walks until inside the limit")
+        for i in 1..<xs.count where xs[i - 1] > limit + 0.001 {
+            XCTAssertLessThanOrEqual(xs[i], xs[i - 1], "moves left only")
+        }
+        XCTAssertLessThanOrEqual(s.x, limit + 0.0001)
+    }
+
+    func testSquatStandsJustLeftOfTheNextFreeSpot() {
+        var p = makePet()
+        var s = SceneState()
+        let next = run(&s, pet: p, ticks: 40)
+        p.poops = 1
+        var squatX: Double?
+        var drawnBefore = false
+        run(&s, pet: p, from: next, ticks: 300) { st in
+            if st.action == .poop && squatX == nil { squatX = st.x }
+            if squatX == nil, st.pendingPoop {
+                let r = SceneRenderer.render(pet: p, state: st, date: self.base)
+                if r.isSet(41 + 2, 39) || r.isSet(41 + 3, 39) { drawnBefore = true }   // top of the poop glyph
+            }
+        }
+        let expect = Double(41 - SceneState.inkWidth(species: p.species) - 1)
+        XCTAssertNotNil(squatX)
+        XCTAssertEqual(squatX ?? -1, expect, accuracy: 0.01)
+        XCTAssertFalse(drawnBefore, "the poop is not on the ground until it is dropped")
+        XCTAssertFalse(s.pendingPoop)
+    }
+
+    func testPoopsAreDrawnOnTheGroundWithJiggle() {
+        var p = makePet()
+        p.poops = 3
+        let s = SceneState.still(for: p)
+        // The glyph's top pixel is column 2; it shifts one column between the two 0.6 s frames.
+        func topColumn(_ r: SceneRaster, _ spot: Int) -> Int {
+            r.isSet(spot + 2, 39) ? 0 : (r.isSet(spot + 3, 39) ? 1 : -1)
+        }
+        let r0 = SceneRenderer.render(pet: p, state: s, date: base)
+        let r1 = SceneRenderer.render(pet: p, state: s, date: base.addingTimeInterval(0.6))
+        for spot in SceneState.poopSpots {
+            XCTAssertGreaterThanOrEqual(topColumn(r0, spot), 0, "poop at \(spot) drawn on the ground")
+            XCTAssertGreaterThanOrEqual(topColumn(r1, spot), 0)
+            XCTAssertNotEqual(topColumn(r0, spot), topColumn(r1, spot), "poop at \(spot) jiggles")
+        }
     }
 
     // MARK: drawing

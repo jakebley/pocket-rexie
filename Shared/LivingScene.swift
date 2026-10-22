@@ -65,7 +65,7 @@ struct SceneEffect: Equatable {
 
     /// Horizontal position (cells, left edge) of the bouncing ball `age` ticks in.
     static func ballX(age: Int) -> Double {
-        min(27.0, max(0.0, Double(age) * 27.0 / 24.0))
+        min(40.0, max(0.0, Double(age) * 40.0 / 24.0))
     }
 }
 
@@ -104,15 +104,44 @@ enum SceneRNG {
 struct SceneState: Equatable {
     static let tickLength = 0.125
     static let minX = 0.0
-    static let maxX = 16.0
-    static let homeX = 8.0
-    static let bedX = 4.0
-    /// Ground x of the first, second and third poop.
-    static let poopSpots: [Int] = [3, 11, 24]
+    /// The scene is a 48x48 grid; the sprite's left edge ranges over 0...32.
+    static let maxX = 32.0
+    static let homeX = 16.0
+    static let bedX = 8.0
+    /// Ground x of the first, second and third poop: they fill in from the right edge.
+    static let poopSpots: [Int] = [41, 35, 29]
+
+    /// Columns the ink reaches from the sprite's left edge for either facing, over all frames of
+    /// each species. Measured from the sprite box edge (not just the occupied width) so a mirrored
+    /// sprite with a left margin cannot reach into a poop. Computed once per species.
+    static let inkWidths: [String: Int] = Dictionary(uniqueKeysWithValues: Species.all.map { sp in
+        var lo = Int.max, hi = -1, size = 16
+        for frame in sp.frames {
+            for row in frame {
+                size = max(size, row.count)
+                for (c, ch) in row.enumerated() where ch == "X" { lo = min(lo, c); hi = max(hi, c) }
+            }
+        }
+        return (sp.id, hi < 0 ? size : max(hi + 1, size - lo))
+    })
+
+    /// Ink width used for the poop limit (a whole 16 when the species is unknown, e.g. an egg).
+    static func inkWidth(species: String) -> Int { inkWidths[species] ?? 16 }
+
+    /// Furthest-right sprite x with `poops` poops on the ground: min(32, leftmostPoopX - inkWidth - 1), at least 0.
+    static func limit(species: String, poops: Int) -> Double {
+        let n = min(max(poops, 0), poopSpots.count)
+        guard n > 0 else { return maxX }
+        return max(0, min(maxX, Double(poopSpots[n - 1] - inkWidth(species: species) - 1)))
+    }
 
     var action: SceneAction = .idle
-    /// Left edge of the 16x16 sprite, in cells, 0...16.
+    /// Left edge of the 16x16 sprite, in cells, 0...32.
     var x = SceneState.homeX
+    /// Furthest-right x the pet may use now; shrinks as poops pile up (see `limit(species:poops:)`).
+    var limitX = SceneState.maxX
+    /// A new poop is on its way: the pet is walking to its spot and squatting, so it is not on the ground yet.
+    var pendingPoop = false
     /// +1 faces right (the sprite as drawn), -1 faces left.
     var facing = 1
     /// Last tick processed (`Int.min` before the first step).
@@ -141,7 +170,7 @@ struct SceneState: Equatable {
     static func still(for pet: Pet) -> SceneState {
         var s = SceneState()
         s.tick = 0
-        s.x = pet.asleep ? bedX : homeX
+        s.x = pet.asleep ? bedX : min(homeX, limit(species: pet.species, poops: pet.poops))
         if pet.stage == .egg || pet.stage == .ghost {
             s.action = .idle
         } else if pet.asleep {
@@ -160,11 +189,11 @@ struct SceneState: Equatable {
     /// Walking speed in cells per second.
     static func speed(for stage: Stage) -> Double {
         switch stage {
-        case .baby: return 2.2
-        case .child: return 3
-        case .teen: return 3.5
-        case .adult: return 3
-        case .ultimate: return 2.5
+        case .baby: return 3.3
+        case .child: return 4.5
+        case .teen: return 5.2
+        case .adult: return 4.5
+        case .ultimate: return 3.8
         case .egg, .ghost: return 0
         }
     }
@@ -205,6 +234,7 @@ struct SceneState: Equatable {
         }
         if poopsSeen == nil { poopsSeen = pet.poops; tempSeen = pet.temp; asleepSeen = pet.asleep }
         x = min(max(x, SceneState.minX), SceneState.maxX)
+        limitX = SceneState.limit(species: pet.species, poops: groundPoops(for: pet))
 
         // A change of mood or of sleep re-plans the next autonomous action right away.
         var mood = 0
@@ -229,13 +259,33 @@ struct SceneState: Equatable {
             startEvent(e, pet: pet, reduced: reduced)
         }
         handlePoops(pet: pet, reduced: reduced)
+        limitX = SceneState.limit(species: pet.species, poops: groundPoops(for: pet))
+        enforceLimit(pet: pet, reduced: reduced)
 
         if let e = effect, !e.bound, tick - e.start >= e.duration { effect = nil }
         if ticksLeft <= 0 { beginNext(pet: pet, reduced: reduced, raining: raining) }
         run(pet: pet, reduced: reduced)
+        if pendingPoop && (!scripted || (action == .poop && actionAge >= 7)) { pendingPoop = false }
         actionAge += 1
         ticksLeft -= 1
         tempSeen = pet.temp
+    }
+
+    /// Poops on the ground right now (the one being dropped does not count yet).
+    func groundPoops(for pet: Pet) -> Int { max(0, min(pet.poops, 3) - (pendingPoop ? 1 : 0)) }
+
+    /// A pet beyond the new limit walks left to it before doing anything else.
+    private mutating func enforceLimit(pet: Pet, reduced: Bool) {
+        guard !pet.asleep, !scripted, x > limitX + 0.001 else { return }
+        if reduced { x = limitX; return }
+        if action == .walk, targetX == limitX { return }
+        action = .walk
+        actionAge = 0
+        targetX = limitX
+        speedMul = 1
+        lookUp = false
+        facing = -1
+        ticksLeft = walkTicks(to: limitX, mul: 1, stage: pet.stage)
     }
 
     // MARK: running the current action
@@ -249,7 +299,7 @@ struct SceneState: Equatable {
         case .play:
             if !reduced, let e = effect, e.kind == .ball {
                 let bx = SceneEffect.ballX(age: tick - e.start)
-                let t = min(max(bx - 8, SceneState.minX), SceneState.maxX)
+                let t = min(max(bx - 8, SceneState.minX), limitX)
                 move(toward: t, mul: 1.5, stops: false, stage: pet.stage)
             }
         case .eat:
@@ -297,7 +347,7 @@ struct SceneState: Equatable {
         action = step.action
         actionAge = 0
         if let t = step.target {
-            targetX = min(max(t, SceneState.minX), SceneState.maxX)
+            targetX = min(max(t, SceneState.minX), limitX)
         } else {
             targetX = nil
         }
@@ -332,7 +382,7 @@ struct SceneState: Equatable {
 
     private mutating func wander(to t: Double, mul: Double, pet: Pet, reduced: Bool, fallback: Int) {
         if reduced { hold(.idle, fallback); return }
-        let tt = min(max(t, SceneState.minX), SceneState.maxX)
+        let tt = min(max(t, SceneState.minX), limitX)
         action = .walk
         actionAge = 0
         targetX = tt
@@ -343,8 +393,9 @@ struct SceneState: Equatable {
     }
 
     private func pickTarget(_ r: Int) -> Double {
-        var t = Double(r % 17)
-        if abs(t - x) < 3 { t = x < 8 ? min(16, x + 6) : max(0, x - 6) }
+        let lim = limitX
+        var t = Double(r % (Int(lim) + 1))
+        if abs(t - x) < 4 { t = x < lim / 2 ? min(lim, x + 9) : max(0, x - 9) }
         return t
     }
 
@@ -393,7 +444,7 @@ struct SceneState: Equatable {
         if pet.hunger <= 1 {
             let p = r1 % 100
             if p < 55 {
-                wander(to: x < 8 ? 14 : 2, mul: 1, pet: pet, reduced: reduced, fallback: dur)
+                wander(to: x < limitX / 2 ? max(0, limitX - 4) : min(4, limitX), mul: 1, pet: pet, reduced: reduced, fallback: dur)
             } else if p < 85 {
                 facing = r3 % 2 == 0 ? 1 : -1
                 hold(.look, 12 + r2 % 12, lookUp: true)
@@ -460,7 +511,7 @@ struct SceneState: Equatable {
     private mutating func startTap(_ tap: SceneTap, reduced: Bool) {
         switch tap {
         case .ground(let gx):
-            let t = min(max(gx - 8, SceneState.minX), SceneState.maxX)
+            let t = min(max(gx - 8, SceneState.minX), limitX)
             let face = gx >= t + 8 ? 1 : -1
             var steps: [SceneStep] = []
             if !reduced { steps.append(SceneStep(action: .walk, ticks: 0, target: t)) }
@@ -525,7 +576,7 @@ struct SceneState: Equatable {
                 play([SceneStep(action: .greet, ticks: 20)])
             } else {
                 let fromLeft = SceneRNG.hash(pet.seed, SceneRNG.bits(tick), 9) % 2 == 0
-                x = fromLeft ? SceneState.minX : SceneState.maxX
+                x = fromLeft ? SceneState.minX : limitX
                 facing = fromLeft ? 1 : -1
                 play([SceneStep(action: .walk, ticks: 0, target: SceneState.homeX, speedMul: 1.8),
                       SceneStep(action: .greet, ticks: 20)])
@@ -535,10 +586,10 @@ struct SceneState: Equatable {
 
     /// Food drops beside the pet, the pet walks to it and chomps three times.
     private mutating func startFeeding(_ food: Food?, reduced: Bool) {
-        let toRight = x <= 8
+        let toRight = x <= 16
         let reach = reduced ? 13.0 : 17.0
-        let foodX: Double = toRight ? min(26.0, x + reach) : max(0.0, x - (reduced ? 3.0 : 10.0))
-        let target: Double = toRight ? min(16.0, max(0.0, foodX - 13)) : min(16.0, foodX + 3)
+        let foodX: Double = toRight ? min(40.0, x + reach) : max(0.0, x - (reduced ? 3.0 : 10.0))
+        let target: Double = toRight ? min(limitX, max(0.0, foodX - 13)) : min(limitX, foodX + 3)
         let face = toRight ? 1 : -1
         var steps = [SceneStep(action: .look, ticks: 12, face: face, lookUp: true,
                                fx: SceneEffect(kind: .food, x: foodX, food: food, bound: true))]
@@ -560,11 +611,14 @@ struct SceneState: Equatable {
         if scripted { return }
         poopsSeen = pet.poops
         let spot = SceneState.poopSpots[max(0, min(pet.poops, 3) - 1)]
+        pendingPoop = true
         var steps: [SceneStep] = []
         if !reduced {
-            steps.append(SceneStep(action: .walk, ticks: 0, target: Double(spot) - 6))
+            // Just left of the next free spot, not onto it, then squat with the spot behind it.
+            let stand = max(0, Double(spot - SceneState.inkWidth(species: pet.species) - 1))
+            steps.append(SceneStep(action: .walk, ticks: 0, target: stand))
         }
-        steps.append(SceneStep(action: .poop, ticks: 8))
+        steps.append(SceneStep(action: .poop, ticks: 8, face: -1))
         play(steps)
     }
 }
