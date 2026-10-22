@@ -28,7 +28,8 @@
     "test:sim": "tsx test/sim.ts",
     "test:scene": "tsx test/scene.ts",
     "test": "npm run test:sim && npm run test:scene",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:balance": "tsx test/balance.ts 20"
   },
   "private": true
 }

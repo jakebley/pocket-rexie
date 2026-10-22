@@ -4,7 +4,10 @@ import type { Call, Food, Requirement, SpeciesDef, Stage } from './types';
 
 export const TICK = 5 * 60 * 1000;
 export const MAX_HEARTS = 4;
-const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 8, child: 36, teen: 72, adult: 168 };
+/** Care tuning: how long a call may wait before it counts as a mistake, and how long the light may stay on at night. */
+export const MISTAKE_AFTER_MS = 6 * 3600000;
+export const LIGHT_MISTAKE_TICKS = 24;
+const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 11, child: 36, teen: 72, adult: 168 };
 
 export const SPECIES_BY_ID: Record<string, SpeciesDef> = Object.fromEntries(SPECIES.map((s) => [s.id, s]));
 export const DEX_SIZE = SPECIES.length;
@@ -49,6 +52,9 @@ export interface Pet {
   stagePasta: number;
   stageTrain: number;
   stageWins: number;
+  stageSmarts: number;
+  lastFood: Food | null;
+  weightTicks: number;
   lastTrain: number | null;
   lastBattle: number | null;
   call: Call | null;
@@ -78,7 +84,7 @@ export function newPet(now: number, opts: { generation?: number; name?: string; 
     hunger: 4, happy: 4, weight: 5, smarts: 0, discipline: 0, poops: 0, sick: false, medDoses: 0,
     asleep: false, lightOn: true, careMistakes: 0, gentle: opts.gentle ?? true, paused: false, temp: 0,
     trains: 0, battles: 0, wins: 0,
-    stageMistakes: 0, stageMeat: 0, stageVeg: 0, stagePasta: 0, stageTrain: 0, stageWins: 0,
+    stageMistakes: 0, stageMeat: 0, stageVeg: 0, stagePasta: 0, stageTrain: 0, stageWins: 0, stageSmarts: 0, lastFood: null, weightTicks: 0,
     lastTrain: null, lastBattle: null,
     call: null, callSince: null, callMistaken: false,
     hungerProgress: 0, happyProgress: 0, poopProgress: 0, tempProgress: 0, petProgress: 0,
@@ -97,9 +103,13 @@ export function baseWeight(p: Pet): number {
   return { egg: 3, baby: 5, child: 12, teen: 20, adult: 30, ultimate: 40, ghost: 0 }[p.stage];
 }
 export const overweight = (p: Pet) => p.weight >= baseWeight(p) + 8;
+/** The food eaten most this stage. A tie goes to the food eaten last, then meat, veggies, pasta. */
 export function leadFood(p: Pet): Food {
-  if (p.stageMeat >= p.stageVeg && p.stageMeat >= p.stagePasta) return 'meat';
-  return p.stageVeg >= p.stagePasta ? 'veggie' : 'pasta';
+  const counts: [Food, number][] = [['meat', p.stageMeat], ['veggie', p.stageVeg], ['pasta', p.stagePasta]];
+  const top = Math.max(...counts.map(([, n]) => n));
+  const tied = counts.filter(([, n]) => n === top).map(([f]) => f);
+  if (p.lastFood && tied.includes(p.lastFood)) return p.lastFood;
+  return tied[0];
 }
 export const needsAttention = (p: Pet) => (p.call !== null && !p.asleep) || p.call === 'light';
 
@@ -173,7 +183,10 @@ function step(p: Pet, t: number, hour: number) {
   if (p.asleep) {
     if (p.lightOn) {
       p.lightTicks++;
-      if (p.lightTicks >= 6 && !p.napMistaken) { mistake(p); p.napMistaken = true; p.sick = true; p.medDoses = 0; log(p, 'sick', 'light', t); }
+      if (p.lightTicks >= LIGHT_MISTAKE_TICKS && !p.napMistaken) {
+        mistake(p); p.napMistaken = true;
+        if (!p.gentle) { p.sick = true; p.medDoses = 0; log(p, 'sick', 'light', t); }
+      }
     }
     refreshCall(p, t);
     return;
@@ -186,6 +199,9 @@ function step(p: Pet, t: number, hour: number) {
   if (p.hungerProgress >= rate) { p.hunger = Math.max(0, p.hunger - 1); p.hungerProgress = 0; }
   p.happyProgress++;
   if (p.happyProgress >= rate + 4) { p.happy = Math.max(0, p.happy - 1); p.happyProgress = 0; }
+  // Digestion: an overfed pet slowly slims back to its stage weight (a snack adds two, so snackers get heavy).
+  p.weightTicks++;
+  if (p.weightTicks >= 24) { p.weightTicks = 0; if (p.weight > baseWeight(p)) p.weight--; }
   p.poopProgress++;
   if (p.poopProgress >= 48 && p.poops < 3) { p.poops++; p.poopProgress = 0; log(p, 'poop', '', t); }
 
@@ -241,7 +257,7 @@ function refreshCall(p: Pet, t: number) {
     const order: Call[] = p.asleep ? ['light'] : ['sick', 'hungry', 'hot', 'cold', 'poop', 'bored'];
     for (const c of order) if (holds(p, c)) { p.call = c; p.callSince = t; p.callMistaken = false; log(p, 'call', c, t); break; }
   }
-  if (p.call && p.callSince !== null && !p.callMistaken && t - p.callSince >= 1800000 && p.call !== 'light') {
+  if (p.call && p.callSince !== null && !p.callMistaken && t - p.callSince >= MISTAKE_AFTER_MS && p.call !== 'light') {
     mistake(p); p.callMistaken = true;
   }
 }
@@ -250,7 +266,7 @@ function refreshCall(p: Pet, t: number) {
 export function requirementMet(r: Requirement, p: Pet): boolean {
   return p.stageMistakes >= (r.mist_min ?? 0) && p.stageMistakes <= (r.mist_max ?? Infinity) &&
     p.stageTrain >= (r.train ?? 0) && p.stageWins >= (r.wins ?? 0) &&
-    p.smarts >= (r.smarts ?? 0) && p.discipline >= (r.disc ?? 0) &&
+    p.stageSmarts >= (r.smarts ?? 0) && p.discipline >= (r.disc ?? 0) &&
     (!r.heavy || overweight(p)) && (r.lead === undefined || leadFood(p) === r.lead);
 }
 
@@ -272,7 +288,7 @@ function evolve(p: Pet, id: string, t: number, hatching = false) {
   if (!sp) return;
   p.species = id; p.stage = sp.stage;
   p.weight = Math.max(p.weight, baseWeight(p));
-  p.stageMistakes = 0; p.stageMeat = 0; p.stageVeg = 0; p.stagePasta = 0; p.stageTrain = 0; p.stageWins = 0;
+  p.stageMistakes = 0; p.stageMeat = 0; p.stageVeg = 0; p.stagePasta = 0; p.stageTrain = 0; p.stageWins = 0; p.stageSmarts = 0;
   if (!p.dex.includes(id)) p.dex.push(id);
   log(p, hatching ? 'hatched' : 'evolved', id, t);
 }
@@ -295,7 +311,7 @@ export function feed(p: Pet, food: Food): string {
   if (p.stage === 'egg' || p.stage === 'ghost') return '...';
   if (p.asleep) return `Shh, ${p.name} is asleep`;
   if (p.hunger >= MAX_HEARTS) return `${p.name} is full`;
-  p.hunger++; p.weight++; p.starveTicks = 0;
+  p.hunger++; p.weight++; p.starveTicks = 0; p.lastFood = food;
   if (food === 'meat') p.stageMeat++; else if (food === 'veggie') p.stageVeg++; else p.stagePasta++;
   touch(p);
   return 'Yum!';
@@ -311,7 +327,7 @@ export function finishPlay(p: Pet, won: number): string {
   if (!canAct(p)) return '...';
   p.weight = Math.max(baseWeight(p) - 2, p.weight - 1);
   let msg = `You won ${won} of 5. Try again!`;
-  if (won >= 3) { p.happy = Math.min(MAX_HEARTS, p.happy + 1); p.smarts = Math.min(100, p.smarts + 3); msg = `You won ${won} of 5!`; }
+  if (won >= 3) { p.happy = Math.min(MAX_HEARTS, p.happy + 1); p.smarts = Math.min(100, p.smarts + 3); p.stageSmarts += 3; msg = `You won ${won} of 5!`; }
   touch(p);
   return msg;
 }
@@ -345,7 +361,7 @@ export function scold(p: Pet): string {
 }
 export function petIt(p: Pet): string {
   if (!canAct(p)) return '...';
-  p.petProgress++; p.smarts = Math.min(100, p.smarts + 1);
+  p.petProgress++; p.smarts = Math.min(100, p.smarts + 1); p.stageSmarts += 1;
   if (p.petProgress >= 3) { p.petProgress = 0; if (p.happy < MAX_HEARTS) p.happy++; }
   touch(p);
   return `${p.name} purrs. Dinos can purr.`;

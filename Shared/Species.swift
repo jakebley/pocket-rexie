@@ -21,7 +21,7 @@ struct Requirement {
     func isMet(by pet: Pet) -> Bool {
         pet.stageMistakes >= mistMin && pet.stageMistakes <= mistMax
             && pet.stageTrain >= train && pet.stageWins >= wins
-            && pet.smarts >= smarts && pet.discipline >= disc
+            && pet.stageSmarts >= smarts && pet.discipline >= disc
             && (!heavy || pet.overweight)
             && (lead == nil || pet.leadFood == lead)
     }

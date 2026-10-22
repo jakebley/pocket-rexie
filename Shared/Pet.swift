@@ -16,8 +16,11 @@ struct PetEvent: Codable, Equatable {
 struct Pet: Codable, Equatable {
     static let tick: TimeInterval = 300
     static let maxHearts = 4
+    /// How long a call may wait before it counts as a care mistake, and how long the light may stay on at night (in ticks).
+    static let mistakeAfter: TimeInterval = 6 * 3600
+    static let lightMistakeTicks = 24
     /// Hours of age at which each stage ends and an evolution is checked (at the next wake-up).
-    static let stageHours: [Stage: Double] = [.baby: 8, .child: 36, .teen: 72, .adult: 168]
+    static let stageHours: [Stage: Double] = [.baby: 11, .child: 36, .teen: 72, .adult: 168]
 
     var name = "Rexie"
     var named = false
@@ -63,6 +66,9 @@ struct Pet: Codable, Equatable {
     var stagePasta = 0
     var stageTrain = 0
     var stageWins = 0
+    var stageSmarts = 0
+    var lastFood: Food?
+    var weightTicks = 0
 
     var lastTrain: Date?
     var lastBattle: Date?
@@ -137,6 +143,9 @@ struct Pet: Codable, Equatable {
         if let v = try c.decodeIfPresent(Int.self, forKey: .stagePasta) { stagePasta = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .stageTrain) { stageTrain = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .stageWins) { stageWins = v }
+        if let v = try c.decodeIfPresent(Int.self, forKey: .stageSmarts) { stageSmarts = v }
+        lastFood = try c.decodeIfPresent(Food.self, forKey: .lastFood)
+        if let v = try c.decodeIfPresent(Int.self, forKey: .weightTicks) { weightTicks = v }
         lastTrain = try c.decodeIfPresent(Date.self, forKey: .lastTrain)
         lastBattle = try c.decodeIfPresent(Date.self, forKey: .lastBattle)
         call = try c.decodeIfPresent(Call.self, forKey: .call)
@@ -180,10 +189,13 @@ struct Pet: Codable, Equatable {
     }
     var overweight: Bool { weight >= baseWeight + 8 }
 
-    /// The food eaten most during this stage. Ties go meat, then veggies, then pasta.
+    /// The food eaten most during this stage. A tie goes to the food eaten last, then meat, veggies, pasta.
     var leadFood: Food {
-        if stageMeat >= stageVeg && stageMeat >= stagePasta { return .meat }
-        return stageVeg >= stagePasta ? .veggie : .pasta
+        let counts: [(Food, Int)] = [(.meat, stageMeat), (.veggie, stageVeg), (.pasta, stagePasta)]
+        let top = counts.map { $0.1 }.max() ?? 0
+        let tied = counts.filter { $0.1 == top }.map { $0.0 }
+        if let last = lastFood, tied.contains(last) { return last }
+        return tied[0]
     }
 
     /// The diet the pet is already on, so one-tap feeding keeps its evolution path.
@@ -266,8 +278,9 @@ struct Pet: Codable, Equatable {
         if asleep {
             if lightOn {
                 lightTicks += 1
-                if lightTicks >= 6 && !napMistaken {
-                    mistake(); napMistaken = true; sick = true; medDoses = 0; log("sick", "light", at: t)
+                if lightTicks >= Pet.lightMistakeTicks && !napMistaken {
+                    mistake(); napMistaken = true
+                    if !gentle { sick = true; medDoses = 0; log("sick", "light", at: t) }
                 }
             }
             refreshCall(at: t)
@@ -282,6 +295,9 @@ struct Pet: Codable, Equatable {
         if hungerProgress >= rate { hunger = max(0, hunger - 1); hungerProgress = 0 }
         happyProgress += 1
         if happyProgress >= rate + 4 { happy = max(0, happy - 1); happyProgress = 0 }
+        // Digestion: an overfed pet slowly slims back to its stage weight (a snack adds two, so snackers get heavy).
+        weightTicks += 1
+        if weightTicks >= 24 { weightTicks = 0; if weight > baseWeight { weight -= 1 } }
         poopProgress += 1
         if poopProgress >= 48 && poops < 3 { poops += 1; poopProgress = 0; log("poop", at: t) }
 
@@ -343,7 +359,7 @@ struct Pet: Codable, Equatable {
             let order: [Call] = asleep ? [.light] : [.sick, .hungry, .hot, .cold, .poop, .bored]
             for c in order where conditionHolds(c) { call = c; callSince = t; callMistaken = false; log("call", c.rawValue, at: t); break }
         }
-        if let since = callSince, call != nil, !callMistaken, t.timeIntervalSince(since) >= 1800, call != .light {
+        if let since = callSince, call != nil, !callMistaken, t.timeIntervalSince(since) >= Pet.mistakeAfter, call != .light {
             mistake(); callMistaken = true
         }
     }
@@ -367,7 +383,7 @@ struct Pet: Codable, Equatable {
         species = id
         stage = sp.stage
         weight = max(weight, baseWeight)
-        stageMistakes = 0; stageMeat = 0; stageVeg = 0; stagePasta = 0; stageTrain = 0; stageWins = 0
+        stageMistakes = 0; stageMeat = 0; stageVeg = 0; stagePasta = 0; stageTrain = 0; stageWins = 0; stageSmarts = 0
         if !dex.contains(id) { dex.append(id) }
         log(hatching ? "hatched" : "evolved", id, at: t)
     }
@@ -392,7 +408,7 @@ struct Pet: Codable, Equatable {
         guard stage != .egg, stage != .ghost else { return "..." }
         if asleep { return "Shh, \(name) is asleep" }
         if hunger >= Pet.maxHearts { return "\(name) is full" }
-        hunger += 1; weight += 1; starveTicks = 0; modified = lastTick
+        hunger += 1; weight += 1; starveTicks = 0; lastFood = food; modified = lastTick
         switch food {
         case .meat: dietMeat += 1; stageMeat += 1
         case .veggie: dietVeg += 1; stageVeg += 1
@@ -419,7 +435,7 @@ struct Pet: Codable, Equatable {
         weight = max(baseWeight - 2, weight - 1)
         if played >= 3 {
             happy = min(Pet.maxHearts, happy + 1)
-            smarts = min(100, smarts + 3)
+            smarts = min(100, smarts + 3); stageSmarts += 3
             return "You won \(played) of 5!"
         }
         return "You won \(played) of 5. Try again!"
@@ -446,7 +462,7 @@ struct Pet: Codable, Equatable {
     mutating func study() -> String {
         guard canAct, !sick, stage != .baby else { return "Not now" }
         modified = lastTick
-        smarts = min(100, smarts + 6)
+        smarts = min(100, smarts + 6); stageSmarts += 6
         return "\(name) learned something"
     }
 
@@ -472,7 +488,7 @@ struct Pet: Codable, Equatable {
         guard canAct else { return "..." }
         modified = lastTick
         petProgress += 1
-        smarts = min(100, smarts + 1)
+        smarts = min(100, smarts + 1); stageSmarts += 1
         if petProgress >= 3 { petProgress = 0; if happy < Pet.maxHearts { happy += 1 } }
         return "\(name) purrs. Dinos can purr."
     }

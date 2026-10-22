@@ -102,6 +102,53 @@ final class PetEngineTests: XCTestCase {
         XCTAssertTrue(p.dex.contains("mud"), "neglected baby should become Mudpie, got \(p.dex)")
     }
 
+    /// A player who looks in twice a day and cares properly must not be pushed onto the neglect line.
+    func testTwiceADayPlayerIsNotTreatedAsNeglectful() {
+        var neglectLines = 0
+        for seed in 1...6 {
+            var p = Pet(now: start, gentle: true)
+            p.seed = UInt64(seed) * 7919 + 13
+            var t = start
+            let end = start.addingTimeInterval(14 * 86400)
+            while t < end && p.stage != .ghost {
+                t = t.addingTimeInterval(300)
+                p.advance(to: t, calendar: utc)
+                let hour = utc.component(.hour, from: t), minute = utc.component(.minute, from: t)
+                if p.asleep, p.lightOn, hour >= 21 { _ = p.toggleLight() }
+                guard !p.asleep, p.stage != .egg, minute < 5, hour == 8 || hour == 19 else { continue }
+                for _ in 0..<4 where p.hunger < Pet.maxHearts { _ = p.feed(.meat) }
+                if p.poops > 0 { _ = p.clean() }
+                if p.sick { _ = p.giveMedicine(); _ = p.giveMedicine() }
+                if p.temp != 0 { _ = p.climate() }
+                if p.happy < 3 { _ = p.finishPlay(wins: 4) }
+            }
+            if p.dex.contains("mud") || p.dex.contains("grime") || p.dex.contains("gremlin") { neglectLines += 1 }
+        }
+        XCTAssertLessThanOrEqual(neglectLines, 1, "twice-a-day care ended on the neglect line in \(neglectLines) of 6 runs")
+    }
+
+    func testOverfeedingSnacksMakesAPetHeavyButNormalFeedingDoesNot() {
+        var normal = newPet()
+        run(&normal, days: 4) { p in
+            if p.asleep { if p.lightOn { _ = p.toggleLight() }; return }
+            if p.hunger <= 2 { _ = p.feed(.meat) }
+            if p.happy <= 1 { _ = p.finishPlay(wins: 4) }
+            if p.poops > 0 { _ = p.clean() }
+            if p.sick { _ = p.giveMedicine(); _ = p.giveMedicine() }
+        }
+        XCTAssertFalse(normal.overweight, "normal feeding should not make the pet heavy")
+
+        var snacker = newPet()
+        run(&snacker, days: 4) { p in
+            if p.asleep { if p.lightOn { _ = p.toggleLight() }; return }
+            if p.hunger <= 2 { _ = p.feed(.meat) }
+            while p.happy < 4 { _ = p.feedSnack() }
+            if p.poops > 0 { _ = p.clean() }
+            if p.sick { _ = p.giveMedicine(); _ = p.giveMedicine() }
+        }
+        XCTAssertTrue(snacker.overweight, "constant snacking should make the pet heavy, weight \(snacker.weight)")
+    }
+
     func testVacationModeFreezesTime() {
         var p = newPet()
         p.advance(to: start.addingTimeInterval(20 * 60), calendar: utc)

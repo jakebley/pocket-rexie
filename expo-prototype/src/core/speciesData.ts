@@ -189,7 +189,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "grime",
     "req": {
-     "mist_min": 3
+     "mist_min": 4
     }
    },
    {
@@ -257,7 +257,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "grime",
     "req": {
-     "mist_min": 3
+     "mist_min": 4
     }
    },
    {
@@ -269,7 +269,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "moss",
     "req": {
-     "smarts": 15
+     "smarts": 12
     }
    },
    {
@@ -325,7 +325,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "grime",
     "req": {
-     "mist_min": 3
+     "mist_min": 4
     }
    },
    {
@@ -337,7 +337,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "zest",
     "req": {
-     "smarts": 15
+     "smarts": 12
     }
    },
    {
@@ -449,7 +449,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -511,7 +511,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -573,7 +573,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -635,13 +635,13 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
     "to": "petalrex",
     "req": {
-     "smarts": 25
+     "smarts": 20
     }
    },
    {
@@ -697,7 +697,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -753,7 +753,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -809,7 +809,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -871,7 +871,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -927,7 +927,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "gremlin",
     "req": {
-     "mist_min": 2
+     "mist_min": 4
     }
    },
    {
@@ -1095,7 +1095,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "skywing",
     "req": {
-     "smarts": 30
+     "smarts": 40
     }
    },
    {
@@ -1151,7 +1151,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "sage",
     "req": {
-     "smarts": 30
+     "smarts": 40
     }
    },
    {
@@ -1211,7 +1211,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "wreckage",
+    "to": "bulwark",
     "req": {}
    }
   ]
@@ -1313,7 +1313,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "sage",
     "req": {
-     "smarts": 30
+     "smarts": 40
     }
    },
    {
@@ -1419,7 +1419,7 @@ export const SPECIES: SpeciesDef[] = [
    {
     "to": "sage",
     "req": {
-     "smarts": 30
+     "smarts": 40
     }
    },
    {

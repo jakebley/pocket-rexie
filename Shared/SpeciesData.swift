@@ -31,7 +31,7 @@ enum SpeciesData {
                 ["................", "................", "................", "................", "................", "................", "..........XXX...", "..........XXX...", "..........XXX...", ".........XXXX...", "...X.....XXX....", "...XXX..XXXXX...", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".....XXXXXX....."],
             ],
             evolutions: [
-            Evolution(to: "grime", req: Requirement(mistMin: 3)),
+            Evolution(to: "grime", req: Requirement(mistMin: 4)),
             Evolution(to: "brute", req: Requirement(heavy: true)),
             Evolution(to: "fang", req: Requirement(train: 3)),
             Evolution(to: "dash", req: Requirement())
@@ -42,9 +42,9 @@ enum SpeciesData {
                 ["................", "................", "............X...", "..........XX....", "..........X.....", "..........X.....", "..........XXX...", "..........XXX...", "..........XX....", ".........XXX....", "........XXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
             ],
             evolutions: [
-            Evolution(to: "grime", req: Requirement(mistMin: 3)),
+            Evolution(to: "grime", req: Requirement(mistMin: 4)),
             Evolution(to: "horn", req: Requirement(train: 3)),
-            Evolution(to: "moss", req: Requirement(smarts: 15)),
+            Evolution(to: "moss", req: Requirement(smarts: 12)),
             Evolution(to: "bloom", req: Requirement())
         ]),
         Species(id: "twirl", name: "Twirl", stage: .child, blurb: "Noodle-obsessed, with curly hair.",
@@ -53,9 +53,9 @@ enum SpeciesData {
                 ["................", "................", "................", "................", "................", "..........X.X.X.", "........XXX.X...", ".......XXXXXX...", ".......XXXXXX...", ".......XXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXX....", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
             ],
             evolutions: [
-            Evolution(to: "grime", req: Requirement(mistMin: 3)),
+            Evolution(to: "grime", req: Requirement(mistMin: 4)),
             Evolution(to: "ravi", req: Requirement(heavy: true)),
-            Evolution(to: "zest", req: Requirement(smarts: 15)),
+            Evolution(to: "zest", req: Requirement(smarts: 12)),
             Evolution(to: "curlie", req: Requirement())
         ]),
         Species(id: "mud", name: "Mudpie", stage: .child, blurb: "Scruffy and in need of a bath.",
@@ -73,7 +73,7 @@ enum SpeciesData {
                 ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XXXX..", ".........XXXXX..", ".........XXXXX..", ".X.X...X.XXXX...", ".XXX...XXXXXXX..", ".XXXXX.XXXXXXX..", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "razor", req: Requirement(smarts: 20)),
             Evolution(to: "chomper", req: Requirement())
         ]),
@@ -83,7 +83,7 @@ enum SpeciesData {
                 ["................", "................", "................", "................", "................", "................", ".....XXXX.......", ".XXXXXXXXXX.....", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "chomper", req: Requirement(wins: 3)),
             Evolution(to: "bruiser", req: Requirement())
         ]),
@@ -93,7 +93,7 @@ enum SpeciesData {
                 ["................", "...........X....", "..........XXX...", ".........XXXXX..", "........XXXXXX..", "........XXXXXX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "razor", req: Requirement(smarts: 20)),
             Evolution(to: "sprinter", req: Requirement())
         ]),
@@ -103,8 +103,8 @@ enum SpeciesData {
                 ["................", "................", "................", "................", "................", "................", ".....XXXX.......", "..XXXXX.X.X.....", ".XXXX.XXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
-            Evolution(to: "petalrex", req: Requirement(smarts: 25)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
+            Evolution(to: "petalrex", req: Requirement(smarts: 20)),
             Evolution(to: "shellback", req: Requirement())
         ]),
         Species(id: "horn", name: "Hornet", stage: .teen, blurb: "Charges first, asks later.",
@@ -113,7 +113,7 @@ enum SpeciesData {
                 ["................", "................", "................", "........XX...X..", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXXXXX..", "..XXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "plated", req: Requirement())
         ]),
         Species(id: "bloom", name: "Bloomer", stage: .teen, blurb: "Friendly, with a leaf on its head.",
@@ -122,7 +122,7 @@ enum SpeciesData {
                 ["..........XXX...", "..........XX....", "..........XX....", "..........XXXX..", "..........XXXX..", "..........XXXX..", "..........XXX...", ".........XXXX...", "........XXXXX...", ".X....XXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "longneck", req: Requirement())
         ]),
         Species(id: "curlie", name: "Curlie", stage: .teen, blurb: "Spaghetti curls everywhere.",
@@ -131,7 +131,7 @@ enum SpeciesData {
                 ["................", "..........X.X.X.", ".........X.X.X..", ".........XXXXX..", ".XX.....XXXXXX..", ".X......XXXXXX..", ".X.......XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "tricera", req: Requirement(wins: 2)),
             Evolution(to: "noodlord", req: Requirement())
         ]),
@@ -141,7 +141,7 @@ enum SpeciesData {
                 ["................", "................", "................", "........XX......", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXXXXX..", "...XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "plumpkin", req: Requirement())
         ]),
         Species(id: "zest", name: "Zesty", stage: .teen, blurb: "Sharp mind, antenna up.",
@@ -150,7 +150,7 @@ enum SpeciesData {
                 [".........X......", ".........X......", ".........XX.....", ".........XXXXX..", "........XXXXXX..", "........XXXXXX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
             ],
             evolutions: [
-            Evolution(to: "gremlin", req: Requirement(mistMin: 2)),
+            Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "tricera", req: Requirement(wins: 2)),
             Evolution(to: "professor", req: Requirement())
         ]),
@@ -177,7 +177,7 @@ enum SpeciesData {
                 ["............XXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X.........XXXX..", "XX.......XXXXX.X", "XXX.....XXXXXXXX", ".XXXX..XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
             ],
             evolutions: [
-            Evolution(to: "skywing", req: Requirement(smarts: 30)),
+            Evolution(to: "skywing", req: Requirement(smarts: 40)),
             Evolution(to: "tyrannox", req: Requirement())
         ]),
         Species(id: "razor", name: "Razorclaw", stage: .adult, blurb: "A clever crested raptor.",
@@ -186,7 +186,7 @@ enum SpeciesData {
                 ["..........XXXXX.", ".........XXXXXXX", ".........XXXXXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
             ],
             evolutions: [
-            Evolution(to: "sage", req: Requirement(smarts: 30)),
+            Evolution(to: "sage", req: Requirement(smarts: 40)),
             Evolution(to: "skywing", req: Requirement())
         ]),
         Species(id: "bruiser", name: "Bruiser", stage: .adult, blurb: "A walking boulder with a club tail.",
@@ -196,7 +196,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "tyrannox", req: Requirement(wins: 5)),
-            Evolution(to: "wreckage", req: Requirement())
+            Evolution(to: "bulwark", req: Requirement())
         ]),
         Species(id: "sprinter", name: "Sprintosaur", stage: .adult, blurb: "Built for speed.",
             frames: [
@@ -212,7 +212,7 @@ enum SpeciesData {
                 ["...........XXXX.", "...........XXXXX", "...........X.XXX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
             ],
             evolutions: [
-            Evolution(to: "sage", req: Requirement(smarts: 30)),
+            Evolution(to: "sage", req: Requirement(smarts: 40)),
             Evolution(to: "bulwark", req: Requirement())
         ]),
         Species(id: "shellback", name: "Shellback", stage: .adult, blurb: "Patient, domed and armoured.",
@@ -229,7 +229,7 @@ enum SpeciesData {
                 ["...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXX.", ".........X.XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX.X.XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
             ],
             evolutions: [
-            Evolution(to: "sage", req: Requirement(smarts: 30)),
+            Evolution(to: "sage", req: Requirement(smarts: 40)),
             Evolution(to: "triceron", req: Requirement())
         ]),
         Species(id: "plated", name: "Platesaur", stage: .adult, blurb: "A plated stegosaurus type.",
