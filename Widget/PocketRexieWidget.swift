@@ -96,8 +96,12 @@ private struct ControlLabel: View {
 // MARK: - Views
 
 struct PocketRexieWidgetView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
     let entry: PetEntry
+    /// Tests render outside a widget host, where the family cannot be set through the environment.
+    var familyOverride: WidgetFamily?
+
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
 
     private var pet: Pet { entry.pet }
 

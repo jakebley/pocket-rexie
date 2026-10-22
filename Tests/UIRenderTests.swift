@@ -237,8 +237,7 @@ final class UIRenderTests: XCTestCase {
             } else {
                 widgetBackground
             }
-            PocketRexieWidgetView(entry: entry)
-                .environment(\.widgetFamily, family)
+            PocketRexieWidgetView(entry: entry, familyOverride: family)
                 .foregroundStyle(isAccessory ? Color.white : Color.primary)
         }
         .environment(\.colorScheme, dark || isAccessory ? .dark : .light)
