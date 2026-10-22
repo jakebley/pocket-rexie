@@ -238,6 +238,8 @@ final class UIRenderTests: XCTestCase {
                 widgetBackground
             }
             PocketRexieWidgetView(entry: entry, familyOverride: family)
+                // A real widget host insets the content of the system families by 16 pt.
+                .padding(isAccessory ? 0 : 16)
                 .foregroundStyle(isAccessory ? Color.white : Color.primary)
         }
         .environment(\.colorScheme, dark || isAccessory ? .dark : .light)
@@ -270,7 +272,7 @@ final class UIRenderTests: XCTestCase {
         for sc in scenarios() where !sc.name.contains("-b") {
             let model = GameModel(pet: sc.pet, persist: { _ in })
             sc.setup(model)
-            let view = ZStack {
+            let view = ZStack(alignment: .top) {
                 Color.black
                 WatchContentView(model: model)
             }

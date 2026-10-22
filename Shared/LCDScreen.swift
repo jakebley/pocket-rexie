@@ -148,8 +148,12 @@ struct LCDScreen: View {
     private func deadPanel(_ m: Metrics) -> some View {
         let cause = model.pet.causeOfDeath ?? "has passed on"
         return VStack(spacing: m.unit * 2) {
+            // On its own ground so the sky and the ghost never run through the words.
             PixelParagraph(text: "\(model.pet.name) \(cause)", pixel: m.unit, maxChars: m.cap, centered: true)
-                .padding(.top, m.unit * 2)
+                .padding(m.unit * 2)
+                .background(palette.background)
+                .overlay(Rectangle().strokeBorder(palette.ink, lineWidth: 1))
+                .padding(.top, m.unit)
             Spacer(minLength: 0)
             PixelButton("NEW EGG", pixel: m.unit, selected: true) { model.startNewEgg() }
         }
@@ -261,7 +265,7 @@ struct LCDScreen: View {
                 PixelButton("BACK", pixel: u, selected: true) { model.setStatsPage(0) }
                 PixelButton("DEX", pixel: u) { model.openDex() }
             }
-            ScrollView(showsIndicators: false) {
+            MaybeScroll {
                 VStack(alignment: .leading, spacing: u * 2) {
                     ForEach(rows, id: \.0) { row in
                         PixelPair(label: row.0, value: row.1, pixel: u, cap: m.cap)
@@ -293,7 +297,7 @@ struct LCDScreen: View {
                 PixelText("DEX \(found.count)/\(Species.dexSize)", pixel: u)
                 Spacer(minLength: 0)
             }
-            ScrollView(showsIndicators: false) {
+            MaybeScroll {
                 VStack(alignment: .leading, spacing: u * 2) {
                     ForEach(stages, id: \.0) { title, stage in
                         PixelText("-\(title)-", pixel: u)
@@ -311,6 +315,24 @@ struct LCDScreen: View {
 }
 
 // MARK: - pieces
+
+/// A vertical ScrollView, except when the scene has a fixed clock (tests and previews rendered with
+/// ImageRenderer, which draws ScrollView content as nothing): then the content is laid out from the
+/// top and clipped, which is what the viewer sees before scrolling.
+struct MaybeScroll<Content: View>: View {
+    @Environment(\.sceneDate) private var sceneDate
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        if sceneDate == nil {
+            ScrollView(showsIndicators: false) { content() }
+        } else {
+            content()
+                .frame(maxHeight: .infinity, alignment: .top)
+                .clipped()
+        }
+    }
+}
 
 /// Label on the left, value on the right; stacked when they do not fit on one line.
 private struct PixelPair: View {

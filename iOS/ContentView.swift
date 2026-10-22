@@ -155,7 +155,7 @@ struct ContentView: View {
     private func messageLine(width: CGFloat) -> some View {
         let text = model.message.isEmpty ? model.pet.statusLine : model.message
         return PixelParagraph(text: text, pixel: 3, maxChars: max(8, Int(width / 12)), centered: true)
-            .frame(width: width, height: Layout.messageHeight)
+            .frame(width: width, height: Layout.messageHeight, alignment: .top)
             .contentShape(Rectangle())
             .onTapGesture { model.dismissMessage() }
     }
@@ -178,7 +178,7 @@ private struct Layout {
     static let maxSide: CGFloat = 440
     static let topBar: CGFloat = 44
     static let rowHeight: CGFloat = 48
-    static let messageHeight: CGFloat = 34
+    static let messageHeight: CGFloat = 52
     static let buttonHeight: CGFloat = 56
     static let gap: CGFloat = 8
     static let bottomPad: CGFloat = 8

@@ -6,9 +6,12 @@ import WatchKit
 struct WatchContentView: View {
     @ObservedObject var model: GameModel
     @State private var crown: Double = 0
+    @Environment(\.sceneDate) private var sceneDate
 
     private let icons = MenuIcon.allCases
-    private let columns = [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)]
+    private var iconRows: [[MenuIcon]] {
+        stride(from: 0, to: icons.count, by: 2).map { Array(icons[$0..<min($0 + 2, icons.count)]) }
+    }
 
     var body: some View {
         #if os(watchOS)
@@ -35,8 +38,16 @@ struct WatchContentView: View {
         #endif
     }
 
-    private var content: some View {
-        ScrollView {
+    @ViewBuilder private var content: some View {
+        if sceneDate == nil {
+            ScrollView { column }
+        } else {
+            // Fixed-clock renders (ImageRenderer draws ScrollView as nothing): show the top of the column.
+            column.frame(maxHeight: .infinity, alignment: .top).clipped()
+        }
+    }
+
+    private var column: some View {
             VStack(spacing: 8) {
                 LCDScreen(model: model)
 
@@ -46,8 +57,10 @@ struct WatchContentView: View {
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, minHeight: 28)
 
-                LazyVGrid(columns: columns, spacing: 6) {
-                    ForEach(icons, id: \.self) { icon in
+                Grid(horizontalSpacing: 6, verticalSpacing: 6) {
+                    ForEach(iconRows.indices, id: \.self) { r in
+                      GridRow {
+                        ForEach(iconRows[r], id: \.self) { icon in
                         Button {
                             tap(icon)
                         } label: {
@@ -71,11 +84,12 @@ struct WatchContentView: View {
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.green, lineWidth: icon == model.selected ? 2 : 0)
                         )
+                        }
+                      }
                     }
                 }
             }
             .padding(.horizontal, 4)
-        }
     }
 
     private func tap(_ icon: MenuIcon) {

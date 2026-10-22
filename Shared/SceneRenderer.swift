@@ -542,6 +542,9 @@ enum SceneRenderer {
     // MARK: HUD and bubble
 
     private static func drawHUD(_ r: inout SceneRaster, pet: Pet, frame: Int, animated: Bool) {
+        // A clean backing under both meter rows, so the sun, clouds and stars never show
+        // through the gaps between the hearts and smileys.
+        r.knockout(x: 0, y: 0, w: 25, h: 11)
         for i in 0..<Pet.maxHearts {
             r.knockout(x: 1 + 6 * i, y: 0, w: 5, h: 5)
             r.draw(i < pet.hunger ? Sprite.heartFull : Sprite.heartEmpty, x: 1 + 6 * i, y: 0)
