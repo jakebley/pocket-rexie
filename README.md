@@ -39,4 +39,16 @@ A free, nostalgic virtual pet for iOS 17 and watchOS 10: a tiny pixel dino on a 
 Possible later features (HealthKit evolution, Live Activity, StandBy night light, co-parenting, share card, more species) are listed in the backlog section of [docs/APP_STORE.md](docs/APP_STORE.md).
 
 ## Status
-**Not compiled.** This was written in a Linux environment with no Swift toolchain or Xcode. Expect to fix minor compile errors and project settings (asset catalogs, app icons, signing) on first build.
+
+Verified by CI on every push (GitHub Actions, `.github/workflows/ci.yml`):
+- The iPhone app, widget and watch app build on macOS with Xcode.
+- 34 XCTest unit tests pass (game engine, evolution tree, save compatibility, living-scene director).
+- The Expo prototype type-checks, lints with zero errors, passes its engine and scene tests, and bundles for web, iOS and Android (Hermes).
+- The SwiftUI screens, widgets and watch view are rendered to PNGs by a test (`Tests/UIRenderTests.swift`) and published to the `ci-screenshots` branch for review.
+
+Not yet verified:
+- It has not been run on a physical iPhone or Apple Watch, or on a widget placed on a real home screen.
+- Expo Go on a device has not been tried (only the web build and the native bundles).
+- The settings sheet, the naming alert and the lock-screen inline widget are not covered by the render test.
+- Signing, TestFlight and App Store assets (icon, screenshots, hosted privacy page) are still to do. Set `DEVELOPMENT_TEAM` in `project.yml` first.
+- Evolution thresholds come from simulation and need real play-testing.
