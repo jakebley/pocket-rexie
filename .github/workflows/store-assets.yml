@@ -1,0 +1,94 @@
+name: Store assets
+
+on:
+  push:
+    branches-ignore: [ci-screenshots]
+
+jobs:
+  store:
+    name: Render App Store screenshots
+    runs-on: macos-15
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-renders
+      cancel-in-progress: false
+    env:
+      STORE_DIR: ${{ github.workspace }}/store-out
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)" || true
+          xcodebuild -version
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - name: Pick simulator
+        run: |
+          xcrun simctl list devices available | grep -E "iPhone|iOS" | head -30
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)['devices']
+          c=[x for k,v in sorted(d.items()) if 'iOS' in k for x in v if x['name'].startswith('iPhone') and x['isAvailable']]
+          pref=[x for x in c if x['name']=='iPhone 16'] or c
+          print(pref[-1]['udid'])
+          ")
+          echo "SIM_UDID=$udid" >> "$GITHUB_ENV"
+      - name: Render store screenshots
+        env:
+          TEST_RUNNER_STORE_OUT: ${{ env.STORE_DIR }}
+        run: |
+          set -o pipefail
+          mkdir -p "$STORE_DIR"
+          xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
+            -destination "platform=iOS Simulator,id=$SIM_UDID" \
+            -only-testing:PocketRexieTests/StoreScreenshotTests \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee store-test.log | tail -n 60
+      - name: Surface errors as annotations
+        if: failure()
+        run: |
+          grep -E "error:|Executed [0-9]+ tests|failed|xcodebuild: error" store-test.log | sort -u | head -9 | cut -c1-900 \
+            | while IFS= read -r line; do echo "::error title=store-log::${line//%/%25}"; done || true
+          tail -n 3 store-test.log | cut -c1-500 | while IFS= read -r line; do echo "::warning title=store-tail::${line//%/%25}"; done || true
+      - name: Count renders
+        if: always()
+        run: |
+          n=$(find "$STORE_DIR" -name '*.png' | wc -l | tr -d ' ')
+          echo "::notice title=Renders::${n} PNG files written"
+      - name: Publish to ci-screenshots
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          short=$(git rev-parse --short=8 HEAD)
+          url="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          rm -rf pub
+          if git ls-remote --exit-code --heads "$url" ci-screenshots >/dev/null 2>&1; then
+            git clone --quiet --depth 1 --branch ci-screenshots "$url" pub
+          else
+            mkdir pub
+            git -C pub init --quiet
+          fi
+          cd pub
+          mkdir -p store
+          rm -rf "store/${short}"
+          mkdir -p "store/${short}"
+          cp -R "$STORE_DIR"/. "store/${short}/"
+          echo "${GITHUB_REF_NAME} ${short}" > "store/${short}/BRANCH.txt"
+          # Keep only the latest 2 shas: index.txt is ordered oldest to newest.
+          touch store/index.txt
+          grep -v -x "$short" store/index.txt > store/index.new || true
+          echo "$short" >> store/index.new
+          mv store/index.new store/index.txt
+          total=$(wc -l < store/index.txt | tr -d ' ')
+          if [ "$total" -gt 2 ]; then
+            head -n $((total - 2)) store/index.txt | while read -r old; do rm -rf "store/${old}"; done
+            tail -n 2 store/index.txt > store/index.new && mv store/index.new store/index.txt
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --quiet --orphan ci-screenshots-new
+          git add -A
+          git commit --quiet -m "Store assets for ${short} (${GITHUB_REF_NAME})"
+          git push --force "$url" ci-screenshots-new:refs/heads/ci-screenshots
