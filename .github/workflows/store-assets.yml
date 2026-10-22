@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write
     concurrency:
-      group: publish-renders
+      group: publish-store
       cancel-in-progress: false
     env:
       STORE_DIR: ${{ github.workspace }}/store-out
