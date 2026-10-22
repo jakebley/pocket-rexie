@@ -96,6 +96,17 @@ jobs:
           xcodebuild -version
       - run: brew install xcodegen
       - run: xcodegen generate
+      - name: Pick simulator
+        run: |
+          xcrun simctl list devices available | grep -E "iPhone|iOS" | head -30
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)['devices']
+          c=[x for k,v in sorted(d.items()) if 'iOS' in k for x in v if x['name'].startswith('iPhone') and x['isAvailable']]
+          pref=[x for x in c if x['name']=='iPhone 16'] or c
+          print(pref[-1]['udid'])
+          ")
+          echo "SIM_UDID=$udid" >> "$GITHUB_ENV"
       - name: Render views to PNG
         env:
           TEST_RUNNER_RENDER_OUT: ${{ env.RENDER_DIR }}
@@ -103,7 +114,7 @@ jobs:
           set -o pipefail
           mkdir -p "$RENDER_DIR"
           xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination "platform=iOS Simulator,id=$SIM_UDID" \
             -only-testing:PocketRexieTests/UIRenderTests \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee render-test.log | tail -n 60
       - name: Surface errors as annotations
