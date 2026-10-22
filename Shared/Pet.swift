@@ -17,7 +17,9 @@ struct Pet: Codable, Equatable {
     static let tick: TimeInterval = 300
     static let maxHearts = 4
     /// How long a call may wait before it counts as a care mistake, and how long the light may stay on at night (in ticks).
-    static let mistakeAfterTicks = 72   // 6 awake hours
+    static let mistakeAfterTicks = 72        // a call may wait 6 awake hours before it counts as a mistake
+    static let babyMistakeAfterTicks = 48    // babies are needier: 4 awake hours
+    static let naughtyExpiresTicks = 36      // a naughty call just wears off after 3 awake hours (no mistake)
     static let lightMistakeTicks = 24
     /// Hours of age at which each stage ends and an evolution is checked (at the next wake-up).
     static let stageHours: [Stage: Double] = [.baby: 11, .child: 36, .teen: 72, .adult: 168]
@@ -353,18 +355,27 @@ struct Pet: Codable, Equatable {
         }
     }
 
-    private mutating func refreshCall(at t: Date) {
+    /// `tick` is true only when called from the simulation; actions refresh the display without advancing the mistake clock.
+    private mutating func refreshCall(at t: Date, tick: Bool = true) {
         if let c = call {
             if c != .naughty && !conditionHolds(c) { call = nil; callSince = nil; callMistaken = false; callTicks = 0 }
+        }
+        // A naughty call never blocks a real need.
+        if call == .naughty && [Call.sick, .hungry, .hot, .cold, .poop, .bored].contains(where: { conditionHolds($0) }) {
+            call = nil; callSince = nil; callMistaken = false; callTicks = 0
         }
         if call == nil {
             let order: [Call] = asleep ? [.light] : [.sick, .hungry, .hot, .cold, .poop, .bored]
             for c in order where conditionHolds(c) { call = c; callSince = t; callMistaken = false; callTicks = 0; log("call", c.rawValue, at: t); break }
         }
-        if call != nil, !asleep, call != .light {
+        if tick, call != nil, !asleep, call != .light {
             // Only awake time counts: a call that comes in at bedtime cannot be answered in the night.
             callTicks += 1
-            if !callMistaken && callTicks >= Pet.mistakeAfterTicks { mistake(); callMistaken = true }
+            if call == .naughty {
+                if callTicks >= Pet.naughtyExpiresTicks { call = nil; callSince = nil; callMistaken = false; callTicks = 0 }
+            } else if !callMistaken && callTicks >= (stage == .baby ? Pet.babyMistakeAfterTicks : Pet.mistakeAfterTicks) {
+                mistake(); callMistaken = true
+            }
         }
     }
 
@@ -418,7 +429,7 @@ struct Pet: Codable, Equatable {
         case .veggie: dietVeg += 1; stageVeg += 1
         case .pasta: dietPasta += 1; stagePasta += 1
         }
-        refreshCall(at: lastTick)
+        refreshCall(at: lastTick, tick: false)
         return "Yum!"
     }
 
@@ -429,7 +440,7 @@ struct Pet: Codable, Equatable {
         if asleep { return "Shh, \(name) is asleep" }
         if happy >= Pet.maxHearts { return "\(name) is too happy to eat" }
         happy += 1; weight += 2; modified = lastTick
-        refreshCall(at: lastTick)
+        refreshCall(at: lastTick, tick: false)
         return "Sweet!"
     }
 
@@ -450,7 +461,7 @@ struct Pet: Codable, Equatable {
         modified = lastTick
         guard sick else { return "\(name) is not sick" }
         medDoses += 1
-        if medDoses >= 2 { sick = false; medDoses = 0; sickTicks = 0; refreshCall(at: lastTick); return "\(name) feels better!" }
+        if medDoses >= 2 { sick = false; medDoses = 0; sickTicks = 0; refreshCall(at: lastTick, tick: false); return "\(name) feels better!" }
         return "One more dose"
     }
 
@@ -459,7 +470,7 @@ struct Pet: Codable, Equatable {
         modified = lastTick
         if poops == 0 { return "Already clean" }
         poops = 0; poopProgress = 0
-        refreshCall(at: lastTick)
+        refreshCall(at: lastTick, tick: false)
         return "Squeaky clean"
     }
 
@@ -477,7 +488,7 @@ struct Pet: Codable, Equatable {
         if temp == 0 { return "Already comfy" }
         let msg = temp > 0 ? "Ahh, nice and cool" : "Toasty warm now"
         temp = 0; tempProgress = 0
-        refreshCall(at: lastTick)
+        refreshCall(at: lastTick, tick: false)
         return msg
     }
 
@@ -502,7 +513,7 @@ struct Pet: Codable, Equatable {
         modified = lastTick
         lightOn.toggle()
         if !lightOn { lightTicks = 0 }
-        refreshCall(at: lastTick)
+        refreshCall(at: lastTick, tick: false)
         return lightOn ? "Lights on" : "Lights off"
     }
 

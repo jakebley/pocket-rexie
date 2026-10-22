@@ -5,7 +5,9 @@ import type { Call, Food, Requirement, SpeciesDef, Stage } from './types';
 export const TICK = 5 * 60 * 1000;
 export const MAX_HEARTS = 4;
 /** Care tuning: how long a call may wait before it counts as a mistake, and how long the light may stay on at night. */
-export const MISTAKE_AFTER_TICKS = 72; // 6 awake hours
+export const MISTAKE_AFTER_TICKS = 72; // a call may wait 6 awake hours before it counts as a mistake
+export const BABY_MISTAKE_AFTER_TICKS = 48; // babies are needier: 4 awake hours
+export const NAUGHTY_EXPIRES_TICKS = 36; // a naughty call just wears off after 3 awake hours (no mistake)
 export const LIGHT_MISTAKE_TICKS = 24;
 const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 11, child: 36, teen: 72, adult: 168 };
 
@@ -252,16 +254,25 @@ function holds(p: Pet, c: Call): boolean {
   }
 }
 
-function refreshCall(p: Pet, t: number) {
+/** `tick` is true only when called from the simulation; actions refresh the display without advancing the mistake clock. */
+function refreshCall(p: Pet, t: number, tick = true) {
   if (p.call && p.call !== 'naughty' && !holds(p, p.call)) { p.call = null; p.callSince = null; p.callMistaken = false; p.callTicks = 0; }
+  // A naughty call never blocks a real need.
+  if (p.call === 'naughty' && (['sick', 'hungry', 'hot', 'cold', 'poop', 'bored'] as Call[]).some((c) => holds(p, c))) {
+    p.call = null; p.callSince = null; p.callMistaken = false; p.callTicks = 0;
+  }
   if (p.call === null) {
     const order: Call[] = p.asleep ? ['light'] : ['sick', 'hungry', 'hot', 'cold', 'poop', 'bored'];
     for (const c of order) if (holds(p, c)) { p.call = c; p.callSince = t; p.callMistaken = false; p.callTicks = 0; log(p, 'call', c, t); break; }
   }
-  if (p.call && !p.asleep && p.call !== 'light') {
+  if (tick && p.call && !p.asleep && p.call !== 'light') {
     // Only awake time counts: a call that comes in at bedtime cannot be answered in the night.
     p.callTicks++;
-    if (!p.callMistaken && p.callTicks >= MISTAKE_AFTER_TICKS) { mistake(p); p.callMistaken = true; }
+    if (p.call === 'naughty') {
+      if (p.callTicks >= NAUGHTY_EXPIRES_TICKS) { p.call = null; p.callSince = null; p.callMistaken = false; p.callTicks = 0; }
+    } else if (!p.callMistaken && p.callTicks >= (p.stage === 'baby' ? BABY_MISTAKE_AFTER_TICKS : MISTAKE_AFTER_TICKS)) {
+      mistake(p); p.callMistaken = true;
+    }
   }
 }
 
@@ -308,7 +319,7 @@ function retire(p: Pet, t: number) {
 
 // ---- actions (call advance first); each returns a short message ----
 const canAct = (p: Pet) => !p.asleep && p.stage !== 'egg' && p.stage !== 'ghost';
-const touch = (p: Pet) => { p.modified = p.lastTick; refreshCall(p, p.lastTick); };
+const touch = (p: Pet) => { p.modified = p.lastTick; refreshCall(p, p.lastTick, false); };
 
 export function feed(p: Pet, food: Food): string {
   if (p.stage === 'egg' || p.stage === 'ghost') return '...';
