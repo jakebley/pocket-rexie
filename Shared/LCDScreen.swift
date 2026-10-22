@@ -328,6 +328,7 @@ struct MaybeScroll<Content: View>: View {
             ScrollView(showsIndicators: false) { content() }
         } else {
             content()
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxHeight: .infinity, alignment: .top)
                 .clipped()
         }
