@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Rexie - Support and Privacy</title>
+<meta name="description" content="Support and privacy policy for Pocket Rexie, a free pixel dinosaur virtual pet for iPhone and Apple Watch.">
+<style>
+:root{--bg:#B5C19A;--panel:#C4CFAA;--ink:#2B3320;--soft:#4A5638;--line:rgba(43,51,32,.35);--link:#2B3320}
+@media (prefers-color-scheme:dark){:root{--bg:#1E2418;--panel:#262D1E;--ink:#C9D6A6;--soft:#9FAE7F;--line:rgba(201,214,166,.3);--link:#C9D6A6}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+ background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:8px 8px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;background:var(--bg);opacity:.9;z-index:-1}
+main{max-width:42rem;margin:0 auto;padding:1.25rem 16px 4rem}
+header{padding:2.5rem 0 1rem}
+h1{font-size:2rem;line-height:1.2;margin:0 0 .4rem;letter-spacing:.02em}
+h2{font-size:1.25rem;margin:0 0 .75rem;text-transform:uppercase;letter-spacing:.08em}
+h3{font-size:1rem;margin:1.25rem 0 .25rem}
+p,li{margin:.4rem 0}
+.tag{color:var(--soft);margin:0}
+section{background:var(--panel);border:2px solid var(--ink);padding:1.25rem 1.1rem;margin:1.5rem 0;box-shadow:4px 4px 0 var(--ink)}
+a{color:var(--link);text-underline-offset:3px}
+nav a{margin-right:1rem}
+code{background:rgba(43,51,32,.15);padding:.05em .35em}
+@media (prefers-color-scheme:dark){code{background:rgba(201,214,166,.15)}}
+ul{padding-left:1.2rem}
+footer{color:var(--soft);font-size:.9rem;margin-top:2rem}
+.todo{border:2px dashed var(--ink);padding:.75rem;margin:.75rem 0}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <h1>Pocket Rexie</h1>
+ <p class="tag">A tiny pixel dinosaur to raise. Free for iPhone and Apple Watch.</p>
+ <nav><a href="#support">Support</a><a href="#privacy">Privacy Policy</a></nav>
+</header>
+
+<section id="support">
+ <h2>Support</h2>
+ <p>Questions, bug reports or ideas? Email the developer and include your iPhone model, iOS version and a short description of what happened.</p>
+ <div class="todo"><p><strong>Contact:</strong> <code>SUPPORT_EMAIL</code></p>
+ <p class="tag">(Owner: replace SUPPORT_EMAIL with your support address before submitting to the App Store. This page intentionally has no mailto link until you do.)</p></div>
+
+ <h3>Common questions</h3>
+ <h3>How do I make my dinosaur evolve?</h3>
+ <p>Evolution follows real time: a baby grows up at 8 hours, a child at 36 hours, a teen at 72 hours and an adult at 7 days. What it eats, how much you play and train, and how well you look after it decide which form it becomes. Check the Stats screen and the Dex to see what you have found. Evolution is checked on the first morning check (after 08:00) once a stage ends.</p>
+ <h3>Why is my dinosaur asleep?</h3>
+ <p>It sleeps from 21:00 to 08:00. Nothing gets worse while it sleeps. Turn the light off at bedtime for a happy morning.</p>
+ <h3>Can my dinosaur die?</h3>
+ <p>Not by default. Gentle mode is on, so it will not pass away. Classic mode, an opt-in setting, adds real consequences for neglect.</p>
+ <h3>I am going away. Can I pause the game?</h3>
+ <p>Yes. Turn on Vacation mode in Settings and time stops until you come back.</p>
+ <h3>Reminders are not showing up</h3>
+ <p>Notifications are optional and local. Check Settings &gt; Notifications &gt; Pocket Rexie on your iPhone. The app sends at most about one gentle reminder a day.</p>
+ <h3>The Watch and iPhone show different pets</h3>
+ <p>They sync directly between your own devices. Open the app on both, keep the watch near the phone, and the newest change wins.</p>
+ <h3>Is there anything to buy?</h3>
+ <p>No. Pocket Rexie is free with no ads, in-app purchases or subscriptions.</p>
+ <h3>How do I delete my data?</h3>
+ <p>Delete the app. Everything is stored only on your device, so there is nothing to request from the developer.</p>
+</section>
+
+<section id="privacy">
+ <h2>Privacy Policy</h2>
+ <p class="tag">Last updated: 2026-10-22</p>
+ <p><strong>Pocket Rexie does not collect, transmit, sell or share any personal data.</strong></p>
+ <ul>
+  <li><strong>No data collected.</strong> The developer receives nothing from the app. There is no server.</li>
+  <li><strong>No accounts.</strong> There is no sign-up or login.</li>
+  <li><strong>No tracking, no ads, no analytics.</strong> The app contains no advertising, analytics or tracking code.</li>
+  <li><strong>No third-party SDKs.</strong></li>
+  <li><strong>Local storage.</strong> Your pet's state is stored only on your device, in an App Group container shared between the app, its widgets and the Watch app. It never leaves your devices.</li>
+  <li><strong>Notifications.</strong> Reminders are optional local notifications scheduled on your device. No push server or remote notification service is used. You can turn them off in iOS Settings.</li>
+  <li><strong>Apple Watch sync.</strong> If you use the Watch app, your pet is synced between your own iPhone and your own Apple Watch using Apple's WatchConnectivity framework, directly between the two devices. No other party receives it.</li>
+  <li><strong>Health data.</strong> The app does not use HealthKit and does not read any health or fitness data.</li>
+  <li><strong>Children.</strong> The app is not directed at children under 13 and is rated 12+. It collects nothing from anyone, including children.</li>
+ </ul>
+ <p>Deleting the app removes its data from your device. For questions about this policy, use the contact in the Support section above.</p>
+</section>
+
+<footer>Pocket Rexie is an independent app with original pixel art. All trademarks belong to their owners.</footer>
+</main>
+</body>
+</html>
