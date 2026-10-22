@@ -60,3 +60,11 @@ Wandering and ambient motion stop; the pet holds an idle pose; events still show
 
 ## Testing
 The behaviour director is pure: `step(state, pet, inputs, now) -> state`. Unit tests: determinism for a seed, x bounds 0..16, sleeping pet ends on the bed, hungry pet paces, poop count increase produces a `poop` state, feeding event ends in `eat` then back to autonomy, reduced motion yields no x changes, every state has a draw routine (no exceptions) for every species and stage.
+
+## Implementation notes (Expo prototype)
+- Code: `src/ui/scene.ts` (director, pure), `src/ui/sceneDraw.ts` (painter + art), `src/ui/away.ts` (while-you-were-away text); tests in `test/scene.ts` (`npm test`).
+- HUD uses 3x3 mini glyphs so the sky stays visible: hunger hearts at y=0, happy smiles at y=4 (x 0..14), skull / temperature glyph at x=16. The stats screen keeps the 5x5 glyphs.
+- The thought bubble sits at x 19..22 (follows the pet, never over the HUD) with its tail toward the pet; when it blinks off the alert glyph shows in its place.
+- Poops are drawn in front of the pet without a halo (they stay visible); the pet scanline-clears the sky behind its silhouette.
+- Ambient (clouds, butterfly, rain, stars) is a pure function of the clock, so it needs no state. Reduced motion freezes all of it.
+- Dev panel: scene event triggers, Make poop, Rain auto/on/off, Force hour, Away 1h/8h.
