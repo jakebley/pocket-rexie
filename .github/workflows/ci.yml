@@ -21,7 +21,8 @@ jobs:
           cache-dependency-path: expo-prototype/package-lock.json
       - run: npm ci
       - run: npx tsc --noEmit
-      - run: npx tsx test/sim.ts
+      - run: npx eslint .
+      - run: npm test
       - name: Generated files are up to date
         working-directory: .
         run: |
@@ -29,6 +30,8 @@ jobs:
           python3 tools/gen_ts.py
           git diff --exit-code -- Shared/SpeciesData.swift expo-prototype/src/core/speciesData.ts
       - run: npx expo export --platform web
+      - name: Native JS bundles (Hermes) build
+        run: npx expo export --platform ios --platform android --output-dir /tmp/native-export
 
   apple:
     name: Build iOS, widget and watch

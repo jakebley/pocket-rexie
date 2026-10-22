@@ -1,7 +1,6 @@
-import { advance, newPet, feed, train, battle, SPECIES_BY_ID, DEX_SIZE, statusLine, type Pet } from '../src/core/pet';
+import { advance, newPet, feed, train, battle, DEX_SIZE, type Pet } from '../src/core/pet';
 import { SPECIES } from '../src/core/speciesData';
 
-const H = 3600000;
 let fails = 0;
 const ok = (c: boolean, m: string) => { if (!c) { fails++; console.log('FAIL', m); } };
 

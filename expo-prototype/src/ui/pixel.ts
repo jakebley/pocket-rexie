@@ -1,5 +1,5 @@
-// Pixel art tables + a tiny square bitmap buffer (32x32 scene, 64x64 text mode) used by the LCD.
-export const GRID = 32;
+// Pixel art tables + a tiny square bitmap buffer (48x48 scene, 64x64 text mode) used by the LCD.
+export const GRID = 48;
 /** Text-mode framebuffer: 64x64 so a 3x5 line holds 16 characters. */
 export const TEXT_GRID = 64;
 

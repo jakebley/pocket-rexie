@@ -1,4 +1,4 @@
-// Pure functions that paint the 32x32 LCD for a given game state.
+// Pure functions that paint the LCD (48x48 scene, 64x64 text) for a given game state.
 import { DEX_SIZE, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, textWidth } from './pixel';
@@ -134,7 +134,7 @@ function paintHome(b: Buf, ctx: ScreenCtx) {
   const { pet: p, tick } = ctx;
   if (p.stage === 'egg') {
     const wob = [0, 0, -1, 0, 0, 0, 1, 0][tick % 8];
-    b.rows(EGG_SPRITE, 8 + wob, 9);
+    b.rows(EGG_SPRITE, 16 + wob, 24);
     return;
   }
   drawScene(b, ctx.scene ?? initScene(p, Date.now()), p);
@@ -170,8 +170,8 @@ export function renderScreen(ctx: ScreenCtx): { buf: Buf; dark: boolean } {
     const b = new Buf(GRID);
     const showNew = ctx.tick % 2 === 1;
     const sprite = spriteOf(showNew ? ctx.evo.to : ctx.evo.from, false);
-    if (sprite) b.rows(sprite, 8, 8);
-    if (!showNew) b.invert(0, 0, 32, 32);
+    if (sprite) b.rows(sprite, 16, 16);
+    if (!showNew) b.invert(0, 0, GRID, GRID);
     return { buf: b, dark };
   }
   if (isTextMode(ctx)) {

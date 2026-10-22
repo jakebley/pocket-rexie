@@ -115,7 +115,7 @@ struct LCDScreen: View {
             && cy >= Double(place.inkTop - 2) && cy <= Double(place.bottom + 2)
         if onPet {
             model.tapPet()
-        } else if cy >= 22 {
+        } else if cy >= 40 {
             director.tap = .ground(x: cx)
         } else {
             director.tap = .sky
@@ -435,7 +435,7 @@ enum LCDScene {
             let inverted = (step / 2) % 2 == 0
             let id = step % 2 == 0 ? flash.from : flash.to
             let rows = Species.named(id)?.frames.first ?? Sprite.egg
-            let sprite = LCDPainter.glyphPath(rows, x: 8, y: 11, size: size)
+            let sprite = LCDPainter.glyphPath(rows, x: 16, y: 16, size: size)
             if inverted {
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(palette.ink))
                 ctx.fill(sprite, with: .color(palette.background))

@@ -1,12 +1,12 @@
 import Foundation
 
-// Draws the 32x32 home scene into a plain pixel buffer. Foundation only, so the same code feeds
+// Draws the 48x48 home scene into a plain pixel buffer. Foundation only, so the same code feeds
 // the animated LCDScreen, the static widget picture and the unit tests. SwiftUI turns the
 // buffer into paths (see LCDPainter.path).
 
-/// A 32x32 one-bit picture. `ink` pixels are dark; `shade` pixels are the dim dither mask.
+/// A 48x48 one-bit picture. `ink` pixels are dark; `shade` pixels are the dim dither mask.
 struct SceneRaster: Equatable {
-    static let side = 32
+    static let side = 48
 
     var ink = [Bool](repeating: false, count: SceneRaster.side * SceneRaster.side)
     var shade = [Bool](repeating: false, count: SceneRaster.side * SceneRaster.side)
@@ -58,8 +58,8 @@ struct ScenePose: Equatable {
     /// Mirror the sprite against its facing (dance).
     var flip = false
 
-    static let hopTable = [0, -3, -4, -3, 0]
-    static let danceTable = [0, -2, -3, -2]
+    static let hopTable = [0, -5, -6, -5, 0]
+    static let danceTable = [0, -3, -4, -3]
 
     static func make(action: SceneAction, age: Int, lookUp: Bool) -> ScenePose {
         var p = ScenePose()
@@ -189,7 +189,7 @@ enum SceneRenderer {
         }
 
         if state.action == .sleep {
-            r.draw(SceneGlyph.mat, x: place.centerX - 5, y: 26)
+            r.draw(SceneGlyph.mat, x: place.centerX - 5, y: 42)
         }
         if let e = state.effect, e.kind == .food {
             drawFood(&r, e: e, state: state)
@@ -209,13 +209,13 @@ enum SceneRenderer {
         }
 
         if !pet.lightOn {
-            for y in 11..<28 {
+            for y in 13..<44 {
                 for x in 0..<SceneRaster.side where (x + y) % 2 == 0 && !r.isSet(x, y) {
                     r.shade[y * SceneRaster.side + x] = true
                 }
             }
-            for y in 0..<11 {
-                for x in 24..<SceneRaster.side where (x + y) % 2 == 0 && !r.isSet(x, y) {
+            for y in 0..<13 {
+                for x in 25..<SceneRaster.side where (x + y) % 2 == 0 && !r.isSet(x, y) {
                     r.shade[y * SceneRaster.side + x] = true
                 }
             }
@@ -258,11 +258,11 @@ enum SceneRenderer {
         switch pet.stage {
         case .ghost:
             rows = Sprite.grave
-            ix = 8
+            ix = 16
             mirror = false
         case .egg:
             rows = Sprite.egg
-            ix = 8 + (motion ? [0, -1, 0, 1][frame & 3] : 0)
+            ix = 16 + (motion ? [0, -1, 0, 1][frame & 3] : 0)
             mirror = false
         default:
             let pose = ScenePose.make(action: state.action, age: state.actionAge, lookUp: state.lookUp)
@@ -272,13 +272,19 @@ enum SceneRenderer {
             }
             rows = override ?? Sprite.sprite(for: pet, blink: blink)
             dy = pose.dy
+            let base = ix
             ix += pose.dxF * state.facing
+            // pose wiggles (squat, shiver, sneeze) must not push the ink into a poop
+            if state.action != .sleep {
+                let lim = Int(SceneState.limit(species: pet.species, poops: state.groundPoops(for: pet)))
+                if ix > lim { ix = max(lim, base) }
+            }
             mirror = (state.facing < 0) != pose.flip
         }
 
         let width = rows.first?.count ?? 16
         let e = inkExtent(rows) ?? (c0: 0, c1: width - 1, r0: 0, r1: rows.count - 1)
-        let top = 27 - e.r1 + dy
+        let top = 43 - e.r1 + dy
         var c0 = e.c0, c1 = e.c1
         if mirror { c0 = width - 1 - e.c1; c1 = width - 1 - e.c0 }
         return ScenePlacement(rows: rows, x: ix, top: top, mirror: mirror,
@@ -294,23 +300,23 @@ enum SceneRenderer {
         switch amb.period {
         case .dawn:
             let p = min(1, max(0, (fh - 5) / 3))
-            r.draw(SceneGlyph.sun, x: Int(2 + 6 * p) - 2, y: Int(14 - 3 * p) - 2)
+            r.draw(SceneGlyph.sun, x: Int(3 + 9 * p) - 2, y: Int(38 - 5 * p) - 2)
             drawHaze(&r)
         case .day:
             let p = min(1, max(0, (fh - 8) / 10))
-            r.draw(SceneGlyph.sun, x: Int(3 + 22 * p) - 2, y: Int(11 - 8 * sin(Double.pi * p)) - 2)
+            r.draw(SceneGlyph.sun, x: Int(3 + 40 * p) - 2, y: Int(38 - 21 * sin(Double.pi * p)) - 2)
         case .dusk:
             let p = min(1, max(0, (fh - 18) / 3))
-            r.draw(SceneGlyph.sun, x: Int(26 - 4 * p) - 2, y: Int(10 + 4 * p) - 2)
+            r.draw(SceneGlyph.sun, x: Int(40 - 6 * p) - 2, y: Int(34 + 4 * p) - 2)
             drawHaze(&r)
         case .night:
             let shifted = fh >= 21 ? fh - 21 : fh + 3
             let p = min(1, max(0, shifted / 8))
-            r.draw(SceneGlyph.moon, x: Int(4 + 22 * p) - 2, y: Int(10 - 5 * sin(Double.pi * p)) - 2)
-            for i in 0..<6 {
+            r.draw(SceneGlyph.moon, x: Int(6 + 34 * p) - 2, y: Int(36 - 18 * sin(Double.pi * p)) - 2)
+            for i in 0..<8 {
                 let h = SceneRNG.hash(seed, UInt64(i), 5)
-                let sx = Int(h % 32)
-                let sy = 1 + Int((h >> 8) % 9)
+                let sx = Int(h % 48)
+                let sy = 14 + Int((h >> 8) % 24)
                 if motion && (frame + i) % 3 == 0 { continue }
                 if motion && (frame + i) % 4 == 1 {
                     r.draw(SceneGlyph.star3, x: sx - 1, y: sy - 1)
@@ -323,13 +329,14 @@ enum SceneRenderer {
         let clouds: Int
         switch amb.weather {
         case .clear: clouds = amb.period == .night ? 0 : 1
-        case .cloudy, .rain: clouds = 2
+        case .cloudy: clouds = 2
+        case .rain: clouds = 3
         }
         let drift = motion ? Int((t / 10).rounded(.down)) : 0
-        let rows = [8, 3, 5]
+        let rows = [16, 24, 20]
         for i in 0..<clouds {
-            let base = Int(SceneRNG.hash(seed, UInt64(i), 11) % 41)
-            let cx = ((base + drift) % 41 + 41) % 41 - 9
+            let base = Int(SceneRNG.hash(seed, UInt64(i), 11) % 57)
+            let cx = ((base + drift) % 57 + 57) % 57 - 9
             r.draw(SceneGlyph.cloud, x: cx, y: rows[i])
         }
 
@@ -341,45 +348,45 @@ enum SceneRenderer {
                 let u = (t - Double(window * 45) - Double((h >> 8) % 30)) / 12
                 if u >= 0 && u < 1 {
                     let fromLeft = (h >> 20) & 1 == 0
-                    let bx = Int(fromLeft ? -3 + 38 * u : 35 - 38 * u)
-                    let by = 14 + Int(3 * sin(u * 14))
+                    let bx = Int(fromLeft ? -3 + 54 * u : 51 - 54 * u)
+                    let by = 32 + Int(4 * sin(u * 14))
                     r.draw(Int(t * 4) % 2 == 0 ? SceneGlyph.butterflyA : SceneGlyph.butterflyB, x: bx, y: by)
                 }
             }
         }
 
         if amb.weather == .rain {
-            for i in 0..<10 {
+            for i in 0..<14 {
                 let h = SceneRNG.hash(seed, UInt64(i), 21)
-                let col = Int(h % 32)
+                let col = Int(h % 48)
                 let y0 = Int((h >> 16) % 28)
-                let y = motion ? (y0 + Int(t * 10)) % 28 : y0
+                let y = 13 + (motion ? (y0 + Int(t * 10)) % 28 : y0)
                 r.set(col, y)
-                if y + 1 < 28 { r.set(col, y + 1) }
+                if y + 1 < 41 { r.set(col, y + 1) }
             }
         }
     }
 
     private static func drawHaze(_ r: inout SceneRaster) {
-        for row in [11, 13] {
+        for row in [37, 39] {
             for x in 0..<SceneRaster.side where (x + row) % 2 == 0 { r.set(x, row) }
         }
     }
 
     private static func drawGround(_ r: inout SceneRaster, seed: UInt64, frame: Int, motion: Bool) {
         for x in 0..<SceneRaster.side {
-            r.set(x, 28); r.set(x, 29)
-            if x % 2 == 0 { r.set(x, 30) } else { r.set(x, 31) }
+            r.set(x, 44); r.set(x, 45)
+            if x % 2 == 0 { r.set(x, 46) } else { r.set(x, 47) }
         }
-        let xs = [1, 7, 13, 20, 27]
+        let xs = [2, 9, 16, 24, 31, 38, 44]
         for (i, base) in xs.enumerated() {
             let jitter = Int(SceneRNG.hash(seed, UInt64(i), 41) % 3) - 1
-            let x = min(29, max(0, base + jitter))
+            let x = min(45, max(0, base + jitter))
             if i % 3 == 2 {
-                r.draw(SceneGlyph.pebble, x: x, y: 25)
+                r.draw(SceneGlyph.pebble, x: x, y: 41)
             } else {
                 let swayed = motion && (frame + i) % 2 == 1
-                r.draw(swayed ? SceneGlyph.tuftB : SceneGlyph.tuftA, x: x, y: 25)
+                r.draw(swayed ? SceneGlyph.tuftB : SceneGlyph.tuftA, x: x, y: 41)
             }
         }
     }
@@ -392,16 +399,16 @@ enum SceneRenderer {
         var broomX: Double?
         if let e = state.effect, e.kind == .broom {
             shown = min(e.count, 3)
-            broomX = -5 + Double(state.tick - e.start) * 3.7
-        } else if state.action == .poop && state.actionAge < 7 {
-            shown = max(0, shown - 1)
+            broomX = -5 + Double(state.tick - e.start) * 5.4
+        } else {
+            shown = state.groundPoops(for: pet)   // the one being dropped is not down yet
         }
         guard shown > 0 else { return }
         for i in 0..<shown {
             let spot = SceneState.poopSpots[i]
             if let b = broomX, Double(spot) <= b { continue }
             let jiggle = (motion && (frame + i) % 2 == 0) ? 1 : 0
-            r.draw(Sprite.poop, x: spot + jiggle, y: 23)
+            r.draw(Sprite.poop, x: spot + jiggle, y: 39)
         }
     }
 
@@ -410,11 +417,11 @@ enum SceneRenderer {
         let fx = Int(e.x.rounded())
         if e.flag {
             if state.action == .eat {
-                r.set(fx, 26); r.set(fx + 3, 27); r.set(fx + 2, 25)
+                r.set(fx, 42); r.set(fx + 3, 43); r.set(fx + 2, 41)
             }
             return
         }
-        r.draw(SceneGlyph.food(e.food), x: fx, y: min(23, age * 2))
+        r.draw(SceneGlyph.food(e.food), x: fx, y: min(39, 14 + age * 2))
     }
 
     private static func drawHeartPop(_ r: inout SceneRaster, state: SceneState, place: ScenePlacement) {
@@ -460,7 +467,7 @@ enum SceneRenderer {
             }
         case .battle:
             if (age >= 10 && age <= 12) || (age >= 14 && age <= 16) || (age >= 18 && age <= 20) {
-                r.draw(SceneGlyph.spark, x: max(0, (p.right + 24) / 2 - 2), y: 16)
+                r.draw(SceneGlyph.spark, x: max(0, (p.right + 36) / 2 - 2), y: 32)
             }
         case .sneeze:
             if age >= 4 && age < 7 { r.set(front + dir * 2, p.inkTop + 4); r.set(front + dir * 3, p.inkTop + 5) }
@@ -477,41 +484,41 @@ enum SceneRenderer {
         case .food:
             break   // drawn under the pet
         case .broom:
-            let bx = -5 + Int(Double(age) * 3.7)
-            r.draw(SceneGlyph.broom, x: bx, y: 23)
+            let bx = -5 + Int(Double(age) * 5.4)
+            r.draw(SceneGlyph.broom, x: bx, y: 39)
             for k in 0..<3 {
-                r.set(bx - 2 - k * 3, 24 + (k * 2 + age) % 3)
+                r.set(bx - 2 - k * 3, 40 + (k * 2 + age) % 3)
             }
         case .syringe:
             guard age < 12 else { return }
             let prog = min(1.0, Double(age) / 10.0)
-            let startX = e.dir > 0 ? 31.0 : -4.0
+            let startX = e.dir > 0 ? 47.0 : -4.0
             let endX = Double(e.dir > 0 ? p.right - 1 : p.left - 3)
             let sx = Int(startX + (endX - startX) * prog)
             let sy = max(0, p.inkTop + 4 + Int(-8.0 * sin(Double.pi * prog)))
             r.draw(SceneGlyph.syringe, x: sx, y: sy, mirror: e.dir < 0)
         case .foe:
             guard age < 26 else { return }
-            var fx = max(24, 32 - age)
-            if age >= 22 { fx = 24 + (age - 22) * 2 }
+            var fx = max(36, 48 - age * 2)
+            if age >= 22 { fx = 36 + (age - 22) * 2 }
             drawFoe(&r, seed: pet.seed, start: e.start, x: fx)
         case .ball:
             guard age < 26 else { return }
-            let h = Int(6.0 * abs(sin(Double(age) * 0.9)))
-            r.draw(SceneGlyph.ball, x: Int(SceneEffect.ballX(age: age)), y: 22 - h)
+            let h = Int(9.0 * abs(sin(Double(age) * 0.9)))
+            r.draw(SceneGlyph.ball, x: Int(SceneEffect.ballX(age: age)), y: 38 - h)
         case .puff:
             if e.flag {
                 for j in 0..<3 {
-                    let px = (age * 3 + j * 9) % 32
-                    r.set(px, 12 + j * 3); r.set(px + 1, 12 + j * 3); r.set(px + 2, 12 + j * 3)
+                    let px = (age * 4 + j * 13) % 48
+                    r.set(px, 20 + j * 4); r.set(px + 1, 20 + j * 4); r.set(px + 2, 20 + j * 4)
                 }
             } else {
                 for j in 0..<4 where (age + j) % 2 == 0 {
-                    r.draw(SceneGlyph.spark3, x: j * 8 + 2, y: 12 + ((age + j) % 3) * 2)
+                    r.draw(SceneGlyph.spark3, x: j * 12 + 2, y: 20 + ((age + j) % 3) * 2)
                 }
             }
         case .shell:
-            let y = min(26, 18 + age)
+            let y = min(42, 34 + age)
             r.draw(SceneGlyph.shellLeft, x: p.centerX - 4 - age / 4, y: y)
             r.draw(SceneGlyph.shellRight, x: p.centerX + 2 + age / 4, y: y)
         }
@@ -534,7 +541,7 @@ enum SceneRenderer {
                         if br * 2 + dr < rows.count, bc * 2 + dc < row.count, row[bc * 2 + dc] == "X" { on = true }
                     }
                 }
-                if on { r.set(x + (7 - bc), 20 + br) }
+                if on { r.set(x + (7 - bc), 36 + br) }
             }
         }
     }
@@ -543,26 +550,27 @@ enum SceneRenderer {
 
     private static func drawHUD(_ r: inout SceneRaster, pet: Pet, frame: Int, animated: Bool) {
         for i in 0..<Pet.maxHearts {
-            r.knockout(x: 1 + 6 * i, y: 0, w: 5, h: 5)
-            r.draw(i < pet.hunger ? Sprite.heartFull : Sprite.heartEmpty, x: 1 + 6 * i, y: 0)
-            r.knockout(x: 1 + 6 * i, y: 6, w: 5, h: 5)
-            r.draw(i < pet.happy ? Sprite.smileFull : Sprite.smileEmpty, x: 1 + 6 * i, y: 6)
+            r.knockout(x: 1 + 6 * i, y: 1, w: 5, h: 5)
+            r.draw(i < pet.hunger ? Sprite.heartFull : Sprite.heartEmpty, x: 1 + 6 * i, y: 1)
+            r.knockout(x: 1 + 6 * i, y: 7, w: 5, h: 5)
+            r.draw(i < pet.happy ? Sprite.smileFull : Sprite.smileEmpty, x: 1 + 6 * i, y: 7)
         }
+        // Status glyphs stack down the top-right corner (x 41..45).
         if pet.needsAttention && (!animated || frame % 2 == 0) {
-            r.knockout(x: 26, y: 0, w: 5, h: 5)
-            r.draw(Sprite.alert, x: 26, y: 0)
+            r.knockout(x: 41, y: 1, w: 5, h: 5)
+            r.draw(Sprite.alert, x: 41, y: 1)
         }
         if pet.sick {
-            r.knockout(x: 26, y: 6, w: 5, h: 5)
-            r.draw(Sprite.skull, x: 26, y: 6)
+            r.knockout(x: 41, y: 7, w: 5, h: 5)
+            r.draw(Sprite.skull, x: 41, y: 7)
         }
         if !pet.asleep {
             if pet.temp >= 2 {
-                r.knockout(x: 26, y: 12, w: 5, h: 5)
-                r.draw(Sprite.drop, x: 26, y: 12)
+                r.knockout(x: 41, y: 13, w: 5, h: 5)
+                r.draw(Sprite.drop, x: 41, y: 13)
             } else if pet.temp <= -2 {
-                r.knockout(x: 26, y: 12, w: 5, h: 5)
-                r.draw(Sprite.flake, x: 26, y: 12)
+                r.knockout(x: 41, y: 13, w: 5, h: 5)
+                r.draw(Sprite.flake, x: 41, y: 13)
             }
         }
     }
@@ -586,15 +594,15 @@ enum SceneRenderer {
         var by = p.inkTop - 9
         let tailX: Int
         let tailY: Int
-        if by >= 11 {
-            bx = min(max(bx, 0), 23)
+        if by >= 13 {
+            bx = min(max(bx, 0), 39)
             tailX = min(max(p.centerX, bx + 2), bx + 6)
             tailY = by + 7
             r.knockout(x: bx, y: by, w: 9, h: 8)
         } else {
-            let right = p.centerX < 16
-            bx = min(max(right ? p.right + 2 : p.left - 10, 0), 23)
-            by = min(max(11, p.inkTop), 21)
+            let right = p.centerX < 24
+            bx = min(max(right ? p.right + 2 : p.left - 10, 0), 39)
+            by = min(max(13, p.inkTop), 37)
             tailX = right ? bx - 1 : bx + 9
             tailY = by + 3
             r.knockout(x: bx, y: by, w: 9, h: 7)
