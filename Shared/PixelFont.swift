@@ -199,6 +199,7 @@ struct PixelButton: View {
         Button(action: action) { EmptyView() }
             .buttonStyle(PixelButtonStyle(title: title, pixel: pixel, selected: selected, outlined: outlined))
             .accessibilityLabel(title)
+            .accessibilityIdentifier("px-" + title.lowercased())
     }
 }
 

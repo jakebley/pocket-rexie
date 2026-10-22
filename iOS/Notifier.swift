@@ -9,12 +9,17 @@ enum Notifier {
     private static let askedKey = "askedNotificationPermission"
     private static let ids = ["rexie.call", "rexie.soon", "rexie.hatch"]
 
+    /// UI tests: no permission prompt, nothing scheduled.
+    nonisolated(unsafe) static var disabled = false
+
     static var enabled: Bool {
+        if disabled { return false }
         UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true
     }
 
     /// Ask once, right after the first hatch (never at launch).
     static func requestAuthorizationIfNeeded() {
+        guard !disabled else { return }
         let defaults = UserDefaults.standard
         guard !defaults.bool(forKey: askedKey) else { return }
         defaults.set(true, forKey: askedKey)

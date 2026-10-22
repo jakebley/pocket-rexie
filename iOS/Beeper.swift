@@ -8,7 +8,11 @@ final class Beeper {
     private var players: [AVAudioPlayer] = []
     private var sessionReady = false
 
+    /// UI tests: never make a sound.
+    nonisolated(unsafe) static var muted = false
+
     private var enabled: Bool {
+        if Beeper.muted { return false }
         UserDefaults.standard.object(forKey: Beeper.enabledKey) as? Bool ?? true
     }
 

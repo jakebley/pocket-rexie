@@ -145,6 +145,7 @@ targets:
       - iOS/Beeper.swift
       - iOS/Notifier.swift
       - iOS/SettingsView.swift
+      - iOS/UITestSupport.swift
       - Widget/PocketRexieWidget.swift
       - Watch/WatchContentView.swift
     settings:
@@ -154,7 +155,30 @@ targets:
         # Keeps the widget extension's @main out of the test bundle.
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) RENDER_TESTS"
 
+  PocketRexieUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - UITests
+    dependencies:
+      - target: PocketRexie
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
+
 schemes:
+  # Kept apart from the PocketRexie scheme so the quick unit-test job never launches the simulator UI.
+  PocketRexieUITests:
+    build:
+      targets:
+        PocketRexie: all
+        PocketRexieUITests: all
+    test:
+      config: Debug
+      targets:
+        - PocketRexieUITests
   PocketRexie:
     build:
       targets:

@@ -62,6 +62,9 @@ final class GameModel: ObservableObject {
 
     static let rounds = 5
 
+    /// UI tests: messages stay until dismissed, and nothing touches the last-seen bookkeeping.
+    nonisolated(unsafe) static var deterministic = false
+
     @Published var pet: Pet {
         didSet { noteSpeciesChange(from: oldValue, to: pet) }
     }
@@ -135,7 +138,7 @@ final class GameModel: ObservableObject {
     func refresh() {
         guard pet.isAlive else { return }
         var p = pet
-        p.advance(to: Date())
+        p.advance(to: AppClock.now())
         if p != pet {
             if p.species != pet.species && !pet.species.isEmpty && p.isAlive {
                 say("\(p.name) evolved into \(p.speciesName)!")
@@ -162,7 +165,7 @@ final class GameModel: ObservableObject {
             message = ""
             awayLine = nil
         }
-        if now.timeIntervalSince(lastSeenWritten) >= 60 { markSeen(now) }
+        if !GameModel.deterministic && now.timeIntervalSince(lastSeenWritten) >= 60 { markSeen(now) }
         if evolutionFlash != nil && Date() > flashUntil { evolutionFlash = nil }
         refresh()
     }
@@ -195,7 +198,7 @@ final class GameModel: ObservableObject {
 
     private func say(_ text: String, seconds: TimeInterval = 4) {
         message = text
-        messageUntil = Date().addingTimeInterval(seconds)
+        messageUntil = GameModel.deterministic ? .distantFuture : Date().addingTimeInterval(seconds)
     }
 
     private func emit(_ event: SceneEvent) {
@@ -209,7 +212,7 @@ final class GameModel: ObservableObject {
     /// Runs one engine action. `event` looks at the pet before and after and returns the scene
     /// event to play when the action actually did something.
     private func mutate(event: (Pet, Pet) -> SceneEvent?, _ body: (inout Pet) -> String) {
-        pet.advance(to: Date())
+        pet.advance(to: AppClock.now())
         let before = pet
         say(body(&pet))
         persist()
@@ -217,7 +220,7 @@ final class GameModel: ObservableObject {
     }
 
     private func mutate(_ body: (inout Pet) -> String) {
-        pet.advance(to: Date())
+        pet.advance(to: AppClock.now())
         say(body(&pet))
         persist()
     }
@@ -225,6 +228,7 @@ final class GameModel: ObservableObject {
     // MARK: away from the screen
 
     private func markSeen(_ now: Date) {
+        guard !GameModel.deterministic else { return }
         lastSeenWritten = now
         UserDefaults.standard.set(now, forKey: GameModel.lastSeenKey)
     }
@@ -234,6 +238,7 @@ final class GameModel: ObservableObject {
 
     /// Call on foreground after `refresh()`: summarises a long absence and sends the pet running in.
     func welcomeBack(now: Date = Date()) {
+        guard !GameModel.deterministic else { return }
         let last = UserDefaults.standard.object(forKey: GameModel.lastSeenKey) as? Date
         markSeen(now)
         guard let last, pet.isAlive, pet.stage != .egg, !pet.paused,
@@ -264,16 +269,16 @@ final class GameModel: ObservableObject {
         selected = icon
         switch icon {
         case .feed:
-            pet.advance(to: Date())
+            pet.advance(to: AppClock.now())
             if let why = blockedReason { say(why); return }
             menuIndex = 0
             mode = .feedMenu
         case .play:
-            pet.advance(to: Date())
+            pet.advance(to: AppClock.now())
             if let why = blockedReason { say(why); return }
             mode = .play(PlayState())
         case .stats:
-            pet.advance(to: Date())
+            pet.advance(to: AppClock.now())
             statsPage = 0
             mode = .stats
         case .light:
@@ -350,6 +355,23 @@ final class GameModel: ObservableObject {
 
     // MARK: other
 
+    /// Accessibility value of the LCD in UI tests, e.g. "hunger 1 happy 3 poops 0 stage child ... name Rexie" (name last, it may hold spaces).
+    var uiTestSummary: String {
+        let modeName: String
+        switch mode {
+        case .home: modeName = "home"
+        case .feedMenu: modeName = "feed"
+        case .play: modeName = "play"
+        case .stats: modeName = statsPage == 0 ? "stats" : "details"
+        case .dex: modeName = "dex"
+        }
+        let p = pet
+        return "hunger \(p.hunger) happy \(p.happy) poops \(p.poops) stage \(p.stage.rawValue) mode \(modeName) "
+            + "named \(p.named ? 1 : 0) classic \(p.gentle ? 0 : 1) vacation \(p.paused ? 1 : 0) "
+            + "asleep \(p.asleep ? 1 : 0) sick \(p.sick ? 1 : 0) light \(p.lightOn ? 1 : 0) "
+            + "dex \(p.dex.count) gen \(p.generation) name \(p.name)"
+    }
+
     func cancel() {
         switch mode {
         case .home:
@@ -411,7 +433,7 @@ final class GameModel: ObservableObject {
 
     func startNewEgg() {
         guard !pet.isAlive else { return }
-        pet.newEgg(now: Date())
+        pet.newEgg(now: AppClock.now())
         mode = .home
         selected = .feed
         say("A new egg!")
@@ -420,7 +442,7 @@ final class GameModel: ObservableObject {
 
     func rename(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        pet.advance(to: Date())
+        pet.advance(to: AppClock.now())
         if !trimmed.isEmpty { pet.name = String(trimmed.prefix(12)) }
         pet.named = true
         persist()
@@ -431,13 +453,13 @@ final class GameModel: ObservableObject {
     func setStatsPage(_ page: Int) { statsPage = page; mode = .stats }
 
     func setPaused(_ on: Bool) {
-        pet.advance(to: Date())
+        pet.advance(to: AppClock.now())
         pet.paused = on
         persist()
     }
 
     func setGentle(_ on: Bool) {
-        pet.advance(to: Date())
+        pet.advance(to: AppClock.now())
         pet.gentle = on
         persist()
     }
