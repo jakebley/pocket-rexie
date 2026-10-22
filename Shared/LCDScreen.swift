@@ -17,6 +17,18 @@ private struct Metrics {
     var cap: Int { max(8, Int(((side - pad * 2) / unit + 1) / 4)) }
 }
 
+private struct SceneDateKey: EnvironmentKey {
+    static let defaultValue: Date? = nil
+}
+
+extension EnvironmentValues {
+    /// A fixed time for the scene (tests and previews). nil means the live timeline clock.
+    var sceneDate: Date? {
+        get { self[SceneDateKey.self] }
+        set { self[SceneDateKey.self] = newValue }
+    }
+}
+
 /// The square green-gray LCD: animated pet plus menu, game and stats overlays.
 struct LCDScreen: View {
     @ObservedObject var model: GameModel
@@ -24,6 +36,7 @@ struct LCDScreen: View {
     @Environment(\.lcdPalette) private var palette
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.sceneDate) private var sceneDate
     /// The behaviour director lives here (a class, so stepping it never invalidates the view).
     @State private var director = SceneDirector()
     /// Square corners and a full-strength ink hairline (the phone layout). Otherwise a softly
@@ -58,12 +71,12 @@ struct LCDScreen: View {
 
     private func screenCanvas(side: CGFloat) -> some View {
         // The scene steps at 8 fps (one director tick); it pauses off screen and behind text screens.
-        let paused = scenePhase != .active || model.mode != .home
+        let paused = scenePhase != .active || model.mode != .home || sceneDate != nil
         return TimelineView(.animation(minimumInterval: SceneState.tickLength, paused: paused)) { timeline in
             let pet = model.pet
             let flash = model.evolutionFlash
             let hatchedAt = model.hatchedAt
-            let date = timeline.date
+            let date = sceneDate ?? timeline.date
             let raster = flash == nil
                 ? director.frame(pet: pet, date: date, reducedMotion: reduceMotion,
                                  hatchedAt: hatchedAt)

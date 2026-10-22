@@ -92,12 +92,22 @@ final class GameModel: ObservableObject {
     static let lastSeenKey = "rexie.lastSeen"
     private var lastSeenWritten = Date.distantPast
 
+    /// Where saves go. nil means the real PetStore plus watch sync; tests and previews inject their own.
+    private let persistHandler: ((Pet) -> Void)?
+    /// True when built with an injected pet: no timers, no store reloads, so the state stays put.
+    private let isolated: Bool
+
     private var messageUntil = Date.distantPast
     private var flashUntil = Date.distantPast
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
-        pet = PetStore.load()
+    /// `pet` and `persist` are for tests and previews: with them the model neither ticks nor touches
+    /// the shared store. The defaults keep the normal app behaviour.
+    init(pet injected: Pet? = nil, persist: ((Pet) -> Void)? = nil) {
+        pet = injected ?? PetStore.load()
+        persistHandler = persist
+        isolated = injected != nil
+        if isolated { return }
 
         Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
@@ -138,6 +148,7 @@ final class GameModel: ObservableObject {
 
     /// Pick up changes made elsewhere (watch, widget buttons).
     func reloadFromStore() {
+        guard !isolated else { return }
         let p = PetStore.load()
         if p != pet {
             pet = p
@@ -158,8 +169,12 @@ final class GameModel: ObservableObject {
 
     private func persist() {
         pet.modified = Date()
-        PetStore.save(pet)
-        PetSync.push(pet)
+        if let persistHandler {
+            persistHandler(pet)
+        } else {
+            PetStore.save(pet)
+            PetSync.push(pet)
+        }
         onSave?(pet)
     }
 

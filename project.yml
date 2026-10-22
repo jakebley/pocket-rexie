@@ -140,17 +140,19 @@ targets:
     platform: iOS
     sources:
       - Tests
-      - Shared/Pet.swift
-      - Shared/Species.swift
-      - Shared/SpeciesData.swift
-      - Shared/Sprites.swift
-      - Shared/LivingScene.swift
-      - Shared/SceneGlyphs.swift
-      - Shared/SceneRenderer.swift
+      - Shared
+      - iOS/ContentView.swift
+      - iOS/Beeper.swift
+      - iOS/Notifier.swift
+      - iOS/SettingsView.swift
+      - Widget/PocketRexieWidget.swift
+      - Watch/WatchContentView.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.tests
         GENERATE_INFOPLIST_FILE: YES
+        # Keeps the widget extension's @main out of the test bundle.
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) RENDER_TESTS"
 
 schemes:
   PocketRexie:

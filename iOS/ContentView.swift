@@ -2,11 +2,21 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
-    @StateObject private var model = GameModel()
+    @StateObject private var model: GameModel
+    /// Fixed time for the scene (tests); nil means the live clock.
+    private let clock: Date?
+    /// A model was handed in (tests): skip launch side effects such as notifications.
+    private let injected: Bool
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var scheme
     @State private var showSettings = false
     @State private var nameDraft = "Rexie"
+
+    init(model: GameModel? = nil, clock: Date? = nil) {
+        _model = StateObject(wrappedValue: model ?? GameModel())
+        self.clock = clock
+        self.injected = model != nil
+    }
 
     private var needsName: Bool { model.pet.stage == .baby && !model.pet.named }
 
@@ -44,6 +54,7 @@ struct ContentView: View {
         }
         .background(palette.background.ignoresSafeArea())
         .environment(\.lcdPalette, palette)
+        .environment(\.sceneDate, clock)
         .tint(palette.ink)
         .sheet(isPresented: $showSettings) {
             SettingsView(model: model)
@@ -57,6 +68,7 @@ struct ContentView: View {
             Text("What will you call it?")
         }
         .onAppear {
+            guard !injected else { return }
             model.onSave = { Notifier.reschedule($0) }
             model.onSceneEvent = { event in
                 // Hatching and evolving already buzz from the stage/species changes below.

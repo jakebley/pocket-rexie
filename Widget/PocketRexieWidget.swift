@@ -9,7 +9,7 @@ struct PetEntry: TimelineEntry {
     let pet: Pet
 }
 
-private enum WidgetPalette {
+enum WidgetPalette {
     static let lcd = Color(red: 0.62, green: 0.71, blue: 0.53)
     static let ink = Color(red: 0.17, green: 0.23, blue: 0.15)
 }
@@ -262,9 +262,11 @@ struct PocketRexieWidget: Widget {
     }
 }
 
+#if !RENDER_TESTS
 @main
 struct PocketRexieWidgetBundle: WidgetBundle {
     var body: some Widget {
         PocketRexieWidget()
     }
 }
+#endif

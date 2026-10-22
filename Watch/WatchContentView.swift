@@ -1,5 +1,7 @@
 import SwiftUI
+#if os(watchOS)
 import WatchKit
+#endif
 
 struct WatchContentView: View {
     @ObservedObject var model: GameModel
@@ -9,6 +11,31 @@ struct WatchContentView: View {
     private let columns = [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)]
 
     var body: some View {
+        #if os(watchOS)
+        content
+            .focusable()
+            .digitalCrownRotation($crown, from: 0, through: Double(icons.count - 1), by: 1,
+                                  sensitivity: .medium, isContinuous: true, isHapticFeedbackEnabled: true)
+            .onChange(of: crown) { _, value in
+                let index = min(max(Int(value.rounded()), 0), icons.count - 1)
+                if icons[index] != model.selected { model.selected = icons[index] }
+            }
+            .onChange(of: model.message) { _, text in
+                guard !text.isEmpty else { return }
+                WKInterfaceDevice.current().play(hapticFor(text))
+            }
+            .onChange(of: model.pet.call) { old, new in
+                if new != nil && old == nil && !model.pet.asleep {
+                    WKInterfaceDevice.current().play(.notification)
+                }
+            }
+            .onAppear { syncCrown() }
+        #else
+        content
+        #endif
+    }
+
+    private var content: some View {
         ScrollView {
             VStack(spacing: 8) {
                 LCDScreen(model: model)
@@ -49,40 +76,30 @@ struct WatchContentView: View {
             }
             .padding(.horizontal, 4)
         }
-        .focusable()
-        .digitalCrownRotation($crown, from: 0, through: Double(icons.count - 1), by: 1,
-                              sensitivity: .medium, isContinuous: true, isHapticFeedbackEnabled: true)
-        .onChange(of: crown) { _, value in
-            let index = min(max(Int(value.rounded()), 0), icons.count - 1)
-            if icons[index] != model.selected { model.selected = icons[index] }
-        }
-        .onChange(of: model.message) { _, text in
-            guard !text.isEmpty else { return }
-            WKInterfaceDevice.current().play(hapticFor(text))
-        }
-        .onChange(of: model.pet.call) { old, new in
-            if new != nil && old == nil && !model.pet.asleep {
-                WKInterfaceDevice.current().play(.notification)
-            }
-        }
-        .onAppear { syncCrown() }
     }
 
     private func tap(_ icon: MenuIcon) {
         if icon == model.selected {
-            WKInterfaceDevice.current().play(.click)
+            click()
             model.confirm()
         } else {
             model.selected = icon
             syncCrown()
-            WKInterfaceDevice.current().play(.click)
+            click()
         }
+    }
+
+    private func click() {
+        #if os(watchOS)
+        WKInterfaceDevice.current().play(.click)
+        #endif
     }
 
     private func syncCrown() {
         if let i = icons.firstIndex(of: model.selected) { crown = Double(i) }
     }
 
+    #if os(watchOS)
     private func hapticFor(_ text: String) -> WKHapticType {
         let good = ["Yum", "Sweet", "Squeaky", "better", "behaves", "won", "learned", "purrs", "Lights"]
         let bad = ["Shh", "full", "Not now", "not sick", "confused", "Already", "too happy"]
@@ -90,6 +107,7 @@ struct WatchContentView: View {
         if good.contains(where: { text.contains($0) }) { return .success }
         return .click
     }
+    #endif
 }
 
 // MARK: - Complication notes
