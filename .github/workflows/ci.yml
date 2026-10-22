@@ -106,6 +106,12 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             -only-testing:PocketRexieTests/UIRenderTests \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee render-test.log | tail -n 60
+      - name: Surface errors as annotations
+        if: failure()
+        run: |
+          grep -E "error:|Executed [0-9]+ tests|failed|xcodebuild: error" render-test.log | sort -u | head -9 | cut -c1-900 \
+            | while IFS= read -r line; do echo "::error title=render-log::${line//%/%25}"; done || true
+          tail -n 3 render-test.log | cut -c1-500 | while IFS= read -r line; do echo "::warning title=render-tail::${line//%/%25}"; done || true
       - name: Count renders
         if: always()
         run: |
