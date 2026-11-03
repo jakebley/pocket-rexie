@@ -96,7 +96,10 @@ struct LCDScreen: View {
             director.events.append(contentsOf: events)
             model.sceneEvents.removeAll()
         }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(model.pet.statusLine)
+        .accessibilityValue(GameModel.deterministic ? model.uiTestSummary : "")
+        .accessibilityIdentifier("lcd")
     }
 
     /// Tap on the pet pets it; on the ground the pet walks over and looks; in the sky it looks up.
@@ -319,6 +322,11 @@ struct LCDScreen: View {
 
 // MARK: - pieces
 
+enum UITestFlags {
+    /// UI tests pin the scene clock but still drive a real ScrollView.
+    nonisolated(unsafe) static var forceScroll = false
+}
+
 /// A vertical ScrollView, except when the scene has a fixed clock (tests and previews rendered with
 /// ImageRenderer, which draws ScrollView content as nothing): then the content is laid out from the
 /// top and clipped, which is what the viewer sees before scrolling.
@@ -327,7 +335,7 @@ struct MaybeScroll<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        if sceneDate == nil {
+        if sceneDate == nil || UITestFlags.forceScroll {
             ScrollView(showsIndicators: false) { content() }
         } else {
             Color.clear

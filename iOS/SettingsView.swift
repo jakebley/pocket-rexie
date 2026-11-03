@@ -21,7 +21,9 @@ struct SettingsView: View {
             Form {
                 Section("Play") {
                     Toggle("Sound", isOn: $soundOn)
+                        .accessibilityIdentifier("toggle-sound")
                     Toggle("Notifications", isOn: $notificationsOn)
+                        .accessibilityIdentifier("toggle-notifications")
                 }
                 .listRowBackground(palette.ink.opacity(0.1))
 
@@ -29,9 +31,11 @@ struct SettingsView: View {
                     Toggle("Classic mode", isOn: Binding(
                         get: { !model.pet.gentle },
                         set: { model.setGentle(!$0) }))
+                    .accessibilityIdentifier("toggle-classic")
                     Toggle("Vacation mode", isOn: Binding(
                         get: { model.pet.paused },
                         set: { model.setPaused($0) }))
+                    .accessibilityIdentifier("toggle-vacation")
                 } footer: {
                     Text("By default your dino never dies; neglect only costs care points. Classic mode brings back the 1997 rules, where a dino left hungry or sick for too long can die. Vacation mode freezes time while you are away.")
                 }
@@ -39,6 +43,7 @@ struct SettingsView: View {
 
                 Section("About") {
                     NavigationLink("About Pocket Rexie") { AboutView(version: version) }
+                        .accessibilityIdentifier("settings-about")
                 }
                 .listRowBackground(palette.ink.opacity(0.1))
             }
@@ -48,6 +53,7 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                        .accessibilityIdentifier("settings-done")
                 }
             }
             .onChange(of: notificationsOn) { _, on in

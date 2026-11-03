@@ -15,7 +15,7 @@ struct ContentView: View {
     init(model: GameModel? = nil, clock: Date? = nil) {
         _model = StateObject(wrappedValue: model ?? GameModel())
         self.clock = clock
-        self.injected = model != nil
+        self.injected = model != nil || UITestSupport.active
     }
 
     private var needsName: Bool { model.pet.stage == .baby && !model.pet.named }
@@ -53,6 +53,8 @@ struct ContentView: View {
             .frame(width: geo.size.width, height: geo.size.height)
         }
         .background(palette.background.ignoresSafeArea())
+        // The naming alert raises the keyboard; the layout must not squeeze to fit above it.
+        .ignoresSafeArea(.keyboard)
         .environment(\.lcdPalette, palette)
         .environment(\.sceneDate, clock)
         .tint(palette.ink)
@@ -123,6 +125,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Settings")
+        .accessibilityIdentifier("settings-gear")
     }
 
     private func iconRow(_ icons: [MenuIcon], width: CGFloat, glyphPixel: CGFloat) -> some View {
@@ -146,6 +149,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(icon.title)
+                .accessibilityIdentifier("menu-" + icon.title.lowercased())
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
@@ -158,6 +162,10 @@ struct ContentView: View {
             .frame(width: width, height: Layout.messageHeight, alignment: .top)
             .contentShape(Rectangle())
             .onTapGesture { model.dismissMessage() }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(text)
+            .accessibilityIdentifier("message-line")
+            .accessibilityAddTraits(.isButton)
     }
 
     private func controls(width: CGFloat) -> some View {
@@ -210,6 +218,7 @@ private struct ControlButton: View {
         }
         .buttonStyle(ControlButtonStyle(title: label))
         .accessibilityLabel("Button \(label)")
+        .accessibilityIdentifier("btn-\(label)")
     }
 }
 
@@ -237,11 +246,16 @@ private struct ControlFace: View {
 
 @MainActor
 enum Haptics {
+    /// UI tests: no haptics.
+    nonisolated(unsafe) static var muted = false
+
     static func tap() {
+        guard !muted else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     static func success() {
+        guard !muted else { return }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }

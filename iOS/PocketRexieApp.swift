@@ -3,12 +3,13 @@ import SwiftUI
 @main
 struct PocketRexieApp: App {
     init() {
-        PetSync.activate()
+        UITestSupport.configureIfRequested()
+        if !UITestSupport.active { PetSync.activate() }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(clock: UITestSupport.sceneClock)
         }
     }
 }

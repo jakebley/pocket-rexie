@@ -173,3 +173,144 @@ jobs:
           git add -A
           git commit --quiet -m "Renders for ${short} (${GITHUB_REF_NAME})"
           git push --force "$url" ci-screenshots-new:refs/heads/ci-screenshots
+
+  uitest:
+    name: UI tests (XCUITest on two simulators)
+    if: github.event_name == 'push' && github.ref != 'refs/heads/ci-screenshots'
+    runs-on: macos-15
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      RESULTS_DIR: ${{ github.workspace }}/uitest-results
+      UI_SHOTS_DIR: /tmp/ui-shots
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)" || true
+          xcodebuild -version
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - name: Pick simulators
+        run: |
+          xcrun simctl list devices available | grep -E "iPhone|iOS" | head -60
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json, re, subprocess
+          d = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"]))["devices"]
+          phones = []
+          for runtime, devs in sorted(d.items()):
+              if "iOS" not in runtime:
+                  continue
+              for x in devs:
+                  if x["name"].startswith("iPhone") and x.get("isAvailable", True):
+                      phones.append(x)
+
+          def find(*names):
+              for n in names:
+                  hit = [x for x in phones if x["name"] == n]
+                  if hit:
+                      return hit[-1]
+              return None
+
+          def gen(x):
+              m = re.search(r"iPhone (\d+)", x["name"])
+              return int(m.group(1)) if m else 0
+
+          small = find("iPhone SE (3rd generation)", "iPhone SE (2nd generation)", "iPhone 13 mini",
+                       "iPhone 12 mini", "iPhone 16e", "iPhone 16", "iPhone 15")
+          pros = sorted([x for x in phones if re.search(r"Pro$", x["name"])], key=gen)
+          pro = find("iPhone 16 Pro") or (pros[-1] if pros else None)
+          small = small or phones[0]
+          pro = pro or phones[-1]
+          print("SIM_SMALL_UDID=" + small["udid"])
+          print("SIM_SMALL_NAME=" + small["name"])
+          print("SIM_PRO_UDID=" + pro["udid"])
+          print("SIM_PRO_NAME=" + pro["name"])
+          PY
+          echo "small: $SIM_SMALL_NAME  pro: $SIM_PRO_NAME" || true
+      - name: Build for testing
+        id: build
+        run: |
+          set -o pipefail
+          xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexieUITests \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= build-for-testing 2>&1 | tee uitest-build.log | tail -n 60
+      - name: Run UI tests (small iPhone)
+        id: small
+        run: |
+          echo "::notice title=uitest device::small iPhone is ${SIM_SMALL_NAME}"
+          bash .github/scripts/run_uitests.sh "$SIM_SMALL_NAME" "$SIM_SMALL_UDID"
+      - name: Run UI tests (Pro iPhone)
+        id: pro
+        if: always() && steps.build.outcome == 'success'
+        run: |
+          echo "::notice title=uitest device::Pro iPhone is ${SIM_PRO_NAME}"
+          bash .github/scripts/run_uitests.sh "$SIM_PRO_NAME" "$SIM_PRO_UDID"
+      - name: Surface build errors as annotations
+        if: failure() && steps.build.outcome == 'failure'
+        run: |
+          grep -h -E "error:" uitest-build.log | sort -u | head -9 | cut -c1-900 \
+            | while IFS= read -r line; do echo "::error title=uitest-build::${line//%/%25}"; done || true
+      - name: Count screenshots
+        if: always()
+        run: |
+          n=$(find /tmp/ui-shots -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
+          echo "::notice title=UI screenshots::${n} PNG files written"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uitest-results
+          path: |
+            uitest-results
+            uitest-*.log
+      - name: Publish to ci-screenshots
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          short=$(git rev-parse --short=8 HEAD)
+          url="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          for attempt in 1 2 3 4 5 6; do
+            rm -rf pub
+            if git ls-remote --exit-code --heads "$url" ci-screenshots >/dev/null 2>&1; then
+              git clone --quiet --depth 1 --branch ci-screenshots "$url" pub
+              base=$(git -C pub rev-parse HEAD)
+            else
+              mkdir pub
+              git -C pub init --quiet
+              base=""
+            fi
+            (
+              set -e
+              cd pub
+              mkdir -p uitests
+              rm -rf "uitests/${short}"
+              mkdir -p "uitests/${short}"
+              if [ -d /tmp/ui-shots ]; then cp -R /tmp/ui-shots/. "uitests/${short}/"; fi
+              echo "${GITHUB_REF_NAME} ${short}" > "uitests/${short}/BRANCH.txt"
+              touch uitests/index.txt
+              grep -v -x "$short" uitests/index.txt > uitests/index.new || true
+              echo "$short" >> uitests/index.new
+              mv uitests/index.new uitests/index.txt
+              total=$(wc -l < uitests/index.txt | tr -d ' ')
+              if [ "$total" -gt 2 ]; then
+                head -n $((total - 2)) uitests/index.txt | while read -r old; do rm -rf "uitests/${old}"; done
+                tail -n 2 uitests/index.txt > uitests/index.new && mv uitests/index.new uitests/index.txt
+              fi
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git checkout --quiet --orphan ci-screenshots-new
+              git add -A
+              git commit --quiet -m "UI test screenshots for ${short} (${GITHUB_REF_NAME})"
+            ) || { echo "prepare failed"; sleep 5; continue; }
+            if [ -n "$base" ]; then
+              git -C pub push "$url" ci-screenshots-new:refs/heads/ci-screenshots \
+                --force-with-lease="refs/heads/ci-screenshots:${base}" && break
+            else
+              git -C pub push "$url" ci-screenshots-new:refs/heads/ci-screenshots && break
+            fi
+            echo "push raced with another publisher, retrying (${attempt})"
+            sleep $((attempt * 4))
+          done
