@@ -1,7 +1,7 @@
-// Pure functions that paint the LCD (48x48 scene, 64x64 text) for a given game state.
+// Pure functions that paint the LCD (64x64 scene and text) for a given game state.
 import { DEX_SIZE, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
-import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, textWidth } from './pixel';
+import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
 import { initScene, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
 
@@ -20,8 +20,10 @@ export const FEED_ROWS = ['MEAT', 'VEGGIES', 'PASTA', 'SNACK', 'CANCEL'];
 
 const spriteOf = (id: string, blink: boolean): string[] | null => {
   const sp = SPECIES_BY_ID[id];
-  return sp ? sp.frames[blink && sp.frames[1] ? 1 : 0] : null;
+  return sp ? sp.hiFrames[blink && sp.hiFrames[1] ? 1 : 0] : null;
 };
+const EGG_HI = epx(EGG_SPRITE);
+const TOMB_HI = epx(TOMB_SPRITE);
 
 function hearts(b: Buf, n: number, full: string[], empty: string[], x: number, y: number, step = 6) {
   for (let i = 0; i < 4; i++) b.rows(i < n ? full : empty, x + i * step, y);
@@ -133,8 +135,8 @@ function paintPlay(b: Buf, pl: PlayState) {
 function paintHome(b: Buf, ctx: ScreenCtx) {
   const { pet: p, tick } = ctx;
   if (p.stage === 'egg') {
-    const wob = [0, 0, -1, 0, 0, 0, 1, 0][tick % 8];
-    b.rows(EGG_SPRITE, 16 + wob, 24);
+    const wob = [0, 0, -2, 0, 0, 0, 2, 0][tick % 8];
+    b.rows(EGG_HI, 16 + wob, 26);
     return;
   }
   drawScene(b, ctx.scene ?? initScene(p, Date.now()), p);
@@ -143,7 +145,7 @@ function paintHome(b: Buf, ctx: ScreenCtx) {
 function paintGhost(b: Buf, ctx: ScreenCtx) {
   const p = ctx.pet;
   center(b, 'R.I.P.', 2);
-  b.rowsScaled(TOMB_SPRITE, 16, 10, 2);
+  b.rows(TOMB_HI, 16, 10);
   center(b, p.name.toUpperCase().slice(0, 16), 45);
   const cause = (p.causeOfDeath ?? '').toString().toUpperCase();
   if (cause) b.ticker(cause, 54, ctx.tick, 1, b.n - 2);

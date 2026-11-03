@@ -64,7 +64,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
   const stillRef = useRef(still); stillRef.current = still;
   const sceneRef = useRef<Scene | null>(null);
   const lastKey = useRef('');
-  const [fr, setFr] = useState<{ lit: string; n: number; dark: boolean }>({ lit: '', n: 48, dark: false });
+  const [fr, setFr] = useState<{ lit: string; n: number; dark: boolean }>({ lit: '', n: 64, dark: false });
 
   const render = useCallback(() => {
     const g = gameRef.current;
@@ -102,11 +102,11 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     let lx = ne.locationX, ly = ne.locationY;
     const r = (e.currentTarget as any)?.getBoundingClientRect?.();
     if (Platform.OS === 'web' && r && ne.clientX !== undefined) { lx = ne.clientX - r.left; ly = ne.clientY - r.top; }
-    const cx = Math.max(0, Math.min(47, Math.floor((lx ?? 0) / c)));
-    const cy = Math.max(0, Math.min(47, Math.floor((ly ?? 0) / c)));
+    const cx = Math.max(0, Math.min(n - 1, Math.floor((lx ?? 0) / c)));
+    const cy = Math.max(0, Math.min(n - 1, Math.floor((ly ?? 0) / c)));
     const sc = sceneRef.current;
     const px = sc ? Math.round(sc.x) : 8;
-    const onPet = !!sc && cx >= px && cx <= px + 15 && cy >= HEAD_Y - 3 && cy <= GROUND_Y;
+    const onPet = !!sc && cx >= px && cx <= px + 31 && cy >= HEAD_Y - 4 && cy <= GROUND_Y;
     game.tapScene(cx, cy, onPet);
   };
 

@@ -6,7 +6,7 @@ import {
   newEgg, newPet, petIt, scold, speciesName, toggleLight, train, type Pet,
 } from '../core/pet';
 import { AWAY_MIN_MS, awaySummary } from './away';
-import type { SceneEvent } from './scene';
+import { GROUND_TAP_Y, type SceneEvent } from './scene';
 import { dexPageCount, statsPageCount, type Evo, type Mode, type PlayState } from './screens';
 import * as sound from './sound';
 
@@ -278,7 +278,7 @@ export function useGame() {
     playRef.current = { ...pl, sel: i };
     playGuess();
   };
-  /** Tap on the home scene (cell coordinates in the 48x48 grid). */
+  /** Tap on the home scene (cell coordinates in the 64x64 grid). */
   const tapScene = (cx: number, cy: number, onPet: boolean) => {
     const p = petRef.current;
     if (!p || modeRef.current !== 'home') return;
@@ -288,7 +288,7 @@ export function useGame() {
       mutate((q) => { const m = petIt(q); if (!q.asleep) emit({ kind: 'petted' }); return m; });
     } else if (!p.asleep) {
       sound.beep();
-      emit(cy >= 40 ? { kind: 'tapGround', x: cx } : { kind: 'tapSky' });
+      emit(cy >= GROUND_TAP_Y ? { kind: 'tapGround', x: cx } : { kind: 'tapSky' });
     }
   };
   const dismissMsg = () => { if (msgTimer.current) clearTimeout(msgTimer.current); setMsg(null); };

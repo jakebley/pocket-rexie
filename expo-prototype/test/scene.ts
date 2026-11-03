@@ -1,7 +1,7 @@
 import { forceSpecies, newPet, type Pet } from '../src/core/pet';
 import { SPECIES } from '../src/core/speciesData';
 import { Buf } from '../src/ui/pixel';
-import { BED_X, MAX_X, POOP_X, SCENE_N, SCENE_STATES, TICK_MS, initScene, inkWidth, maxXFor, popcount, step, type Scene, type SceneEvent, type SceneInputs } from '../src/ui/scene';
+import { BED_X, GROUND_TAP_Y, GROUND_Y, HEAD_Y, MAX_X, POOP_X, SCENE_N, SPRITE_N, SCENE_STATES, TICK_MS, initScene, inkWidth, maxXFor, popcount, step, type Scene, type SceneEvent, type SceneInputs } from '../src/ui/scene';
 import { awaySummary } from '../src/ui/away';
 import { drawScene, poseOf } from '../src/ui/sceneDraw';
 
@@ -168,8 +168,8 @@ function run(s: Scene, pet: Pet, n: number, t: { now: number }, inp: SceneInputs
           const s: Scene = {
             ...base, state, facing, t: tt, x: facing === 1 ? 0 : 32, lookUp: tt === 3, nowMs: T0 + tt * 700, still: false,
             weather: tt === 0 ? 'rain' : tt === 3 ? 'cloudy' : 'clear', dim: tt === 6, poopMask: 7, hour: [5, 12, 19, 23][(tt / 3) | 0 % 4] ?? 12,
-            props: [{ g: 'food:meat', x: 24, y: 23, n: 1, side: 1 }, { g: 'foe', x: 23, y: 20, n: 3 }, { g: 'broom', x: 5, y: 23 }, { g: 'syringe', x: 9, y: 9 }],
-            pops: [{ g: 'heart', x: 8, y: 10, age: 2, life: 10 }, { g: 'note', x: 10, y: 8, age: 0, life: 6 }],
+            props: [{ g: 'food:meat', x: 40, y: 40, n: 1, side: 1 }, { g: 'foe', x: 30, y: 44, n: 3 }, { g: 'broom', x: 5, y: 51 }, { g: 'syringe', x: 12, y: 30 }],
+            pops: [{ g: 'heart', x: 12, y: 20, age: 2, life: 10 }, { g: 'note', x: 30, y: 18, age: 0, life: 6 }, { g: 'dot', x: 3, y: 50, age: 0, life: 3 }],
           };
           const b = new Buf(SCENE_N);
           try { drawScene(b, s, p); n++; } catch (e) { ok(false, `draw ${sp.id} ${state} facing ${facing}: ${e}`); }
@@ -193,18 +193,19 @@ function run(s: Scene, pet: Pet, n: number, t: { now: number }, inp: SceneInputs
   ok(awaySummary(p, 25) === 'WHILE YOU WERE AWAY\nMADE 2 MESSES, WANTED ATTENTION', 'only newer events counted');
 }
 
-// 11. poops at x = 41, 35, 29; the pet's range shrinks with the poop count and its ink never meets a poop
+// 11. poops at x = 56, 48, 40; the pet's range shrinks with the poop count and its ink never meets a poop
 {
-  ok(POOP_X.join() === '41,35,29', 'poop spots run right to left from the right edge');
-  ok(MAX_X === 32 && SCENE_N === 48, 'scene grid is 48 with pet x range 0..32');
+  ok(POOP_X.join() === '56,48,40', 'poop spots run right to left from the right edge');
+  ok(MAX_X === 32 && SCENE_N === 64 && SPRITE_N === 32 && MAX_X === SCENE_N - SPRITE_N, 'scene grid is 64 with pet x range 0..32 (32x32 hiFrames)');
+  ok(HEAD_Y + SPRITE_N === GROUND_Y && GROUND_Y === 60 && GROUND_TAP_Y < GROUND_Y, 'feet stand on the ground line');
   // limit formula and per-species ink width
   for (const sp of SPECIES) {
     const w = inkWidth(sp.id);
     let hi = -1, lo = 99;
-    for (const f of sp.frames) for (const r of f) for (let i = 0; i < r.length; i++) if (r[i] === 'X') { hi = Math.max(hi, i); lo = Math.min(lo, i); }
-    ok(w >= hi - lo + 1 && w >= hi + 1 && w >= 16 - lo && w <= 16, `inkWidth covers ${sp.id}'s occupied columns (${w})`);
+    for (const f of sp.hiFrames) for (const r of f) for (let i = 0; i < r.length; i++) if (r[i] === 'X') { hi = Math.max(hi, i); lo = Math.min(lo, i); }
+    ok(w >= hi - lo + 1 && w >= hi + 1 && w >= 32 - lo && w <= 32, `inkWidth covers ${sp.id}'s occupied columns (${w})`);
     const lims = [0, 1, 3, 7].map((m) => maxXFor(sp.id, m));
-    ok(lims[0] === 32 && lims[1] === Math.max(0, Math.min(32, 41 - w - 1)) && lims[2] === Math.max(0, 35 - w - 1) && lims[3] === Math.max(0, 29 - w - 1), `${sp.id} limits ${lims}`);
+    ok(lims[0] === 32 && lims[1] === Math.max(0, Math.min(32, 56 - w - 1)) && lims[2] === Math.max(0, 48 - w - 1) && lims[3] === Math.max(0, 40 - w - 1), `${sp.id} limits ${lims}`);
     ok(lims[0] >= lims[1] && lims[1] >= lims[2] && lims[2] >= lims[3] && lims[1] < lims[0], `${sp.id} limit shrinks as poops grow`);
   }
   // ink columns the pet really paints (mirror + pose offsets) never touch a poop column, 1-3 poops, 3000 ticks
@@ -223,8 +224,8 @@ function run(s: Scene, pet: Pet, n: number, t: { now: number }, inp: SceneInputs
         if (q.x > lim) over++;
         const pose = poseOf(q);
         const px = Math.min(Math.round(q.x + pose.dx * pose.facing), lim);
-        const spr = pose.blink && sp.frames[1] ? sp.frames[1] : sp.frames[0];
-        for (const f of [sp.frames[0], spr]) {
+        const spr = pose.blink && sp.hiFrames[1] ? sp.hiFrames[1] : sp.hiFrames[0];
+        for (const f of [sp.hiFrames[0], spr]) {
           for (const r of f) {
             const row = pose.facing === 1 ? r : [...r].reverse().join('');
             const hiC = row.lastIndexOf('X');
@@ -244,7 +245,7 @@ function run(s: Scene, pet: Pet, n: number, t: { now: number }, inp: SceneInputs
   const sp = SPECIES.find((q) => q.id === 'rawr')!;
   const p = mkPet(99, sp.id);
   const t = { now: T0 };
-  const s0 = { ...initScene(p, T0, 12), x: 30, state: 'idle' as const, left: 40 };
+  const s0 = { ...initScene(p, T0, 12), x: 32, state: 'idle' as const, left: 40 };
   p.poops = 1;
   let rs = run(s0, p, 6, t);
   ok(rs.every((q) => q.state === 'walk' || q.state === 'idle' || q.state === 'poop'), 'pet walks to the poop spot first');
@@ -252,19 +253,19 @@ function run(s: Scene, pet: Pet, n: number, t: { now: number }, inp: SceneInputs
   const w = inkWidth(sp.id);
   ok(popcount(rs[rs.length - 1].poopMask) === 1, 'first poop dropped');
   const sq = rs.find((q) => q.state === 'poop')!;
-  ok(sq && Math.abs(sq.x - Math.min(32, 41 - w - 1)) < 0.01, `squats just left of the spot (x ${sq?.x})`);
+  ok(sq && Math.abs(sq.x - Math.min(32, 56 - w - 1)) < 0.01, `squats just left of the spot (x ${sq?.x})`);
   // second poop appears while the pet is far right of the new limit via a scripted position
   p.poops = 2;
-  const far = { ...rs[rs.length - 1], x: 24, state: 'idle' as const, left: 60, act: null };
+  const far = { ...rs[rs.length - 1], x: 26, state: 'idle' as const, left: 60, act: null };
   const r2 = run(far, p, 300, t);
   const lim2 = maxXFor(sp.id, 3);
-  ok(r2.every((q) => q.x <= 24.0001) && r2[r2.length - 1].x <= lim2 + 0.0001, `pet ends within the new limit (${r2[r2.length - 1].x} <= ${lim2})`);
+  ok(r2.every((q) => q.x <= 26.0001) && r2[r2.length - 1].x <= lim2 + 0.0001, `pet ends within the new limit (${r2[r2.length - 1].x} <= ${lim2})`);
   const firstWalk = r2.findIndex((q) => q.state === 'poop');
   ok(firstWalk > 0 && r2.slice(0, firstWalk).every((q) => q.state === 'walk' || q.state === 'idle'), 'walks before the squat');
   // pet beyond the limit with no new act: only walking left until inside
   const q3 = mkPet(5, sp.id); q3.poops = 3;
   const base = initScene(q3, T0, 12);
-  const out = run({ ...base, x: 30, limit: 32, state: 'idle', left: 100, act: null }, q3, 60, { now: T0 });
+  const out = run({ ...base, x: 32, limit: 32, state: 'idle', left: 100, act: null }, q3, 60, { now: T0 });
   const lim3 = maxXFor(sp.id, 7);
   let k = 0; while (k < out.length && out[k].x > lim3) k++;
   ok(out.slice(0, k).every((q) => q.state === 'walk'), 'beyond the limit it only walks left');

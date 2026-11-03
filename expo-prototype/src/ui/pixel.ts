@@ -1,5 +1,6 @@
-// Pixel art tables + a tiny square bitmap buffer (48x48 scene, 64x64 text mode) used by the LCD.
-export const GRID = 48;
+// Pixel art tables + a tiny square bitmap buffer (64x64 scene and text mode) used by the LCD.
+/** Home-scene framebuffer: 64x64 (species sprites are 32x32 hiFrames, drawn 1:1). */
+export const GRID = 64;
 /** Text-mode framebuffer: 64x64 so a 3x5 line holds 16 characters. */
 export const TEXT_GRID = 64;
 
@@ -15,6 +16,43 @@ export const GLYPHS = {
   drop: ['..X..', '.XXX.', 'XXXXX', 'XXXXX', '.XXX.'],
   flake: ['X.X.X', '.XXX.', 'XXXXX', '.XXX.', 'X.X.X'],
 };
+
+/** 7x7 HUD / bubble glyphs for the 64 grid (the 5x5 GLYPHS stay for the text screens). */
+export const G7 = {
+  poop: ['...X...', '..XXX..', '.XXXXX.', '..XXX..', 'XX.X.XX', 'XXXXXXX', '.XXXXX.'],
+  heartFull: ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'],
+  heartEmpty: ['.XX.XX.', 'X..X..X', 'X.....X', 'X.....X', '.X...X.', '..X.X..', '...X...'],
+  smileFull: ['..XXX..', '.XXXXX.', 'XX.X.XX', 'XXXXXXX', 'X.XXX.X', '.X...X.', '..XXX..'],
+  smileEmpty: ['..XXX..', '.X...X.', 'X.X.X.X', 'X.....X', 'X.....X', '.X...X.', '..XXX..'],
+  alert: ['..XXX..', '..XXX..', '..XXX..', '..XXX..', '...X...', '.......', '..XXX..'],
+  skull: ['.XXXXX.', 'XXXXXXX', 'X..X..X', 'XX.X.XX', 'XXXXXXX', '.XXXXX.', '.X.X.X.'],
+  zzz: ['XXXXXXX', '.....X.', '....X..', '...X...', '..X....', '.X.....', 'XXXXXXX'],
+  drop: ['...X...', '...X...', '..XXX..', '.XXXXX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.'],
+  flake: ['X..X..X', '.X.X.X.', '..XXX..', 'XXXXXXX', '..XXX..', '.X.X.X.', 'X..X..X'],
+  meat: ['..XXXX.', '.XXXXXX', '.XXXXXX', '..XXXX.', '..XX...', '.XX....', 'XX.XX..'],
+  ball: ['.XXXXX.', 'XX.X.XX', 'X..X..X', 'XXXXXXX', 'X..X..X', 'XX.X.XX', '.XXXXX.'],
+  syringe: ['.....XX', '....XXX', '...XXX.', '..XXX..', '.XXX...', 'XX.....', 'X......'],
+  bulb: ['..XXX..', '.XXXXX.', '.XXXXX.', '.XXXXX.', '..XXX..', '..XXX..', '...X...'],
+};
+
+/** Scale2x (EPX) doubling of an ink bitmap: same smoothing as the species hiFrames. */
+export function epx(rows: string[]): string[] {
+  const h = rows.length, w = rows[0].length;
+  const at = (x: number, y: number) => (x < 0 || y < 0 || x >= w || y >= h ? '.' : rows[y][x]);
+  const out: string[] = [];
+  for (let y = 0; y < h; y++) {
+    let a = '', b = '';
+    for (let x = 0; x < w; x++) {
+      const P = at(x, y), A = at(x, y - 1), B = at(x + 1, y), C = at(x - 1, y), D = at(x, y + 1);
+      a += C === A && C !== D && A !== B ? A : P;
+      a += A === B && A !== C && B !== D ? B : P;
+      b += D === C && D !== B && C !== A ? C : P;
+      b += B === D && B !== A && D !== C ? D : P;
+    }
+    out.push(a, b);
+  }
+  return out;
+}
 
 export const EGG_SPRITE = [
   '................',
