@@ -42,13 +42,16 @@ Possible later features (HealthKit evolution, Live Activity, StandBy night light
 
 Verified by CI on every push (GitHub Actions, `.github/workflows/ci.yml`):
 - The iPhone app, widget and watch app build on macOS with Xcode.
-- 34 XCTest unit tests pass (game engine, evolution tree, save compatibility, living-scene director).
+- 44 XCTest unit tests pass: game engine, evolution tree, save compatibility, balance rules, living-scene director, render and store-screenshot harnesses.
+- 17 XCUITest UI tests pass on both an iPhone SE (3rd generation) and an iPhone 16 Pro simulator. They drive the real app by tapping: naming alert with the real keyboard, feeding, the play game, stats and dex pages, the settings sheet (Classic and Vacation modes, About), a dead pet starting a new egg, and the pet's name surviving a relaunch.
 - The Expo prototype type-checks, lints with zero errors, passes its engine and scene tests, and bundles for web, iOS and Android (Hermes).
-- The SwiftUI screens, widgets and watch view are rendered to PNGs by a test (`Tests/UIRenderTests.swift`) and published to the `ci-screenshots` branch for review.
+- The SwiftUI screens, widgets and watch view are rendered to PNGs on every push and published to the `ci-screenshots` branch for review, as are App Store screenshots at the required sizes.
+- `expo-prototype/test/balance.ts` simulates 11 play styles and checks every species is reachable and that ordinary care never lands on the neglect line.
 
 Not yet verified:
-- It has not been run on a physical iPhone or Apple Watch, or on a widget placed on a real home screen.
+- It has not been run on a physical iPhone or Apple Watch, or with a widget placed on a real home screen.
 - Expo Go on a device has not been tried (only the web build and the native bundles).
-- The settings sheet, the naming alert and the lock-screen inline widget are not covered by the render test.
-- Signing, TestFlight and App Store assets (icon, screenshots, hosted privacy page) are still to do. Set `DEVELOPMENT_TEAM` in `project.yml` first.
+- The Watch app has no UI tests, only its render.
+- Signing, TestFlight and App Store submission are still to do. Set `DEVELOPMENT_TEAM` in `project.yml` first, and enable GitHub Pages (Settings > Pages > main /docs) for the support and privacy page.
 - Evolution thresholds come from simulation and need real play-testing.
+- No license has been chosen, and the repository visibility is the owner's call.
