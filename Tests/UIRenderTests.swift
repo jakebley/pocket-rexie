@@ -213,11 +213,10 @@ final class UIRenderTests: XCTestCase {
 
     // MARK: widgets
 
-    private let widgetBackground = Color(red: 0.62, green: 0.71, blue: 0.53)
-
     private func widgetPets() -> [(String, Pet)] {
         [
             ("child-hungry", pet(.child, "rawr", at: day) { $0.hunger = 1; $0.call = .hungry }),
+            ("child-fine", pet(.child, "sprig", at: day) { $0.hunger = 4; $0.happy = 3 }),
             ("sick-poops", pet(.teen, "fang", at: day, ageHours: 60) {
                 $0.sick = true; $0.poops = 3; $0.call = .sick; $0.hunger = 2; $0.happy = 1
             }),
@@ -227,38 +226,47 @@ final class UIRenderTests: XCTestCase {
         ]
     }
 
-    private func widgetView(_ pet: Pet, family: WidgetFamily, dark: Bool) -> some View {
+    private func widgetView(_ pet: Pet, family: WidgetFamily, size: CGSize, dark: Bool) -> some View {
         let entry = PetEntry(date: pet.lastTick, pet: pet)
         let isAccessory = family == .accessoryCircular || family == .accessoryRectangular || family == .accessoryInline
+        let palette = LCDStyle.palette(for: dark ? .dark : .light)
         return ZStack {
             if isAccessory {
                 // Lock screen look: a dark wallpaper with vibrant white content.
                 LinearGradient(colors: [Color(white: 0.18), Color(white: 0.32)], startPoint: .top, endPoint: .bottom)
             } else {
-                widgetBackground
+                // The widget host draws containerBackground; ImageRenderer does not, so draw it here.
+                RetroBackdrop(palette: palette)
             }
             PocketRexieWidgetView(entry: entry, familyOverride: family)
-                // A real widget host insets the content of the system families by 16 pt.
-                .padding(isAccessory ? 0 : 16)
                 .foregroundStyle(isAccessory ? Color.white : Color.primary)
         }
+        .frame(width: size.width, height: size.height)
+        // Home screen widgets are clipped to a continuous rounded rectangle.
+        .clipShape(RoundedRectangle(cornerRadius: isAccessory ? 0 : 22, style: .continuous))
         .environment(\.colorScheme, dark || isAccessory ? .dark : .light)
     }
 
     func testRenderWidgets() {
         let families: [(String, WidgetFamily, CGSize)] = [
             ("small", .systemSmall, CGSize(width: 170, height: 170)),
+            ("small-compact", .systemSmall, CGSize(width: 141, height: 141)),
             ("medium", .systemMedium, CGSize(width: 364, height: 170)),
+            ("medium-compact", .systemMedium, CGSize(width: 321, height: 148)),
+            ("large", .systemLarge, CGSize(width: 364, height: 382)),
             ("accessoryRectangular", .accessoryRectangular, CGSize(width: 172, height: 76)),
             ("accessoryCircular", .accessoryCircular, CGSize(width: 76, height: 76)),
             ("accessoryInline", .accessoryInline, CGSize(width: 257, height: 26)),
+            // The same views at the sizes the watch complications get.
+            ("watchCircular", .accessoryCircular, CGSize(width: 50, height: 50)),
+            ("watchRectangular", .accessoryRectangular, CGSize(width: 160, height: 68)),
         ]
         for (label, pet) in widgetPets() {
             for (famName, family, size) in families {
                 for dark in [false, true] {
                     // Accessory families look the same in both schemes.
-                    if dark && (famName.hasPrefix("accessory")) { continue }
-                    write(widgetView(pet, family: family, dark: dark),
+                    if dark && (famName.hasPrefix("accessory") || famName.hasPrefix("watch")) { continue }
+                    write(widgetView(pet, family: family, size: size, dark: dark),
                           to: "widgets/\(famName)/\(dark ? "dark" : "light")/\(label)", size: size, scale: 3)
                 }
             }
@@ -268,18 +276,22 @@ final class UIRenderTests: XCTestCase {
     // MARK: watch
 
     func testRenderWatch() {
-        let size = CGSize(width: 184, height: 224)
-        for sc in scenarios() where !sc.name.contains("-b") {
-            let model = GameModel(pet: sc.pet, persist: { _ in })
-            sc.setup(model)
-            let view = ZStack(alignment: .top) {
-                Color.black
-                WatchContentView(model: model)
+        let sizes = [CGSize(width: 184, height: 224), CGSize(width: 162, height: 197)]
+        for size in sizes {
+            for dark in [false, true] {
+                for sc in scenarios() where !sc.name.contains("-b") {
+                    let model = GameModel(pet: sc.pet, persist: { _ in })
+                    sc.setup(model)
+                    let view = ZStack(alignment: .top) {
+                        Color.black
+                        WatchContentView(model: model, palette: LCDStyle.palette(for: dark ? .dark : .light))
+                    }
+                    .environment(\.colorScheme, .dark)
+                    .environment(\.sceneDate, sc.clock)
+                    .environment(\.displayScale, 2)
+                    write(view, to: "watch/\(Int(size.width))x\(Int(size.height))/\(dark ? "dark" : "light")/\(sc.name)", size: size)
+                }
             }
-            .environment(\.colorScheme, .dark)
-            .environment(\.sceneDate, sc.clock)
-            .environment(\.displayScale, 2)
-            write(view, to: "watch/184x224/\(sc.name)", size: size)
         }
     }
 

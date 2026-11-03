@@ -5,13 +5,19 @@ import WatchKit
 
 struct WatchContentView: View {
     @ObservedObject var model: GameModel
+    /// Explicit LCD palette (tests). Otherwise the light LCD, or the backlit one in Always-On.
+    let palette: LCDPalette?
     @State private var crown: Double = 0
-    @Environment(\.sceneDate) private var sceneDate
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    init(model: GameModel, palette: LCDPalette? = nil) {
+        self.model = model
+        self.palette = palette
+    }
 
     private let icons = MenuIcon.allCases
-    private var iconRows: [[MenuIcon]] {
-        stride(from: 0, to: icons.count, by: 2).map { Array(icons[$0..<min($0 + 2, icons.count)]) }
-    }
+
+    private var colors: LCDPalette { palette ?? (dimmed ? LCDStyle.dark : LCDStyle.light) }
 
     var body: some View {
         #if os(watchOS)
@@ -38,60 +44,78 @@ struct WatchContentView: View {
         #endif
     }
 
-    @ViewBuilder private var content: some View {
-        if sceneDate == nil {
-            ScrollView { column }
+    // MARK: layout
+
+    private let margin: CGFloat = 3
+    private let tileGap: CGFloat = 3
+    private let tileHeight: CGFloat = 40
+    private let meterHeight: CGFloat = 14
+    private let captionHeight: CGFloat = 11
+
+    /// The LCD face fills the screen: scene on top, a pixel status line, hearts, and a row of glyph tiles.
+    private var content: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let inner = width - margin * 2
+            let tiles = width >= 176 ? 4 : 3
+            let tileWidth = floor((inner - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
+            let gaps: CGFloat = 3 * 3
+            let side = max(40, min(inner, geo.size.height - captionHeight - meterHeight - tileHeight - gaps - margin))
+            VStack(spacing: 3) {
+                LCDScreen(model: model)
+                    .frame(width: side, height: side)
+                    .retroGlass(colors, corner: 8)
+                caption(width: inner)
+                    .frame(height: captionHeight)
+                meters(width: inner)
+                    .frame(height: meterHeight)
+                tileRow(count: tiles, tileWidth: tileWidth)
+            }
+            .padding(.horizontal, margin)
+            .frame(width: width, height: geo.size.height, alignment: .top)
+        }
+        .environment(\.lcdPalette, colors)
+        .background(RetroBackdrop(palette: colors, inset: 1, corner: 28).ignoresSafeArea())
+    }
+
+    /// One line at 2pt pixels when it fits, else two lines at 1pt.
+    private func caption(width: CGFloat) -> some View {
+        let text = model.message.isEmpty ? model.pet.statusLine : model.message
+        let single = RetroFit.lines(text, width: width, maxPixel: 2, maxLines: 1)
+        return RetroCaption(text: text, width: width, maxPixel: 2, maxLines: single.fits ? 1 : 2, centered: true)
+    }
+
+    @ViewBuilder private func meters(width: CGFloat) -> some View {
+        if model.pet.isAlive && model.pet.stage != .egg {
+            HStack(spacing: 0) {
+                PixelMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
+                Spacer(minLength: 4)
+                PixelMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
+            }
+            .frame(width: width)
         } else {
-            // Fixed-clock renders (ImageRenderer draws ScrollView as nothing): show the top of the column.
             Color.clear
-                .overlay(alignment: .top) { column.fixedSize(horizontal: false, vertical: true) }
-                .clipped()
         }
     }
 
-    private var column: some View {
-            VStack(spacing: 8) {
-                LCDScreen(model: model)
-
-                Text(model.message)
-                    .font(.footnote)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, minHeight: 28)
-
-                Grid(horizontalSpacing: 6, verticalSpacing: 6) {
-                    ForEach(iconRows.indices, id: \.self) { r in
-                      GridRow {
-                        ForEach(iconRows[r], id: \.self) { icon in
-                        Button {
-                            tap(icon)
-                        } label: {
-                            VStack(spacing: 2) {
-                                PixelGlyphView(rows: icon.glyph, pixel: 2,
-                                               color: icon == model.selected ? LCDStyle.ink : LCDStyle.background)
-                                    .padding(4)
-                                    .background(
-                                        Rectangle().fill(icon == model.selected ? LCDStyle.background : Color.clear)
-                                    )
-                                Text(icon.title)
-                                    .font(.system(size: 11))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 52)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(icon == model.selected ? Color.green : Color.gray)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.green, lineWidth: icon == model.selected ? 2 : 0)
-                        )
-                        }
-                      }
-                    }
+    /// A window onto the menu that follows the selection, so the selected tile is always visible.
+    private func tileRow(count: Int, tileWidth: CGFloat) -> some View {
+        let selectedIndex = icons.firstIndex(of: model.selected) ?? 0
+        let start = min(max(selectedIndex - 1, 0), max(0, icons.count - count))
+        let visible = Array(icons[start..<min(start + count, icons.count)])
+        return HStack(spacing: tileGap) {
+            ForEach(visible) { icon in
+                Button {
+                    tap(icon)
+                } label: {
+                    EmptyView()
                 }
+                .buttonStyle(RetroTileStyle(icon: icon, selected: icon == model.selected, glyphPixel: 3,
+                                            width: tileWidth, height: tileHeight))
+                .accessibilityLabel(icon.title)
+                .accessibilityIdentifier("watch-" + icon.title.lowercased())
             }
-            .padding(.horizontal, 4)
+        }
     }
 
     private func tap(_ icon: MenuIcon) {
