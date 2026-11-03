@@ -46,7 +46,9 @@ struct WatchContentView: View {
 
     // MARK: layout
 
-    private let margin: CGFloat = 3
+    private let margin: CGFloat = 4
+    /// Space above and below the face content (the bezel and the display corners).
+    private let edge: CGFloat = 6
     private let tileGap: CGFloat = 3
     private let tileHeight: CGFloat = 40
     private let meterHeight: CGFloat = 14
@@ -60,18 +62,19 @@ struct WatchContentView: View {
             let tiles = width >= 176 ? 4 : 3
             let tileWidth = floor((inner - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
             let gaps: CGFloat = 3 * 3
-            let side = max(40, min(inner, geo.size.height - captionHeight - meterHeight - tileHeight - gaps - margin))
+            let side = max(40, min(inner, geo.size.height - captionHeight - meterHeight - tileHeight - gaps - edge * 2))
             VStack(spacing: 3) {
                 LCDScreen(model: model)
                     .frame(width: side, height: side)
                     .retroGlass(colors, corner: 8)
-                caption(width: inner)
+                caption(width: inner - 6)
                     .frame(height: captionHeight)
                 meters(width: inner)
                     .frame(height: meterHeight)
                 tileRow(count: tiles, tileWidth: tileWidth)
             }
             .padding(.horizontal, margin)
+            .padding(.top, edge)
             .frame(width: width, height: geo.size.height, alignment: .top)
         }
         .environment(\.lcdPalette, colors)
