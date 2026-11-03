@@ -139,9 +139,9 @@ struct PocketRexieWidgetView: View {
     /// Hunger hearts on the left, fun smiles on the right.
     private func meterRow(pixel: CGFloat, width: CGFloat) -> some View {
         HStack(spacing: 0) {
-            PixelMeter(kind: .heart7, filled: pet.hunger, pixel: pixel)
+            RetroMeter(kind: .heart7, filled: pet.hunger, pixel: pixel)
             Spacer(minLength: pixel * 2)
-            PixelMeter(kind: .smile5, filled: pet.happy, pixel: pixel)
+            RetroMeter(kind: .smile5, filled: pet.happy, pixel: pixel)
         }
         .frame(width: width, height: 7 * pixel)
     }
@@ -251,7 +251,7 @@ struct PocketRexieWidgetView: View {
                 AccessoryWidgetBackground()
                 VStack(spacing: max(2, px)) {
                     PixelPetView(pet: pet, pixel: px)
-                    if living { PixelMeter(kind: .heart5, filled: pet.hunger, pixel: hp) }
+                    if living { RetroMeter(kind: .heart5, filled: pet.hunger, pixel: hp) }
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
@@ -267,8 +267,8 @@ struct PocketRexieWidgetView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     RetroCaption(text: pet.statusLine, width: textW, maxPixel: 2, maxLines: 2)
                     if living {
-                        PixelMeter(kind: .heart5, filled: pet.hunger, pixel: 2)
-                        PixelMeter(kind: .smile5, filled: pet.happy, pixel: 2)
+                        RetroMeter(kind: .heart5, filled: pet.hunger, pixel: 2)
+                        RetroMeter(kind: .smile5, filled: pet.happy, pixel: 2)
                     }
                 }
                 .frame(width: textW, alignment: .leading)
@@ -296,7 +296,7 @@ struct PocketRexieWidgetView: View {
     private var inlineIcon: Image? {
         let strip = HStack(spacing: 2) {
             PixelPetView(pet: pet, pixel: 1, color: .black)
-            if living { PixelMeter(kind: .heart5, filled: pet.hunger, pixel: 1, color: .black) }
+            if living { RetroMeter(kind: .heart5, filled: pet.hunger, pixel: 1, color: .black) }
         }
         let renderer = ImageRenderer(content: strip)
         renderer.scale = 3

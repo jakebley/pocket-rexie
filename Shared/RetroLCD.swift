@@ -131,7 +131,7 @@ struct RetroCaption: View {
 // MARK: - Hearts and smiles
 
 /// A row of pixel hearts (7x7 or 5x5) or smiles (5x5): filled ones are solid, the rest outlined.
-struct PixelMeter: View {
+struct RetroMeter: View {
     enum Kind { case heart7, heart5, smile5 }
 
     let kind: Kind

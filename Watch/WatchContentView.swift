@@ -88,9 +88,9 @@ struct WatchContentView: View {
     @ViewBuilder private func meters(width: CGFloat) -> some View {
         if model.pet.isAlive && model.pet.stage != .egg {
             HStack(spacing: 0) {
-                PixelMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
+                RetroMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
                 Spacer(minLength: 4)
-                PixelMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
+                RetroMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
             }
             .frame(width: width)
         } else {
