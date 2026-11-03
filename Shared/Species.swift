@@ -37,6 +37,8 @@ struct Species {
     let name: String
     let stage: Stage
     let blurb: String
+    /// Lineage color family: baby, meat, veggie, pasta or neglect (drives the Technicolor body color).
+    let line: String
     /// frames[0] is the open-eyed sprite, frames[1] the blink.
     let frames: [[String]]
     /// 32x32 Scale2x-smoothed version of `frames` for the high-resolution scene.

@@ -1,10 +1,17 @@
 import { useColorScheme } from 'react-native';
+import { useColorMode } from './ColorModeContext';
+import { screenColors, type ColorMode } from './palette';
 
-export type Theme = { ground: string; ink: string; dark: boolean };
-const LIGHT: Theme = { ground: '#B5C19A', ink: '#2B3320', dark: false };
-const DARK: Theme = { ground: '#1E2418', ink: '#B5C19A', dark: true };
+export type Theme = { ground: string; ink: string; dark: boolean; mode: ColorMode; /** translucent ground for modal backdrops */ scrim: string };
 
-/** The whole screen is the LCD: light = classic green LCD, dark = backlit LCD (colours swap). */
+export function themeFor(mode: ColorMode, dark: boolean): Theme {
+  const { ground, ink } = screenColors(mode, dark);
+  const r = parseInt(ground.slice(1, 3), 16), g = parseInt(ground.slice(3, 5), 16), b = parseInt(ground.slice(5, 7), 16);
+  return { ground, ink, dark, mode, scrim: `rgba(${r},${g},${b},0.9)` };
+}
+
+/** The whole screen is the LCD. Traditional: light = classic green LCD, dark = backlit LCD (colours swap). Technicolor: muted colour in both. */
 export function useTheme(): Theme {
-  return useColorScheme() === 'dark' ? DARK : LIGHT;
+  const { mode } = useColorMode();
+  return themeFor(mode, useColorScheme() === 'dark');
 }

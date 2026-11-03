@@ -1,6 +1,7 @@
 // Draws the 64x64 living scene into a Buf (ink only). Pure: everything comes from Scene + Pet.
 import { SPECIES_BY_ID, needsAttention, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
+import { Layer, petLayers } from './layers';
 import { Buf, G7 } from './pixel';
 import { BED_X, GROUND_Y, HEAD_Y, MAX_X, POOP_X, SCENE_N, SPRITE_N, TICK_MS, maxXFor, phaseOf, type Pop, type Prop, type Scene } from './scene';
 
@@ -50,14 +51,15 @@ const HOP = [0, -6, -8, -6, 0];
 
 function flipRows(rows: Rows): Rows { return rows.map((r) => [...r].reverse().join('')); }
 
-/** Stamp a bitmap. halo: clear a 1px ring first so it stays legible over anything behind it. */
-function stamp(b: Buf, rows: Rows, x: number, y: number, halo = false) {
+/** Stamp a bitmap in `layer`. halo: clear a 1px ring first so it stays legible over anything behind it. */
+function stamp(b: Buf, rows: Rows, x: number, y: number, halo = false, layer: number = Layer.INK, rowLayer?: (j: number) => number) {
   if (halo) {
     for (let j = 0; j < rows.length; j++) for (let i = 0; i < rows[j].length; i++) {
       if (rows[j][i] === 'X') for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) b.set(x + i + dx, y + j + dy, 0);
     }
   }
-  b.rows(rows, x, y);
+  if (rowLayer) rows.forEach((r, j) => b.rows([r], x, y + j, 'X', rowLayer(j)));
+  else b.rows(rows, x, y, 'X', layer);
 }
 
 export interface Pose { blink: boolean; dx: number; dy: number; facing: 1 | -1 }
@@ -87,6 +89,16 @@ export function poseOf(s: Scene): Pose {
   return { blink, dx: dx + s.pdx, dy: dy + s.pdy, facing };
 }
 
+// pet layer grids per sprite frame and facing (the BODY_LIGHT rule depends on direction)
+const petCache = new WeakMap<Rows, Uint8Array>();
+const petCacheFlip = new WeakMap<Rows, Uint8Array>();
+function petCodes(spr: Rows, flipped: boolean, rows: Rows): Uint8Array {
+  const cache = flipped ? petCacheFlip : petCache;
+  let c = cache.get(spr);
+  if (!c) { c = petLayers(rows); cache.set(spr, c); }
+  return c;
+}
+
 function spriteRows(pet: Pet, blink: boolean): Rows | null {
   const sp = SPECIES_BY_ID[pet.species];
   return sp ? sp.hiFrames[blink && sp.hiFrames[1] ? 1 : 0] : null;
@@ -109,7 +121,7 @@ function drawPet(b: Buf, s: Scene, pet: Pet) {
     if (lo < 0) continue;
     for (let i = lo; i <= hi; i++) b.set(px + i, py + j, 0);
   }
-  b.rows(rows, px, py);
+  b.layers(petCodes(spr, pose.facing !== 1, rows), rows[0].length, px, py);
 }
 
 // ---------- sky ----------
@@ -125,82 +137,107 @@ function drawSky(b: Buf, s: Scene) {
   if (phase !== 'night') {
     const p = Math.min(1, Math.max(0, (hf - 5) / 16));
     const cx = Math.round(7 + p * 50), cy = 50 - Math.round(26 * Math.sin(Math.PI * p));
-    b.rows(ART.sunDisc, cx - 4, cy - 4);
-    if (Math.floor(amb / FRAME_MS) % 2 === 0) {
-      for (const k of [6, 7]) { b.set(cx - k, cy); b.set(cx + k, cy); b.set(cx, cy - k); b.set(cx, cy + k); }
-    } else {
-      for (const k of [5, 6]) { b.set(cx - k, cy - k); b.set(cx + k, cy - k); b.set(cx - k, cy + k); b.set(cx + k, cy + k); }
-    }
+    b.as(Layer.SUN, () => {
+      b.rows(ART.sunDisc, cx - 4, cy - 4);
+      if (Math.floor(amb / FRAME_MS) % 2 === 0) {
+        for (const k of [6, 7]) { b.set(cx - k, cy); b.set(cx + k, cy); b.set(cx, cy - k); b.set(cx, cy + k); }
+      } else {
+        for (const k of [5, 6]) { b.set(cx - k, cy - k); b.set(cx + k, cy - k); b.set(cx - k, cy + k); b.set(cx + k, cy + k); }
+      }
+    });
   } else {
     const q = Math.min(1, ((hf - 21 + 24) % 24) / 8);
     const cx = Math.round(57 - q * 50), cy = 50 - Math.round(26 * Math.sin(Math.PI * q));
-    b.rows(ART.moon, cx - 4, cy - 4);
-    STARS.forEach(([x, y, big], i) => {
+    b.rows(ART.moon, cx - 4, cy - 4, 'X', Layer.MOON);
+    b.as(Layer.STAR, () => STARS.forEach(([x, y, big], i) => {
       const ph = (Math.floor(tickN / 5) + i * 2) % 5;
       if (big) {
         b.set(x, y);
         if (ph !== 0) { b.set(x - 1, y); b.set(x + 1, y); b.set(x, y - 1); b.set(x, y + 1); }
       } else if (ph !== 0) b.set(x, y);
-    });
+    }));
   }
   if (phase === 'dawn' || phase === 'dusk') {
     const o = phase === 'dawn' ? 0 : 1;
-    for (let x = 0; x < SCENE_N; x++) {
-      if ((x + o) % 2 === 0) b.set(x, 53);
-      if ((x + o * 2) % 4 === 0) b.set(x, 51);
-      if ((x + o) % 8 === 0) b.set(x, 49);
-    }
+    b.as(Layer.CLOUD, () => {
+      for (let x = 0; x < SCENE_N; x++) {
+        if ((x + o) % 2 === 0) b.set(x, 53);
+        if ((x + o * 2) % 4 === 0) b.set(x, 51);
+        if ((x + o) % 8 === 0) b.set(x, 49);
+      }
+    });
   }
   // clouds drift one cell every 7.5 s
   const drift = Math.floor(amb / 7500);
   const o = s.seed % 64;
   const wide = (v: number) => ((v % 84) + 84) % 84 - 18;
   if (s.weather === 'clear') {
-    if (phase !== 'night') stamp(b, ART.cloudS, wide(o + 40 + drift), 21, true);
+    if (phase !== 'night') stamp(b, ART.cloudS, wide(o + 40 + drift), 21, true, Layer.CLOUD);
   } else {
-    stamp(b, ART.cloudL, wide(o + drift), 24, true);
-    stamp(b, s.weather === 'rain' ? ART.cloudL : ART.cloudS, wide(o + 42 + drift), 18, true);
-    if (s.weather === 'rain') stamp(b, ART.cloudS, wide(o + 21 + drift), 33, true);
+    stamp(b, ART.cloudL, wide(o + drift), 24, true, Layer.CLOUD);
+    stamp(b, s.weather === 'rain' ? ART.cloudL : ART.cloudS, wide(o + 42 + drift), 18, true, Layer.CLOUD);
+    if (s.weather === 'rain') stamp(b, ART.cloudS, wide(o + 21 + drift), 33, true, Layer.CLOUD);
   }
   if (s.weather === 'rain') {
-    for (let i = 0; i < 22; i++) {
-      const x = (i * 11 + (s.seed % 7)) % SCENE_N;
-      const y = SKY_TOP + 8 + (tickN * 3 + i * 7) % (GROUND_Y - SKY_TOP - 10);
-      b.set(x, y); b.set(x, y + 1); b.set(x - 1, y + 2);
-    }
+    b.as(Layer.RAIN, () => {
+      for (let i = 0; i < 22; i++) {
+        const x = (i * 11 + (s.seed % 7)) % SCENE_N;
+        const y = SKY_TOP + 8 + (tickN * 3 + i * 7) % (GROUND_Y - SKY_TOP - 10);
+        b.set(x, y); b.set(x, y + 1); b.set(x - 1, y + 2);
+      }
+    });
   }
 }
 
 function drawGround(b: Buf, s: Scene) {
-  b.rect(0, GROUND_Y, SCENE_N, 2);
+  b.rect(0, GROUND_Y, SCENE_N, 2, Layer.GROUND);
   // dirt: dither row, plus a few embedded pebbles
-  for (let x = 0; x < SCENE_N; x += 2) b.set(x, GROUND_Y + 2);
-  for (let x = 1; x < SCENE_N; x += 4) b.set(x, GROUND_Y + 3);
-  [6, 17, 29, 41, 52, 60].forEach((x) => { b.set(x, GROUND_Y + 2); b.set(x + 1, GROUND_Y + 2); b.set(x, GROUND_Y + 3); b.set(x + 1, GROUND_Y + 3); b.set(x + 2, GROUND_Y + 3); });
+  b.as(Layer.DIRT, () => {
+    for (let x = 0; x < SCENE_N; x += 2) b.set(x, GROUND_Y + 2);
+    for (let x = 1; x < SCENE_N; x += 4) b.set(x, GROUND_Y + 3);
+    [6, 17, 29, 41, 52, 60].forEach((x) => { b.set(x, GROUND_Y + 2); b.set(x + 1, GROUND_Y + 2); b.set(x, GROUND_Y + 3); b.set(x + 1, GROUND_Y + 3); b.set(x + 2, GROUND_Y + 3); });
+  });
   const sway = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  [3, 21, 38, 56].forEach((x, i) => b.rows(ART[(sway + i) % 2 ? 'tuftT1' : 'tuftT0'], x, GROUND_Y - 4));
-  [11, 30, 47, 62].forEach((x, i) => b.rows(ART[(sway + i) % 2 ? 'tuftS0' : 'tuftS1'], x, GROUND_Y - 3));
-  [8, 34].forEach((x) => b.rows(ART.pebble, x, GROUND_Y - 2));
-  [15, 26, 51].forEach((x, i) => b.rows(ART[i % 2 ? 'flower1' : 'flower0'], x, GROUND_Y - 5));
+  [3, 21, 38, 56].forEach((x, i) => b.rows(ART[(sway + i) % 2 ? 'tuftT1' : 'tuftT0'], x, GROUND_Y - 4, 'X', Layer.GRASS));
+  [11, 30, 47, 62].forEach((x, i) => b.rows(ART[(sway + i) % 2 ? 'tuftS0' : 'tuftS1'], x, GROUND_Y - 3, 'X', Layer.GRASS));
+  [8, 34].forEach((x) => b.rows(ART.pebble, x, GROUND_Y - 2, 'X', Layer.DIRT));
+  // flowers: colored head (top 3 rows), green stem
+  [15, 26, 51].forEach((x, i) => stamp(b, ART[i % 2 ? 'flower1' : 'flower0'], x, GROUND_Y - 5, false, 0, (j) => (j < 3 ? (i % 2 ? Layer.FLOWER_B : Layer.FLOWER_A) : Layer.GRASS)));
 }
 
 function drawDim(b: Buf) {
-  for (let y = 0; y < GROUND_Y; y++) for (let x = 0; x < SCENE_N; x++) if ((x + y) % 2 === 0) b.set(x, y);
+  for (let y = 0; y < GROUND_Y; y++) for (let x = 0; x < SCENE_N; x++) if ((x + y) % 2 === 0) b.dim(x, y);
 }
 
 /** HUD: 7x7 hearts (hunger, y=1) and smiles (happy, y=9) top-left; skull, climate and alert glyphs stacked top-right. */
 function drawHud(b: Buf, s: Scene, pet: Pet) {
   for (let i = 0; i < 4; i++) {
-    stamp(b, i < pet.hunger ? G7.heartFull : G7.heartEmpty, 1 + i * 8, 1, true);
-    stamp(b, i < pet.happy ? G7.smileFull : G7.smileEmpty, 1 + i * 8, 9, true);
+    stamp(b, i < pet.hunger ? G7.heartFull : G7.heartEmpty, 1 + i * 8, 1, true, Layer.HEART);
+    stamp(b, i < pet.happy ? G7.smileFull : G7.smileEmpty, 1 + i * 8, 9, true, Layer.SMILE);
   }
   const flip = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS) % 2;
   const tempG = pet.temp >= 2 ? G7.drop : pet.temp <= -2 ? G7.flake : null;
-  const icons: Rows[] = [];
-  if (pet.sick) icons.push(G7.skull);
-  if (tempG && (!pet.sick || flip === 0)) icons.push(tempG);
-  if (needsAttention(pet)) icons.push(G7.alert);
-  icons.slice(0, 3).forEach((g, k) => stamp(b, g, 56, 1 + k * 8, true));
+  const icons: [Rows, number][] = [];
+  if (pet.sick) icons.push([G7.skull, Layer.INK]);
+  if (tempG && (!pet.sick || flip === 0)) icons.push([tempG, pet.temp >= 2 ? Layer.WATER_DROP : Layer.SNOW]);
+  if (needsAttention(pet)) icons.push([G7.alert, Layer.ALERT]);
+  icons.slice(0, 3).forEach(([g, l], k) => stamp(b, g, 56, 1 + k * 8, true, l));
+}
+
+function propLayer(g: string): number {
+  switch (g) {
+    case 'food:meat': return Layer.FOOD_MEAT;
+    case 'food:veggie': return Layer.FOOD_VEG;
+    case 'food:pasta': return Layer.FOOD_PASTA;
+    case 'food:snack': return Layer.SNACK;
+    case 'broom': case 'dumbbell': case 'syringe': return Layer.TOOL;
+    case 'ball': return Layer.BALL;
+    case 'spark': case 'glint': return Layer.SPARK;
+    case 'puff': case 'shell': return Layer.CLOUD;
+    case 'dropS': return Layer.WATER_DROP;
+    case 'flakeS': return Layer.SNOW;
+    default: return Layer.INK;
+  }
 }
 
 function popArt(g: Pop['g']): Rows {
@@ -221,7 +258,7 @@ function drawProp(b: Buf, p: Prop) {
     rows = rows.map((r) => (p.side === 1 ? '.'.repeat(cut) + r.slice(cut) : r.slice(0, r.length - cut) + '.'.repeat(cut)));
   }
   if (p.g === 'shell' && p.n === 1) rows = flipRows(rows);
-  stamp(b, rows, p.x, p.y, true);
+  stamp(b, rows, p.x, p.y, true, propLayer(p.g));
 }
 
 function bubbleIcon(pet: Pet): Rows | null {
@@ -246,6 +283,20 @@ export function bubblePos(s: Scene): { x: number; y: number; beside: boolean } {
   return { x: Math.max(0, Math.min(SCENE_N - BUBBLE_W, hx + 9)), y: HEAD_Y - 12, beside: false };
 }
 
+function bubbleLayer(pet: Pet): number {
+  switch (pet.call) {
+    case 'hungry': return Layer.FOOD_MEAT;
+    case 'bored': return Layer.BALL;
+    case 'poop': return Layer.POOP;
+    case 'sick': return Layer.TOOL;
+    case 'naughty': return Layer.ALERT;
+    case 'light': return Layer.SPARK;
+    case 'hot': return Layer.WATER_DROP;
+    case 'cold': return Layer.SNOW;
+    default: return Layer.INK;
+  }
+}
+
 function drawBubble(b: Buf, s: Scene, pet: Pet) {
   const show = pet.call !== null && (!pet.asleep || pet.call === 'light');
   if (!show) return;
@@ -254,11 +305,11 @@ function drawBubble(b: Buf, s: Scene, pet: Pet) {
   if (on) {
     const icon = bubbleIcon(pet);
     b.rect(bx, by, BUBBLE_W, BUBBLE_H, 0);
-    b.rows(ART.bubble, bx, by);
-    b.set(bx + 4, by + BUBBLE_H); b.set(bx + 5, by + BUBBLE_H); b.set(bx + 3, by + BUBBLE_H + 1);
-    if (icon) b.rows(icon, bx + 3, by + 1);
+    b.rows(ART.bubble, bx, by, 'X', Layer.BUBBLE);
+    b.set(bx + 4, by + BUBBLE_H, Layer.BUBBLE); b.set(bx + 5, by + BUBBLE_H, Layer.BUBBLE); b.set(bx + 3, by + BUBBLE_H + 1, Layer.BUBBLE);
+    if (icon) b.rows(icon, bx + 3, by + 1, 'X', bubbleLayer(pet));
   } else if (needsAttention(pet)) {
-    stamp(b, G7.alert, bx + 3, by + 1, true);
+    stamp(b, G7.alert, bx + 3, by + 1, true, Layer.ALERT);
   }
 }
 
@@ -273,7 +324,7 @@ function drawButterfly(b: Buf, s: Scene) {
   const u = dt / 14000;
   const x = Math.round(dir === 1 ? -7 + u * 78 : 64 - u * 78);
   const y = Math.round(47 + 5 * Math.sin(dt / 700) - 8 * Math.sin(Math.PI * u));
-  stamp(b, ART[Math.floor(dt / 250) % 2 ? 'butterfly1' : 'butterfly0'], x, y, true);
+  stamp(b, ART[Math.floor(dt / 250) % 2 ? 'butterfly1' : 'butterfly0'], x, y, true, Layer.BUTTERFLY);
 }
 
 /** Paint the whole home scene. */
@@ -289,11 +340,11 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
   if (s.state === 'sleep' || pet.asleep) {
     const mx = hx + 4; // x=10 when the pet is on the bed
     b.rect(mx - 1, GROUND_Y, 26, 3, 0);
-    for (let i = 0; i < 24; i++) { b.set(mx + i, GROUND_Y, i % 2 === 0 ? 1 : 0); b.set(mx + i, GROUND_Y + 2); }
+    for (let i = 0; i < 24; i++) { b.set(mx + i, GROUND_Y, i % 2 === 0 ? Layer.MAT : 0); b.set(mx + i, GROUND_Y + 2, Layer.MAT); }
   }
   // poops stand on the ground, right of the pet's allowed range
   const jig = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) stamp(b, G7.poop, POOP_X[i] + ((jig + i) % 2), GROUND_Y - 7, true); // 1 px jiggle, haloed so it reads over the grass
+  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) stamp(b, G7.poop, POOP_X[i] + ((jig + i) % 2), GROUND_Y - 7, true, Layer.POOP); // 1 px jiggle, haloed so it reads over the grass
   for (const p of s.props) drawProp(b, p);
   // state effects around the head
   const t = s.t;
@@ -305,14 +356,14 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
       break;
     }
     case 'sweat':
-      stamp(b, ART.dropS, headX + (s.facing === 1 ? 8 : 0), HEAD_Y - 4 + (Math.floor(t / 3) % 2), true);
-      if (t % 2) { b.rect(hx - 2, HEAD_Y + 10, 2, 2); b.rect(hx + 32, HEAD_Y + 10, 2, 2); } else { b.rect(hx - 2, HEAD_Y + 14, 2, 2); b.rect(hx + 32, HEAD_Y + 14, 2, 2); }
+      stamp(b, ART.dropS, headX + (s.facing === 1 ? 8 : 0), HEAD_Y - 4 + (Math.floor(t / 3) % 2), true, Layer.WATER_DROP);
+      if (t % 2) { b.rect(hx - 2, HEAD_Y + 10, 2, 2, Layer.WATER_DROP); b.rect(hx + 32, HEAD_Y + 10, 2, 2, Layer.WATER_DROP); } else { b.rect(hx - 2, HEAD_Y + 14, 2, 2, Layer.WATER_DROP); b.rect(hx + 32, HEAD_Y + 14, 2, 2, Layer.WATER_DROP); }
       break;
     case 'shiver':
-      if (pet.temp <= -2) stamp(b, ART.flakeS, headX + 4, HEAD_Y - 4 + (Math.floor(t / 4) % 2), true);
+      if (pet.temp <= -2) stamp(b, ART.flakeS, headX + 4, HEAD_Y - 4 + (Math.floor(t / 4) % 2), true, Layer.SNOW);
       break;
     case 'dance':
-      stamp(b, ART.note, headX + (Math.floor(t / 3) % 2 ? 10 : -4), HEAD_Y - 8 + (t % 3 === 0 ? 1 : 0), true);
+      stamp(b, ART.note, headX + (Math.floor(t / 3) % 2 ? 10 : -4), HEAD_Y - 8 + (t % 3 === 0 ? 1 : 0), true, Layer.SPARK);
       break;
     case 'greet': {
       const fx = s.facing === 1 ? hx + 32 : hx - 3;
@@ -334,7 +385,7 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
       break;
     }
   }
-  for (const p of s.pops) stamp(b, popArt(p.g), p.x, p.y - Math.floor(p.age / 2), true);
+  for (const p of s.pops) stamp(b, popArt(p.g), p.x, p.y - Math.floor(p.age / 2), true, Layer.SPARK);
   drawBubble(b, s, pet);
   if (s.flash > 0) b.invert(0, 0, SCENE_N, SCENE_N);
 }

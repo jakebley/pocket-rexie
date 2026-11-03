@@ -41,7 +41,7 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
   const body = [s.body, { color: t.ink, fontFamily: mono }];
   const h = [s.h, { color: t.ink, fontFamily: mono }];
   return (
-    <View style={[s.backdrop, { backgroundColor: t.dark ? 'rgba(30,36,24,0.9)' : 'rgba(181,193,154,0.9)' }]}>
+    <View style={[s.backdrop, { backgroundColor: t.scrim }]}>
       <View style={[s.card, { backgroundColor: t.ground, borderColor: t.ink }]}>
         <View style={s.head}>
           <PixelText text="DEV PANEL" ps={3} color={t.ink} />
@@ -124,13 +124,6 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
             <Btn label="Make sick" onPress={d.makeSick} />
             <Btn label="Heal all" onPress={d.healAll} />
             <Btn label="Reset (new egg)" onPress={d.reset} />
-          </View>
-
-          <Text style={h}>Modes</Text>
-          <View style={s.row}>
-            <Btn label={`Classic mode: ${p.gentle ? 'off' : 'ON'}`} on={!p.gentle} onPress={d.toggleClassic} />
-            <Btn label={`Vacation: ${p.paused ? 'ON' : 'off'}`} on={p.paused} onPress={d.toggleVacation} />
-            <Btn label={`Sound: ${game.muted ? 'muted' : 'on'}`} on={!game.muted} onPress={d.toggleMute} />
           </View>
 
           <Text style={h}>Force species</Text>

@@ -18,6 +18,8 @@ export interface SpeciesDef {
   name: string;
   stage: Exclude<Stage, 'egg' | 'ghost'>;
   blurb: string;
+  /** lineage color family */
+  line: 'baby' | 'meat' | 'veggie' | 'pasta' | 'neglect';
   /** frames[0] open eyes, frames[1] blink; 16 rows of 16 chars, 'X' is ink */
   frames: string[][];
   /** 32x32 Scale2x-smoothed version of `frames` for the high-resolution scene */

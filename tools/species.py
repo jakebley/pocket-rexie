@@ -47,6 +47,20 @@ SPECIES = {
  'wreckage':  ('Wreckage', 5, 'Leaves a trail of chaos.', dict(arch='trex', tail='flame', back='spikes', extra=['horns2', 'wings'])),
 }
 
+# Lineage color family per species (drives the Technicolor body color). Ultimates and adults shared by
+# several lines take the line they are most commonly reached from.
+LINE = {}
+for _ids, _line in [
+    ('pip nubb', 'baby'),
+    ('rawr fang brute dash chomper razor bruiser sprinter tyrannox skywing', 'meat'),
+    ('sprig moss horn bloom shellback petalrex plated longneck bulwark sage', 'veggie'),
+    ('twirl curlie ravi zest tricera noodlord plumpkin professor triceron noodlemancer plumpking', 'pasta'),
+    ('mud grime scrap gremlin scrapper wreckage', 'neglect'),
+]:
+    for _i in _ids.split():
+        LINE[_i] = _line
+assert set(LINE) == set(SPECIES), set(SPECIES) ^ set(LINE)
+
 # parent -> ordered list of (child, requirements). First match wins; the last entry has no requirements.
 # Requirement keys (counters are for the stage just ended):
 #   mist_min, mist_max   care mistakes

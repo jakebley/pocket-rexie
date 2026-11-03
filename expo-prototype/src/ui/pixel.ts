@@ -1,4 +1,6 @@
 // Pixel art tables + a tiny square bitmap buffer (64x64 scene and text mode) used by the LCD.
+import { DIM_FLAG, Layer } from './layers';
+
 /** Home-scene framebuffer: 64x64 (species sprites are 32x32 hiFrames, drawn 1:1). */
 export const GRID = 64;
 /** Text-mode framebuffer: 64x64 so a 3x5 line holds 16 characters. */
@@ -133,17 +135,26 @@ export const ICONS: Record<string, string[]> = {
 export const ICON_ORDER = ['feed', 'light', 'play', 'train', 'medicine', 'clean', 'climate', 'scold', 'battle', 'stats'] as const;
 export const ICON_LABELS = ['FEED', 'LIGHT', 'PLAY', 'TRAIN', 'MEDICINE', 'CLEAN', 'CLIMATE', 'SCOLD', 'BATTLE', 'STATS'];
 
-/** Square on/off bitmap (n x n). */
+/** Square framebuffer (n x n) of layer codes: 0 is unlit, any other value is a lit pixel tagged with its layer. */
 export class Buf {
   readonly n: number;
   px: Uint8Array;
+  /** layer written when a draw call gives none (INK unless inside `as`) */
+  cur: number = Layer.INK;
   constructor(n = GRID) { this.n = n; this.px = new Uint8Array(n * n); }
-  set(x: number, y: number, v = 1) { if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] = v; }
-  rows(rows: string[], x0: number, y0: number, ink = 'X') {
+  /** Run `fn` with `layer` as the default layer. */
+  as(layer: number, fn: () => void) { const prev = this.cur; this.cur = layer; try { fn(); } finally { this.cur = prev; } }
+  /** v: 0 clears, any other value is a layer code (default: the current layer). */
+  set(x: number, y: number, v: number = this.cur) { if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] = v; }
+  rows(rows: string[], x0: number, y0: number, ink = 'X', layer: number = this.cur) {
     for (let y = 0; y < rows.length; y++) {
       const r = rows[y];
-      for (let x = 0; x < r.length; x++) if (r[x] === ink) this.set(x0 + x, y0 + y);
+      for (let x = 0; x < r.length; x++) if (r[x] === ink) this.set(x0 + x, y0 + y, layer);
     }
+  }
+  /** Stamp a pre-computed layer grid (w cells wide) at x0,y0; zero cells are skipped. */
+  layers(codes: Uint8Array, w: number, x0: number, y0: number) {
+    for (let i = 0; i < codes.length; i++) if (codes[i]) this.set(x0 + (i % w), y0 + ((i / w) | 0), codes[i]);
   }
   /** Same as rows() but every source pixel becomes a k x k block. */
   rowsScaled(rows: string[], x0: number, y0: number, k = 2) {
@@ -152,18 +163,21 @@ export class Buf {
       for (let x = 0; x < r.length; x++) if (r[x] === 'X') this.rect(x0 + x * k, y0 + y * k, k, k);
     }
   }
-  rect(x0: number, y0: number, w: number, h: number, v = 1) {
+  rect(x0: number, y0: number, w: number, h: number, v: number = this.cur) {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) this.set(x, y, v);
   }
   frame(x0: number, y0: number, w: number, h: number) {
     for (let x = x0; x < x0 + w; x++) { this.set(x, y0); this.set(x, y0 + h - 1); }
     for (let y = y0; y < y0 + h; y++) { this.set(x0, y); this.set(x0 + w - 1, y); }
   }
+  /** Flip lit and unlit (lit pixels go dark, unlit pixels become ink). */
   invert(x0: number, y0: number, w: number, h: number) {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
-      if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] ^= 1;
+      if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] = this.px[y * this.n + x] ? 0 : Layer.INK;
     }
   }
+  /** Mark a pixel as dimmed (lights-off dither): keeps its layer, adds the dim flag. */
+  dim(x: number, y: number) { if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] |= DIM_FLAG; }
   text(s: string, x0: number, y0: number, scale = 1) {
     let x = x0;
     for (const ch of s.toUpperCase()) {
