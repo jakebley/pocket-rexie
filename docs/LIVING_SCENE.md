@@ -2,7 +2,7 @@
 
 Goal: the pet should feel like it lives in the phone, not sit in a frame. It wanders, reacts, eats food you drop in, makes its own mess, sleeps in a spot, and the room follows real time of day. Everything is derived from the engine state (`Pet`) plus a small behaviour layer, so the widget and watch can reuse it.
 
-The home scene is a 48x48 pixel grid (text screens use the 64 grid and are unchanged; the egg, hatch, evolve flash, dead and sleep-dim screens use the 48 grid). Species sprites stay 16x16 facing right and are drawn 1:1 (a third of the room); the scene mirrors them for left-facing. No new per-species art: every pose is derived from the two existing frames (open, blink).
+The home scene is a 64x64 pixel grid (text screens are 64x64 too; the egg, evolve flash and sleep-dim use the same 64 buffer). Species sprites are the 32x32 `hiFrames` (Scale2x of the 16x16 art) drawn 1:1, half the room width; the scene mirrors them for left-facing. The older 48-grid numbers below are superseded by the 64-grid table. No new per-species art: every pose is derived from the two existing frames (open, blink).
 
 ## Layout (48x48 scene)
 - Sky rows 13..40: sun or moon on an arc by local hour, stars at night, drifting clouds (2-3 rows tall; 1 clear, 2 cloudy, 3 rainy), rain on rainy days, the butterfly.
@@ -69,3 +69,22 @@ The behaviour director is pure: `step(state, pet, inputs, now) -> state`. Unit t
 - Poops are drawn in front of the pet without a halo (they stay visible); the pet scanline-clears the sky behind its silhouette.
 - Ambient (clouds, butterfly, rain, stars) is a pure function of the clock, so it needs no state. Reduced motion freezes all of it.
 - Dev panel: scene event triggers, Make poop, Rain auto/on/off, Force hour, Away 1h/8h.
+
+## 64-grid constants (hi-res scene)
+| Item | Value |
+|---|---|
+| Grid / sprite | 64x64 / 32x32 hiFrames, x range 0..32 |
+| Ground | solid rows 60..61, dirt 62..63 (pebbles); `GROUND_Y`=60, feet row 59, `HEAD_Y`=28 |
+| Ground tap | cy >= 52 (`GROUND_TAP_Y`) |
+| Bed | pet x=6, 24x3 woven mat at x+4 on rows 60..62 |
+| Poops | 7x7 at x = 56, 48, 40, y=53, haloed; inkWidth from hiFrames (<=32) |
+| Speeds (cells/s) | baby 4.4, child 6, teen 7, adult 6, ultimate 5 |
+| Hop | 0,-6,-8,-6,0 |
+| Food | 9x9, drops 3 rows/tick to y=51, side x=52 or 4; bites cut 3 columns |
+| Broom | 9x9 at y=51, x = -8 + 7.2*t until 70 |
+| Foe | 16x16 low-res frame at y=44; pet steps back to x=6 or 26 first |
+| HUD | 7x7 hearts y=1, smiles y=9, x = 1 + 8i; status glyphs x=56, y = 1 + 8k; sky starts at row 16 |
+| Bubble | 13x9 at (head x+9, 16), tail below, 7x7 icon at +3,+1 |
+| Sky | sun 9x9 disc, radius-6/7 rays, arc cx 7..57 cy 50..24; moon 9x9 crescent; 12 stars (plus-shaped twinkle); clouds 2-lobed (17x9, 11x7) at y 18..33; rain 22 slanted 3px drops |
+| Ground decor | 4 tall + 4 short tufts, 3 pebbles, 3 flowers |
+| Butterfly | 7x4 |
