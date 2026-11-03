@@ -266,6 +266,8 @@ final class RexieUITests: RexieUITestCase {
         // so scroll first and look for it by label (a NavigationLink may surface as a button or a cell).
         let about = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label CONTAINS 'About Pocket Rexie'")).firstMatch
+        // Expand the sheet to its large detent first so the row is fully on screen and not clipped at the edge.
+        app.swipeUp()
         var tries = 0
         while !(about.exists && about.isHittable) && tries < 6 {
             app.swipeUp()
@@ -273,11 +275,14 @@ final class RexieUITests: RexieUITestCase {
         }
         XCTAssertTrue(about.exists && about.isHittable, "About row should be reachable by scrolling the settings sheet")
         about.tap()
+        let aboutBar = app.navigationBars["About"]
+        let navigated = aboutBar.waitForExistence(timeout: 10)
+        shot(20, "about")
+        XCTAssertTrue(navigated, "tapping the About row should open the About page")
         // LabeledContent is exposed as one element labelled "Version, 1.0 (1)", not as separate static texts.
         let version = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label CONTAINS[c] 'Version'")).firstMatch
         XCTAssertTrue(version.waitForExistence(timeout: 10), "About page should list the version")
-        shot(20, "about")
     }
 
     // MARK: death
