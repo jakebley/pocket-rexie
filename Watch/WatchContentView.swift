@@ -150,7 +150,7 @@ struct WatchContentView: View {
     #endif
 }
 
-// MARK: - Complication notes
+// MARK: - Complication notes (widgets live in Widget/)
 //
 // The watch widget extension target reuses the sources in Widget/ (written separately), so
 // there is nothing to add here. Add the Widget/ files to the watchOS widget extension target
