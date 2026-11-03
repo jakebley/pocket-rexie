@@ -6,6 +6,7 @@ import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER, litPath } from './pixel';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
+import { touchStyle } from './PixelText';
 import { useTheme } from './theme';
 import type { useGame } from './useGame';
 
@@ -118,37 +119,40 @@ function Lcd({ game, size }: { game: Game; size: number }) {
         <Path d={fr.lit} fill={th.ink} />
       </Svg>
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (
-        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * c, height: FEED_ROW_H * c }} />
+        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * c, height: FEED_ROW_H * c, ...touchStyle }} />
       ))}
       {game.mode === 'play' && PLAY_ROWS.map((r, i) => (
-        <Pressable key={i} onPress={() => game.tapPlayOption(i as 0 | 1)} style={{ position: 'absolute', left: 0, width: size, top: (r.y - 1) * c, height: (r.h + 2) * c }} />
+        <Pressable key={i} onPress={() => game.tapPlayOption(i as 0 | 1)} style={{ position: 'absolute', left: 0, width: size, top: (r.y - 1) * c, height: (r.h + 2) * c, ...touchStyle }} />
       ))}
       {(game.mode === 'home' || game.mode === 'stats' || game.mode === 'dex') && (
-        <Pressable accessibilityLabel="Scene" onPress={onTap} style={StyleSheet.absoluteFill} />
+        <Pressable accessibilityLabel="Scene" onPress={onTap} style={[StyleSheet.absoluteFill, touchStyle]} />
       )}
     </View>
   );
 }
 
 
-export const ICON_ROW_H = 48;
+export const ICON_ROW_H = 48; // minimum touch height of an icon tile
 
-export function Toy({ game, width }: { game: Game; width: number }) {
+export function Toy({ game, width, rowH = ICON_ROW_H }: { game: Game; width: number; rowH?: number }) {
   const th = useTheme();
   const hasPet = !!game.pet;
   const tileW = width / 5;
+  const box = Math.floor(Math.min(rowH, tileW) - 6);
 
   const row = (from: number) => (
-    <View style={{ width, height: ICON_ROW_H, flexDirection: 'row' }}>
+    <View style={{ width, height: rowH, flexDirection: 'row' }}>
       {hasPet && ICON_ORDER.slice(from, from + 5).map((name, k) => {
         const i = from + k;
         const selected = game.sel === i && game.mode === 'home';
         return (
           <Pressable key={name} accessibilityLabel={ICON_LABELS[i]} onPress={() => game.selectIcon(i)}
-            style={{ width: tileW, height: ICON_ROW_H, alignItems: 'center', justifyContent: 'center' }}>
-            <View style={{ width: ICON_ROW_H - 6, height: ICON_ROW_H - 6, alignItems: 'center', justifyContent: 'center', backgroundColor: selected ? th.ink : 'transparent' }}>
-              <IconBitmap name={name} size={ICON_ROW_H - 20} color={selected ? th.ground : th.ink} />
-            </View>
+            style={[{ width: tileW, height: rowH, alignItems: 'center', justifyContent: 'center' }, touchStyle]}>
+            {({ pressed }) => (
+              <View pointerEvents="none" style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center', backgroundColor: selected || pressed ? th.ink : 'transparent' }}>
+                <IconBitmap name={name} size={Math.round(box * 0.66)} color={selected || pressed ? th.ground : th.ink} />
+              </View>
+            )}
           </Pressable>
         );
       })}

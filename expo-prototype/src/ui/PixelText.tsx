@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { FONT, textWidth } from './pixel';
 import { useTheme } from './theme';
@@ -45,15 +45,29 @@ export function fitLines(text: string, avail: number, maxPs = 3, minPs = 2): { l
   return { lines: lines.slice(0, 2), ps: Math.max(1, Math.min(minPs, avail / widest)) };
 }
 
-/** Flat ink-outlined button; pressed (or `on`) state is inverted. */
-export function PixelButton({ label, onPress, on, ps = 2, style, accessibilityLabel }: {
-  label: string; onPress: () => void; on?: boolean; ps?: number; style?: StyleProp<ViewStyle>; accessibilityLabel?: string;
+const WEB_TOUCH: object = Platform.OS === 'web'
+  ? { touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', userSelect: 'none', cursor: 'pointer' }
+  : {};
+/** Style bits every touch target gets on web: no double-tap zoom, no grey tap flash, no text selection. */
+export const touchStyle = WEB_TOUCH as ViewStyle;
+
+/**
+ * Flat ink-outlined button; pressed (or `on`) state inverts the moment the finger lands.
+ * `instant` fires onPress on press-in (A/B/C feel like toy buttons); otherwise it fires on release.
+ */
+export function PixelButton({ label, onPress, on, ps = 2, style, accessibilityLabel, instant }: {
+  label: string; onPress: () => void; on?: boolean; ps?: number; style?: StyleProp<ViewStyle>; accessibilityLabel?: string; instant?: boolean;
 }) {
   const t = useTheme();
+  const fired = useRef(false);
+  // instant buttons act on finger-down; onPress is only a fallback for taps so quick (or synthetic) that press-in never reported
+  const down = () => { fired.current = true; onPress(); };
+  const up = () => { if (!fired.current) onPress(); fired.current = false; };
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} onPress={onPress}
+    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} hitSlop={6}
+      onPressIn={instant ? down : undefined} onPress={instant ? up : onPress}
       style={({ pressed }) => [{ borderWidth: 2, borderColor: t.ink, backgroundColor: pressed || on ? t.ink : 'transparent',
-        alignItems: 'center', justifyContent: 'center', minHeight: 44, paddingHorizontal: 12, paddingVertical: 8 }, style]}>
+        alignItems: 'center', justifyContent: 'center', minHeight: 48, paddingHorizontal: 12, paddingVertical: 8 }, touchStyle, style]}>
       {({ pressed }) => (
         <View pointerEvents="none" style={StyleSheet.flatten({ alignItems: 'center' })}>
           <PixelText text={label} ps={ps} color={pressed || on ? t.ground : t.ink} />

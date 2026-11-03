@@ -25,8 +25,8 @@ export const ART: Record<string, Rows> = {
   flakeS: ['X.X.X', '.XXX.', 'XXXXX', '.XXX.', 'X.X.X'],
   dot: ['XX', 'XX'],
   // sky
-  cloudL: ['.....XXXX.......', '...XXXXXXXX.XX..', '..XXXXXXXXXXXXX.', '.XXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXX', '..XXXXXXXXXXXX..'],
-  cloudS: ['...XXX.....', '..XXXXX.XX.', '.XXXXXXXXXX', 'XXXXXXXXXXX', '.XXXXXXXXX.'],
+  cloudL: ['...XXXXX.........', '..XXXXXXX........', '.XXXXXXXXX.......', '.XXXXXXXXX.XXXXX.', '.XXXXXXXXXXXXXXXX', '.XXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXX'],
+  cloudS: ['..XXX......', '.XXXXX.....', 'XXXXXXXXXX.', 'XXXXXXXXXX.', 'XXXXXXXXXXX', 'XXXXXXXXXXX', 'XXXXXXXXXXX'],
   sunDisc: ['..XXXXX..', '.XXXXXXX.', 'XXXXXXXXX', 'XXXXXXXXX', 'XXXXXXXXX', 'XXXXXXXXX', 'XXXXXXXXX', '.XXXXXXX.', '..XXXXX..'],
   moon: ['...XXXX..', '..XXX....', '.XXX.....', '.XXX.....', '.XXX.....', '.XXX.....', '.XXX.....', '..XXX....', '...XXXX..'],
   butterfly0: ['XX...XX', 'XXX.XXX', '.XXXXX.', '..X.X..'],
@@ -159,8 +159,8 @@ function drawSky(b: Buf, s: Scene) {
     if (phase !== 'night') stamp(b, ART.cloudS, wide(o + 40 + drift), 21, true);
   } else {
     stamp(b, ART.cloudL, wide(o + drift), 24, true);
-    stamp(b, ART.cloudL, wide(o + 42 + drift), 19, true);
-    if (s.weather === 'rain') stamp(b, ART.cloudL, wide(o + 21 + drift), 30, true);
+    stamp(b, s.weather === 'rain' ? ART.cloudL : ART.cloudS, wide(o + 42 + drift), 18, true);
+    if (s.weather === 'rain') stamp(b, ART.cloudS, wide(o + 21 + drift), 33, true);
   }
   if (s.weather === 'rain') {
     for (let i = 0; i < 22; i++) {
@@ -293,7 +293,7 @@ export function drawScene(b: Buf, s: Scene, pet: Pet) {
   }
   // poops stand on the ground, right of the pet's allowed range
   const jig = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) b.rows(G7.poop, POOP_X[i] + ((jig + i) % 2), GROUND_Y - 7); // 1 px jiggle
+  for (let i = 0; i < 3; i++) if (s.poopMask & (1 << i)) stamp(b, G7.poop, POOP_X[i] + ((jig + i) % 2), GROUND_Y - 7, true); // 1 px jiggle, haloed so it reads over the grass
   for (const p of s.props) drawProp(b, p);
   // state effects around the head
   const t = s.t;

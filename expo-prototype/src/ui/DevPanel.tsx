@@ -27,7 +27,7 @@ export function reqText(r: Requirement): string {
 }
 
 function Btn({ label, onPress, on }: { label: string; onPress: () => void; on?: boolean }) {
-  return <PixelButton label={label} onPress={onPress} on={on} ps={1.5} style={{ minHeight: 44, paddingHorizontal: 10 }} />;
+  return <PixelButton label={label} onPress={onPress} on={on} ps={1.5} style={{ minHeight: 48, paddingHorizontal: 10 }} />;
 }
 
 export function DevPanel({ game, onClose }: { game: Game; onClose: () => void }) {
