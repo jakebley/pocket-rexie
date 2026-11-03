@@ -36,7 +36,7 @@ extension EnvironmentValues {
     }
 }
 
-/// Builds paths for the 48x48 pixel scene (see SceneRenderer), shared by the animated screen and the static view.
+/// Builds paths for the 64x64 pixel scene (see SceneRenderer), shared by the animated screen and the static view.
 enum LCDPainter {
     static let grid = SceneRaster.side
 
@@ -65,7 +65,7 @@ enum LCDPainter {
         return path
     }
 
-    /// A single bitmap placed on the 48x48 grid (used for full-screen effects).
+    /// A single bitmap placed on the 64x64 grid (used for full-screen effects).
     static func glyphPath(_ rows: [String], x: Int, y: Int, size: CGSize) -> Path {
         let cell = min(size.width, size.height) / CGFloat(grid)
         var path = Path()
@@ -74,7 +74,9 @@ enum LCDPainter {
     }
 
     /// Shell with a zigzag crack, shown in alternation with the new baby after hatching.
-    static let crackEgg: [String] = [
+    static let crackEgg: [String] = Sprite.scale2x(crackEgg16)
+
+    private static let crackEgg16: [String] = [
         "................",
         ".....XXXXXX.....",
         "....XXXXXXXX....",

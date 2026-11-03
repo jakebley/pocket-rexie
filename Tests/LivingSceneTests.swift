@@ -169,21 +169,53 @@ final class LivingSceneTests: XCTestCase {
     // MARK: poop spacing
 
     func testSceneGridAndPoopSpots() {
-        XCTAssertEqual(SceneRaster.side, 48)
+        XCTAssertEqual(SceneRaster.side, 64)
         XCTAssertEqual(SceneState.maxX, 32)
-        XCTAssertEqual(SceneState.poopSpots, [41, 35, 29])
+        XCTAssertEqual(SceneState.poopSpots, [56, 48, 40])
         XCTAssertEqual(SceneState.bedX, 8)
+        XCTAssertEqual(SceneRaster.groundY, 58)
+        XCTAssertEqual(SceneRaster.footY, 57)
+    }
+
+    func testPetsAreDrawnFromTheHiResFramesOneToOne() {
+        for sp in Species.all {
+            XCTAssertEqual(sp.hiFrames.count, 2, sp.id)
+            for f in sp.hiFrames {
+                XCTAssertEqual(f.count, 32, sp.id)
+                XCTAssertTrue(f.allSatisfy { $0.count == 32 }, sp.id)
+            }
+            var p = makePet(stage: sp.stage, species: sp.id)
+            p.hunger = 3
+            let place = SceneRenderer.placement(pet: p, state: SceneState.still(for: p), frame: 0,
+                                                motion: false, override: nil)
+            XCTAssertEqual(place.rows, sp.hiFrames[0], sp.id)
+            XCTAssertEqual(place.bottom, 57, "\(sp.id) feet rest on the row above the ground line")
+        }
+    }
+
+    func testHUDGlyphsAreSevenBySevenAndGroundLineIsDrawn() {
+        let p = makePet()
+        let r = SceneRenderer.still(pet: p, calendar: utc)
+        for x in 0..<64 {
+            XCTAssertTrue(r.isSet(x, 58) && r.isSet(x, 59), "ground line at column \(x)")
+        }
+        for g in [SceneGlyph.heartFull, SceneGlyph.heartEmpty, SceneGlyph.smileFull, SceneGlyph.smileEmpty] {
+            XCTAssertEqual(g.count, 7)
+            XCTAssertEqual(g[0].count, 7)
+        }
+        // First hunger heart at (1, 1): the full heart's top row is ".XX.XX."
+        XCTAssertTrue(r.isSet(2, 1) && r.isSet(3, 1) && !r.isSet(4, 1) && r.isSet(5, 1) && r.isSet(6, 1))
     }
 
     func testPoopLimitShrinksAsPoopsGrow() {
         for sp in Species.all {
             var lo = Int.max, hi = -1
-            for f in sp.frames { for row in f { for (c, ch) in row.enumerated() where ch == "X" { lo = min(lo, c); hi = max(hi, c) } } }
+            for f in sp.hiFrames { for row in f { for (c, ch) in row.enumerated() where ch == "X" { lo = min(lo, c); hi = max(hi, c) } } }
             let w = SceneState.inkWidth(species: sp.id)
             XCTAssertGreaterThanOrEqual(w, hi - lo + 1, sp.id)
             XCTAssertGreaterThanOrEqual(w, hi + 1, sp.id)
-            XCTAssertGreaterThanOrEqual(w, 16 - lo, sp.id)
-            XCTAssertLessThanOrEqual(w, 16, sp.id)
+            XCTAssertGreaterThanOrEqual(w, 32 - lo, sp.id)
+            XCTAssertLessThanOrEqual(w, 32, sp.id)
             let lims = (0...3).map { SceneState.limit(species: sp.id, poops: $0) }
             XCTAssertEqual(lims[0], 32, sp.id)
             for n in 1...3 {
@@ -193,7 +225,7 @@ final class LivingSceneTests: XCTestCase {
             }
             XCTAssertLessThan(lims[1], lims[0], sp.id)
         }
-        XCTAssertEqual(SceneState.limit(species: "", poops: 3), 12)   // unknown sprite counts as a whole 16 columns
+        XCTAssertEqual(SceneState.limit(species: "", poops: 3), 7)   // unknown sprite counts as a whole 32 columns
     }
 
     func testInkNeverOverlapsPoopsWhileWandering() {
@@ -251,10 +283,10 @@ final class LivingSceneTests: XCTestCase {
             if st.action == .poop && squatX == nil { squatX = st.x }
             if squatX == nil, st.pendingPoop {
                 let r = SceneRenderer.render(pet: p, state: st, date: self.base)
-                if r.isSet(41 + 2, 39) || r.isSet(41 + 3, 39) { drawnBefore = true }   // top of the poop glyph
+                if r.isSet(56 + 3, 51) || r.isSet(56 + 4, 51) { drawnBefore = true }   // top of the poop glyph
             }
         }
-        let expect = Double(41 - SceneState.inkWidth(species: p.species) - 1)
+        let expect = Double(56 - SceneState.inkWidth(species: p.species) - 1)
         XCTAssertNotNil(squatX)
         XCTAssertEqual(squatX ?? -1, expect, accuracy: 0.01)
         XCTAssertFalse(drawnBefore, "the poop is not on the ground until it is dropped")
@@ -265,9 +297,9 @@ final class LivingSceneTests: XCTestCase {
         var p = makePet()
         p.poops = 3
         let s = SceneState.still(for: p)
-        // The glyph's top pixel is column 2; it shifts one column between the two 0.6 s frames.
+        // The 7x7 glyph's top pixel is column 3 of row 51; it shifts one column between the two 0.6 s frames.
         func topColumn(_ r: SceneRaster, _ spot: Int) -> Int {
-            r.isSet(spot + 2, 39) ? 0 : (r.isSet(spot + 3, 39) ? 1 : -1)
+            r.isSet(spot + 3, 51) ? 0 : (r.isSet(spot + 4, 51) ? 1 : -1)
         }
         let r0 = SceneRenderer.render(pet: p, state: s, date: base)
         let r1 = SceneRenderer.render(pet: p, state: s, date: base.addingTimeInterval(0.6))
@@ -341,14 +373,21 @@ final class LivingSceneTests: XCTestCase {
                 XCTAssertTrue(row.allSatisfy { $0 == "X" || $0 == "." })
             }
         }
-        XCTAssertEqual(SceneGlyph.bubble.count, 7)
-        XCTAssertEqual(SceneGlyph.bubble[0].count, 9)
+        XCTAssertEqual(SceneGlyph.bubble.count, 9)
+        XCTAssertEqual(SceneGlyph.bubble[0].count, 13)
         for g in [SceneGlyph.meat, SceneGlyph.leaf, SceneGlyph.noodle, SceneGlyph.candy, SceneGlyph.broom,
-                  SceneGlyph.ball, SceneGlyph.dumbbell, SceneGlyph.syringe, SceneGlyph.spark,
-                  SceneGlyph.bulb, SceneGlyph.sun, SceneGlyph.moon] {
-            XCTAssertEqual(g.count, 5)
-            XCTAssertEqual(g[0].count, 5)
+                  SceneGlyph.ball, SceneGlyph.dumbbell, SceneGlyph.syringe, SceneGlyph.spark, SceneGlyph.moon] {
+            XCTAssertEqual(g.count, 9)
+            XCTAssertEqual(g[0].count, 9)
         }
+        // bubble icons are 7x7 and fit the bubble's 11x7 inside
+        for call in [Call.hungry, .bored, .poop, .sick, .naughty, .light, .hot, .cold] {
+            let icon = SceneRenderer.bubbleIcon(for: call)
+            XCTAssertEqual(icon.count, 7, "\(call)")
+            XCTAssertEqual(icon[0].count, 7, "\(call)")
+        }
+        XCTAssertEqual(SceneGlyph.sun.count, 11)
+        XCTAssertEqual(SceneGlyph.sun[0].count, 11)
     }
 
     func testStillPictureIsDeterministicAndFollowsTheHour() {
