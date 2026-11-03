@@ -9,7 +9,7 @@ out = []
 for sid, (name, stage, blurb, rec) in SPECIES.items():
     a, b = spritegen.render(dict(rec, stage=stage))
     evo = [{"to": c, "req": r} for c, r in EVO.get(sid, [])]
-    out.append({"id": sid, "name": name, "stage": STAGE[stage], "blurb": blurb, "frames": [a, b], "evolutions": evo})
+    out.append({"id": sid, "name": name, "stage": STAGE[stage], "blurb": blurb, "frames": [a, b], "hiFrames": [spritegen.scale2x(a), spritegen.scale2x(b)], "evolutions": evo})
 path = os.path.join(os.path.dirname(__file__), "..", "expo-prototype", "src", "core", "speciesData.ts")
 os.makedirs(os.path.dirname(path), exist_ok=True)
 with open(path, "w") as f:

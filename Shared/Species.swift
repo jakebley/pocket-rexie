@@ -39,6 +39,8 @@ struct Species {
     let blurb: String
     /// frames[0] is the open-eyed sprite, frames[1] the blink.
     let frames: [[String]]
+    /// 32x32 Scale2x-smoothed version of `frames` for the high-resolution scene.
+    let hiFrames: [[String]]
     let evolutions: [Evolution]
 
     static let all = SpeciesData.all

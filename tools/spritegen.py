@@ -194,3 +194,23 @@ def draw(r, blink=False):
 
 def render(r):
     return draw(r).rows(), draw(r, blink=True).rows()
+
+
+def scale2x(rows):
+    """EPX / Scale2x pixel-art upscale: 16x16 -> 32x32 with diagonals smoothed and no blur."""
+    n = len(rows)
+    g = [[1 if c == 'X' else 0 for c in r] for r in rows]
+    def at(x, y):
+        return g[y][x] if 0 <= x < n and 0 <= y < n else 0
+    out = [[0] * (n * 2) for _ in range(n * 2)]
+    for y in range(n):
+        for x in range(n):
+            p = at(x, y); a = at(x, y - 1); b = at(x + 1, y); c = at(x - 1, y); d = at(x, y + 1)
+            e1 = e2 = e3 = e4 = p
+            if c == a and c != d and a != b: e1 = a
+            if a == b and a != c and b != d: e2 = b
+            if d == c and d != b and c != a: e3 = c
+            if b == d and b != a and d != c: e4 = d
+            out[2 * y][2 * x] = e1; out[2 * y][2 * x + 1] = e2
+            out[2 * y + 1][2 * x] = e3; out[2 * y + 1][2 * x + 1] = e4
+    return ["".join("X" if v else "." for v in r) for r in out]
