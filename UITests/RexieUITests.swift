@@ -262,10 +262,21 @@ final class RexieUITests: RexieUITestCase {
     func testSettingsAboutPage() {
         launch("child-hungry")
         tap("settings-gear")
-        let about = app.buttons["About Pocket Rexie"]
-        reveal(about)
+        // The row sits below the fold on small phones and a Form only builds rows near the viewport,
+        // so scroll first and look for it by label (a NavigationLink may surface as a button or a cell).
+        let about = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'About Pocket Rexie'")).firstMatch
+        var tries = 0
+        while !(about.exists && about.isHittable) && tries < 6 {
+            app.swipeUp()
+            tries += 1
+        }
+        XCTAssertTrue(about.exists && about.isHittable, "About row should be reachable by scrolling the settings sheet")
         about.tap()
-        XCTAssertTrue(app.staticTexts["Version"].waitForExistence(timeout: 10), "About page should list the version")
+        // LabeledContent is exposed as one element labelled "Version, 1.0 (1)", not as separate static texts.
+        let version = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS[c] 'Version'")).firstMatch
+        XCTAssertTrue(version.waitForExistence(timeout: 10), "About page should list the version")
         shot(20, "about")
     }
 
