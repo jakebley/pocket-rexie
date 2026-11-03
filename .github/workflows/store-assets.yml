@@ -2,7 +2,13 @@ name: Store assets
 
 on:
   push:
-    branches-ignore: [ci-screenshots]
+    branches: [main]
+    paths: ['Shared/**', 'iOS/**', 'Tests/StoreScreenshotTests.swift', 'Tests/UIRenderTests.swift', 'tools/make_icon.py', '**/Assets.xcassets/**']
+  workflow_dispatch:
+
+concurrency:
+  group: store-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   store:
