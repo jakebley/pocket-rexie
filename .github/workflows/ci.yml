@@ -3,7 +3,18 @@ name: CI
 on:
   push:
     branches-ignore: [ci-screenshots]
+    paths-ignore: ['docs/**', '**/*.md', 'LICENSE']
   pull_request:
+    paths-ignore: ['docs/**', '**/*.md', 'LICENSE']
+  workflow_dispatch:
+
+# A newer push to the same branch supersedes an older run, so stale runs never hold macOS runners.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Cost control: every push runs the fast jobs (web, Apple build + unit tests). The slow macOS jobs
+# (UI renders, simulator UI tests) run on main, on manual dispatch, or when the commit message contains [full].
 
 jobs:
   web:
@@ -87,7 +98,7 @@ jobs:
 
   render:
     name: Render UI screenshots
-    if: github.event_name == 'push' && github.ref != 'refs/heads/ci-screenshots'
+    if: github.ref != 'refs/heads/ci-screenshots' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || contains(github.event.head_commit.message, '[full]'))
     runs-on: macos-15
     permissions:
       contents: write
@@ -176,7 +187,7 @@ jobs:
 
   uitest:
     name: UI tests (XCUITest on two simulators)
-    if: github.event_name == 'push' && github.ref != 'refs/heads/ci-screenshots'
+    if: github.ref != 'refs/heads/ci-screenshots' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || contains(github.event.head_commit.message, '[full]'))
     runs-on: macos-15
     timeout-minutes: 60
     permissions:
