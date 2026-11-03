@@ -36,17 +36,17 @@ struct ContentView: View {
                 Spacer(minLength: 0)
 
                 VStack(spacing: Layout.gap) {
-                    iconRow(Array(MenuIcon.allCases.prefix(5)), width: layout.side, glyphPixel: layout.glyphPixel)
+                    iconRow(Array(MenuIcon.allCases.prefix(5)), layout: layout)
                     LCDScreen(model: model, framed: true)
                         .frame(width: layout.side, height: layout.side)
-                    iconRow(Array(MenuIcon.allCases.suffix(5)), width: layout.side, glyphPixel: layout.glyphPixel)
-                    messageLine(width: layout.side)
+                    iconRow(Array(MenuIcon.allCases.suffix(5)), layout: layout)
+                    messageLine(layout: layout)
                 }
                 .frame(width: layout.side)
 
                 Spacer(minLength: 0)
 
-                controls(width: layout.side)
+                controls(layout: layout)
                     .padding(.top, Layout.gap)
                     .padding(.bottom, Layout.bottomPad)
             }
@@ -120,7 +120,7 @@ struct ContentView: View {
             showSettings = true
         } label: {
             PixelGlyphView(rows: PixelBitmap.gear, pixel: 3)
-                .frame(width: 44, height: 44)
+                .frame(width: 48, height: 48)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -128,7 +128,7 @@ struct ContentView: View {
         .accessibilityIdentifier("settings-gear")
     }
 
-    private func iconRow(_ icons: [MenuIcon], width: CGFloat, glyphPixel: CGFloat) -> some View {
+    private func iconRow(_ icons: [MenuIcon], layout: Layout) -> some View {
         HStack(spacing: 0) {
             ForEach(icons) { icon in
                 let isSelected = model.selected == icon
@@ -137,9 +137,9 @@ struct ContentView: View {
                     Beeper.shared.blip()
                     model.perform(icon)
                 } label: {
-                    PixelGlyphView(rows: icon.glyph, pixel: glyphPixel,
+                    PixelGlyphView(rows: icon.glyph, pixel: layout.glyphPixel,
                                    color: isSelected ? palette.background : palette.ink)
-                        .frame(maxWidth: .infinity, minHeight: Layout.rowHeight, maxHeight: Layout.rowHeight)
+                        .frame(maxWidth: .infinity, minHeight: layout.rowHeight, maxHeight: layout.rowHeight)
                         .background(
                             Rectangle()
                                 .fill(isSelected ? palette.ink : Color.clear)
@@ -153,13 +153,14 @@ struct ContentView: View {
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
-        .frame(width: width)
+        .frame(width: layout.side)
     }
 
-    private func messageLine(width: CGFloat) -> some View {
+    private func messageLine(layout: Layout) -> some View {
+        let width = layout.side
         let text = model.message.isEmpty ? model.pet.statusLine : model.message
         return PixelParagraph(text: text, pixel: 3, maxChars: max(8, Int(width / 12)), centered: true)
-            .frame(width: width, height: Layout.messageHeight, alignment: .top)
+            .frame(width: width, height: layout.messageHeight, alignment: .center)
             .contentShape(Rectangle())
             .onTapGesture { model.dismissMessage() }
             .accessibilityElement(children: .ignore)
@@ -168,79 +169,94 @@ struct ContentView: View {
             .accessibilityAddTraits(.isButton)
     }
 
-    private func controls(width: CGFloat) -> some View {
-        HStack(spacing: 12) {
-            ControlButton(label: "A") { model.cycleSelection() }
-            ControlButton(label: "B") { model.confirm() }
-            ControlButton(label: "C") { model.cancel() }
+    private func controls(layout: Layout) -> some View {
+        HStack(spacing: Layout.controlGap) {
+            ControlButton(label: "A", height: layout.buttonHeight) { model.cycleSelection() }
+            ControlButton(label: "B", height: layout.buttonHeight) { model.confirm() }
+            ControlButton(label: "C", height: layout.buttonHeight) { model.cancel() }
         }
-        .frame(width: width)
+        .frame(width: layout.side)
     }
 }
 
 // MARK: - layout and controls
 
-/// Sizes for the phone layout. The square is limited by both width and remaining height.
+/// Sizes for the phone layout. The LCD square takes the full width minus a gutter (up to a cap on
+/// iPad), limited by the height left after the fixed minimums; any height left over grows the
+/// icon tiles, the message line and the A/B/C controls.
 private struct Layout {
-    static let gutter: CGFloat = 16
-    static let maxSide: CGFloat = 440
-    static let topBar: CGFloat = 44
-    static let rowHeight: CGFloat = 48
-    static let messageHeight: CGFloat = 52
-    static let buttonHeight: CGFloat = 56
-    static let gap: CGFloat = 8
+    static let gutter: CGFloat = 12
+    static let padMaxSide: CGFloat = 640
+    static let topBar: CGFloat = 48
+    static let gap: CGFloat = 6
+    static let controlGap: CGFloat = 10
     static let bottomPad: CGFloat = 8
+    static let baseRow: CGFloat = 48
+    static let baseMessage: CGFloat = 40
+    static let baseButton: CGFloat = 64
+    static let maxGrow: CGFloat = 120
 
     let side: CGFloat
+    let rowHeight: CGFloat
+    let messageHeight: CGFloat
+    let buttonHeight: CGFloat
     let glyphPixel: CGFloat
 
     init(size: CGSize) {
         // top bar, two icon rows, message, controls, five gaps, bottom padding and a little slack
-        let fixed = Layout.topBar + Layout.rowHeight * 2 + Layout.messageHeight
-            + Layout.buttonHeight + Layout.gap * 5 + Layout.bottomPad + 8
-        side = max(160, min(size.width - Layout.gutter * 2, Layout.maxSide, size.height - fixed))
-        glyphPixel = size.width >= 600 ? 4 : 3
+        let fixed = Layout.topBar + Layout.baseRow * 2 + Layout.baseMessage
+            + Layout.baseButton + Layout.gap * 5 + Layout.bottomPad + 4
+        var widthSide = size.width - Layout.gutter * 2
+        if size.width >= 600 { widthSide = min(widthSide, Layout.padMaxSide) }
+        side = max(160, min(widthSide, size.height - fixed)).rounded(.down)
+        let grow = min(max(0, size.height - fixed - side), Layout.maxGrow)
+        rowHeight = (Layout.baseRow + grow * 0.15).rounded()
+        messageHeight = (Layout.baseMessage + grow * 0.2).rounded()
+        buttonHeight = (Layout.baseButton + grow * 0.35).rounded()
+        glyphPixel = rowHeight >= 56 && side >= 340 ? 4 : 3
     }
 }
 
-/// One flat A / B / C control: pixel label, ink outline, inverted while pressed.
+/// One flat A / B / C control: pixel label, ink outline, inverted while pressed. It acts on touch
+/// down (a quick tap never waits for the finger to lift) and stays a button for VoiceOver.
 private struct ControlButton: View {
     let label: String
+    let height: CGFloat
     let action: () -> Void
-
-    var body: some View {
-        Button {
-            Haptics.tap()
-            Beeper.shared.blip()
-            action()
-        } label: {
-            EmptyView()
-        }
-        .buttonStyle(ControlButtonStyle(title: label))
-        .accessibilityLabel("Button \(label)")
-        .accessibilityIdentifier("btn-\(label)")
-    }
-}
-
-private struct ControlButtonStyle: ButtonStyle {
-    let title: String
-
-    func makeBody(configuration: Configuration) -> some View {
-        ControlFace(title: title, pressed: configuration.isPressed)
-    }
-}
-
-private struct ControlFace: View {
-    let title: String
-    let pressed: Bool
+    @GestureState private var down = false
+    @State private var fired = false
     @Environment(\.lcdPalette) private var palette
 
     var body: some View {
-        PixelText(title, pixel: 4, color: pressed ? palette.background : palette.ink)
-            .frame(maxWidth: .infinity, minHeight: Layout.buttonHeight, maxHeight: Layout.buttonHeight)
-            .background(pressed ? palette.ink : Color.clear)
+        PixelText(label, pixel: 5, color: down ? palette.background : palette.ink)
+            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+            .background(down ? palette.ink : Color.clear)
             .overlay(Rectangle().strokeBorder(palette.ink, lineWidth: 2))
             .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .updating($down) { _, state, _ in state = true }
+                    .onChanged { _ in
+                        guard !fired else { return }
+                        fired = true
+                        fire()
+                    }
+                    .onEnded { _ in fired = false }
+            )
+            .onChange(of: down) { _, isDown in
+                if !isDown { fired = false }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Button \(label)")
+            .accessibilityIdentifier("btn-\(label)")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { fire() }
+    }
+
+    private func fire() {
+        Haptics.tap()
+        Beeper.shared.blip()
+        action()
     }
 }
 

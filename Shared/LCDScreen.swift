@@ -114,11 +114,11 @@ struct LCDScreen: View {
         }
         let place = SceneRenderer.placement(pet: pet, state: director.state, frame: 0, motion: false,
                                             override: nil)
-        let onPet = cx >= Double(place.left - 2) && cx <= Double(place.right + 2)
-            && cy >= Double(place.inkTop - 2) && cy <= Double(place.bottom + 2)
+        let onPet = cx >= Double(place.left - 3) && cx <= Double(place.right + 3)
+            && cy >= Double(place.inkTop - 3) && cy <= Double(place.bottom + 3)
         if onPet {
             model.tapPet()
-        } else if cy >= 40 {
+        } else if cy >= Double(SceneRaster.groundY - 5) {
             director.tap = .ground(x: cx)
         } else {
             director.tap = .sky
@@ -442,7 +442,7 @@ enum LCDScene {
             let step = Int(t / 0.2)
             let inverted = (step / 2) % 2 == 0
             let id = step % 2 == 0 ? flash.from : flash.to
-            let rows = Species.named(id)?.frames.first ?? Sprite.egg
+            let rows = Species.named(id)?.hiFrames.first ?? Sprite.eggHi
             let sprite = LCDPainter.glyphPath(rows, x: 16, y: 16, size: size)
             if inverted {
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(palette.ink))

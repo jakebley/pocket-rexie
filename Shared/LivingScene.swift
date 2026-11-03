@@ -63,9 +63,9 @@ struct SceneEffect: Equatable {
     /// Lives until its script ends instead of for `duration` ticks.
     var bound = false
 
-    /// Horizontal position (cells, left edge) of the bouncing ball `age` ticks in.
+    /// Horizontal position (cells, left edge) of the bouncing 9x9 ball `age` ticks in.
     static func ballX(age: Int) -> Double {
-        min(40.0, max(0.0, Double(age) * 40.0 / 24.0))
+        min(55.0, max(0.0, Double(age) * 55.0 / 24.0))
     }
 }
 
@@ -104,19 +104,19 @@ enum SceneRNG {
 struct SceneState: Equatable {
     static let tickLength = 0.125
     static let minX = 0.0
-    /// The scene is a 48x48 grid; the sprite's left edge ranges over 0...32.
+    /// The scene is a 64x64 grid; the 32x32 sprite's left edge ranges over 0...32.
     static let maxX = 32.0
     static let homeX = 16.0
     static let bedX = 8.0
     /// Ground x of the first, second and third poop: they fill in from the right edge.
-    static let poopSpots: [Int] = [41, 35, 29]
+    static let poopSpots: [Int] = [56, 48, 40]
 
     /// Columns the ink reaches from the sprite's left edge for either facing, over all frames of
     /// each species. Measured from the sprite box edge (not just the occupied width) so a mirrored
     /// sprite with a left margin cannot reach into a poop. Computed once per species.
     static let inkWidths: [String: Int] = Dictionary(uniqueKeysWithValues: Species.all.map { sp in
-        var lo = Int.max, hi = -1, size = 16
-        for frame in sp.frames {
+        var lo = Int.max, hi = -1, size = spriteSize
+        for frame in sp.hiFrames {
             for row in frame {
                 size = max(size, row.count)
                 for (c, ch) in row.enumerated() where ch == "X" { lo = min(lo, c); hi = max(hi, c) }
@@ -125,8 +125,11 @@ struct SceneState: Equatable {
         return (sp.id, hi < 0 ? size : max(hi + 1, size - lo))
     })
 
-    /// Ink width used for the poop limit (a whole 16 when the species is unknown, e.g. an egg).
-    static func inkWidth(species: String) -> Int { inkWidths[species] ?? 16 }
+    /// Side of a pet sprite in scene cells (`Species.hiFrames`, drawn 1:1).
+    static let spriteSize = 32
+
+    /// Ink width used for the poop limit (a whole 32 when the species is unknown, e.g. an egg).
+    static func inkWidth(species: String) -> Int { inkWidths[species] ?? spriteSize }
 
     /// Furthest-right sprite x with `poops` poops on the ground: min(32, leftmostPoopX - inkWidth - 1), at least 0.
     static func limit(species: String, poops: Int) -> Double {
@@ -136,7 +139,7 @@ struct SceneState: Equatable {
     }
 
     var action: SceneAction = .idle
-    /// Left edge of the 16x16 sprite, in cells, 0...32.
+    /// Left edge of the 32x32 sprite, in cells, 0...32.
     var x = SceneState.homeX
     /// Furthest-right x the pet may use now; shrinks as poops pile up (see `limit(species:poops:)`).
     var limitX = SceneState.maxX
@@ -189,11 +192,11 @@ struct SceneState: Equatable {
     /// Walking speed in cells per second.
     static func speed(for stage: Stage) -> Double {
         switch stage {
-        case .baby: return 3.3
-        case .child: return 4.5
-        case .teen: return 5.2
-        case .adult: return 4.5
-        case .ultimate: return 3.8
+        case .baby: return 4.4
+        case .child: return 6.0
+        case .teen: return 6.9
+        case .adult: return 6.0
+        case .ultimate: return 5.1
         case .egg, .ghost: return 0
         }
     }
@@ -299,7 +302,7 @@ struct SceneState: Equatable {
         case .play:
             if !reduced, let e = effect, e.kind == .ball {
                 let bx = SceneEffect.ballX(age: tick - e.start)
-                let t = min(max(bx - 8, SceneState.minX), limitX)
+                let t = min(max(bx - 16, SceneState.minX), limitX)
                 move(toward: t, mul: 1.5, stops: false, stage: pet.stage)
             }
         case .eat:
@@ -395,7 +398,7 @@ struct SceneState: Equatable {
     private func pickTarget(_ r: Int) -> Double {
         let lim = limitX
         var t = Double(r % (Int(lim) + 1))
-        if abs(t - x) < 4 { t = x < lim / 2 ? min(lim, x + 9) : max(0, x - 9) }
+        if abs(t - x) < 6 { t = x < lim / 2 ? min(lim, x + 12) : max(0, x - 12) }
         return t
     }
 
@@ -511,8 +514,8 @@ struct SceneState: Equatable {
     private mutating func startTap(_ tap: SceneTap, reduced: Bool) {
         switch tap {
         case .ground(let gx):
-            let t = min(max(gx - 8, SceneState.minX), limitX)
-            let face = gx >= t + 8 ? 1 : -1
+            let t = min(max(gx - 16, SceneState.minX), limitX)
+            let face = gx >= t + 16 ? 1 : -1
             var steps: [SceneStep] = []
             if !reduced { steps.append(SceneStep(action: .walk, ticks: 0, target: t)) }
             steps.append(SceneStep(action: .look, ticks: 12, face: face))
@@ -587,9 +590,10 @@ struct SceneState: Equatable {
     /// Food drops beside the pet, the pet walks to it and chomps three times.
     private mutating func startFeeding(_ food: Food?, reduced: Bool) {
         let toRight = x <= 16
-        let reach = reduced ? 13.0 : 17.0
-        let foodX: Double = toRight ? min(40.0, x + reach) : max(0.0, x - (reduced ? 3.0 : 10.0))
-        let target: Double = toRight ? min(limitX, max(0.0, foodX - 13)) : min(limitX, foodX + 3)
+        // The 9x9 food lands level with the pet's mouth (29 cells in from its left edge when facing right).
+        let reach = reduced ? 29.0 : 38.0
+        let foodX: Double = toRight ? min(55.0, x + reach) : max(0.0, x - (reduced ? 8.0 : 18.0))
+        let target: Double = toRight ? min(limitX, max(0.0, foodX - 29)) : min(limitX, foodX + 8)
         let face = toRight ? 1 : -1
         var steps = [SceneStep(action: .look, ticks: 12, face: face, lookUp: true,
                                fx: SceneEffect(kind: .food, x: foodX, food: food, bound: true))]
