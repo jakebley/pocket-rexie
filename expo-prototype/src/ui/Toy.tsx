@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER, litPath } from './pixel';
+import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER } from './pixel';
+import { buildFrame, lineOf, type Frame } from './render';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
@@ -57,6 +58,23 @@ export { IconBitmap };
 
 const isHidden = () => Platform.OS === 'web' && typeof document !== 'undefined' && document.visibilityState === 'hidden';
 
+const EMPTY_FRAME: Frame = { n: 64, sky: null, soil: null, groups: [], key: '' };
+
+/** The LCD picture: screen ground, (Technicolor) sky and soil, the faint unlit-pixel grid, then the lit pixels grouped by color. */
+export function FrameSvg({ frame, size, ground, ink }: { frame: Frame; size: number; ground: string; ink: string }) {
+  const n = frame.n;
+  const cells = useMemo(() => allCellsPath(n), [n]);
+  return (
+    <Svg width={size} height={size} viewBox={`0 0 ${n} ${n}`}>
+      <Rect x={0} y={0} width={n} height={n} fill={ground} />
+      {frame.soil && <Rect x={0} y={frame.soil.y} width={n} height={n - frame.soil.y} fill={frame.soil.color} />}
+      {frame.sky && <Rect x={0} y={0} width={n} height={frame.sky.h} fill={frame.sky.color} />}
+      <Path d={cells} fill={ink} opacity={n > 48 ? 0.08 : 0.07} />
+      {frame.groups.map((g) => <Path key={g.color} d={g.d} fill={g.color} />)}
+    </Svg>
+  );
+}
+
 /** The LCD owns its own 125 ms loop (director + painter), so only this component re-renders on animation frames. */
 function Lcd({ game, size }: { game: Game; size: number }) {
   const th = useTheme();
@@ -65,7 +83,8 @@ function Lcd({ game, size }: { game: Game; size: number }) {
   const stillRef = useRef(still); stillRef.current = still;
   const sceneRef = useRef<Scene | null>(null);
   const lastKey = useRef('');
-  const [fr, setFr] = useState<{ lit: string; n: number; dark: boolean }>({ lit: '', n: 64, dark: false });
+  const [fr, setFr] = useState<Frame>(EMPTY_FRAME);
+  const styleRef = useRef({ mode: th.mode, dark: th.dark }); styleRef.current = { mode: th.mode, dark: th.dark };
 
   const render = useCallback(() => {
     const g = gameRef.current;
@@ -77,13 +96,12 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     if (!sc || sc.seed !== pet.seed) sc = initScene(pet, now, env.hour ?? undefined);
     sc = step(sc, pet, { events: g.takeSceneEvents(), hour: env.hour ?? undefined, rain: env.rain }, now, { reducedMotion: stillRef.current });
     sceneRef.current = sc;
-    const { buf, dark } = renderScreen({
+    const rendered = renderScreen({
       pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel, play: g.play,
       statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc,
     });
-    const lit = litPath(buf.px, buf.n);
-    const key = `${buf.n}${dark ? 'd' : 'l'}${lit}`;
-    if (key !== lastKey.current) { lastKey.current = key; setFr({ lit, n: buf.n, dark }); }
+    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet) });
+    if (frame.key !== lastKey.current) { lastKey.current = frame.key; setFr(frame); }
   }, []);
 
   useEffect(() => {
@@ -91,10 +109,9 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     const id = setInterval(() => { if (isHidden() && n++ % 2 === 1) return; render(); }, 125); // 4 fps while hidden
     return () => clearInterval(id);
   }, [render]);
-  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.play, game.evo, game.pet]);
+  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.play, game.evo, game.pet, th.mode, th.dark]);
 
   const n = fr.n;
-  const cells = useMemo(() => allCellsPath(n), [n]);
   const c = size / n;
 
   const onTap = (e: GestureResponderEvent) => {
@@ -113,11 +130,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
 
   return (
     <View style={{ width: size, height: size, overflow: 'hidden', backgroundColor: th.ground }}>
-      <Svg width={size} height={size} viewBox={`0 0 ${n} ${n}`}>
-        <Rect x={0} y={0} width={n} height={n} fill={th.ground} />
-        <Path d={cells} fill={th.ink} opacity={n > 48 ? 0.08 : 0.07} />
-        <Path d={fr.lit} fill={th.ink} />
-      </Svg>
+      <FrameSvg frame={fr} size={size} ground={th.ground} ink={th.ink} />
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (
         <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * c, height: FEED_ROW_H * c, ...touchStyle }} />
       ))}

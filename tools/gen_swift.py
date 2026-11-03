@@ -1,7 +1,7 @@
 """Emit Shared/SpeciesData.swift from species.py + spritegen.py. Usage: python3 tools/gen_swift.py"""
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from species import SPECIES, EVO, BABIES
+from species import SPECIES, EVO, BABIES, LINE
 import spritegen
 
 STAGE = {1: '.baby', 2: '.child', 3: '.teen', 4: '.adult', 5: '.ultimate'}
@@ -19,7 +19,7 @@ for sid, (name, stage, blurb, rec) in SPECIES.items():
                 swift = {'mist_min': 'mistMin', 'mist_max': 'mistMax'}.get(k, k)
                 parts.append(f"{swift}: {v}")
         evo.append(f'            Evolution(to: "{child}", req: Requirement({", ".join(parts)}))')
-    out.append(f'        Species(id: "{sid}", name: "{name}", stage: {STAGE[stage]}, blurb: "{blurb}",')
+    out.append(f'        Species(id: "{sid}", name: "{name}", stage: {STAGE[stage]}, blurb: "{blurb}", line: "{LINE[sid]}",')
     out.append('            frames: [')
     out.append('                [' + ", ".join(f'"{r}"' for r in a) + '],')
     out.append('                [' + ", ".join(f'"{r}"' for r in b) + '],')

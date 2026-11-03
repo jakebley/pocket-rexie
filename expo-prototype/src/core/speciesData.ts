@@ -7,6 +7,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Pip",
   "stage": "baby",
   "blurb": "A round little hatchling.",
+  "line": "baby",
   "frames": [
    [
     "................",
@@ -147,6 +148,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Nubb",
   "stage": "baby",
   "blurb": "Curious, with a tiny leaf on its head.",
+  "line": "baby",
   "frames": [
    [
     ".......XXX......",
@@ -287,6 +289,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Rawr",
   "stage": "child",
   "blurb": "Loves meat and shows off its fangs.",
+  "line": "meat",
   "frames": [
    [
     "................",
@@ -425,6 +428,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Sprig",
   "stage": "child",
   "blurb": "A leafy nibbler.",
+  "line": "veggie",
   "frames": [
    [
     "................",
@@ -563,6 +567,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Twirl",
   "stage": "child",
   "blurb": "Noodle-obsessed, with curly hair.",
+  "line": "pasta",
   "frames": [
    [
     "................",
@@ -701,6 +706,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Mudpie",
   "stage": "child",
   "blurb": "Scruffy and in need of a bath.",
+  "line": "neglect",
   "frames": [
    [
     "................",
@@ -827,6 +833,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Fangler",
   "stage": "teen",
   "blurb": "Strong jaws, spiky back.",
+  "line": "meat",
   "frames": [
    [
     "................",
@@ -959,6 +966,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Brutus",
   "stage": "teen",
   "blurb": "Heavy and proud of it.",
+  "line": "meat",
   "frames": [
    [
     "................",
@@ -1091,6 +1099,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Dasher",
   "stage": "teen",
   "blurb": "Light, quick, crested.",
+  "line": "meat",
   "frames": [
    [
     "................",
@@ -1223,6 +1232,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Mossback",
   "stage": "teen",
   "blurb": "Thoughtful, with a mossy shell.",
+  "line": "veggie",
   "frames": [
    [
     "................",
@@ -1355,6 +1365,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Hornet",
   "stage": "teen",
   "blurb": "Charges first, asks later.",
+  "line": "veggie",
   "frames": [
    [
     "................",
@@ -1481,6 +1492,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Bloomer",
   "stage": "teen",
   "blurb": "Friendly, with a leaf on its head.",
+  "line": "veggie",
   "frames": [
    [
     "..........XXX...",
@@ -1607,6 +1619,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Curlie",
   "stage": "teen",
   "blurb": "Spaghetti curls everywhere.",
+  "line": "pasta",
   "frames": [
    [
     "................",
@@ -1739,6 +1752,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Raviolo",
   "stage": "teen",
   "blurb": "Plump, stuffed and cheerful.",
+  "line": "pasta",
   "frames": [
    [
     "................",
@@ -1865,6 +1879,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Zesty",
   "stage": "teen",
   "blurb": "Sharp mind, antenna up.",
+  "line": "pasta",
   "frames": [
    [
     ".........X......",
@@ -1997,6 +2012,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Grimey",
   "stage": "teen",
   "blurb": "Neglected but tough.",
+  "line": "neglect",
   "frames": [
    [
     "................",
@@ -2123,6 +2139,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Scrappy",
   "stage": "teen",
   "blurb": "Rough, horned, always fighting.",
+  "line": "neglect",
   "frames": [
    [
     "................",
@@ -2243,6 +2260,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Chompasaur",
   "stage": "adult",
   "blurb": "A proud T-Rex-style hunter.",
+  "line": "meat",
   "frames": [
    [
     "............XXXX",
@@ -2369,6 +2387,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Razorclaw",
   "stage": "adult",
   "blurb": "A clever crested raptor.",
+  "line": "meat",
   "frames": [
    [
     "..........XXXXX.",
@@ -2495,6 +2514,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Bruiser",
   "stage": "adult",
   "blurb": "A walking boulder with a club tail.",
+  "line": "meat",
   "frames": [
    [
     "................",
@@ -2621,6 +2641,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Sprintosaur",
   "stage": "adult",
   "blurb": "Built for speed.",
+  "line": "meat",
   "frames": [
    [
     ".........XXXXXX.",
@@ -2741,6 +2762,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Longneck",
   "stage": "adult",
   "blurb": "A gentle brontosaurus type.",
+  "line": "veggie",
   "frames": [
    [
     "...........XXXX.",
@@ -2867,6 +2889,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Shellback",
   "stage": "adult",
   "blurb": "Patient, domed and armoured.",
+  "line": "veggie",
   "frames": [
    [
     "................",
@@ -2987,6 +3010,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Petal Rex",
   "stage": "adult",
   "blurb": "Flower-collared and calm.",
+  "line": "veggie",
   "frames": [
    [
     "...........XXXXX",
@@ -3113,6 +3137,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Platesaur",
   "stage": "adult",
   "blurb": "A plated stegosaurus type.",
+  "line": "veggie",
   "frames": [
    [
     "................",
@@ -3239,6 +3264,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Tricerapop",
   "stage": "adult",
   "blurb": "A noodle-fed triceratops type.",
+  "line": "pasta",
   "frames": [
    [
     "..............X.",
@@ -3359,6 +3385,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Noodlord",
   "stage": "adult",
   "blurb": "Rules the spaghetti realm.",
+  "line": "pasta",
   "frames": [
    [
     "..........XXXXX.",
@@ -3479,6 +3506,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Plumpkin",
   "stage": "adult",
   "blurb": "Round, jolly, and proud of dinner.",
+  "line": "pasta",
   "frames": [
    [
     "................",
@@ -3599,6 +3627,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Professor",
   "stage": "adult",
   "blurb": "Glasses, antenna, big ideas.",
+  "line": "pasta",
   "frames": [
    [
     "..........XXXXX.",
@@ -3719,6 +3748,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Gremlin",
   "stage": "adult",
   "blurb": "Mischievous and ragged.",
+  "line": "neglect",
   "frames": [
    [
     ".........XXXXXX.",
@@ -3839,6 +3869,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Scrapper",
   "stage": "adult",
   "blurb": "Dented armour, spiked tail.",
+  "line": "neglect",
   "frames": [
    [
     "................",
@@ -3959,6 +3990,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Tyrannox",
   "stage": "ultimate",
   "blurb": "King of the old forest.",
+  "line": "meat",
   "frames": [
    [
     "...........XXXXX",
@@ -4074,6 +4106,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Skywing",
   "stage": "ultimate",
   "blurb": "Took to the sky at last.",
+  "line": "meat",
   "frames": [
    [
     "..........XXXXX.",
@@ -4189,6 +4222,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Bulwark",
   "stage": "ultimate",
   "blurb": "An unmovable fortress.",
+  "line": "veggie",
   "frames": [
    [
     "................",
@@ -4304,6 +4338,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Triceron",
   "stage": "ultimate",
   "blurb": "Horned, frilled and fearless.",
+  "line": "pasta",
   "frames": [
    [
     ".......X.X....X.",
@@ -4419,6 +4454,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Sage",
   "stage": "ultimate",
   "blurb": "Wise, haloed and calm.",
+  "line": "veggie",
   "frames": [
    [
     "...........XXXX.",
@@ -4534,6 +4570,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Noodlemancer",
   "stage": "ultimate",
   "blurb": "Casts spells in spaghetti.",
+  "line": "pasta",
   "frames": [
    [
     "..........XXXXX.",
@@ -4649,6 +4686,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Plumpking",
   "stage": "ultimate",
   "blurb": "Crowned, round and unstoppable.",
+  "line": "pasta",
   "frames": [
    [
     "..........X.X.X.",
@@ -4764,6 +4802,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Wreckage",
   "stage": "ultimate",
   "blurb": "Leaves a trail of chaos.",
+  "line": "neglect",
   "frames": [
    [
     "...........XXXXX",

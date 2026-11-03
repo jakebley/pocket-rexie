@@ -1,8 +1,9 @@
 // Pure functions that paint the LCD (64x64 scene and text) for a given game state.
 import { DEX_SIZE, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
+import { Layer } from './layers';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
-import { initScene, type Scene } from './scene';
+import { initScene, phaseOf, type Phase, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
 
 export type Mode = 'home' | 'feed' | 'play' | 'stats' | 'dex' | 'dev';
@@ -25,8 +26,8 @@ const spriteOf = (id: string, blink: boolean): string[] | null => {
 const EGG_HI = epx(EGG_SPRITE);
 const TOMB_HI = epx(TOMB_SPRITE);
 
-function hearts(b: Buf, n: number, full: string[], empty: string[], x: number, y: number, step = 6) {
-  for (let i = 0; i < 4; i++) b.rows(i < n ? full : empty, x + i * step, y);
+function hearts(b: Buf, n: number, full: string[], empty: string[], x: number, y: number, step = 6, layer: number = Layer.INK) {
+  for (let i = 0; i < 4; i++) b.rows(i < n ? full : empty, x + i * step, y, 'X', layer);
 }
 
 // ---- text-mode layout (64x64 grid, 16 chars per line) ----
@@ -91,8 +92,8 @@ function paintDex(b: Buf, p: Pet, page: number, tick: number) {
 function paintStats(b: Buf, ctx: ScreenCtx) {
   const { pet: p, statsPage, tick } = ctx;
   if (statsPage === 0) {
-    b.text('HUNGER', 1, 1); hearts(b, p.hunger, GLYPHS.heartFull, GLYPHS.heartEmpty, 1, 8, 7);
-    b.text('HAPPY', 1, 16); hearts(b, p.happy, GLYPHS.smileFull, GLYPHS.smileEmpty, 1, 23, 7);
+    b.text('HUNGER', 1, 1); hearts(b, p.hunger, GLYPHS.heartFull, GLYPHS.heartEmpty, 1, 8, 7, Layer.HEART);
+    b.text('HAPPY', 1, 16); hearts(b, p.happy, GLYPHS.smileFull, GLYPHS.smileEmpty, 1, 23, 7, Layer.SMILE);
     b.text(`DISC ${p.discipline}`, 1, 34);
     b.text(`WEIGHT ${p.weight}G`, 1, 42);
     const d = ageDays(p); const h = Math.floor(((p.lastTick - p.birth) % 86400000) / 3600000);
@@ -132,14 +133,14 @@ function paintPlay(b: Buf, pl: PlayState) {
 }
 
 // ---- home ----
-function paintHome(b: Buf, ctx: ScreenCtx) {
+function paintHome(b: Buf, ctx: ScreenCtx, sc: Scene) {
   const { pet: p, tick } = ctx;
   if (p.stage === 'egg') {
     const wob = [0, 0, -2, 0, 0, 0, 2, 0][tick % 8];
     b.rows(EGG_HI, 16 + wob, 26);
     return;
   }
-  drawScene(b, ctx.scene ?? initScene(p, Date.now()), p);
+  drawScene(b, sc, p);
 }
 
 function paintGhost(b: Buf, ctx: ScreenCtx) {
@@ -165,7 +166,11 @@ function paintFeed(b: Buf, ctx: ScreenCtx) {
 export const isTextMode = (ctx: ScreenCtx) =>
   !(ctx.evo && ctx.evo.until > Date.now()) && ((ctx.pet.stage === 'ghost' && ctx.mode === 'home') || (ctx.mode !== 'home' && ctx.mode !== 'dev'));
 
-export function renderScreen(ctx: ScreenCtx): { buf: Buf; dark: boolean } {
+/** What the Technicolor renderer needs to paint behind the scene. */
+export interface SkyInfo { phase: Phase; rain: boolean; dim: boolean }
+export interface Rendered { buf: Buf; dark: boolean; sky?: SkyInfo }
+
+export function renderScreen(ctx: ScreenCtx): Rendered {
   const { pet: p } = ctx;
   let dark = false;
   if (ctx.evo && ctx.evo.until > Date.now()) {
@@ -188,6 +193,8 @@ export function renderScreen(ctx: ScreenCtx): { buf: Buf; dark: boolean } {
     return { buf: b, dark };
   }
   const b = new Buf(GRID);
-  paintHome(b, ctx);
-  return { buf: b, dark };
+  const sc = ctx.scene ?? initScene(p, Date.now());
+  paintHome(b, ctx, sc);
+  if (p.stage === 'egg') return { buf: b, dark };
+  return { buf: b, dark, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim } };
 }

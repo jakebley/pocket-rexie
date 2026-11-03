@@ -3,7 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StatusBar as StatusBar2, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { statusLine } from './src/core/pet';
+import { ColorModeProvider } from './src/ui/ColorModeContext';
 import { DevPanel } from './src/ui/DevPanel';
+import { SettingsSheet } from './src/ui/SettingsSheet';
 import { fitLines, PixelButton, PixelText, touchStyle } from './src/ui/PixelText';
 import { useTheme } from './src/ui/theme';
 import { Toy } from './src/ui/Toy';
@@ -74,7 +76,7 @@ function NameModal({ onDone }: { onDone: (n: string) => void }) {
   const t = useTheme();
   const mono = Platform.select({ web: 'ui-monospace, Menlo, Consolas, monospace', default: 'Courier' });
   return (
-    <View style={[s.backdrop, { backgroundColor: t.dark ? 'rgba(30,36,24,0.88)' : 'rgba(181,193,154,0.88)' }]}>
+    <View style={[s.backdrop, { backgroundColor: t.scrim }]}>
       <View style={[s.modal, { backgroundColor: t.ground, borderColor: t.ink }]}>
         <PixelText text="It hatched!" ps={4} color={t.ink} />
         <View style={{ height: 10 }} />
@@ -89,7 +91,12 @@ function NameModal({ onDone }: { onDone: (n: string) => void }) {
 }
 
 export default function App() {
+  return <ColorModeProvider><AppBody /></ColorModeProvider>;
+}
+
+function AppBody() {
   const game = useGame();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const t = useTheme();
   useWebTouchSetup();
   const { width: vw, height: vh } = useWindowDimensions();
@@ -125,7 +132,7 @@ export default function App() {
     </View>
   );
   const gearBtn = (
-    <Pressable accessibilityLabel="Dev panel" onPress={() => game.setDevOpen(true)} style={[{ width: gear, height: gear, alignItems: 'center', justifyContent: 'center' }, touchStyle]}>
+    <Pressable accessibilityLabel="Settings" onPress={() => setSettingsOpen(true)} style={[{ width: gear, height: gear, alignItems: 'center', justifyContent: 'center' }, touchStyle]}>
       {({ pressed }) => (
         <View pointerEvents="none" style={{ width: gear - 8, height: gear - 8, alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? t.ink : 'transparent' }}>
           <Svg width={Math.round(gear * 0.45)} height={Math.round(gear * 0.45)} viewBox="0 0 8 8"><Path d={GEAR_D} fill={pressed ? t.ground : t.ink} /></Svg>
@@ -163,6 +170,7 @@ export default function App() {
       <StatusBar style={t.dark ? 'light' : 'dark'} />
       {body}
       {game.needsName && <NameModal onDone={game.setName} />}
+      {settingsOpen && <SettingsSheet game={game} onClose={() => setSettingsOpen(false)} onDev={() => { setSettingsOpen(false); game.setDevOpen(true); }} />}
       {game.devOpen && pet && <DevPanel game={game} onClose={() => game.setDevOpen(false)} />}
     </View>
   );
