@@ -7,6 +7,8 @@ import AppIntents
 struct PetEntry: TimelineEntry {
     let date: Date
     let pet: Pet
+    /// The look chosen in Settings (read from the App Group when the timeline is built).
+    var mode: ColorMode = .traditional
 }
 
 private func samplePet() -> Pet {
@@ -31,18 +33,19 @@ struct PetProvider: TimelineProvider {
             completion(PetEntry(date: Date(), pet: samplePet()))
         } else {
             let now = Date()
-            completion(PetEntry(date: now, pet: PetStore.load(now: now)))
+            completion(PetEntry(date: now, pet: PetStore.load(now: now), mode: ColorModeStore.load()))
         }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<PetEntry>) -> Void) {
         let now = Date()
         var pet = PetStore.load(now: now)
-        var entries = [PetEntry(date: now, pet: pet)]
+        let mode = ColorModeStore.load()
+        var entries = [PetEntry(date: now, pet: pet, mode: mode)]
         for i in 1...12 {
             let date = now.addingTimeInterval(Double(i) * 15 * 60)
             pet.advance(to: date)
-            entries.append(PetEntry(date: date, pet: pet))
+            entries.append(PetEntry(date: date, pet: pet, mode: mode))
         }
         let last = entries.last?.date ?? now.addingTimeInterval(3 * 3600)
         completion(Timeline(entries: entries, policy: .after(last)))
@@ -82,7 +85,8 @@ struct PocketRexieWidgetView: View {
     }
 
     private var palette: LCDPalette {
-        isAccessory ? LCDPalette(background: .clear, ink: Color.primary) : LCDStyle.palette(for: scheme)
+        isAccessory ? LCDPalette(background: .clear, ink: Color.primary)
+                    : LCDStyle.palette(for: scheme, mode: entry.mode)
     }
 
     var body: some View {

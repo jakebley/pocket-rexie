@@ -1,11 +1,21 @@
 import SwiftUI
 
-/// A pair of LCD colors: the ground and the ink drawn on it.
+extension RGB {
+    var color: Color {
+        Color(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: 1)
+    }
+}
+
+/// A pair of LCD colors: the ground and the ink drawn on it, plus the look (mode) they belong to.
 struct LCDPalette: Sendable {
     let background: Color
     let ink: Color
     /// Light ink on a dark ground. There the "lights off" dither would brighten the screen, so it is dimmed instead.
     var backlit = false
+    /// Traditional paints every lit scene pixel in `ink`; Technicolor paints each layer in its own color.
+    var mode: ColorMode = .traditional
+
+    var appearance: ScenePalette.Appearance { backlit ? .dark : .light }
 }
 
 /// Colors of the fake LCD. `background` and `ink` are the light palette (the default
@@ -21,6 +31,28 @@ enum LCDStyle {
 
     static func palette(for scheme: ColorScheme) -> LCDPalette {
         scheme == .dark ? dark : light
+    }
+
+    private static func chrome(_ mode: ColorMode, _ appearance: ScenePalette.Appearance) -> LCDPalette {
+        let screen = ScenePalette.screen(mode: mode, appearance: appearance)
+        return LCDPalette(background: screen.ground.color, ink: screen.ink.color,
+                          backlit: appearance == .dark, mode: mode)
+    }
+
+    static let technicolorLight = chrome(.technicolor, .light)
+    static let technicolorDark = chrome(.technicolor, .dark)
+
+    /// The palette of a look in a system appearance (screen ground, ink and, in Technicolor, scene colors).
+    static func palette(for scheme: ColorScheme, mode: ColorMode) -> LCDPalette {
+        switch mode {
+        case .traditional: return palette(for: scheme)
+        case .technicolor: return scheme == .dark ? technicolorDark : technicolorLight
+        }
+    }
+
+    /// Same, for views that only know light or backlit (watch Always-On).
+    static func palette(dark isDark: Bool, mode: ColorMode) -> LCDPalette {
+        palette(for: isDark ? .dark : .light, mode: mode)
     }
 }
 
@@ -56,13 +88,63 @@ enum LCDPainter {
     static func path(_ raster: SceneRaster, shade: Bool = false, size: CGSize) -> Path {
         let cell = min(size.width, size.height) / CGFloat(grid)
         var path = Path()
-        let bits = shade ? raster.shade : raster.ink
         for y in 0..<grid {
-            for x in 0..<grid where bits[y * grid + x] {
-                path.addRect(pixelRect(x, y, cell))
+            for x in 0..<grid {
+                let i = y * grid + x
+                if shade ? raster.shade[i] : raster.cells[i] != 0 {
+                    path.addRect(pixelRect(x, y, cell))
+                }
             }
         }
         return path
+    }
+
+    /// Paints a rendered scene in the palette's look. Traditional: faint grid, dim dither and every
+    /// lit pixel in the ink. Technicolor: sky and soil, the same grid, then the lit pixels grouped
+    /// into one path per color (a handful of fills per frame).
+    static func paint(_ ctx: inout GraphicsContext, raster: SceneRaster, size: CGSize, palette: LCDPalette) {
+        if palette.mode == .traditional {
+            ctx.fill(gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+            ctx.fill(path(raster, shade: true, size: size), with: .color(palette.ink.opacity(0.4)))
+            ctx.fill(path(raster, size: size), with: .color(palette.ink))
+            return
+        }
+        let cell = min(size.width, size.height) / CGFloat(grid)
+        let appearance = palette.appearance
+        let night = SceneAmbient.Period.of(hour: raster.hour) == .night
+        let table = ScenePalette.table(mode: palette.mode, appearance: appearance, night: night, line: raster.line)
+        if raster.hasSky {
+            let ground = CGFloat(SceneRaster.groundY) * cell
+            let skyRect = CGRect(x: 0, y: 0, width: cell * CGFloat(grid), height: ground)
+            let soilRect = CGRect(x: 0, y: ground, width: cell * CGFloat(grid), height: cell * CGFloat(grid) - ground)
+            let sky = ScenePalette.sky(mode: palette.mode, appearance: appearance, hour: raster.hour,
+                                       weather: raster.weather)
+            ctx.fill(Path(skyRect), with: .color(sky.color))
+            ctx.fill(Path(soilRect), with: .color(ScenePalette.soil(mode: palette.mode, appearance: appearance).color))
+            if raster.dim {
+                var both = Path()
+                both.addRect(skyRect)
+                both.addRect(soilRect)
+                ctx.fill(both, with: .color(ScenePalette.dimInk.color.opacity(ScenePalette.dimSky)))
+            }
+        }
+        ctx.fill(gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+        if raster.dim {
+            ctx.fill(path(raster, shade: true, size: size),
+                     with: .color(ScenePalette.dimInk.color.opacity(ScenePalette.dimDither)))
+        }
+        var groups: [RGB: Path] = [:]
+        for y in 0..<grid {
+            for x in 0..<grid {
+                let code = Int(raster.cells[y * grid + x])
+                if code == 0 { continue }
+                let rgb = code < table.count ? table[code] : table[Int(SceneLayer.ink.rawValue)]
+                groups[rgb, default: Path()].addRect(pixelRect(x, y, cell))
+            }
+        }
+        for (rgb, group) in groups {
+            ctx.fill(group, with: .color(rgb.color))
+        }
     }
 
     /// A single bitmap placed on the 64x64 grid (used for full-screen effects).
@@ -130,9 +212,7 @@ struct PetPixelView: View {
         let colors = palette ?? environmentPalette
         let raster = SceneRenderer.still(pet: pet)
         Canvas { ctx, size in
-            ctx.fill(LCDPainter.gridPath(size: size), with: .color(colors.ink.opacity(0.06)))
-            ctx.fill(LCDPainter.path(raster, shade: true, size: size), with: .color(colors.ink.opacity(0.4)))
-            ctx.fill(LCDPainter.path(raster, size: size), with: .color(colors.ink))
+            LCDPainter.paint(&ctx, raster: raster, size: size, palette: colors)
         }
         .aspectRatio(1, contentMode: .fit)
         .background(colors.background)

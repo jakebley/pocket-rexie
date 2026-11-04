@@ -15,7 +15,9 @@ enum PetStore {
     private static let key = "pet.v1"
     /// UI tests point this at a throwaway suite so they never touch the real group container.
     nonisolated(unsafe) static var overrideDefaults: UserDefaults?
-    private static var defaults: UserDefaults { overrideDefaults ?? UserDefaults(suiteName: groupID) ?? .standard }
+    private static let groupDefaults = UserDefaults(suiteName: groupID) ?? .standard
+    /// The shared App Group defaults (or the UI-test suite). Also holds the `colorMode` setting.
+    static var defaults: UserDefaults { overrideDefaults ?? groupDefaults }
 
     static func load(now: Date = AppClock.now()) -> Pet {
         guard let data = defaults.data(forKey: key) else { return Pet(now: now) }

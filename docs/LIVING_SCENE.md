@@ -12,7 +12,7 @@ The home scene is a 64x64 pixel grid, the same grid the text screens use (the eg
 | Foot line | feet on row 57 (`footY`), ground line rows 58..59 (`groundY`), dirt rows 60..63 |
 | Sky | rows 20..57 (below the HUD) |
 | HUD | 7x7 hearts at y=1 and smiles at y=10, x = 1, 9, 17, 25. Alert, skull, drop/flake 7x7 at x=56, y = 1, 10, 19 |
-| Poops | 7x7, top row 51, spots x = 56, 48, 40 (right to left), jiggle 1 px |
+| Poops | 7x7, top row 51, spots x = 57, 47, 37 (right to left), jiggle 1 px left |
 | Poop limit | `maxX = max(0, min(32, leftmostPoopX - inkWidth(species) - 1))`, ink width from `hiFrames` (max 32) |
 | Bed | 20x2 mat at y=56..57, x = centreX - 10 |
 | Walk speed (cells/s) | baby 4.4, child 6.0, teen 6.9, adult 6.0, ultimate 5.1 (the 48-grid speeds x4/3) |
@@ -33,7 +33,7 @@ The home scene is a 64x64 pixel grid, the same grid the text screens use (the eg
 - HUD uses 7x7 glyphs: 4 hunger hearts and 4 happy smiles at the top left, status glyphs top right (see the table). The HUD draws over the sky.
 - Ground: a solid 2-row ground line at y=58..59 with denser two-height grass, pebbles and tiny flowers above it, rows 60..63 dirt dither.
 - The pet stands on the ground: sprite bottom ink row at y=57, just above the ground line. Sprite x range 0..32 (left edge) before poops.
-- Poops are 7x7 glyphs standing on the ground (y=51..57, jiggle 1 px), placed right to left from the right edge: x = 56, 48, 40 for the first, second and third poop, so mess accumulates from the right.
+- Poops are 7x7 glyphs standing on the ground (y=51..57, jiggle 1 px), placed right to left from the right edge: x = 57, 47, 37 for the first, second and third poop (3 px gaps between the 7 px glyphs, the first ending at the screen edge), so mess accumulates from the right.
 - Poops shrink the wander range so the pet's ink never touches a poop: `maxX = max(0, min(32, leftmostPoopX - inkWidth(species) - 1))`. `inkWidth` is how far the species' ink reaches from the sprite's left edge over all its `hiFrames` and for either facing (`max(lastInkCol + 1, 32 - firstInkCol)`), computed once per species (`SceneState.inkWidths` in LivingScene.swift). This is the occupied column width plus the sprite's left margin, so a mirrored sprite cannot reach into a poop. With no poops maxX is 32. Every walk target, the greet entry, ground taps and feeding positions are clamped to the current maxX.
 - If the pet is beyond maxX when the poop count rises (or it has no other reason to move), it walks left to the new limit before doing anything else. Pose wiggles (squat, shiver, sneeze offsets) never push the drawn ink past the limit. Reduced motion does not move the pet (the Swift director snaps to the limit).
 - Bed: at night the pet walks to x=8 and sleeps on a 20x2 mat drawn under it (rows 56..57). The bed, the dropped food and the broom ignore the poop limit.
@@ -70,7 +70,7 @@ The model emits transient `SceneEvent`s that the director animates (1-3 s) and t
 - `hatched`: egg cracks (existing), shell halves fall, baby hops out.
 
 ## Autonomy that shows life
-- Poop: when `pet.poops` increases (compare to last seen) the director walks the pet to just left of the next free spot (x = spot - inkWidth - 1, which is also its new limit, not onto the spot), `poop` state squat 1 s facing away from the spot, then drops the glyph at x = 56, 48 or 40. The glyph is not on the ground (and does not count toward the limit) until it is dropped.
+- Poop: when `pet.poops` increases (compare to last seen) the director walks the pet to just left of the next free spot (x = spot - inkWidth - 1, which is also its new limit, not onto the spot), `poop` state squat 1 s facing away from the spot, then drops the glyph at x = 57, 47 or 37. The glyph is not on the ground (and does not count toward the limit) until it is dropped.
 - Peek and greet: on app foreground after >= 15 min away, the pet runs in from the left or right edge (`greet`) waving; show the while-you-were-away line (below).
 - Thought bubble: when `pet.call` is set and the pet is awake, a 13x9 bubble with a 7x7 icon (food, ball, poop, drop, flake, syringe, exclamation) shows above the head (over it when it fits in the sky at or below y=17, else beside it), blinking at 600 ms. Light-call shows a bulb.
 - Tap on ground (y >= 53 of 64) at x: the pet walks to x, faces it, and looks. Tap on sky: the pet looks up. Tap on the pet: `petted`.
@@ -101,7 +101,7 @@ The behaviour director is pure: `step(state, pet, inputs, now) -> state`. Unit t
 | Ground | solid rows 60..61, dirt 62..63 (pebbles); `GROUND_Y`=60, feet row 59, `HEAD_Y`=28 |
 | Ground tap | cy >= 52 (`GROUND_TAP_Y`) |
 | Bed | pet x=6, 24x3 woven mat at x+4 on rows 60..62 |
-| Poops | 7x7 at x = 56, 48, 40, y=53, haloed; inkWidth from hiFrames (<=32) |
+| Poops | 7x7 at x = 57, 47, 37, y=51, haloed; inkWidth from hiFrames (<=32) |
 | Speeds (cells/s) | baby 4.4, child 6, teen 7, adult 6, ultimate 5 |
 | Hop | 0,-6,-8,-6,0 |
 | Food | 9x9, drops 3 rows/tick to y=51, side x=52 or 4; bites cut 3 columns |

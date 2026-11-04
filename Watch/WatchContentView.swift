@@ -9,6 +9,8 @@ struct WatchContentView: View {
     let palette: LCDPalette?
     @State private var crown: Double = 0
     @Environment(\.isLuminanceReduced) private var dimmed
+    /// The look, synced from the phone (see PetSync); Traditional until the phone says otherwise.
+    @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var mode: ColorMode = .traditional
 
     init(model: GameModel, palette: LCDPalette? = nil) {
         self.model = model
@@ -17,7 +19,7 @@ struct WatchContentView: View {
 
     private let icons = MenuIcon.allCases
 
-    private var colors: LCDPalette { palette ?? (dimmed ? LCDStyle.dark : LCDStyle.light) }
+    private var colors: LCDPalette { palette ?? LCDStyle.palette(dark: dimmed, mode: mode) }
 
     var body: some View {
         #if os(watchOS)

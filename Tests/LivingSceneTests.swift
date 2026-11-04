@@ -171,7 +171,11 @@ final class LivingSceneTests: XCTestCase {
     func testSceneGridAndPoopSpots() {
         XCTAssertEqual(SceneRaster.side, 64)
         XCTAssertEqual(SceneState.maxX, 32)
-        XCTAssertEqual(SceneState.poopSpots, [56, 48, 40])
+        XCTAssertEqual(SceneState.poopSpots, [57, 47, 37])
+        for (a, b) in zip(SceneState.poopSpots, SceneState.poopSpots.dropFirst()) {
+            XCTAssertEqual(a - (b + 7), 3, "poops 7 wide leave a 3 pixel gap")
+        }
+        XCTAssertEqual(SceneState.poopSpots[0] + 7, 64, "the first poop ends at the screen edge")
         XCTAssertEqual(SceneState.bedX, 8)
         XCTAssertEqual(SceneRaster.groundY, 58)
         XCTAssertEqual(SceneRaster.footY, 57)
@@ -225,7 +229,7 @@ final class LivingSceneTests: XCTestCase {
             }
             XCTAssertLessThan(lims[1], lims[0], sp.id)
         }
-        XCTAssertEqual(SceneState.limit(species: "", poops: 3), 7)   // unknown sprite counts as a whole 32 columns
+        XCTAssertEqual(SceneState.limit(species: "", poops: 3), 4)   // unknown sprite counts as a whole 32 columns
     }
 
     func testInkNeverOverlapsPoopsWhileWandering() {
@@ -283,10 +287,10 @@ final class LivingSceneTests: XCTestCase {
             if st.action == .poop && squatX == nil { squatX = st.x }
             if squatX == nil, st.pendingPoop {
                 let r = SceneRenderer.render(pet: p, state: st, date: self.base)
-                if r.isSet(56 + 3, 51) || r.isSet(56 + 4, 51) { drawnBefore = true }   // top of the poop glyph
+                if r.isSet(57 + 3, 51) || r.isSet(57 + 2, 51) { drawnBefore = true }   // top of the poop glyph
             }
         }
-        let expect = Double(56 - SceneState.inkWidth(species: p.species) - 1)
+        let expect = Double(57 - SceneState.inkWidth(species: p.species) - 1)
         XCTAssertNotNil(squatX)
         XCTAssertEqual(squatX ?? -1, expect, accuracy: 0.01)
         XCTAssertFalse(drawnBefore, "the poop is not on the ground until it is dropped")
@@ -297,9 +301,10 @@ final class LivingSceneTests: XCTestCase {
         var p = makePet()
         p.poops = 3
         let s = SceneState.still(for: p)
-        // The 7x7 glyph's top pixel is column 3 of row 51; it shifts one column between the two 0.6 s frames.
+        // The 7x7 glyph's top pixel is column 3 of row 51; it shifts one column (to the left, away from the
+        // screen edge) between the two 0.6 s frames.
         func topColumn(_ r: SceneRaster, _ spot: Int) -> Int {
-            r.isSet(spot + 3, 51) ? 0 : (r.isSet(spot + 4, 51) ? 1 : -1)
+            r.isSet(spot + 3, 51) ? 0 : (r.isSet(spot + 2, 51) ? 1 : -1)
         }
         let r0 = SceneRenderer.render(pet: p, state: s, date: base)
         let r1 = SceneRenderer.render(pet: p, state: s, date: base.addingTimeInterval(0.6))

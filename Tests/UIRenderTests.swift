@@ -185,13 +185,19 @@ final class UIRenderTests: XCTestCase {
         Phone(name: "375x667", size: CGSize(width: 375, height: 667), top: 20, bottom: 0),
     ]
 
-    private func phoneView(_ sc: Scenario, phone: Phone, scheme: ColorScheme) -> some View {
+    /// Renders land in `ios/...` (Traditional, as always) and `ios-technicolor/...`.
+    private func folder(_ base: String, _ mode: ColorMode) -> String {
+        mode == .traditional ? base : base + "-" + mode.rawValue
+    }
+
+    private func phoneView(_ sc: Scenario, phone: Phone, scheme: ColorScheme,
+                           mode: ColorMode = .traditional) -> some View {
         let model = GameModel(pet: sc.pet, persist: { _ in })
         sc.setup(model)
-        let ground = LCDStyle.palette(for: scheme).background
+        let ground = LCDStyle.palette(for: scheme, mode: mode).background
         return ZStack {
             ground
-            ContentView(model: model, clock: sc.clock)
+            ContentView(model: model, clock: sc.clock, colorMode: mode)
                 .padding(.top, phone.top)
                 .padding(.bottom, phone.bottom)
         }
@@ -200,12 +206,14 @@ final class UIRenderTests: XCTestCase {
     }
 
     func testRenderPhoneScreens() {
-        for phone in phones {
-            for scheme in [ColorScheme.light, .dark] {
-                let schemeName = scheme == .dark ? "dark" : "light"
-                for sc in scenarios() {
-                    write(phoneView(sc, phone: phone, scheme: scheme),
-                          to: "ios/\(phone.name)/\(schemeName)/\(sc.name)", size: phone.size)
+        for mode in ColorMode.allCases {
+            for phone in phones {
+                for scheme in [ColorScheme.light, .dark] {
+                    let schemeName = scheme == .dark ? "dark" : "light"
+                    for sc in scenarios() {
+                        write(phoneView(sc, phone: phone, scheme: scheme, mode: mode),
+                              to: "\(folder("ios", mode))/\(phone.name)/\(schemeName)/\(sc.name)", size: phone.size)
+                    }
                 }
             }
         }
@@ -226,10 +234,11 @@ final class UIRenderTests: XCTestCase {
         ]
     }
 
-    private func widgetView(_ pet: Pet, family: WidgetFamily, size: CGSize, dark: Bool) -> some View {
-        let entry = PetEntry(date: pet.lastTick, pet: pet)
+    private func widgetView(_ pet: Pet, family: WidgetFamily, size: CGSize, dark: Bool,
+                            mode: ColorMode = .traditional) -> some View {
+        let entry = PetEntry(date: pet.lastTick, pet: pet, mode: mode)
         let isAccessory = family == .accessoryCircular || family == .accessoryRectangular || family == .accessoryInline
-        let palette = LCDStyle.palette(for: dark ? .dark : .light)
+        let palette = LCDStyle.palette(for: dark ? .dark : .light, mode: mode)
         return ZStack {
             if isAccessory {
                 // Lock screen look: a dark wallpaper with vibrant white content.
@@ -273,42 +282,65 @@ final class UIRenderTests: XCTestCase {
         }
     }
 
+    /// The same home screen widgets in Technicolor (accessory families stay ink-only, tinted by the system).
+    func testRenderTechnicolorWidgets() {
+        let families: [(String, WidgetFamily, CGSize)] = [
+            ("small", .systemSmall, CGSize(width: 170, height: 170)),
+            ("medium", .systemMedium, CGSize(width: 364, height: 170)),
+            ("large", .systemLarge, CGSize(width: 364, height: 382)),
+        ]
+        for (label, pet) in widgetPets() {
+            for (famName, family, size) in families {
+                for dark in [false, true] {
+                    write(widgetView(pet, family: family, size: size, dark: dark, mode: .technicolor),
+                          to: "widgets-technicolor/\(famName)/\(dark ? "dark" : "light")/\(label)", size: size, scale: 3)
+                }
+            }
+        }
+    }
+
     // MARK: watch
 
     func testRenderWatch() {
         let sizes = [CGSize(width: 184, height: 224), CGSize(width: 162, height: 197)]
-        for size in sizes {
+        for mode in ColorMode.allCases {
+          // Technicolor: one size is enough to judge the colors.
+          for size in sizes where mode == .traditional || size.width == 184 {
             for dark in [false, true] {
                 for sc in scenarios() where !sc.name.contains("-b") {
                     let model = GameModel(pet: sc.pet, persist: { _ in })
                     sc.setup(model)
                     let view = ZStack(alignment: .top) {
                         Color.black
-                        WatchContentView(model: model, palette: LCDStyle.palette(for: dark ? .dark : .light))
+                        WatchContentView(model: model, palette: LCDStyle.palette(for: dark ? .dark : .light, mode: mode))
                     }
                     .environment(\.colorScheme, .dark)
                     .environment(\.sceneDate, sc.clock)
                     .environment(\.displayScale, 2)
-                    write(view, to: "watch/\(Int(size.width))x\(Int(size.height))/\(dark ? "dark" : "light")/\(sc.name)", size: size)
+                    write(view, to: "\(folder("watch", mode))/\(Int(size.width))x\(Int(size.height))/\(dark ? "dark" : "light")/\(sc.name)", size: size)
                 }
             }
+          }
         }
     }
 
     /// The bare LCD screens at the sizes the widgets and watch use, without any chrome.
     func testRenderLCDOnly() {
-        for scheme in [ColorScheme.light, .dark] {
-            for sc in scenarios() {
-                let model = GameModel(pet: sc.pet, persist: { _ in })
-                sc.setup(model)
-                let view = LCDScreen(model: model, framed: true)
-                    .padding(8)
-                    .background(LCDStyle.palette(for: scheme).background)
-                    .environment(\.lcdPalette, LCDStyle.palette(for: scheme))
-                    .environment(\.sceneDate, sc.clock)
-                    .environment(\.displayScale, 2)
-                write(view, to: "lcd/\(scheme == .dark ? "dark" : "light")/\(sc.name)",
-                      size: CGSize(width: 358, height: 358))
+        for mode in ColorMode.allCases {
+            for scheme in [ColorScheme.light, .dark] {
+                for sc in scenarios() {
+                    let model = GameModel(pet: sc.pet, persist: { _ in })
+                    sc.setup(model)
+                    let palette = LCDStyle.palette(for: scheme, mode: mode)
+                    let view = LCDScreen(model: model, framed: true)
+                        .padding(8)
+                        .background(palette.background)
+                        .environment(\.lcdPalette, palette)
+                        .environment(\.sceneDate, sc.clock)
+                        .environment(\.displayScale, 2)
+                    write(view, to: "\(folder("lcd", mode))/\(scheme == .dark ? "dark" : "light")/\(sc.name)",
+                          size: CGSize(width: 358, height: 358))
+                }
             }
         }
     }

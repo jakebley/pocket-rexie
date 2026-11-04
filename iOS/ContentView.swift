@@ -11,16 +11,21 @@ struct ContentView: View {
     @Environment(\.colorScheme) private var scheme
     @State private var showSettings = false
     @State private var nameDraft = "Rexie"
+    /// The look chosen in Settings (App Group defaults, shared with the widgets and watch).
+    @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var storedMode: ColorMode = .traditional
+    /// Forces a look regardless of the setting (render tests).
+    private let modeOverride: ColorMode?
 
-    init(model: GameModel? = nil, clock: Date? = nil) {
+    init(model: GameModel? = nil, clock: Date? = nil, colorMode: ColorMode? = nil) {
         _model = StateObject(wrappedValue: model ?? GameModel())
         self.clock = clock
+        self.modeOverride = colorMode
         self.injected = model != nil || UITestSupport.active
     }
 
     private var needsName: Bool { model.pet.stage == .baby && !model.pet.named }
 
-    private var palette: LCDPalette { LCDStyle.palette(for: scheme) }
+    private var palette: LCDPalette { LCDStyle.palette(for: scheme, mode: modeOverride ?? storedMode) }
 
     var body: some View {
         GeometryReader { geo in
@@ -59,7 +64,7 @@ struct ContentView: View {
         .environment(\.sceneDate, clock)
         .tint(palette.ink)
         .sheet(isPresented: $showSettings) {
-            SettingsView(model: model)
+            SettingsView(model: model, colorModeOverride: modeOverride)
                 .presentationDetents([.medium, .large])
         }
         .alert("Your dino hatched!", isPresented: Binding(get: { needsName }, set: { _ in })) {

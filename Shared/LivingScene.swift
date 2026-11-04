@@ -108,8 +108,10 @@ struct SceneState: Equatable {
     static let maxX = 32.0
     static let homeX = 16.0
     static let bedX = 8.0
-    /// Ground x of the first, second and third poop: they fill in from the right edge.
-    static let poopSpots: [Int] = [56, 48, 40]
+    /// Ground x of the first, second and third poop: they fill in from the right edge. The glyphs are
+    /// 7 wide, so these leave a 3 pixel gap between neighbours (they used to touch to within 1 pixel
+    /// and read as a mound) and the first one ends at the screen edge (57 + 7 = 64).
+    static let poopSpots: [Int] = [57, 47, 37]
 
     /// Columns the ink reaches from the sprite's left edge for either facing, over all frames of
     /// each species. Measured from the sprite box edge (not just the occupied width) so a mirrored

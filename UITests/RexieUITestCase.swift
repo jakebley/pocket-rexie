@@ -112,6 +112,16 @@ class RexieUITestCase: XCTestCase {
         wait("switch to flip", file: file, line: line) { (toggle.value as? String) != before }
     }
 
+    /// Scrolls the settings sheet (rows far down the list may not exist until scrolled to) until `el` can be tapped.
+    func scrollTo(_ el: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        var tries = 0
+        while !(el.exists && el.isHittable) && tries < 8 {
+            app.swipeUp()
+            tries += 1
+        }
+        XCTAssertTrue(el.exists && el.isHittable, "could not scroll to \(el)", file: file, line: line)
+    }
+
     /// Scrolls the settings sheet until `el` can be tapped.
     func reveal(_ el: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(el.waitForExistence(timeout: 10), "missing \(el)", file: file, line: line)

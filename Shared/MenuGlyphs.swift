@@ -142,6 +142,15 @@ struct PixelGlyphView: View {
 }
 
 extension PixelBitmap {
+    /// A 7x5 checkmark for selected tiles.
+    static let check: [String] = [
+        ".....XX",
+        "....XX.",
+        "X..XX..",
+        ".XXX...",
+        "..X....",
+    ]
+
     /// An 8x8 gear for the settings button.
     static let gear: [String] = [
         "...XX...",

@@ -50,7 +50,7 @@ struct LCDScreen: View {
             ZStack {
                 palette.background
                 screenCanvas(side: side)
-                if palette.backlit && !model.pet.lightOn && model.pet.isAlive {
+                if palette.backlit && palette.mode == .traditional && !model.pet.lightOn && model.pet.isAlive {
                     palette.background.opacity(0.55).allowsHitTesting(false)
                 }
                 modeOverlay(metrics)
@@ -98,8 +98,15 @@ struct LCDScreen: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(model.pet.statusLine)
-        .accessibilityValue(GameModel.deterministic ? model.uiTestSummary : "")
+        .accessibilityValue(GameModel.deterministic ? uiTestValue : "")
         .accessibilityIdentifier("lcd")
+    }
+
+    /// The model's summary plus the active look ("... look technicolor name Rexie"), for UI tests.
+    private var uiTestValue: String {
+        let summary = model.uiTestSummary
+        guard let range = summary.range(of: " name ") else { return summary }
+        return summary.replacingCharacters(in: range, with: " look \(palette.mode.rawValue) name ")
     }
 
     /// Tap on the pet pets it; on the ground the pet walks over and looks; in the sky it looks up.
@@ -454,9 +461,10 @@ enum LCDScene {
             return
         }
 
-        ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
-        guard let raster else { return }
-        ctx.fill(LCDPainter.path(raster, shade: true, size: size), with: .color(palette.ink.opacity(0.4)))
-        ctx.fill(LCDPainter.path(raster, size: size), with: .color(palette.ink))
+        guard let raster else {
+            ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+            return
+        }
+        LCDPainter.paint(&ctx, raster: raster, size: size, palette: palette)
     }
 }

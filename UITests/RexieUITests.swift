@@ -228,10 +228,12 @@ final class RexieUITests: RexieUITestCase {
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
         let classic = app.switches["toggle-classic"]
         let vacation = app.switches["toggle-vacation"]
-        XCTAssertTrue(classic.waitForExistence(timeout: 10))
+        XCTAssertTrue(element("look-traditional").waitForExistence(timeout: 10), "the Look section leads the list")
+        shot(17, "settings")
+        scrollTo(vacation)
+        scrollTo(classic)
         XCTAssertEqual(classic.value as? String, "0")
         XCTAssertEqual(vacation.value as? String, "0")
-        shot(17, "settings")
 
         flip(classic)
         XCTAssertEqual(classic.value as? String, "1")
@@ -249,7 +251,9 @@ final class RexieUITests: RexieUITestCase {
 
         // And back off again.
         tap("settings-gear")
-        XCTAssertTrue(classic.waitForExistence(timeout: 10))
+        XCTAssertTrue(element("look-traditional").waitForExistence(timeout: 10))
+        scrollTo(vacation)
+        scrollTo(classic)
         XCTAssertEqual(classic.value as? String, "1")
         flip(classic)
         reveal(vacation)
@@ -257,6 +261,53 @@ final class RexieUITests: RexieUITestCase {
         tap("settings-done")
         waitForStat("classic", "0")
         waitForStat("vacation", "0")
+    }
+
+    func testLookTilesSwitchTheColorModeAndPersist() {
+        launch("child-hungry")
+        XCTAssertEqual(stat("look"), "traditional")
+
+        tap("settings-gear")
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+        let traditional = element("look-traditional")
+        let technicolor = element("look-technicolor")
+        XCTAssertTrue(traditional.waitForExistence(timeout: 10))
+        XCTAssertTrue(technicolor.waitForExistence(timeout: 10))
+        XCTAssertEqual(traditional.value as? String, "Selected")
+        XCTAssertEqual(technicolor.value as? String, "Not selected")
+        for tile in [traditional, technicolor] {
+            XCTAssertGreaterThanOrEqual(tile.frame.width, 48)
+            XCTAssertGreaterThanOrEqual(tile.frame.height, 48)
+            XCTAssertTrue(tile.isHittable)
+        }
+        shot(26, "look-traditional")
+
+        technicolor.tap()
+        wait("technicolor tile selected") { (technicolor.value as? String) == "Selected" }
+        XCTAssertEqual(traditional.value as? String, "Not selected")
+        shot(27, "look-technicolor")
+
+        tap("settings-done")
+        XCTAssertTrue(app.navigationBars["Settings"].waitForNonExistence(timeout: 10))
+        waitForStat("look", "technicolor")
+        shot(28, "home-technicolor")
+
+        // The choice outlives the app.
+        Thread.sleep(forTimeInterval: 1)
+        app.terminate()
+        launch("child-hungry", keep: true)
+        XCTAssertEqual(stat("look"), "technicolor")
+        shot(29, "relaunched-technicolor")
+        tap("settings-gear")
+        XCTAssertTrue(element("look-technicolor").waitForExistence(timeout: 10))
+        XCTAssertEqual(element("look-technicolor").value as? String, "Selected")
+        XCTAssertEqual(element("look-traditional").value as? String, "Not selected")
+
+        // And back to Traditional.
+        element("look-traditional").tap()
+        wait("traditional tile selected") { (self.element("look-traditional").value as? String) == "Selected" }
+        tap("settings-done")
+        waitForStat("look", "traditional")
     }
 
     func testSettingsAboutPage() {

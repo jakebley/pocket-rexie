@@ -10,6 +10,9 @@ extension Notification.Name {
 /// so each keeps its own PetStore and this reconciles them ("newer `modified` wins").
 enum PetSync {
     fileprivate static let key = "pet"
+    /// The look (`ColorMode.rawValue`) rides along with every pet payload. The phone is the authority:
+    /// the watch adopts it, the phone ignores the watch's copy.
+    fileprivate static let colorKey = ColorModeStore.key
 
     static func activate() {
         guard WCSession.isSupported() else { return }
@@ -28,15 +31,27 @@ enum PetSync {
         guard session.isPaired, session.isWatchAppInstalled else { return }
         #endif
         guard let data = try? JSONEncoder().encode(pet) else { return }
-        let payload: [String: Any] = [key: data]
+        let payload: [String: Any] = [key: data, colorKey: ColorModeStore.load().rawValue]
         try? session.updateApplicationContext(payload)
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil, errorHandler: { _ in })
         }
     }
 
+    /// Sends the current look to the paired watch. The application context is replaced as a whole,
+    /// so it goes out together with the pet.
+    static func pushColorMode() {
+        push(PetStore.load())
+    }
+
     /// Merge a received pet into the local store. Returns true if the incoming pet won.
     fileprivate static func receive(_ payload: [String: Any]) {
+        #if os(watchOS)
+        if let raw = payload[colorKey] as? String, let mode = ColorMode(rawValue: raw),
+           mode != ColorModeStore.load() {
+            ColorModeStore.save(mode)
+        }
+        #endif
         guard let data = payload[key] as? Data,
               let incoming = try? JSONDecoder().decode(Pet.self, from: data) else { return }
         var accept = true
