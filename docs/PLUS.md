@@ -48,7 +48,7 @@ Recommendation: ship v1 free, watch which families people ask for, then launch *
 4. The Scale2x pass produces the 32x32 high-resolution sprites automatically.
 
 ## Milestones
-1. v1.0 free: ship with the family field in the data (cheap, no UI).
+1. v1.0 free: ship with the family field in the data (cheap, no UI). **Done:** `Species.family`, `Pet.family`, family-aware hatching, tolerant decoding, unknown families fall back to dino, covered by tests.
 2. v1.1: the "choose your egg" screen with one family, plus Entitlements and the StoreKit configuration, behind a build flag and not shown to users yet.
 3. v1.2: first Plus launch with the fox family, trial and restore tested with TestFlight sandbox accounts.
 4. Later: more families, a second pet slot and scenes, guided by what people ask for.

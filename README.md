@@ -40,18 +40,22 @@ Possible later features (HealthKit evolution, Live Activity, StandBy night light
 
 ## Status
 
-Verified by CI on every push (GitHub Actions, `.github/workflows/ci.yml`):
+Verified by CI on every push (GitHub Actions, `.github/workflows/ci.yml`). Fast jobs run on every push; renders and simulator UI tests run on `main`, on manual dispatch, or when a commit message contains `[full]`.
 - The iPhone app, widget and watch app build on macOS with Xcode.
-- 44 XCTest unit tests pass: game engine, evolution tree, save compatibility, balance rules, living-scene director, render and store-screenshot harnesses.
-- 17 XCUITest UI tests pass on both an iPhone SE (3rd generation) and an iPhone 16 Pro simulator. They drive the real app by tapping: naming alert with the real keyboard, feeding, the play game, stats and dex pages, the settings sheet (Classic and Vacation modes, About), a dead pet starting a new egg, and the pet's name surviving a relaunch.
-- The Expo prototype type-checks, lints with zero errors, passes its engine and scene tests, and bundles for web, iOS and Android (Hermes).
-- The SwiftUI screens, widgets and watch view are rendered to PNGs on every push and published to the `ci-screenshots` branch for review, as are App Store screenshots at the required sizes.
+- 62 XCTest unit tests pass: game engine, evolution tree, save compatibility, balance rules, animal families, colour modes, living-scene director, render and store-screenshot harnesses.
+- 18 XCUITest UI tests pass on both an iPhone SE (3rd generation) and an iPhone 16 Pro simulator. They drive the real app by tapping: naming alert, feeding, the play game, stats and dex, the settings sheet (Look tiles, Classic and Vacation, About), a dead pet starting a new egg, and persistence across relaunch.
+- The Expo prototype type-checks, lints with zero errors, passes its engine, scene and colour tests, and bundles for web, iOS and Android (Hermes).
+- The SwiftUI screens, widgets (small, medium, large, accessory) and the Watch face are rendered to PNGs on `[full]` runs and published to the `ci-screenshots` branch, as are App Store screenshots at the required sizes.
 - `expo-prototype/test/balance.ts` simulates 11 play styles and checks every species is reachable and that ordinary care never lands on the neglect line.
 
+Features: 39 species across five stages with branching evolution; a living 64x64 scene (wandering, eating, sleeping, weather and sky by the real hour, a "while you were away" summary); Traditional (monochrome) and Technicolor (muted colour) looks, chosen in Settings and shared with the widgets and Watch; Classic and Vacation modes.
+
 Not yet verified:
-- It has not been run on a physical iPhone or Apple Watch, or with a widget placed on a real home screen.
+- It has not been run on a physical iPhone or Apple Watch, or with a widget on a real home screen. Watch sync of the colour look and of the pet has only been exercised in simulator-level tests.
 - Expo Go on a device has not been tried (only the web build and the native bundles).
-- The Watch app has no UI tests, only its render.
-- Signing, TestFlight and App Store submission are still to do. Set `DEVELOPMENT_TEAM` in `project.yml` first, and enable GitHub Pages (Settings > Pages > main /docs) for the support and privacy page.
+- The Watch app has no UI tests, only renders.
+- Signing, TestFlight and App Store submission need the owner's Apple account (see `docs/RELEASE.md`). Enable GitHub Pages (main /docs) and set `SUPPORT_EMAIL` in `docs/index.html`.
 - Evolution thresholds come from simulation and need real play-testing.
-- No license has been chosen, and the repository visibility is the owner's call.
+- No licence has been chosen; repository visibility is the owner's call.
+
+Plans: `docs/PLUS.md` (free now, paid animal families later), `docs/COLOR_MODES.md`, `docs/LIVING_SCENE.md`, `docs/EVOLUTION.md`.
