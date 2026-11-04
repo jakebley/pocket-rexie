@@ -5,7 +5,7 @@ import WidgetKit
 
 // Color modes: the Traditional monochrome LCD and the muted, nostalgic Technicolor palette.
 // Spec: docs/COLOR_MODES.md. The values mirror expo-prototype/src/ui/palette.ts (the web port),
-// including the contrast tunings made there. Foundation only, so tests can use it directly.
+// including the contrast tunings made there. Foundation only (plus WidgetKit for reloads), so tests can use it directly.
 
 /// The look chosen in Settings. Persisted in the App Group defaults under `ColorModeStore.key`.
 enum ColorMode: String, CaseIterable, Sendable {
