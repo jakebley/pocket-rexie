@@ -1,7 +1,7 @@
 """Emit expo-prototype/src/core/speciesData.ts from species.py + spritegen.py. Usage: python3 tools/gen_ts.py"""
 import json, os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from species import SPECIES, EVO, BABIES, LINE
+from species import SPECIES, EVO, BABIES, FAMILY, LINE
 import spritegen
 
 STAGE = {1: 'baby', 2: 'child', 3: 'teen', 4: 'adult', 5: 'ultimate'}
@@ -9,7 +9,7 @@ out = []
 for sid, (name, stage, blurb, rec) in SPECIES.items():
     a, b = spritegen.render(dict(rec, stage=stage))
     evo = [{"to": c, "req": r} for c, r in EVO.get(sid, [])]
-    out.append({"id": sid, "name": name, "stage": STAGE[stage], "blurb": blurb, "line": LINE[sid], "frames": [a, b], "hiFrames": [spritegen.scale2x(a), spritegen.scale2x(b)], "evolutions": evo})
+    out.append({"id": sid, "name": name, "stage": STAGE[stage], "blurb": blurb, "family": FAMILY, "line": LINE[sid], "frames": [a, b], "hiFrames": [spritegen.scale2x(a), spritegen.scale2x(b)], "evolutions": evo})
 path = os.path.join(os.path.dirname(__file__), "..", "expo-prototype", "src", "core", "speciesData.ts")
 os.makedirs(os.path.dirname(path), exist_ok=True)
 with open(path, "w") as f:

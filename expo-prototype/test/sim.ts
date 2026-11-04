@@ -1,4 +1,4 @@
-import { advance, newPet, feed, train, battle, DEX_SIZE, type Pet } from '../src/core/pet';
+import { advance, newPet, newEgg, feed, train, battle, DEX_SIZE, type Pet } from '../src/core/pet';
 import { SPECIES } from '../src/core/speciesData';
 
 let fails = 0;
@@ -49,6 +49,9 @@ ok(lazy.path.length >= 3, 'neglect still progresses in gentle mode');
 ok(classic.p.stage === 'ghost', 'classic neglect dies');
 ok(meat.path.length >= 5, `meat line reaches ultimate (${meat.path.length} stages)`);
 ok(new Set(SPECIES.map((s) => s.id)).size === DEX_SIZE, 'unique species ids');
+ok(SPECIES.every((s) => s.family === 'dino'), 'every species belongs to the free dino family');
+ok(newPet(0).family === 'dino', 'new pets default to dino');
+ok(newEgg(newPet(0), 1, 'no-such-family').family === 'dino', 'an unknown family falls back to dino');
 
 // Reachability across random policies
 const seen = new Set<string>();

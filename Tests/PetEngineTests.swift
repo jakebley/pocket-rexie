@@ -208,6 +208,30 @@ final class PetEngineTests: XCTestCase {
         XCTAssertEqual(p.events, p.events.sorted { $0.at < $1.at })
     }
 
+    func testEverySpeciesBelongsToTheFreeDinoFamily() {
+        XCTAssertTrue(Species.all.allSatisfy { $0.family == "dino" })
+        XCTAssertEqual(Species.families.map { $0.id }, ["dino"])
+        XCTAssertTrue(Species.family("dino")?.isFree == true)
+        XCTAssertEqual(Species.dexSize(family: "dino"), Species.dexSize)
+        XCTAssertFalse(Species.babies(family: "dino").isEmpty)
+    }
+
+    func testOldSavesWithoutAFamilyDecodeAsDinoAndNewEggsKeepOrFallBack() throws {
+        var p = newPet()
+        run(&p, days: 1)
+        var dict = try JSONSerialization.jsonObject(with: JSONEncoder().encode(p)) as! [String: Any]
+        dict.removeValue(forKey: "family")
+        let old = try JSONDecoder().decode(Pet.self, from: JSONSerialization.data(withJSONObject: dict))
+        XCTAssertEqual(old.family, "dino")
+
+        var dead = old
+        dead.newEgg(now: start, family: "no-such-family")
+        XCTAssertEqual(dead.family, "dino", "an unknown family must fall back to the free dino family")
+        XCTAssertEqual(dead.stage, .egg)
+        dead.advance(to: start.addingTimeInterval(15 * 60), calendar: utc)
+        XCTAssertEqual(dead.stage, .baby, "the egg must still hatch")
+    }
+
     func testSpritesAreSixteenBySixteen() {
         for sp in Species.all {
             XCTAssertEqual(sp.frames.count, 2)

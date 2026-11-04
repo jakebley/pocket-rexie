@@ -34,6 +34,8 @@ struct Pet: Codable, Equatable {
     var stage: Stage = .egg
     /// Id of the current `Species`; empty while an egg.
     var species = ""
+    /// Animal family this pet belongs to (chosen when the egg is started). Old saves decode as `dino`.
+    var family = "dino"
     /// Ids of every species this player has raised, across generations.
     var dex: [String] = []
 
@@ -119,6 +121,7 @@ struct Pet: Codable, Equatable {
         if let v = try c.decodeIfPresent(Date.self, forKey: .modified) { modified = v }
         if let v = try c.decodeIfPresent(Stage.self, forKey: .stage) { stage = v }
         if let v = try c.decodeIfPresent(String.self, forKey: .species) { species = v }
+        if let v = try c.decodeIfPresent(String.self, forKey: .family) { family = v }
         if let v = try c.decodeIfPresent([String].self, forKey: .dex) { dex = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .hunger) { hunger = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .happy) { happy = v }
@@ -382,7 +385,8 @@ struct Pet: Codable, Equatable {
     // MARK: growth
 
     private mutating func hatch(at t: Date) {
-        let id = SpeciesData.babies[Int(seed % UInt64(SpeciesData.babies.count))]
+        let options = Species.babies(family: family)
+        let id = options[Int(seed % UInt64(options.count))]
         evolve(to: id, at: t, hatching: true)
         hunger = 4; happy = 4
     }
@@ -557,8 +561,10 @@ struct Pet: Codable, Equatable {
     }
 
     /// Start over with a fresh egg, keeping the memorial list and the Dex.
-    mutating func newEgg(now: Date) {
+    mutating func newEgg(now: Date, family: String? = nil) {
+        let keep = family ?? self.family
         self = Pet(now: now, generation: generation + 1, name: name, legacy: legacy, gentle: gentle, dex: dex)
+        self.family = Species.family(keep) != nil ? keep : "dino"
         named = false
     }
 

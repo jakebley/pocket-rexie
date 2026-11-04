@@ -18,6 +18,8 @@ export interface SpeciesDef {
   name: string;
   stage: Exclude<Stage, 'egg' | 'ghost'>;
   blurb: string;
+  /** animal family (the free app ships only 'dino') */
+  family: string;
   /** lineage color family */
   line: 'baby' | 'meat' | 'veggie' | 'pasta' | 'neglect';
   /** frames[0] open eyes, frames[1] blink; 16 rows of 16 chars, 'X' is ink */

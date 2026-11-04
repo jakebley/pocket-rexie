@@ -30,6 +30,8 @@ export interface Pet {
   modified: number;
   stage: Stage;
   species: string;
+  /** animal family this pet belongs to; old saves are treated as 'dino' */
+  family: string;
   dex: string[];
   hunger: number;
   happy: number;
@@ -78,12 +80,12 @@ export interface Pet {
   events: PetEvent[];
 }
 
-export function newPet(now: number, opts: { generation?: number; name?: string; legacy?: string[]; gentle?: boolean; dex?: string[]; seed?: number } = {}): Pet {
+export function newPet(now: number, opts: { generation?: number; name?: string; legacy?: string[]; gentle?: boolean; dex?: string[]; seed?: number; family?: string } = {}): Pet {
   return {
     name: opts.name ?? 'Rexie', named: false,
     seed: opts.seed ?? 1 + Math.floor(Math.random() * 0x7fffffff),
     generation: opts.generation ?? 1, birth: now, lastTick: now, modified: now,
-    stage: 'egg', species: '', dex: opts.dex ?? [],
+    stage: 'egg', species: '', family: opts.family ?? 'dino', dex: opts.dex ?? [],
     hunger: 4, happy: 4, weight: 5, smarts: 0, discipline: 0, poops: 0, sick: false, medDoses: 0,
     asleep: false, lightOn: true, careMistakes: 0, gentle: opts.gentle ?? true, paused: false, temp: 0,
     trains: 0, battles: 0, wins: 0,
@@ -285,7 +287,8 @@ export function requirementMet(r: Requirement, p: Pet): boolean {
 }
 
 function hatch(p: Pet, t: number) {
-  evolve(p, BABIES[p.seed % BABIES.length], t, true);
+  const options = BABIES.filter((b) => SPECIES_BY_ID[b]?.family === p.family);
+  evolve(p, options[p.seed % options.length], t, true);
   p.hunger = 4; p.happy = 4;
 }
 
@@ -418,8 +421,13 @@ export function battle(p: Pet): string {
   return msg;
 }
 
-export function newEgg(p: Pet, now: number): Pet {
-  const np = newPet(now, { generation: p.generation + 1, name: p.name, legacy: p.legacy, gentle: p.gentle, dex: p.dex });
+/** Falls back to the free dino family for an id the app does not know (or has no hatchlings for). */
+export function knownFamily(id: string): string {
+  return BABIES.some((b) => SPECIES_BY_ID[b]?.family === id) ? id : 'dino';
+}
+
+export function newEgg(p: Pet, now: number, family?: string): Pet {
+  const np = newPet(now, { generation: p.generation + 1, name: p.name, legacy: p.legacy, gentle: p.gentle, dex: p.dex, family: knownFamily(family ?? p.family) });
   return np;
 }
 

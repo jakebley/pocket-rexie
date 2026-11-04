@@ -7,6 +7,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Pip",
   "stage": "baby",
   "blurb": "A round little hatchling.",
+  "family": "dino",
   "line": "baby",
   "frames": [
    [
@@ -148,6 +149,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Nubb",
   "stage": "baby",
   "blurb": "Curious, with a tiny leaf on its head.",
+  "family": "dino",
   "line": "baby",
   "frames": [
    [
@@ -289,6 +291,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Rawr",
   "stage": "child",
   "blurb": "Loves meat and shows off its fangs.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -428,6 +431,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Sprig",
   "stage": "child",
   "blurb": "A leafy nibbler.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -567,6 +571,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Twirl",
   "stage": "child",
   "blurb": "Noodle-obsessed, with curly hair.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -706,6 +711,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Mudpie",
   "stage": "child",
   "blurb": "Scruffy and in need of a bath.",
+  "family": "dino",
   "line": "neglect",
   "frames": [
    [
@@ -833,6 +839,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Fangler",
   "stage": "teen",
   "blurb": "Strong jaws, spiky back.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -966,6 +973,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Brutus",
   "stage": "teen",
   "blurb": "Heavy and proud of it.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -1099,6 +1107,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Dasher",
   "stage": "teen",
   "blurb": "Light, quick, crested.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -1232,6 +1241,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Mossback",
   "stage": "teen",
   "blurb": "Thoughtful, with a mossy shell.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -1365,6 +1375,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Hornet",
   "stage": "teen",
   "blurb": "Charges first, asks later.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -1492,6 +1503,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Bloomer",
   "stage": "teen",
   "blurb": "Friendly, with a leaf on its head.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -1619,6 +1631,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Curlie",
   "stage": "teen",
   "blurb": "Spaghetti curls everywhere.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -1752,6 +1765,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Raviolo",
   "stage": "teen",
   "blurb": "Plump, stuffed and cheerful.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -1879,6 +1893,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Zesty",
   "stage": "teen",
   "blurb": "Sharp mind, antenna up.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -2012,6 +2027,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Grimey",
   "stage": "teen",
   "blurb": "Neglected but tough.",
+  "family": "dino",
   "line": "neglect",
   "frames": [
    [
@@ -2139,6 +2155,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Scrappy",
   "stage": "teen",
   "blurb": "Rough, horned, always fighting.",
+  "family": "dino",
   "line": "neglect",
   "frames": [
    [
@@ -2260,6 +2277,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Chompasaur",
   "stage": "adult",
   "blurb": "A proud T-Rex-style hunter.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -2387,6 +2405,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Razorclaw",
   "stage": "adult",
   "blurb": "A clever crested raptor.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -2514,6 +2533,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Bruiser",
   "stage": "adult",
   "blurb": "A walking boulder with a club tail.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -2641,6 +2661,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Sprintosaur",
   "stage": "adult",
   "blurb": "Built for speed.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -2762,6 +2783,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Longneck",
   "stage": "adult",
   "blurb": "A gentle brontosaurus type.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -2889,6 +2911,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Shellback",
   "stage": "adult",
   "blurb": "Patient, domed and armoured.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -3010,6 +3033,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Petal Rex",
   "stage": "adult",
   "blurb": "Flower-collared and calm.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -3137,6 +3161,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Platesaur",
   "stage": "adult",
   "blurb": "A plated stegosaurus type.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -3264,6 +3289,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Tricerapop",
   "stage": "adult",
   "blurb": "A noodle-fed triceratops type.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -3385,6 +3411,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Noodlord",
   "stage": "adult",
   "blurb": "Rules the spaghetti realm.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -3506,6 +3533,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Plumpkin",
   "stage": "adult",
   "blurb": "Round, jolly, and proud of dinner.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -3627,6 +3655,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Professor",
   "stage": "adult",
   "blurb": "Glasses, antenna, big ideas.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -3748,6 +3777,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Gremlin",
   "stage": "adult",
   "blurb": "Mischievous and ragged.",
+  "family": "dino",
   "line": "neglect",
   "frames": [
    [
@@ -3869,6 +3899,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Scrapper",
   "stage": "adult",
   "blurb": "Dented armour, spiked tail.",
+  "family": "dino",
   "line": "neglect",
   "frames": [
    [
@@ -3990,6 +4021,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Tyrannox",
   "stage": "ultimate",
   "blurb": "King of the old forest.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -4106,6 +4138,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Skywing",
   "stage": "ultimate",
   "blurb": "Took to the sky at last.",
+  "family": "dino",
   "line": "meat",
   "frames": [
    [
@@ -4222,6 +4255,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Bulwark",
   "stage": "ultimate",
   "blurb": "An unmovable fortress.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -4338,6 +4372,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Triceron",
   "stage": "ultimate",
   "blurb": "Horned, frilled and fearless.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -4454,6 +4489,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Sage",
   "stage": "ultimate",
   "blurb": "Wise, haloed and calm.",
+  "family": "dino",
   "line": "veggie",
   "frames": [
    [
@@ -4570,6 +4606,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Noodlemancer",
   "stage": "ultimate",
   "blurb": "Casts spells in spaghetti.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -4686,6 +4723,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Plumpking",
   "stage": "ultimate",
   "blurb": "Crowned, round and unstoppable.",
+  "family": "dino",
   "line": "pasta",
   "frames": [
    [
@@ -4802,6 +4840,7 @@ export const SPECIES: SpeciesDef[] = [
   "name": "Wreckage",
   "stage": "ultimate",
   "blurb": "Leaves a trail of chaos.",
+  "family": "dino",
   "line": "neglect",
   "frames": [
    [

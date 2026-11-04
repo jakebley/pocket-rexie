@@ -105,3 +105,6 @@ EVO = {
  'scrapper': [('wreckage', {})],
 }
 BABIES = ['pip', 'nubb']
+
+# Every species belongs to a family (an animal line). The free app ships only 'dino'; docs/PLUS.md plans paid families.
+FAMILY = 'dino'

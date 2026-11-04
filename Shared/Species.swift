@@ -32,11 +32,21 @@ struct Evolution {
     let req: Requirement
 }
 
+/// A line of animals with its own evolution tree.
+struct Family: Equatable {
+    let id: String
+    let name: String
+    /// Free families are always available; the others need Plus.
+    let isFree: Bool
+}
+
 struct Species {
     let id: String
     let name: String
     let stage: Stage
     let blurb: String
+    /// Animal family this species belongs to (the free app ships only `dino`).
+    let family: String
     /// Lineage color family: baby, meat, veggie, pasta or neglect (drives the Technicolor body color).
     let line: String
     /// frames[0] is the open-eyed sprite, frames[1] the blink.
@@ -50,6 +60,13 @@ struct Species {
     static var dexSize: Int { all.count }
 
     static func named(_ id: String) -> Species? { byID[id] }
+
+    /// The families the app knows. Only `dino` is free; the rest is the Plus plan in docs/PLUS.md.
+    static let families: [Family] = [Family(id: "dino", name: "Dinos", isFree: true)]
+    static func family(_ id: String) -> Family? { families.first { $0.id == id } }
+    static func dexSize(family id: String) -> Int { all.filter { $0.family == id }.count }
+    /// Hatchling species ids for a family.
+    static func babies(family id: String) -> [String] { SpeciesData.babies.filter { byID[$0]?.family == id } }
 
     /// First branch whose requirements the pet meets. The last branch of every species has none.
     func nextBranch(for pet: Pet) -> String? {
