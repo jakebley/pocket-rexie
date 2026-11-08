@@ -2376,7 +2376,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_sootwing", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_haloling", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_haloling", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_plumpuff", req: Requirement(heavy: true)),
             Evolution(to: "spirits_stardrift", req: Requirement(smarts: 12)),
             Evolution(to: "spirits_puffwing", req: Requirement())
@@ -2392,7 +2392,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_sootwing", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_fluffimp", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_fluffimp", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_embergut", req: Requirement(heavy: true)),
             Evolution(to: "spirits_pronglet", req: Requirement(train: 3)),
             Evolution(to: "spirits_hornlet", req: Requirement())
@@ -2408,7 +2408,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_sootwing", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_haloling", req: Requirement(disc: 50, mistMax: 1)),
+            Evolution(to: "spirits_haloling", req: Requirement(mistMax: 1, disc: 50)),
             Evolution(to: "spirits_plumpuff", req: Requirement(heavy: true)),
             Evolution(to: "spirits_stardrift", req: Requirement(smarts: 12)),
             Evolution(to: "spirits_fluffimp", req: Requirement())
@@ -2423,7 +2423,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................XXXXXX..........", "...............XXXXXXXX.........", "..............XX.....XXX........", "..............XX......XX........", "................XX..............", "................XXX.............", "...............XXXXXX...........", ".............XXXXXXXXXX.........", ".............XXXXXXXXXX.........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", ".............XXXXXXXXXX.........", "......XX......XXXXXXXXX.........", "......XX......XXXXXXX...........", "......XX.....XXXXXXXX...........", "......XXX..XXXXXXXXX............", "......XXXXXXXXXXXXXX............", ".......XXXXXXXXXXXXX............", "...........XXXXXXXXX............", ".............XXXXXX............."],
             ],
             evolutions: [
-            Evolution(to: "spirits_fluffimp", req: Requirement(disc: 50, mistMax: 3)),
+            Evolution(to: "spirits_fluffimp", req: Requirement(mistMax: 3, disc: 50)),
             Evolution(to: "spirits_cindersnip", req: Requirement(train: 3)),
             Evolution(to: "spirits_sootwing", req: Requirement())
         ]),
@@ -2468,7 +2468,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_tatterimp", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_brightwing", req: Requirement(disc: 50, mistMax: 1)),
+            Evolution(to: "spirits_brightwing", req: Requirement(mistMax: 1, disc: 50)),
             Evolution(to: "spirits_jester", req: Requirement(smarts: 20)),
             Evolution(to: "spirits_cherubimp", req: Requirement())
         ]),
@@ -2483,7 +2483,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_tatterimp", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_cumulus", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_cumulus", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_cinderbelly", req: Requirement())
         ]),
         Species(id: "spirits_stardrift", name: "Stardrift", stage: .teen, blurb: "Collects stardust and secrets.", family: "spirits", line: "halo",
@@ -2497,7 +2497,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_tatterimp", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_chimewing", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_chimewing", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_jester", req: Requirement())
         ]),
         Species(id: "spirits_hornlet", name: "Hornlet", stage: .teen, blurb: "Little horns, big plans.", family: "spirits", line: "horn",
@@ -2511,7 +2511,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_tatterimp", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_cherubimp", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_cherubimp", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_hornbrawler", req: Requirement(wins: 3)),
             Evolution(to: "spirits_emberhorn", req: Requirement())
         ]),
@@ -2526,7 +2526,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_tatterimp", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_cherubimp", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_cherubimp", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_hornbrawler", req: Requirement(wins: 3)),
             Evolution(to: "spirits_prongmaster", req: Requirement())
         ]),
@@ -2541,7 +2541,7 @@ enum SpeciesData {
             ],
             evolutions: [
             Evolution(to: "spirits_tatterimp", req: Requirement(mistMin: 4)),
-            Evolution(to: "spirits_prankwing", req: Requirement(disc: 25, mistMax: 1)),
+            Evolution(to: "spirits_prankwing", req: Requirement(mistMax: 1, disc: 25)),
             Evolution(to: "spirits_cinderbelly", req: Requirement())
         ]),
         Species(id: "spirits_sootwing", name: "Sootwing", stage: .teen, blurb: "Smudgy wings and a crooked halo.", family: "spirits", line: "soot",
@@ -2554,7 +2554,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "..................XXXXXX........", ".................XXXXXXXX.......", "................XX.....XXX......", "................XX......XX......", ".................XXX............", "..................XX............", "................................", "................................", "...............XXXXXX...........", ".............XXXXXXXXXX.........", "......XX.....XXXXXXXXXX.........", "......XXX...XXXXXXXXXXXX........", "......XXX...XXXXXXXXXXXX........", ".......XXX..XXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXX.........", "........XXXX..XXXXXXXXX.........", ".........XXX..XXXXXXX...........", "....XX...XXXXXXXXXXX............", "....XX.....XXXXXXXXX............", "....XX......XXXXXXXXXX..........", "....XXX.....XXXXXXXXXX..........", ".....XXXXXXXXXXXXXXX............", "......XXXXXXXXXXXXXX............", "...........XXXXX..XXXX..........", ".............XX....XXX.........."],
             ],
             evolutions: [
-            Evolution(to: "spirits_prankwing", req: Requirement(disc: 50, mistMax: 3)),
+            Evolution(to: "spirits_prankwing", req: Requirement(mistMax: 3, disc: 50)),
             Evolution(to: "spirits_gloomwing", req: Requirement(train: 3)),
             Evolution(to: "spirits_tatterimp", req: Requirement())
         ]),
@@ -2568,7 +2568,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "............XX..........XX......", "............XXX........XXX......", "............XXXXX....XXXXX......", "............XXXXXX..XXXXX.......", "............XXXXXXXXXXXXX.......", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", ".............XXXXXXXXXX.........", "..............XXXXXXXXX.........", "..............XXXXXXX...........", "....XX.......XXXXXXX............", "....XX......XXXXXXXX............", "....XX..XX..XXXXXXXXXX..........", "....XX..XX..XXXXXXXXXX..........", ".....XXXXXXXXXXXXXXX............", "......XXXXXXXXXXXXXX............", "...........XXXXX..XXXX..........", ".............XX....XXX.........."],
             ],
             evolutions: [
-            Evolution(to: "spirits_prankwing", req: Requirement(disc: 50, mistMax: 3)),
+            Evolution(to: "spirits_prankwing", req: Requirement(mistMax: 3, disc: 50)),
             Evolution(to: "spirits_tatterimp", req: Requirement(train: 3)),
             Evolution(to: "spirits_gloomwing", req: Requirement())
         ]),
