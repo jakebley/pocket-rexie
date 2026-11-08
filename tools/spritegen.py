@@ -1,6 +1,8 @@
 """Procedural dino sprites: scaled hand-drawn archetypes plus per-species extras. Facing right."""
 import math
 from archetypes import ARCH
+from archetypes_fox import ARCH_FOX
+ARCH = dict(ARCH); ARCH.update(ARCH_FOX)
 
 W = 16
 SCALE = {1: 0.0, 2: 0.62, 3: 0.82, 4: 1.0, 5: 1.0}
@@ -91,12 +93,16 @@ def baby(r, blink):
 
 def draw(r, blink=False):
     stage = r['stage']
-    if stage == 1:
+    if stage == 1 and 'arch' not in r:
         g, (ex, ey) = baby(r, blink)
         return g
     arch = ARCH[r['arch']]
-    f = r.get('scale', SCALE[stage])
-    g, f, ox, oy = scaled(arch['rows'], f)
+    if 'by_stage' in arch:  # built natively for this stage (thin features survive); no averaging
+        arch = arch['by_stage'][stage]
+        g, f, ox, oy = G(arch['rows']), 1.0, 0, 0
+    else:
+        f = r.get('scale', SCALE[stage])
+        g, f, ox, oy = scaled(arch['rows'], f)
     hx, hy, hr = arch['head']
     hx, hy, hr = hx * f + ox, hy * f + oy, max(1.6, hr * f)
     ex, ey = arch['eye'][0] * f + ox, arch['eye'][1] * f + oy
@@ -187,6 +193,17 @@ def draw(r, blink=False):
             bx = (b0 + b1) / 2
             g.line(bx, 7, bx - 4, 1, 1); g.line(bx - 4, 1, bx - 5, 5, 1); g.line(bx - 5, 5, bx - 2, 6, 1)
             g.line(bx - 3, 3, bx - 1, 6, 1)
+        elif e in ('tails2', 'tails3', 'tails5'):
+            n = int(e[-1])
+            tipx = min(x for yy in range(W) for x in range(W) if g.p[yy][x])
+            baseY = 9
+            for k in range(n - 1):
+                ang = (k + 1) / n
+                tx = max(0, tipx - 1 + int(ang * 2)); ty = max(0, 6 - int(ang * 6))
+                g.line(b0 + 1, baseY, tx, ty, 1); g.line(b0 + 1, baseY + 1, tx + 1, ty + 1, 1)
+        elif e == 'scarf':
+            for dx in range(-2, 3): g.set(hx + dx, hy + hr)
+            g.set(hx - 2, hy + hr + 1); g.set(hx - 1, hy + hr + 1)
         elif e == 'arms':
             g.set(b1 + 1, 9); g.set(b1 + 2, 10)
     g.set(ex, ey, 1 if blink else 0)
