@@ -120,14 +120,14 @@ export const ICONS: Record<string, string[]> = {
   // drumstick: meat knob top-right, bone handle bottom-left
   feed: ['...XXXX.', '..XXXXXX', '..XXXXXX', '..XXXXXX', '...XXXX.', '..XXX...', '.XXX....', 'XX.XX...'],
   // light bulb
-  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '...XX...', '..XXXX..', '...XX...'],
+  light: ['..XXXX..', '.X....X.', '.X....X.', '.X....X.', '..X..X..', '..XXXX..', '..X..X..', '...XX...'],
   // game controller: d-pad and two buttons cut out of the body
   play: ['........', '.XXXXXX.', 'XX.XXXXX', 'X...XX.X', 'XX.XX.XX', 'XXXXXXXX', 'XX....XX', '........'],
   train: ['........', 'X......X', 'XX....XX', 'XXXXXXXX', 'XXXXXXXX', 'XX....XX', 'X......X', '........'],
   // medical cross
   medicine: ['..XXXX..', '..XXXX..', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', '..XXXX..', '..XXXX..'],
   // broom (clean)
-  clean: ['......XX', '.....XX.', '....XX..', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X.X.X.'],
+  clean: ['...XX...', '...XX...', '...XX...', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X..X.X'],
   climate: ['..XXX...', '..X.X...', '..X.X...', '..X.X...', '.XX.XX..', '.X.X.X..', '.XX.XX..', '..XXX...'],
   scold: ['...XX...', '...XX...', '...XX...', '...XX...', '...XX...', '........', '...XX...', '...XX...'],
   // crossed swords with hilts
