@@ -25,6 +25,15 @@
     },
     "runtimeVersion": {
       "policy": "sdkVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "25933c78-209c-4b39-af3e-91d010aa279d"
+      }
+    },
+    "owner": "jakebley",
+    "updates": {
+      "url": "https://u.expo.dev/25933c78-209c-4b39-af3e-91d010aa279d"
     }
   }
 }
