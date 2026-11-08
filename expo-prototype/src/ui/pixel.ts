@@ -17,6 +17,7 @@ export const GLYPHS = {
   zzz: ['XXXXX', '...X.', '..X..', '.X...', 'XXXXX'],
   drop: ['..X..', '.XXX.', 'XXXXX', 'XXXXX', '.XXX.'],
   flake: ['X.X.X', '.XXX.', 'XXXXX', '.XXX.', 'X.X.X'],
+  lock: ['.XXX.', 'X...X', 'XXXXX', 'XXXXX', 'XXXXX'],
 };
 
 /** 7x7 HUD / bubble glyphs for the 64 grid (the 5x5 GLYPHS stay for the text screens). */

@@ -206,7 +206,7 @@ function run(s: Scene, pet: Pet, n: number, t: { now: number }, inp: SceneInputs
     ok(w >= hi - lo + 1 && w >= hi + 1 && w >= 32 - lo && w <= 32, `inkWidth covers ${sp.id}'s occupied columns (${w})`);
     const lims = [0, 1, 3, 7].map((m) => maxXFor(sp.id, m));
     ok(lims[0] === 32 && lims[1] === Math.max(0, Math.min(32, 56 - w - 1)) && lims[2] === Math.max(0, 48 - w - 1) && lims[3] === Math.max(0, 40 - w - 1), `${sp.id} limits ${lims}`);
-    ok(lims[0] >= lims[1] && lims[1] >= lims[2] && lims[2] >= lims[3] && lims[1] < lims[0], `${sp.id} limit shrinks as poops grow`);
+    ok(lims[0] >= lims[1] && lims[1] >= lims[2] && lims[2] >= lims[3] && (w <= 23 || lims[1] < lims[0]), `${sp.id} limit shrinks as poops grow`);
   }
   // ink columns the pet really paints (mirror + pose offsets) never touch a poop column, 1-3 poops, 3000 ticks
   for (const sp of SPECIES) {

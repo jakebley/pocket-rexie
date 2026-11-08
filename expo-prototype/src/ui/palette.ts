@@ -7,7 +7,7 @@ export type ColorMode = 'traditional' | 'technicolor';
 export const COLOR_MODES: ColorMode[] = ['traditional', 'technicolor'];
 export const isColorMode = (v: unknown): v is ColorMode => v === 'traditional' || v === 'technicolor';
 
-export interface PaletteCtx { mode: ColorMode; dark: boolean; line?: Line; /** the scene sky is the night sky (ink-like layers flip light) */ night?: boolean }
+export interface PaletteCtx { mode: ColorMode; dark: boolean; line?: Line; /** per-family body colour; wins over `line` */ bodyHex?: string; /** the scene sky is the night sky (ink-like layers flip light) */ night?: boolean }
 export interface ScreenColors { ground: string; ink: string }
 
 // ---------- color math ----------
@@ -50,8 +50,6 @@ const T_LIGHT: Record<number, string> = {
 const BODY_LIGHT_TINT = 0.3; // BODY_LIGHT = body blended this far toward white
 const BODY: Record<Line, string> = {
   meat: '#C27358', veggie: '#6E9A6B', pasta: '#D1A94A', neglect: '#8A8F96', baby: '#E7DCC0',
-  // fox family lines (first pass from docs/FOX_FAMILY.md; to be tuned by eye)
-  hunter: '#C2623A', forager: '#D9A441', riverside: '#8FA3B5', stray: '#9A948C',
 };
 const SKY: Record<Phase | 'rain', string> = { dawn: '#E3C9A9', day: '#A9C9D6', dusk: '#D0A38F', night: '#2F3A5A', rain: '#9AA8B0' };
 const SOIL_LIGHT = '#CDBF9E';
@@ -75,7 +73,7 @@ const DARK_SKY_NIGHT = '#1B2240';
 const cache = new Map<string, string[]>();
 /** Layer-indexed color table (index = layer code) for one context. Index 0 (unlit) is the screen ground. */
 export function paletteTable(ctx: PaletteCtx): string[] {
-  const key = `${ctx.mode}|${ctx.dark}|${ctx.line ?? ''}|${ctx.night ? 'n' : ''}`;
+  const key = `${ctx.mode}|${ctx.dark}|${ctx.line ?? ''}|${ctx.bodyHex ?? ''}|${ctx.night ? 'n' : ''}`;
   let t = cache.get(key);
   if (t) return t;
   const sc = screenColors(ctx.mode, ctx.dark);
@@ -87,7 +85,7 @@ export function paletteTable(ctx: PaletteCtx): string[] {
     for (const l of ALL_LAYERS) {
       t[l] = ctx.dark && DARK_OVERRIDE[l] ? DARK_OVERRIDE[l] : !ctx.dark && ctx.night && NIGHT_OVERRIDE[l] ? NIGHT_OVERRIDE[l] : tone(T_LIGHT[l] ?? T_LIGHT[Layer.INK]);
     }
-    const body = BODY[ctx.line ?? 'baby'];
+    const body = ctx.bodyHex ?? BODY[ctx.line ?? 'baby'] ?? BODY.baby;
     t[Layer.BODY] = ctx.dark ? mixHex(body, g, ctx.line === 'baby' || !ctx.line ? DARK_BODY_BLEND_BABY : DARK_BODY_BLEND) : body;
     // against the night sky a dark outline vanishes: rim-light it (only bodies dark enough to stand apart from a light rim; the rest keep the dark outline and read against the sky)
     if (ctx.night && !ctx.dark && contrast(t[Layer.BODY], '#E4DCC4') >= 3) t[Layer.OUTLINE] = '#E4DCC4';

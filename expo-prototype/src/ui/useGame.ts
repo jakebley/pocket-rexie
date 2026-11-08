@@ -5,9 +5,10 @@ import {
   TICK, advance, battle, clean, climate, feed, feedSnack, finishPlay, forceSpecies, giveMedicine, needsAttention,
   newEgg, newPet, petIt, scold, speciesName, toggleLight, train, type Pet,
 } from '../core/pet';
+import { loadPreviewPlus, resolveEggFamily, savePreviewPlus, familyById, type Entitlements } from '../core/entitlements';
 import { AWAY_MIN_MS, awaySummary } from './away';
 import { GROUND_TAP_Y, type SceneEvent } from './scene';
-import { dexPageCount, statsPageCount, type Evo, type Mode, type PlayState } from './screens';
+import { dexPageCount, nextDexFamily, statsPageCount, type Evo, type Mode, type PlayState } from './screens';
 import * as sound from './sound';
 
 const KEY = 'pocket-rexie-v1';
@@ -42,6 +43,14 @@ export function useGame() {
   const [feedSel, setFeedSel, feedSelRef] = useRS(0);
   const [statsPage, setStatsPage, statsPageRef] = useRS(0);
   const [dexPage, setDexPage, dexPageRef] = useRS(0);
+  const [dexFamily, setDexFamily, dexFamilyRef] = useRS('dino');
+  const [previewPlus, setPreviewPlusState] = useState(false);
+  const entRef = useRef<Entitlements>({ plus: false, previewPlus: false });
+  const ent: Entitlements = { plus: false, previewPlus };
+  entRef.current = ent;
+  /** the 'Choose your egg' screen is up (first launch, or after a pet passes on) */
+  const [choosingEgg, setChoosingEgg] = useState(false);
+  const firstRun = useRef(false);
   const [play, setPlay, playRef] = useRS<PlayState | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [evo, setEvo] = useState<Evo | null>(null);
@@ -128,7 +137,8 @@ export function useGame() {
         }
       } catch { /* start fresh */ }
       if (dead) return;
-      if (!p) p = newPet(now());
+      if (!p) { p = newPet(now()); firstRun.current = true; setChoosingEgg(true); }
+      loadPreviewPlus(AsyncStorage).then((v) => { if (!dead) setPreviewPlusState(v); });
       petRef.current = p;
       setPetState(p);
       save(p);
@@ -171,9 +181,9 @@ export function useGame() {
     const p = petRef.current; if (!p) return;
     if (modeRef.current === 'stats') {
       if (statsPageRef.current + 1 < statsPageCount(p)) setStatsPage(statsPageRef.current + 1);
-      else { setDexPage(0); setMode('dex'); }
+      else { setDexPage(0); setDexFamily(p.family); setMode('dex'); }
     } else if (modeRef.current === 'dex') {
-      if (dexPageRef.current + 1 < dexPageCount(p)) setDexPage(dexPageRef.current + 1);
+      if (dexPageRef.current + 1 < dexPageCount(p, dexFamilyRef.current, entRef.current)) setDexPage(dexPageRef.current + 1);
       else goHome();
     }
   };
@@ -249,6 +259,7 @@ export function useGame() {
     if (m === 'home') setSel((selRef.current + 1) % 10);
     else if (m === 'feed') setFeedSel((feedSelRef.current + 1) % 5);
     else if (m === 'play') { const pl = playRef.current; if (pl && pl.phase === 'guess') setPlay({ ...pl, sel: pl.sel === 0 ? 1 : 0 }); }
+    else if (m === 'dex') { setDexFamily(nextDexFamily(dexFamilyRef.current)); setDexPage(0); }
     else nextPage();
   };
   const pressB = () => {
@@ -299,7 +310,19 @@ export function useGame() {
   };
 
   const setName = (n: string) => mutate((p) => { p.name = n.trim().slice(0, 10) || 'Rexie'; p.named = true; return `Hi, ${p.name}!`; });
-  const hatchNew = () => { const cur = petRef.current; if (cur) { commit(newEgg(cur, now())); say('A new egg!'); goHome(); setSel(-1); } };
+  /** Ghost screen button: open the egg picker (the egg itself is made by chooseEgg). */
+  const hatchNew = () => { if (petRef.current) setChoosingEgg(true); };
+  /** Start an egg of `family`. Plus families are refused unless the entitlement (or the testing preview) is on. */
+  const chooseEgg = (family: string): boolean => {
+    const cur = petRef.current; if (!cur) return false;
+    if (resolveEggFamily(family, entRef.current) !== family) { say('THAT EGG NEEDS PLUS'); return false; }
+    const egg = firstRun.current ? newPet(now(), { family }) : newEgg(cur, now(), family);
+    firstRun.current = false;
+    commit(egg); setChoosingEgg(false); say(`A ${familyById(family)?.name.toLowerCase() ?? ''} egg!`); goHome(); setSel(-1);
+    return true;
+  };
+  const cancelChooseEgg = () => { if (!firstRun.current) setChoosingEgg(false); };
+  const setPreviewPlus = (on: boolean) => { setPreviewPlusState(on); savePreviewPlus(AsyncStorage, on); };
 
   // ---- dev ----
   const dev = useMemo(() => ({
@@ -350,7 +373,7 @@ export function useGame() {
 
   return {
     ready: pet !== null, pet, mode, sel, feedSel, statsPage, dexPage, play, msg, evo, offset, muted, devOpen, setDevOpen,
-    needsName, setName, hatchNew,
+    needsName, setName, hatchNew, choosingEgg, chooseEgg, cancelChooseEgg, canCancelEgg: !firstRun.current, ent, setPreviewPlus, dexFamily,
     pressA, pressB, pressC, selectIcon, tapFeedRow, tapPlayOption, tapScreen, tapScene, dismissMsg, dev,
     takeSceneEvents, sceneEnv, forcedHour, forcedRain,
     now,

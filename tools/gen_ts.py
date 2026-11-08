@@ -3,6 +3,9 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 import spritegen
 from familyset import FAMILIES, all_species
+import speciescolor
+
+BODY = speciescolor.body_colors([(f, sid, rec[1]) for f, sid, rec in all_species()])
 
 STAGE = {1: 'baby', 2: 'child', 3: 'teen', 4: 'adult', 5: 'ultimate'}
 out = []
@@ -10,7 +13,12 @@ for fam, sid, (name, stage, blurb, rec) in all_species():
     EVO, LINE, FAMILY = fam.EVO, fam.LINE, fam.FAMILY
     a, b = spritegen.render(dict(rec, stage=stage))
     evo = [{"to": c, "req": r} for c, r in EVO.get(sid, [])]
-    out.append({"id": sid, "name": name, "stage": STAGE[stage], "blurb": blurb, "family": FAMILY, "line": LINE[sid], "frames": [a, b], "hiFrames": [spritegen.scale2x(a), spritegen.scale2x(b)], "evolutions": evo})
+    entry = {"id": sid, "name": name, "stage": STAGE[stage], "blurb": blurb, "family": FAMILY, "line": LINE[sid]}
+    # Technicolor body colour per family: line names collide across families (hunter/stray/baby), so the hex travels with the species.
+    if sid in BODY:
+        entry["bodyHex"] = BODY[sid]
+    entry.update({"frames": [a, b], "hiFrames": [spritegen.scale2x(a), spritegen.scale2x(b)], "evolutions": evo})
+    out.append(entry)
 path = os.path.join(os.path.dirname(__file__), "..", "expo-prototype", "src", "core", "speciesData.ts")
 os.makedirs(os.path.dirname(path), exist_ok=True)
 with open(path, "w") as f:

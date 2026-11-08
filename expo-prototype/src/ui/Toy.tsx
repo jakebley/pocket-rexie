@@ -3,7 +3,7 @@ import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-n
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER } from './pixel';
-import { buildFrame, lineOf, type Frame } from './render';
+import { bodyOf, buildFrame, lineOf, type Frame } from './render';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
@@ -98,9 +98,9 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     sceneRef.current = sc;
     const rendered = renderScreen({
       pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel, play: g.play,
-      statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc,
+      statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc, dexFamily: g.dexFamily, ent: g.ent,
     });
-    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet) });
+    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet), bodyHex: bodyOf(pet) });
     if (frame.key !== lastKey.current) { lastKey.current = frame.key; setFr(frame); }
   }, []);
 
@@ -109,7 +109,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     const id = setInterval(() => { if (isHidden() && n++ % 2 === 1) return; render(); }, 125); // 4 fps while hidden
     return () => clearInterval(id);
   }, [render]);
-  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.play, game.evo, game.pet, th.mode, th.dark]);
+  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.dexFamily, game.ent, game.play, game.evo, game.pet, th.mode, th.dark]);
 
   const n = fr.n;
   const c = size / n;

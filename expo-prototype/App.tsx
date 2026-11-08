@@ -4,6 +4,7 @@ import { Platform, Pressable, StatusBar as StatusBar2, StyleSheet, TextInput, Vi
 import Svg, { Path } from 'react-native-svg';
 import { statusLine } from './src/core/pet';
 import { ColorModeProvider } from './src/ui/ColorModeContext';
+import { ChooseEgg } from './src/ui/ChooseEgg';
 import { DevPanel } from './src/ui/DevPanel';
 import { SettingsSheet } from './src/ui/SettingsSheet';
 import { fitLines, PixelButton, PixelText, touchStyle } from './src/ui/PixelText';
@@ -16,7 +17,7 @@ const GEAR_D = GEAR.map((r, y) => [...r].map((c, x) => (c === 'X' ? `M${x} ${y}h
 
 const HINTS: Record<string, string> = {
   feed: 'A: next | B: eat | C: back', play: 'A: higher/lower | B: choose | C: quit',
-  stats: 'B: next page | C: back', dex: 'B: next page | C: back',
+  stats: 'B: next page | C: back', dex: 'A: family | B: next page | C: back',
 };
 
 const GUT = 12; // side gutter of the LCD column
@@ -80,9 +81,9 @@ function NameModal({ onDone }: { onDone: (n: string) => void }) {
       <View style={[s.modal, { backgroundColor: t.ground, borderColor: t.ink }]}>
         <PixelText text="It hatched!" ps={4} color={t.ink} />
         <View style={{ height: 10 }} />
-        <PixelText text="Name your dino" ps={2} color={t.ink} />
+        <PixelText text="Name your pet" ps={2} color={t.ink} />
         <TextInput value={v} onChangeText={setV} maxLength={10} autoFocus selectTextOnFocus
-          onSubmitEditing={() => onDone(v)} autoCapitalize="words" accessibilityLabel="Dino name"
+          onSubmitEditing={() => onDone(v)} autoCapitalize="words" accessibilityLabel="Pet name"
           style={[s.input, { borderColor: t.ink, color: t.ink, fontFamily: mono }]} />
         <PixelButton label="OK" ps={3} onPress={() => onDone(v)} style={{ minWidth: 120, minHeight: 56 }} />
       </View>
@@ -170,6 +171,7 @@ function AppBody() {
       <StatusBar style={t.dark ? 'light' : 'dark'} />
       {body}
       {game.needsName && <NameModal onDone={game.setName} />}
+      {game.choosingEgg && pet && <ChooseEgg game={game} />}
       {settingsOpen && <SettingsSheet game={game} onClose={() => setSettingsOpen(false)} onDev={() => { setSettingsOpen(false); game.setDevOpen(true); }} />}
       {game.devOpen && pet && <DevPanel game={game} onClose={() => game.setDevOpen(false)} />}
     </View>

@@ -17,7 +17,7 @@ export interface Frame {
   key: string;
 }
 
-export interface FrameStyle { mode: ColorMode; dark: boolean; line?: Line }
+export interface FrameStyle { mode: ColorMode; dark: boolean; line?: Line; bodyHex?: string }
 
 /** Group the lit pixels by their color: one path per color (Traditional: a single ink path). */
 export function buildFrame(r: Rendered, st: FrameStyle): Frame {
@@ -29,7 +29,7 @@ export function buildFrame(r: Rendered, st: FrameStyle): Frame {
     return { n, sky: null, soil: null, groups: [{ color: ink, d }], key: `${n}t${st.dark ? 'd' : 'l'}${d}` };
   }
   const night = r.sky?.phase === 'night';
-  const ctx: PaletteCtx = { mode: 'technicolor', dark: st.dark, line: st.line, night };
+  const ctx: PaletteCtx = { mode: 'technicolor', dark: st.dark, line: st.line, bodyHex: st.bodyHex, night };
   const tbl = paletteTable(ctx);
   const dim = !!r.sky?.dim;
   const sky = r.sky ? skyFor(ctx, r.sky.phase, r.sky.rain) : null;
@@ -57,6 +57,9 @@ export function buildFrame(r: Rendered, st: FrameStyle): Frame {
 
 export const lineOf = (pet: Pet | null | undefined): Line => ((pet && SPECIES_BY_ID[pet.species]?.line) as Line | undefined) || 'baby';
 
+/** Per-family body colour of a pet's species (undefined for the dino palette). */
+export const bodyOf = (pet: Pet | null | undefined): string | undefined => (pet ? SPECIES_BY_ID[pet.species]?.bodyHex : undefined);
+
 export function cellsPath(n: number) { return allCellsPath(n); }
 
 /** A calm still daytime scene of a pet, for the settings preview tiles. */
@@ -68,7 +71,7 @@ export function previewFrame(species: string | null, st: FrameStyle, hour = 12):
   const sc0 = initScene(pet, T, hour);
   const sc: Scene = { ...sc0, state: 'idle', x: 14, facing: 1, still: true, dim: false, weather: 'clear', poopMask: 0, props: [], pops: [], hour, minute: 0, t: 0 };
   const r = renderScreen({ pet, tick: 0, mode: 'home', feedSel: 0, play: null, statsPage: 0, dexPage: 0, evo: null, scene: sc });
-  return buildFrame(r, { ...st, line: lineOf(pet) });
+  return buildFrame(r, { ...st, line: lineOf(pet), bodyHex: bodyOf(pet) });
 }
 
 export type { Buf };
