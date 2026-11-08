@@ -25,7 +25,7 @@ const GUT = 12; // side gutter of the LCD column
 const MAX_W = 640; // widest LCD square (desktop)
 const MAX_SCALE = 1.6; // how far icon rows, message and buttons grow on tall phones
 // design heights at scale 1 (all hit areas are at least 48 CSS px)
-const U = { head: 48, row: 48, msg: 42, btn: 64, gap: 8, bottom: 12 };
+const U = { head: 48, row: 62, msg: 42, btn: 64, gap: 8, bottom: 12 };
 const FIXED = U.head + 2 * U.row + U.msg + U.btn + 5 * U.gap + U.bottom;
 
 export interface Layout { landscape: boolean; W: number; s: number; panelW: number }
