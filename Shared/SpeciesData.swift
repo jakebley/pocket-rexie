@@ -3,7 +3,7 @@ import Foundation
 
 enum SpeciesData {
     static let all: [Species] = [
-        Species(id: "pip", name: "Pip", stage: .baby, blurb: "A round little hatchling.", family: "dino", line: "baby",
+        Species(id: "pip", name: "Pip", stage: .baby, blurb: "A round little hatchling.", family: "dino", line: "baby", bodyHex: nil,
             frames: [
                 ["................", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X.......XX.X..", "..X.......XX.X..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
                 ["................", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X..........X..", "..X......XXXXX..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
@@ -18,7 +18,7 @@ enum SpeciesData {
             Evolution(to: "sprig", req: Requirement(lead: .veggie)),
             Evolution(to: "twirl", req: Requirement(lead: .pasta))
         ]),
-        Species(id: "nubb", name: "Nubb", stage: .baby, blurb: "Curious, with a tiny leaf on its head.", family: "dino", line: "baby",
+        Species(id: "nubb", name: "Nubb", stage: .baby, blurb: "Curious, with a tiny leaf on its head.", family: "dino", line: "baby", bodyHex: nil,
             frames: [
                 [".......XXX......", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X.......XX.X..", "..X.......XX.X..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
                 [".......XXX......", "......XXXX......", "....XXXXXXXX....", "...XXXX.XXXXX...", "..XXXXXXXXXXXX..", "..X.XX.XX.XX.X..", "..X..........X..", "..X..........X..", "..X......XXXXX..", "..X..........X..", "..XX........XX..", "...XXXXXXXXXX...", ".X..XXXXXXXX....", "..XXXXXXXXXX....", "....XX....XX....", "...XXX...XXX...."],
@@ -33,7 +33,7 @@ enum SpeciesData {
             Evolution(to: "twirl", req: Requirement(lead: .pasta)),
             Evolution(to: "rawr", req: Requirement(lead: .meat))
         ]),
-        Species(id: "rawr", name: "Rawr", stage: .child, blurb: "Loves meat and shows off its fangs.", family: "dino", line: "meat",
+        Species(id: "rawr", name: "Rawr", stage: .child, blurb: "Loves meat and shows off its fangs.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "................", "................", "..........XXX...", "..........X.X...", "..........XXX...", ".........XXXX...", "...X.....XXX....", "...XXX..XXXXX...", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".....XXXXXX....."],
                 ["................", "................", "................", "................", "................", "................", "..........XXX...", "..........XXX...", "..........XXX...", ".........XXXX...", "...X.....XXX....", "...XXX..XXXXX...", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".....XXXXXX....."],
@@ -48,7 +48,7 @@ enum SpeciesData {
             Evolution(to: "fang", req: Requirement(train: 3)),
             Evolution(to: "dash", req: Requirement())
         ]),
-        Species(id: "sprig", name: "Sprig", stage: .child, blurb: "A leafy nibbler.", family: "dino", line: "veggie",
+        Species(id: "sprig", name: "Sprig", stage: .child, blurb: "A leafy nibbler.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["................", "................", "............X...", "..........XX....", "..........X.....", "..........X.....", "..........XXX...", "..........X.X...", "..........XX....", ".........XXX....", "........XXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
                 ["................", "................", "............X...", "..........XX....", "..........X.....", "..........X.....", "..........XXX...", "..........XXX...", "..........XX....", ".........XXX....", "........XXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
@@ -63,7 +63,7 @@ enum SpeciesData {
             Evolution(to: "moss", req: Requirement(smarts: 12)),
             Evolution(to: "bloom", req: Requirement())
         ]),
-        Species(id: "twirl", name: "Twirl", stage: .child, blurb: "Noodle-obsessed, with curly hair.", family: "dino", line: "pasta",
+        Species(id: "twirl", name: "Twirl", stage: .child, blurb: "Noodle-obsessed, with curly hair.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "................", "..........X.X.X.", "........XXX.X...", ".......XXXXXX...", ".......XXXXXX...", ".......XXX.XX...", "....XXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXX....", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
                 ["................", "................", "................", "................", "................", "..........X.X.X.", "........XXX.X...", ".......XXXXXX...", ".......XXXXXX...", ".......XXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXX....", "....XXXXXXXX....", ".....XXX.XXX....", "....XXXX.XXXX..."],
@@ -78,7 +78,7 @@ enum SpeciesData {
             Evolution(to: "zest", req: Requirement(smarts: 12)),
             Evolution(to: "curlie", req: Requirement())
         ]),
-        Species(id: "mud", name: "Mudpie", stage: .child, blurb: "Scruffy and in need of a bath.", family: "dino", line: "neglect",
+        Species(id: "mud", name: "Mudpie", stage: .child, blurb: "Scruffy and in need of a bath.", family: "dino", line: "neglect", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "................", "................", "........XXXXX...", "........XX.XX...", ".........XXX....", "...XX....X.X....", "...XX.X.XXXX....", "....XXXXXXXXX...", ".....XXXX.XX....", "......XXXXX.....", "......XXXXX.....", "......XXXX......"],
                 ["................", "................", "................", "................", "................", "................", "........XXXXX...", "........XXXXX...", ".........XXX....", "...XX....X.X....", "...XX.X.XXXX....", "....XXXXXXXXX...", ".....XXXX.XX....", "......XXXXX.....", "......XXXXX.....", "......XXXX......"],
@@ -91,7 +91,7 @@ enum SpeciesData {
             Evolution(to: "scrap", req: Requirement(train: 3)),
             Evolution(to: "grime", req: Requirement())
         ]),
-        Species(id: "fang", name: "Fangler", stage: .teen, blurb: "Strong jaws, spiky back.", family: "dino", line: "meat",
+        Species(id: "fang", name: "Fangler", stage: .teen, blurb: "Strong jaws, spiky back.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XX.X..", ".........XXXXX..", ".........XXXXX..", ".X.X...X.XXXX...", ".XXX...XXXXXXX..", ".XXXXX.XXXXXXX..", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
                 ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XXXX..", ".........XXXXX..", ".........XXXXX..", ".X.X...X.XXXX...", ".XXX...XXXXXXX..", ".XXXXX.XXXXXXX..", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
@@ -105,7 +105,7 @@ enum SpeciesData {
             Evolution(to: "razor", req: Requirement(smarts: 20)),
             Evolution(to: "chomper", req: Requirement())
         ]),
-        Species(id: "brute", name: "Brutus", stage: .teen, blurb: "Heavy and proud of it.", family: "dino", line: "meat",
+        Species(id: "brute", name: "Brutus", stage: .teen, blurb: "Heavy and proud of it.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "................", "................", ".....XXXX.......", ".XXXXXXXXXX.....", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX.X..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
                 ["................", "................", "................", "................", "................", "................", ".....XXXX.......", ".XXXXXXXXXX.....", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
@@ -119,7 +119,7 @@ enum SpeciesData {
             Evolution(to: "chomper", req: Requirement(wins: 3)),
             Evolution(to: "bruiser", req: Requirement())
         ]),
-        Species(id: "dash", name: "Dasher", stage: .teen, blurb: "Light, quick, crested.", family: "dino", line: "meat",
+        Species(id: "dash", name: "Dasher", stage: .teen, blurb: "Light, quick, crested.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["................", "...........X....", "..........XXX...", ".........XXXXX..", "........XXXXXX..", "........XXX.XX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
                 ["................", "...........X....", "..........XXX...", ".........XXXXX..", "........XXXXXX..", "........XXXXXX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
@@ -133,7 +133,7 @@ enum SpeciesData {
             Evolution(to: "razor", req: Requirement(smarts: 20)),
             Evolution(to: "sprinter", req: Requirement())
         ]),
-        Species(id: "moss", name: "Mossback", stage: .teen, blurb: "Thoughtful, with a mossy shell.", family: "dino", line: "veggie",
+        Species(id: "moss", name: "Mossback", stage: .teen, blurb: "Thoughtful, with a mossy shell.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "................", "................", ".....XXXX.......", "..XXXXX.X.X.....", ".XXXX.XXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX.X..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
                 ["................", "................", "................", "................", "................", "................", ".....XXXX.......", "..XXXXX.X.X.....", ".XXXX.XXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
@@ -147,7 +147,7 @@ enum SpeciesData {
             Evolution(to: "petalrex", req: Requirement(smarts: 20)),
             Evolution(to: "shellback", req: Requirement())
         ]),
-        Species(id: "horn", name: "Hornet", stage: .teen, blurb: "Charges first, asks later.", family: "dino", line: "veggie",
+        Species(id: "horn", name: "Hornet", stage: .teen, blurb: "Charges first, asks later.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "........XX...X..", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXX.XX..", "..XXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
                 ["................", "................", "................", "........XX...X..", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXXXXX..", "..XXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
@@ -160,7 +160,7 @@ enum SpeciesData {
             Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "plated", req: Requirement())
         ]),
-        Species(id: "bloom", name: "Bloomer", stage: .teen, blurb: "Friendly, with a leaf on its head.", family: "dino", line: "veggie",
+        Species(id: "bloom", name: "Bloomer", stage: .teen, blurb: "Friendly, with a leaf on its head.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["..........XXX...", "..........XX....", "..........XX....", "..........XXXX..", "..........XXXX..", "..........XX.X..", "..........XXX...", ".........XXXX...", "........XXXXX...", ".X....XXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
                 ["..........XXX...", "..........XX....", "..........XX....", "..........XXXX..", "..........XXXX..", "..........XXXX..", "..........XXX...", ".........XXXX...", "........XXXXX...", ".X....XXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "...XXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXX.XXXXX..", "...XXXXX.XXXXX.."],
@@ -173,7 +173,7 @@ enum SpeciesData {
             Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "longneck", req: Requirement())
         ]),
-        Species(id: "curlie", name: "Curlie", stage: .teen, blurb: "Spaghetti curls everywhere.", family: "dino", line: "pasta",
+        Species(id: "curlie", name: "Curlie", stage: .teen, blurb: "Spaghetti curls everywhere.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["................", "..........X.X.X.", ".........X.X.X..", ".........XXXXX..", ".XX.....XXXXXX..", ".X......XXX.XX..", ".X.......XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
                 ["................", "..........X.X.X.", ".........X.X.X..", ".........XXXXX..", ".XX.....XXXXXX..", ".X......XXXXXX..", ".X.......XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
@@ -187,7 +187,7 @@ enum SpeciesData {
             Evolution(to: "tricera", req: Requirement(wins: 2)),
             Evolution(to: "noodlord", req: Requirement())
         ]),
-        Species(id: "ravi", name: "Raviolo", stage: .teen, blurb: "Plump, stuffed and cheerful.", family: "dino", line: "pasta",
+        Species(id: "ravi", name: "Raviolo", stage: .teen, blurb: "Plump, stuffed and cheerful.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "........XX......", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXX.XX..", "...XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
                 ["................", "................", "................", "........XX......", ".......XXXX.XX..", "......XXXXXXXX..", "......XXXXXXXX..", "......XXXXXXXX..", "...XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".X.XX.XX.XXXXX..", ".XXXXXXXXXXXX...", "...XXXXXXXXXX...", "...XXXXXXXXXXX..", "...XXXXX.XXXXX.."],
@@ -200,7 +200,7 @@ enum SpeciesData {
             Evolution(to: "gremlin", req: Requirement(mistMin: 4)),
             Evolution(to: "plumpkin", req: Requirement())
         ]),
-        Species(id: "zest", name: "Zesty", stage: .teen, blurb: "Sharp mind, antenna up.", family: "dino", line: "pasta",
+        Species(id: "zest", name: "Zesty", stage: .teen, blurb: "Sharp mind, antenna up.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 [".........X......", ".........X......", ".........XX.....", ".........XXXXX..", "........XXXXXX..", "........XXX.XX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
                 [".........X......", ".........X......", ".........XX.....", ".........XXXXX..", "........XXXXXX..", "........XXXXXX..", ".........XXXX...", ".X.......XXXX...", ".XX.....XXXXX...", ".XXXX..XXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", ".....XX.XX......", ".....XX.XX......"],
@@ -214,7 +214,7 @@ enum SpeciesData {
             Evolution(to: "tricera", req: Requirement(wins: 2)),
             Evolution(to: "professor", req: Requirement())
         ]),
-        Species(id: "grime", name: "Grimey", stage: .teen, blurb: "Neglected but tough.", family: "dino", line: "neglect",
+        Species(id: "grime", name: "Grimey", stage: .teen, blurb: "Neglected but tough.", family: "dino", line: "neglect", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XX.X..", ".........XXXXX..", ".........XXXX...", ".X.......XXXX...", ".XXX...X.XXXXX..", ".XXXX..XXXXXXX..", "..XXXXXXXXXXX...", "....XXX.XXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
                 ["................", "................", "................", "..........XXXX..", "..........XXXX..", "..........XXXX..", ".........XXXXX..", ".........XXXX...", ".X.......XXXX...", ".XXX...X.XXXXX..", ".XXXX..XXXXXXX..", "..XXXXXXXXXXX...", "....XXX.XXXXX...", "....XXXXXXXX....", "....XXX.XXX.....", "....XXX.XXX....."],
@@ -227,7 +227,7 @@ enum SpeciesData {
             Evolution(to: "scrapper", req: Requirement(train: 3)),
             Evolution(to: "gremlin", req: Requirement())
         ]),
-        Species(id: "scrap", name: "Scrappy", stage: .teen, blurb: "Rough, horned, always fighting.", family: "dino", line: "neglect",
+        Species(id: "scrap", name: "Scrappy", stage: .teen, blurb: "Rough, horned, always fighting.", family: "dino", line: "neglect", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "................", "................", ".....XX.XX......", ".X.XXXXXXXXX....", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXX.X..", "..XXXXXXXXXXXX..", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX..."],
                 ["................", "................", "................", "................", "................", "................", ".....XX.XX......", ".X.XXXXXXXXX....", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", "..XXXXXXXXXXXX..", "...XXXXXXXXX....", "...XXXXXXXXX....", "...XXXXXXXXXX...", "...XXXXXXXXXX..."],
@@ -239,7 +239,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "scrapper", req: Requirement())
         ]),
-        Species(id: "chomper", name: "Chompasaur", stage: .adult, blurb: "A proud T-Rex-style hunter.", family: "dino", line: "meat",
+        Species(id: "chomper", name: "Chompasaur", stage: .adult, blurb: "A proud T-Rex-style hunter.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["............XXXX", "...........XXXXX", "...........XX.XX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X.........XXXX..", "XX.......XXXXX.X", "XXX.....XXXXXXXX", ".XXXX..XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
                 ["............XXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X.........XXXX..", "XX.......XXXXX.X", "XXX.....XXXXXXXX", ".XXXX..XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
@@ -252,7 +252,7 @@ enum SpeciesData {
             Evolution(to: "skywing", req: Requirement(smarts: 40)),
             Evolution(to: "tyrannox", req: Requirement())
         ]),
-        Species(id: "razor", name: "Razorclaw", stage: .adult, blurb: "A clever crested raptor.", family: "dino", line: "meat",
+        Species(id: "razor", name: "Razorclaw", stage: .adult, blurb: "A clever crested raptor.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["..........XXXXX.", ".........XXXXXXX", ".........XXX.XXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 ["..........XXXXX.", ".........XXXXXXX", ".........XXXXXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -265,7 +265,7 @@ enum SpeciesData {
             Evolution(to: "sage", req: Requirement(smarts: 40)),
             Evolution(to: "skywing", req: Requirement())
         ]),
-        Species(id: "bruiser", name: "Bruiser", stage: .adult, blurb: "A walking boulder with a club tail.", family: "dino", line: "meat",
+        Species(id: "bruiser", name: "Bruiser", stage: .adult, blurb: "A walking boulder with a club tail.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "....XXXXXX......", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXX.X", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXXXXXX", "...XXXXXXXXXXXX.", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["................", "................", "................", "................", "....XXXXXX......", "..XXXXXXXXXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXXXXXX", "...XXXXXXXXXXXX.", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -278,7 +278,7 @@ enum SpeciesData {
             Evolution(to: "tyrannox", req: Requirement(wins: 5)),
             Evolution(to: "bulwark", req: Requirement())
         ]),
-        Species(id: "sprinter", name: "Sprintosaur", stage: .adult, blurb: "Built for speed.", family: "dino", line: "meat",
+        Species(id: "sprinter", name: "Sprintosaur", stage: .adult, blurb: "Built for speed.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 [".........XXXXXX.", ".........XXXXXXX", ".........XX..XXX", ".........XXXXXX.", ".......XX.XXXX..", "X......XX.XXXX..", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 [".........XXXXXX.", ".........XXXXXXX", ".........XX.XXXX", ".........XXXXXX.", ".......XX.XXXX..", "X......XX.XXXX..", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -290,7 +290,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "skywing", req: Requirement())
         ]),
-        Species(id: "longneck", name: "Longneck", stage: .adult, blurb: "A gentle brontosaurus type.", family: "dino", line: "veggie",
+        Species(id: "longneck", name: "Longneck", stage: .adult, blurb: "A gentle brontosaurus type.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["...........XXXX.", "...........XXXXX", "...........X..XX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["...........XXXX.", "...........XXXXX", "...........X.XXX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -303,7 +303,7 @@ enum SpeciesData {
             Evolution(to: "sage", req: Requirement(smarts: 40)),
             Evolution(to: "bulwark", req: Requirement())
         ]),
-        Species(id: "shellback", name: "Shellback", stage: .adult, blurb: "Patient, domed and armoured.", family: "dino", line: "veggie",
+        Species(id: "shellback", name: "Shellback", stage: .adult, blurb: "Patient, domed and armoured.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXX.X", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -315,7 +315,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bulwark", req: Requirement())
         ]),
-        Species(id: "petalrex", name: "Petal Rex", stage: .adult, blurb: "Flower-collared and calm.", family: "dino", line: "veggie",
+        Species(id: "petalrex", name: "Petal Rex", stage: .adult, blurb: "Flower-collared and calm.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["...........XXXXX", "...........XXXXX", "...........XX.XX", "...........XXXXX", "...........XXXX.", ".........X.XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX.X.XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
                 ["...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXX.", ".........X.XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX.X.XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
@@ -328,7 +328,7 @@ enum SpeciesData {
             Evolution(to: "sage", req: Requirement(smarts: 40)),
             Evolution(to: "triceron", req: Requirement())
         ]),
-        Species(id: "plated", name: "Platesaur", stage: .adult, blurb: "A plated stegosaurus type.", family: "dino", line: "veggie",
+        Species(id: "plated", name: "Platesaur", stage: .adult, blurb: "A plated stegosaurus type.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXX..", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
                 ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
@@ -341,7 +341,7 @@ enum SpeciesData {
             Evolution(to: "bulwark", req: Requirement(wins: 3)),
             Evolution(to: "triceron", req: Requirement())
         ]),
-        Species(id: "tricera", name: "Tricerapop", stage: .adult, blurb: "A noodle-fed triceratops type.", family: "dino", line: "pasta",
+        Species(id: "tricera", name: "Tricerapop", stage: .adult, blurb: "A noodle-fed triceratops type.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["..............X.", "........XXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXX.XXX", "..XX..XXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["..............X.", "........XXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXXXXXX", "..XX..XXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -353,7 +353,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "triceron", req: Requirement())
         ]),
-        Species(id: "noodlord", name: "Noodlord", stage: .adult, blurb: "Rules the spaghetti realm.", family: "dino", line: "pasta",
+        Species(id: "noodlord", name: "Noodlord", stage: .adult, blurb: "Rules the spaghetti realm.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["..........XXXXX.", ".........XXXXXXX", "XX.......XX..XXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 ["..........XXXXX.", ".........XXXXXXX", "XX.......XX.XXXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -365,7 +365,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "noodlemancer", req: Requirement())
         ]),
-        Species(id: "plumpkin", name: "Plumpkin", stage: .adult, blurb: "Round, jolly, and proud of dinner.", family: "dino", line: "pasta",
+        Species(id: "plumpkin", name: "Plumpkin", stage: .adult, blurb: "Round, jolly, and proud of dinner.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["................", "........XXXX..X.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXX.XXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..X......XXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["................", "........XXXX..X.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXXXXXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..X......XXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -377,7 +377,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "plumpking", req: Requirement())
         ]),
-        Species(id: "professor", name: "Professor", stage: .adult, blurb: "Glasses, antenna, big ideas.", family: "dino", line: "pasta",
+        Species(id: "professor", name: "Professor", stage: .adult, blurb: "Glasses, antenna, big ideas.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["..........XXXXX.", ".........XXXXXXX", ".........XXX.XXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 ["..........XXXXX.", ".........XXXXXXX", ".........XXXXXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -389,7 +389,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "sage", req: Requirement())
         ]),
-        Species(id: "gremlin", name: "Gremlin", stage: .adult, blurb: "Mischievous and ragged.", family: "dino", line: "neglect",
+        Species(id: "gremlin", name: "Gremlin", stage: .adult, blurb: "Mischievous and ragged.", family: "dino", line: "neglect", bodyHex: nil,
             frames: [
                 [".........XXXXXX.", ".........XXXXXXX", ".........XX..XXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XXX...XXXXXXXX.", ".XXXXX.XXXXXXXXX", "..XXXXXX.XXXXXX.", "...XX.XXXXXXXX..", "....XXXXXXXXX...", ".....XX.XXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 [".........XXXXXX.", ".........XXXXXXX", ".........XX.XXXX", ".........XXXXXX.", "..........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XXX...XXXXXXXX.", ".XXXXX.XXXXXXXXX", "..XXXXXX.XXXXXX.", "...XX.XXXXXXXX..", "....XXXXXXXXX...", ".....XX.XXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -401,7 +401,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "wreckage", req: Requirement())
         ]),
-        Species(id: "scrapper", name: "Scrapper", stage: .adult, blurb: "Dented armour, spiked tail.", family: "dino", line: "neglect",
+        Species(id: "scrapper", name: "Scrapper", stage: .adult, blurb: "Dented armour, spiked tail.", family: "dino", line: "neglect", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXX..", ".XXXXXXX.XXXXXXX", "..XXX.XXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXX.XXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
                 ["................", "................", "................", "......X..X......", ".....XXX.XXX....", "X.X.XXXXXXXXX...", "X..XXXXXXXXXXXX.", "XXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXX.", ".XXXXXXX.XXXXXXX", "..XXX.XXXXXXXX.X", "...XXXXXXXXXXX..", "...XXXX.XXXXX...", "...XX.XX.XX.XX..", "...XX.XX.XX.XX..", "..XXX.XXXXX.XXX."],
@@ -413,7 +413,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "wreckage", req: Requirement())
         ]),
-        Species(id: "tyrannox", name: "Tyrannox", stage: .ultimate, blurb: "King of the old forest.", family: "dino", line: "meat",
+        Species(id: "tyrannox", name: "Tyrannox", stage: .ultimate, blurb: "King of the old forest.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["...........XXXXX", "...........XXXXX", "...........XX.XX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
                 ["...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XXXXX", "...........XX.X.", "X........XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
@@ -423,7 +423,7 @@ enum SpeciesData {
                 [".......................XXXXXXXX.", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXX.", "......................XXXX..XXX.", ".....................XXXXX..XX..", "XX.................XXXXXXXX.X...", "XXX...............XXXXXXXXXX....", "XXX...XX......XX..XXXXXXXXXX..XX", "XXXX..XX......XX..XXXXXXXXXX..XX", "XXXXXXXX......XXXXXXXXXXXXXXXXXX", ".XXXXXXXX.....XXXXXXXXXXXXXXXXX.", ".XXXXXXXXXX...XXXXXXXXXXXXXXXXX.", "...XXXXXXXXX..XXXXXXXXXXXXXXXX..", "...XXXXXXXXXXXXXXXXXXXXXXXXXXX..", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".......XXXXXXXXXXXXXXXXXXXXX....", ".......XXXXXXXXXXXXXXXXXXXXX....", "........XXXXXXXXXXXXXXXXXXX.....", "........XXXXXXX..XXXXXXXXXX.....", "........XXXXXX....XXXXXXX.......", "........XXXXXX....XXXXXX........", ".......XXXXXXX....XXXXXX........", "......XXXXXXXX....XXXXXXXX......", "......XXXXXXX......XXXXXXX......"],
             ],
             evolutions: []),
-        Species(id: "skywing", name: "Skywing", stage: .ultimate, blurb: "Took to the sky at last.", family: "dino", line: "meat",
+        Species(id: "skywing", name: "Skywing", stage: .ultimate, blurb: "Took to the sky at last.", family: "dino", line: "meat", bodyHex: nil,
             frames: [
                 ["..........XXXXX.", "...X.....XXXXXXX", "...XX....XX..XXX", "X.XXXX...XXXXXX.", "X.X..X....XXXX..", "X.XX.XX...XXXX..", "XX..XXX..XXXXX..", "XXX....XXXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 ["..........XXXXX.", "...X.....XXXXXXX", "...XX....XX.XXXX", "X.XXXX...XXXXXX.", "X.X..X....XXXX..", "X.XX.XX...XXXX..", "XX..XXX..XXXXX..", "XXX....XXXXXXXX.", ".XXXX..XXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -433,7 +433,7 @@ enum SpeciesData {
                 [".....................XXXXXXXX...", "...................XXXXXXXXXXXX.", "......XX...........XXXXXXXXXXXX.", "......XXX.........XXXXXXXXXXXXXX", "......XXX.........XXXX..XXXXXXXX", ".....XXXXXX.......XXXX..XXXXXXX.", "XX...XXXXXX.......XXXXXXXXXXXXX.", "XX..XXXXXXXX.......XXXXXXXXXX...", "XX..XX...XXX.......XXXXXXXXXX...", "XX..XX....XXX.......XXXXXXXX....", "XX..XXXX..XXX.......XXXXXXXX....", "XX...XXX..XXXX.....XXXXXXXXX....", "XXX....XXXXXXX.....XXXXXXXXX....", "XXXX....XXXXX.X..XXXXXXXXXXXX...", "XXXXX........X.XXXXXXXXXXXXXX...", ".XXXXXX.......XXXXXXXXXXXXXXXXX.", ".XXXXXXXX.....XXXXXXXXXXXXXXXXXX", "...XXXXXXXX..XXXXXXXXXXXXXXXXXXX", "...XXXXXXXXXXXXXXXXXXXXXXXXXXXX.", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".......XXXXXXXXXXXXXXXXXXXX.....", ".......XXXXXXXXXXXXXXXXXXXX.....", ".........XXXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXXXXXX......", "..........XXXXXXXXXXXXXXX.......", "..........XXXXX..XXXXXXXX.......", "..........XXXX....XXXXX.........", "..........XXXX....XXXXX.........", ".........XXXXX...XXXXX..........", "........XXXXXX..XXXXXX..........", "........XXXXX...XXXXX..........."],
             ],
             evolutions: []),
-        Species(id: "bulwark", name: "Bulwark", stage: .ultimate, blurb: "An unmovable fortress.", family: "dino", line: "veggie",
+        Species(id: "bulwark", name: "Bulwark", stage: .ultimate, blurb: "An unmovable fortress.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXX.X", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["................", "................", "................", "................", "....XXXXXX......", "..XX.X.X.XXX....", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXXXXXXXXXXXXXX.", "X.XXXXXXXXXXXXXX", "..XXXXXXXXXX.X.X", "...XXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -443,7 +443,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "........XXXXXXXXXXX.............", ".......XXXXXXXXXXXXXX...........", ".....XX...XX..XX..XXXXX.........", "...XXXXX..XX..XX..XXXXXXX.......", ".XXXXXXXXXXXXXXXXXXXXXXXX.......", "XXXXXXXXXXXXXXXXXXXXXXXXXX......", "XXXXXXXXXXXXXXXXXXXXXXXXXX......", "XXXXXXXXXXXXXXXXXXXXXXXXXXX.....", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX...", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.", "XX..XXXXXXXXXXXXXXXXXXXXXXXXXXX.", "XX..XXXXXXXXXXXXXXXXXXXXXXXXXXXX", "....XXXXXXXXXXXXXXXXXXXX..XX..XX", ".....XXXXXXXXXXXXXXXXXXX..XX..XX", ".....XXXXXXXXXXXXXXXXXXXXXXXXXX.", "......XXXXXXXXXXXXXXXXXXXXXXXX..", "......XXXXXXXXXXXXXXXXXXXXXX....", "......XXXXXXXXXXXXXXXXXXXXXX....", "......XXXX..XXXXX..XXXXX..XXX...", "......XXXX..XXXX....XXXX..XXXX..", "......XXXX..XXXX....XXXX..XXXX..", ".....XXXXX..XXXXX...XXXX...XXXX.", "....XXXXXX..XXXXXX..XXXXXX..XXXX", "....XXXXX....XXXXX...XXXXX...XXX"],
             ],
             evolutions: []),
-        Species(id: "triceron", name: "Triceron", stage: .ultimate, blurb: "Horned, frilled and fearless.", family: "dino", line: "pasta",
+        Species(id: "triceron", name: "Triceron", stage: .ultimate, blurb: "Horned, frilled and fearless.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 [".......X.X....X.", ".......XXXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "...X..XXXXXXXXXX", ".X.X.XXXXXXX.XXX", ".XXX.XXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "...XX.XX.XXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 [".......X.X....X.", ".......XXXXX..X.", ".......XXXXXXXX.", "......XXXXXXXXX.", "...X..XXXXXXXXXX", ".X.X.XXXXXXXXXXX", ".XXX.XXXXXXXXXX.", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "...XX.XX.XXXXX..", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -453,7 +453,7 @@ enum SpeciesData {
                 ["..............XX..XX........XX..", "..............XX..XXX.......XX..", "..............XXXXXXXXX.....XX..", "..............XXXXXXXXXXX..XXX..", "..............XXXXXXXXXXXXXXXX..", ".............XXXXXXXXXXXXXXXXX..", ".............XXXXXXXXXXXXXXXXX..", "............XXXXXXXXXXXXXXXXXXX.", "......XX....XXXXXXXXXXXXXXXXXXX.", "......XX...XXXXXXXXXXXXXXXXXXXXX", "..XX..XX...XXXXXXXXXXXXXXXXXXXXX", "..XX..XX..XXXXXXXXXXXXXXXXXXXXX.", "..XXXXXX..XXXXXXXXXXXXXXXXXXXXX.", "..XXXXXX..XXXXXXXXXXXXXXXXXXXX..", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXX..", ".XXXXXXXXXXXXXXXXXXXXXXXXXXXXX..", ".XXX..XXXX..XXXX..XXXXXXXXXXXX..", "XXXX..XXXX..XXXX..XXXXXXXXXXXX..", "XXXX..XXXX..XXXX..XXXXXXXXXXXX..", ".XXX..XXXX..XXXX..XXXXXXXXXXXX..", ".XXX..XXXX..XXXX..XXXXXXXXXXXX..", "..XX..XXXX..XXXX..XXXXXXXXXXX...", "......XXXX..XXXX..XXXXXXXXXXX...", "......XXXX..XXXX..XXXXXXXXXX....", "......XXXXXXXXXXXXXXXXXXXXXX....", "......XXXXXXXXXXXXXXXXXXXXXXX...", "......XXXX..XXXXX..XXXXX..XXX...", "......XXXX..XXXX....XXXX..XXXX..", "......XXXX..XXXX....XXXX..XXXX..", ".....XXXXX..XXXXX...XXXX...XXXX.", "....XXXXXX..XXXXXX..XXXXXX..XXXX", "....XXXXX....XXXXX...XXXXX...XXX"],
             ],
             evolutions: []),
-        Species(id: "sage", name: "Sage", stage: .ultimate, blurb: "Wise, haloed and calm.", family: "dino", line: "veggie",
+        Species(id: "sage", name: "Sage", stage: .ultimate, blurb: "Wise, haloed and calm.", family: "dino", line: "veggie", bodyHex: nil,
             frames: [
                 ["...........XXXX.", "...........XXXXX", "...........XX.XX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["...........XXXX.", "...........XXXXX", "...........XXXXX", "...........XXXX.", "...........XXX..", "...........XXX..", "..........XXXX..", "........XXXXXX..", "XX....XXXXXXXXX.", "XXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXX", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "...XX.XX..XX.XX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -463,7 +463,7 @@ enum SpeciesData {
                 [".......................XXXXXX...", "......................XXXXXXXXX.", "......................XXXXXXXXX.", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXXXXXX.", "......................XXXXXXXXX.", "......................XXXXXXX...", "......................XXXXXXX...", "......................XXXXXX....", "......................XXXXXX....", ".....................XXXXXXX....", ".....................XXXXXXX....", "...................XXXXXXXXX....", ".................XXXXXXXXXXX....", "...............XXXXXXXXXXXXXX...", ".XX..........XXXXXXXXXXXXXXXX...", "XXXXX......XXXXXXXXXXXXXXXXXXXX.", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "...XXXXXXXXXXXXXXXXXXXXXXXXXXXX.", "...XXXXXXXXXXXXXXXXXXXXXXXXXXXX.", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".....XXXXXXXXXXXXXXXXXXXXXXX....", "......XXXXXXXXXXXXXXXXXXXXXX....", "......XXXX..XXXXX..XXXXX..XXX...", "......XXXX..XXXX....XXXX..XXXX..", "......XXXX..XXXX....XXXX..XXXX..", ".....XXXXX..XXXXX...XXXX...XXXX.", "....XXXXXX..XXXXXX..XXXXXX..XXXX", "....XXXXX....XXXXX...XXXXX...XXX"],
             ],
             evolutions: []),
-        Species(id: "noodlemancer", name: "Noodlemancer", stage: .ultimate, blurb: "Casts spells in spaghetti.", family: "dino", line: "pasta",
+        Species(id: "noodlemancer", name: "Noodlemancer", stage: .ultimate, blurb: "Casts spells in spaghetti.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["..........XXXXX.", ".........XXXXXXX", "XX.......XX..XXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX...XXXXXXXX", "..XXXXXX.XXXXXX.", "...XXXX.XXXXXX..", "....XXXX.XXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
                 ["..........XXXXX.", ".........XXXXXXX", "XX.......XX.XXXX", "X........XXXXXX.", "X.........XXXX..", "X.........XXXX..", "XX.......XXXXX..", ".XX.....XXXXXXX.", ".XXXX...XXXXXXXX", "..XXXXXX.XXXXXX.", "...XXXX.XXXXXX..", "....XXXX.XXXX...", ".....XXXXXXXX...", ".....XX..XXX....", ".....XX..XX.....", "....XXX.XXX....."],
@@ -473,7 +473,7 @@ enum SpeciesData {
                 [".....................XXXXXXXX...", "...................XXXXXXXXXXXX.", "...................XXXXXXXXXXXX.", "..................XXXXXXXXXXXXXX", ".XXX..............XXXX..XXXXXXXX", "XXXX..............XXXX..XXXXXXX.", "XXX...............XXXXXXXXXXXXX.", "XX.................XXXXXXXXXX...", "XX.................XXXXXXXXXX...", "XX..................XXXXXXXX....", "XX..................XXXXXXXX....", "XXX................XXXXXXXXX....", "XXX................XXXXXXXXX....", ".XXXX............XXXXXXXXXXXX...", ".XXXX............XXXXXXXXXXXX...", "..XXXXX.........XXXXXXXXXXXXXXX.", "..XXXXXXX.......XXXXXXXXXXXXXXXX", "...XXXXXXXX....X.XXXXXXXXXXXXXXX", "...XXXXXXXXXXXXX..XXXXXXXXXXXXX.", ".....XXXXXXXXXXX..XXXXXXXXXXX...", ".....XXXXXXXXX..XXXXXXXXXXXXX...", ".......XXXXXXX..XXXXXXXXXXX.....", ".......XXXXXXXX...XXXXXXXXX.....", ".........XXXXXXX..XXXXXXXX......", ".........XXXXXXXXXXXXXXXXX......", "..........XXXXXXXXXXXXXXX.......", "..........XXXXX..XXXXXXXX.......", "..........XXXX....XXXXX.........", "..........XXXX....XXXXX.........", ".........XXXXX...XXXXX..........", "........XXXXXX..XXXXXX..........", "........XXXXX...XXXXX..........."],
             ],
             evolutions: []),
-        Species(id: "plumpking", name: "Plumpking", stage: .ultimate, blurb: "Crowned, round and unstoppable.", family: "dino", line: "pasta",
+        Species(id: "plumpking", name: "Plumpking", stage: .ultimate, blurb: "Crowned, round and unstoppable.", family: "dino", line: "pasta", bodyHex: nil,
             frames: [
                 ["..........X.X.X.", "........XXXXXXX.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXX.XXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
                 ["..........X.X.X.", "........XXXXXXX.", ".......XXXXXX.X.", "......XXXXXXXXX.", "......XXXXXXXXXX", "......XXXXXXXXXX", "..XX..XXXXXXXXXX", ".XXXXXXXXXXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", "XX.XX.XX.XXXXXX.", ".X.XX.XX.XXXXXX.", "..XXXXXXXXXXXX..", "...XXXXXXXXXXXX.", "...XX.XX..XX.XX.", "..XXX.XXX.XXX.XX"],
@@ -483,7 +483,7 @@ enum SpeciesData {
                 ["....................XX..XX..XX..", "...................XXX..XX..XX..", ".................XXXXXXXXXXXXX..", "...............XXXXXXXXXXXXXXX..", "...............XXXXXXXXXXX..XX..", ".............XXXXXXXXXXXXX..XX..", ".............XXXXXXXXXXXXXXXXX..", "............XXXXXXXXXXXXXXXXXXX.", "............XXXXXXXXXXXXXXXXXXX.", "............XXXXXXXXXXXXXXXXXXXX", "............XXXXXXXXXXXXXXXXXXXX", "............XXXXXXXXXXXXXXXXXXXX", ".....XX.....XXXXXXXXXXXXXXXXXXXX", "...XXXXXX..XXXXXXXXXXXXXXXXXXXX.", "...XXXXXXXXXXXXXXXXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXXXXXXXXXXXXXXXX..", ".XXX..XXXX..XXXX..XXXXXXXXXXXX..", "XXXX..XXXX..XXXX..XXXXXXXXXXXX..", "XXXX..XXXX..XXXX..XXXXXXXXXXXX..", "XXXX..XXXX..XXXX..XXXXXXXXXXXX..", "XXXX..XXXX..XXXX..XXXXXXXXXXXX..", ".XXX..XXXX..XXXX..XXXXXXXXXXXX..", ".XXX..XXXX..XXXX..XXXXXXXXXXXX..", "..XX..XXXX..XXXX..XXXXXXXXXXX...", "...XXXXXXXXXXXXXXXXXXXXXXXXX....", "....XXXXXXXXXXXXXXXXXXXXXXXX....", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", "......XXXXXXXXXXXXXXXXXXXXXXXX..", "......XXXX..XXXX...XXXXX..XXXX..", ".....XXXXX..XXXX....XXXX...XXXX.", "....XXXXXX..XXXXXX..XXXXXX..XXXX", "....XXXXX....XXXXX...XXXXX...XXX"],
             ],
             evolutions: []),
-        Species(id: "wreckage", name: "Wreckage", stage: .ultimate, blurb: "Leaves a trail of chaos.", family: "dino", line: "neglect",
+        Species(id: "wreckage", name: "Wreckage", stage: .ultimate, blurb: "Leaves a trail of chaos.", family: "dino", line: "neglect", bodyHex: nil,
             frames: [
                 ["...........XXXXX", "...X.......XXXXX", "...XX......XX.XX", "X.XXXX.....XXXXX", ".XX..X.....XXXX.", "X.XX.XX....XX.X.", "XX..XXX..XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
                 ["...........XXXXX", "...X.......XXXXX", "...XX......XXXXX", "X.XXXX.....XXXXX", ".XX..X.....XXXX.", "X.XX.XX....XX.X.", "XX..XXX..XXXXX..", "XX.X...X.XXXXX.X", "XXXX...XXXXXXXXX", ".XXXXX.XXXXXXXX.", "..XXXXXXXXXXXXX.", "...XXXXXXXXXXX..", "....XXXXXXXXXX..", "....XXX..XXXX...", "....XXX..XXX....", "...XXXX..XXXX..."],
@@ -493,7 +493,7 @@ enum SpeciesData {
                 [".......................XXXXXXXX.", "......................XXXXXXXXXX", "......XX..............XXXXXXXXXX", "......XXX.............XXXXXXXXXX", "......XXX.............XXXXXXXXXX", ".....XXXXXX...........XXXXXXXXXX", "XX...XXXXXX...........XXXXXXXXXX", "XX..XXXXXXXX..........XXXXXXXXX.", "..XXXX...XXX..........XXXXXXXXX.", "..XXXX....XXX.........XXXXXXXX..", "XX..XXXX..XXX.........XXXX..XX..", "XX...XXX..XXXX.......XXXXX..XX..", "XXX.X...XXXXXX.....XXXXXXXX.X...", "XXXX....XXXXX.X...XXXXXXXXXX....", "XXXX..XXX....XXX..XXXXXXXXXX..XX", "XXXX..XX......XX..XXXXXXXXXX..XX", "XXXXXXXX......XXXXXXXXXXXXXXXXXX", ".XXXXXXXX.....XXXXXXXXXXXXXXXXX.", ".XXXXXXXXXX...XXXXXXXXXXXXXXXXX.", "...XXXXXXXXX..XXXXXXXXXXXXXXXX..", "...XXXXXXXXXXXXXXXXXXXXXXXXXXX..", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".....XXXXXXXXXXXXXXXXXXXXXXXX...", ".......XXXXXXXXXXXXXXXXXXXXX....", ".......XXXXXXXXXXXXXXXXXXXXX....", "........XXXXXXXXXXXXXXXXXXX.....", "........XXXXXXX..XXXXXXXXXX.....", "........XXXXXX....XXXXXXX.......", "........XXXXXX....XXXXXX........", ".......XXXXXXX....XXXXXX........", "......XXXXXXXX....XXXXXXXX......", "......XXXXXXX......XXXXXXX......"],
             ],
             evolutions: []),
-        Species(id: "dewkit", name: "Dewkit", stage: .baby, blurb: "A damp little kit with enormous ears.", family: "fox", line: "baby",
+        Species(id: "dewkit", name: "Dewkit", stage: .baby, blurb: "A damp little kit with enormous ears.", family: "fox", line: "baby", bodyHex: "#E7DCC0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", ".........X......", ".........X......", "....X...XXX.....", "....XX..X.......", "....XX.XXX......", "....XXXXX.......", "....XXXXX.......", "......XXX.......", ".....XXXXXX....."],
                 ["................", "................", "................", "................", "................", "................", "................", ".........X......", "........XX......", "....X...XXX.....", "....XX..X.......", "....XX.XXX......", "....XXXXX.......", "....XXXXX.......", "......XXX.......", ".....XXXXXX....."],
@@ -508,7 +508,7 @@ enum SpeciesData {
             Evolution(to: "bramble", req: Requirement(lead: .veggie)),
             Evolution(to: "ripple", req: Requirement(lead: .pasta))
         ]),
-        Species(id: "cinder", name: "Cinderkit", stage: .baby, blurb: "Born with a warm glow at the tail tip.", family: "fox", line: "baby",
+        Species(id: "cinder", name: "Cinderkit", stage: .baby, blurb: "Born with a warm glow at the tail tip.", family: "fox", line: "baby", bodyHex: "#E7DCC0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "....X...........", ".....X...X......", "....X.X..X......", "....XX..XXX.....", "....XX..X.......", "....XX.XXX......", "....XXXXX.......", "....XXXXX.......", "......XXX.......", ".....XXXXXX....."],
                 ["................", "................", "................", "................", "................", "................", "....X...........", ".....X...X......", "....X.X.XX......", "....XX..XXX.....", "....XX..X.......", "....XX.XXX......", "....XXXXX.......", "....XXXXX.......", "......XXX.......", ".....XXXXXX....."],
@@ -523,7 +523,7 @@ enum SpeciesData {
             Evolution(to: "ripple", req: Requirement(lead: .pasta)),
             Evolution(to: "scamp", req: Requirement(lead: .meat))
         ]),
-        Species(id: "scamp", name: "Scamp", stage: .child, blurb: "Quick, nosy and always pouncing.", family: "fox", line: "hunter",
+        Species(id: "scamp", name: "Scamp", stage: .child, blurb: "Quick, nosy and always pouncing.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "..........X.X...", "....XX....X.....", "...XXX...XXXX...", "...XXX....XX....", "...XXXXXXXX.....", "...XXXXXXXX.....", "....XXXXXXXX....", "......XXXX.X....", "......XX.X.X....", ".....XXX.XXX...."],
                 ["................", "................", "................", "................", "................", "................", "..........X.X...", "....XX....XX....", "...XXX...XXXX...", "...XXX....XX....", "...XXXXXXXX.....", "...XXXXXXXX.....", "....XXXXXXXX....", "......XXXX.X....", "......XX.X.X....", ".....XXX.XXX...."],
@@ -538,7 +538,7 @@ enum SpeciesData {
             Evolution(to: "tracker", req: Requirement(train: 3)),
             Evolution(to: "sneak", req: Requirement())
         ]),
-        Species(id: "bramble", name: "Bramble", stage: .child, blurb: "Collects berries and leaves in its fur.", family: "fox", line: "forager",
+        Species(id: "bramble", name: "Bramble", stage: .child, blurb: "Collects berries and leaves in its fur.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["................", "................", "................", "........XXX.....", "........XX......", "........X.......", "........XX......", "........X.X.....", "...XX...XXXXX...", "...XX..XXX......", "...XXX.XXX......", "...XXXXXXX......", "...XXXXXXX......", "....XXXXXX......", ".....XXXXX......", ".....XXXXXX....."],
                 ["................", "................", "................", "........XXX.....", "........XX......", "........X.......", "........XX......", "........XXX.....", "...XX...XXXXX...", "...XX..XXX......", "...XXX.XXX......", "...XXXXXXX......", "...XXXXXXX......", "....XXXXXX......", ".....XXXXX......", ".....XXXXXX....."],
@@ -553,7 +553,7 @@ enum SpeciesData {
             Evolution(to: "whisk", req: Requirement(smarts: 12)),
             Evolution(to: "bracken", req: Requirement())
         ]),
-        Species(id: "ripple", name: "Ripple", stage: .child, blurb: "Loves the riverbank and a good fish.", family: "fox", line: "riverside",
+        Species(id: "ripple", name: "Ripple", stage: .child, blurb: "Loves the riverbank and a good fish.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "..........X.X...", "....XX....X.....", "...XX....XXXX...", "...XX.....XX....", "...XX.XX.XX.....", "...XX.XX.XX.....", "....XXXXXXXX....", "......XXXX.X....", "......XX.X.X....", ".....XXX.XXX...."],
                 ["................", "................", "................", "................", "................", "................", "..........X.X...", "....XX....XX....", "...XX....XXXX...", "...XX.....XX....", "...XX.XX.XX.....", "...XX.XX.XX.....", "....XXXXXXXX....", "......XXXX.X....", "......XX.X.X....", ".....XXX.XXX...."],
@@ -568,7 +568,7 @@ enum SpeciesData {
             Evolution(to: "reed", req: Requirement(smarts: 12)),
             Evolution(to: "brook", req: Requirement())
         ]),
-        Species(id: "ashpaw", name: "Ashpaw", stage: .child, blurb: "Scruffy and wary, sleeps under porches.", family: "fox", line: "stray",
+        Species(id: "ashpaw", name: "Ashpaw", stage: .child, blurb: "Scruffy and wary, sleeps under porches.", family: "fox", line: "stray", bodyHex: "#9A948C",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "....X.....X.X...", "....XX....X.....", "...XXX...XXXX...", "...XXXX.X.XX....", "...XXX.XXXX.....", "...XXXXXXXX.....", "....XXXX.XXX....", "......XXXX.X....", "......XX.X.X....", ".....XXX.XXX...."],
                 ["................", "................", "................", "................", "................", "................", "....X.....X.X...", "....XX....XX....", "...XXX...XXXX...", "...XXXX.X.XX....", "...XXX.XXXX.....", "...XXXXXXXX.....", "....XXXX.XXX....", "......XXXX.X....", "......XX.X.X....", ".....XXX.XXX...."],
@@ -581,7 +581,7 @@ enum SpeciesData {
             Evolution(to: "scrabble", req: Requirement(train: 3)),
             Evolution(to: "tatter", req: Requirement())
         ]),
-        Species(id: "tracker", name: "Tracker", stage: .teen, blurb: "Follows any trail, nose to the ground.", family: "fox", line: "hunter",
+        Species(id: "tracker", name: "Tracker", stage: .teen, blurb: "Follows any trail, nose to the ground.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....X.XX..", "..XXXX....XXXXX.", "..XXXXXXXXXXXX..", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....XXXX..", "..XXXX....XXXXX.", "..XXXXXXXXXXXX..", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -595,7 +595,7 @@ enum SpeciesData {
             Evolution(to: "trickster", req: Requirement(smarts: 20)),
             Evolution(to: "stalker", req: Requirement())
         ]),
-        Species(id: "prowler", name: "Prowler", stage: .teen, blurb: "Heavy-pawed and patient.", family: "fox", line: "hunter",
+        Species(id: "prowler", name: "Prowler", stage: .teen, blurb: "Heavy-pawed and patient.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....X.XX..", "..XXXX....XXXXX.", "..XXXXXXX.XXXXX.", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....XXXX..", "..XXXX....XXXXX.", "..XXXXXXX.XXXXX.", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -609,7 +609,7 @@ enum SpeciesData {
             Evolution(to: "stalker", req: Requirement(wins: 3)),
             Evolution(to: "brawler", req: Requirement())
         ]),
-        Species(id: "sneak", name: "Sneak", stage: .teen, blurb: "Light on its feet, hard to spot.", family: "fox", line: "hunter",
+        Species(id: "sneak", name: "Sneak", stage: .teen, blurb: "Light on its feet, hard to spot.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....X.XX..", "..XXXX....XXXXX.", "..XXXXXXX.XXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....XXXX..", "..XXXX....XXXXX.", "..XXXXXXX.XXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -623,7 +623,7 @@ enum SpeciesData {
             Evolution(to: "trickster", req: Requirement(smarts: 20)),
             Evolution(to: "swiftail", req: Requirement())
         ]),
-        Species(id: "thicket", name: "Thicket", stage: .teen, blurb: "Burrows into hedges and bramble.", family: "fox", line: "forager",
+        Species(id: "thicket", name: "Thicket", stage: .teen, blurb: "Burrows into hedges and bramble.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["................", ".........XX.....", "........XX......", "........XXX.....", "........XXX.....", ".......XX.X.....", "...X...XXXXXX...", "..XX....XXX.....", "..XXX..XXX......", "..XXX.XXX.......", "..XXXX.XXX......", "..XXXXXXXX......", "...XXXXX.X......", "...XXXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["................", ".........XX.....", "........XX......", "........XXX.....", "........XXX.....", ".......XXXX.....", "...X...XXXXXX...", "..XX....XXX.....", "..XXX..XXX......", "..XXX.XXX.......", "..XXXX.XXX......", "..XXXXXXXX......", "...XXXXX.X......", "...XXXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -636,7 +636,7 @@ enum SpeciesData {
             Evolution(to: "raggedy", req: Requirement(mistMin: 4)),
             Evolution(to: "thornback", req: Requirement())
         ]),
-        Species(id: "whisk", name: "Whisk", stage: .teen, blurb: "Clever and quick with a trick.", family: "fox", line: "forager",
+        Species(id: "whisk", name: "Whisk", stage: .teen, blurb: "Clever and quick with a trick.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["................", "................", "................", "........X.X.....", "........XXX.....", ".......XX.X.....", "...X...XXXXXX...", "..XX....XXX.....", "..XXX..XXXXX....", "..XXX.XXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "...XXXXXXX......", "...XXXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["................", "................", "................", "........X.X.....", "........XXX.....", ".......XXXX.....", "...X...XXXXXX...", "..XX....XXX.....", "..XXX..XXXXX....", "..XXX.XXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "...XXXXXXX......", "...XXXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -650,7 +650,7 @@ enum SpeciesData {
             Evolution(to: "sagetail", req: Requirement(smarts: 20)),
             Evolution(to: "hazelwood", req: Requirement())
         ]),
-        Species(id: "bracken", name: "Bracken", stage: .teen, blurb: "Calm forager in the ferns.", family: "fox", line: "forager",
+        Species(id: "bracken", name: "Bracken", stage: .teen, blurb: "Calm forager in the ferns.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["................", ".........XX.....", "........XX......", "........XXX.....", "........XXX.....", ".......XX.X.....", "...X...XXXXXX...", "..XX....XXX.....", "..XXX..XXX......", "..XXX.XXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "...XXXXXXX......", "...XXXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["................", ".........XX.....", "........XX......", "........XXX.....", "........XXX.....", ".......XXXX.....", "...X...XXXXXX...", "..XX....XXX.....", "..XXX..XXX......", "..XXX.XXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "...XXXXXXX......", "...XXXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -663,7 +663,7 @@ enum SpeciesData {
             Evolution(to: "raggedy", req: Requirement(mistMin: 4)),
             Evolution(to: "hazelwood", req: Requirement())
         ]),
-        Species(id: "splash", name: "Splash", stage: .teen, blurb: "Round, wet and cheerful.", family: "fox", line: "riverside",
+        Species(id: "splash", name: "Splash", stage: .teen, blurb: "Round, wet and cheerful.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "................", "................", "........X.X.....", "........XXX.....", ".......XX.X.....", "...X...XXXXXX...", "..XX...XXXXXX...", "..XX....XXX.....", "..XX..X.XX......", "..XX.XX.XX......", "..XX.XX.XX......", "..XXXXXXXX......", "...XXXXXXX......", "...XXXXXXX......", "....XXXXXXXX...."],
                 ["................", "................", "................", "........X.X.....", "........XXX.....", ".......XXXX.....", "...X...XXXXXX...", "..XX...XXXXXX...", "..XX....XXX.....", "..XX..X.XX......", "..XX.XX.XX......", "..XX.XX.XX......", "..XXXXXXXX......", "...XXXXXXX......", "...XXXXXXX......", "....XXXXXXXX...."],
@@ -676,7 +676,7 @@ enum SpeciesData {
             Evolution(to: "raggedy", req: Requirement(mistMin: 4)),
             Evolution(to: "plumptail", req: Requirement())
         ]),
-        Species(id: "reed", name: "Reed", stage: .teen, blurb: "Thoughtful, watches the water.", family: "fox", line: "riverside",
+        Species(id: "reed", name: "Reed", stage: .teen, blurb: "Thoughtful, watches the water.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "............X...", "..........XXX...", "...........X....", "....X......XXX..", "...XXX....XXXX..", "..XXXX....X.XX..", "..XXXX....XXXXX.", "..XXXXXXXXXXXX..", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "............X...", "..........XXX...", "...........X....", "....X......XXX..", "...XXX....XXXX..", "..XXXX....XXXX..", "..XXXX....XXXXX.", "..XXXXXXXXXXXX..", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -690,7 +690,7 @@ enum SpeciesData {
             Evolution(to: "angler", req: Requirement(wins: 2)),
             Evolution(to: "reedwalker", req: Requirement())
         ]),
-        Species(id: "brook", name: "Brook", stage: .teen, blurb: "Easygoing river wanderer.", family: "fox", line: "riverside",
+        Species(id: "brook", name: "Brook", stage: .teen, blurb: "Easygoing river wanderer.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....X.XX..", "..XXXX....XXXXX.", "..XXXXXXX.XXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....X....XXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "................", "................", "................", "....X......XXX..", "...XXX....XXXX..", "..XXXX....XXXX..", "..XXXX....XXXXX.", "..XXXXXXX.XXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....X....XXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -704,7 +704,7 @@ enum SpeciesData {
             Evolution(to: "angler", req: Requirement(wins: 2)),
             Evolution(to: "reedwalker", req: Requirement())
         ]),
-        Species(id: "scrabble", name: "Scrabble", stage: .teen, blurb: "Scrappy digger, always muddy.", family: "fox", line: "stray",
+        Species(id: "scrabble", name: "Scrabble", stage: .teen, blurb: "Scrappy digger, always muddy.", family: "fox", line: "stray", bodyHex: "#9A948C",
             frames: [
                 ["................", "................", "................", "...X............", "...XXX.....XXX..", "...XXX....XXXX..", "..XXXX.X..X.XX..", "..XXXX.X..XXXXX.", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "................", "................", "...X............", "...XXX.....XXX..", "...XXX....XXXX..", "..XXXX.X..XXXX..", "..XXXX.X..XXXXX.", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "....XXXXXXXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -716,7 +716,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "scrapfox", req: Requirement())
         ]),
-        Species(id: "tatter", name: "Tatter", stage: .teen, blurb: "Patchy coat, tough as nails.", family: "fox", line: "stray",
+        Species(id: "tatter", name: "Tatter", stage: .teen, blurb: "Patchy coat, tough as nails.", family: "fox", line: "stray", bodyHex: "#9A948C",
             frames: [
                 ["................", "................", "................", "................", "...XXX.....XXX..", "...XXX....XXXX..", "..XXXX....X.XX..", "..XXXX.X..XXXXX.", "..XXXXXXXXXXX...", "..XXXXXXX.XX....", "..XXXX.XXXXX....", "..XXXXXXXXXX....", "....XXXX.XXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
                 ["................", "................", "................", "................", "...XXX.....XXX..", "...XXX....XXXX..", "..XXXX....XXXX..", "..XXXX.X..XXXXX.", "..XXXXXXXXXXX...", "..XXXXXXX.XX....", "..XXXX.XXXXX....", "..XXXXXXXXXX....", "....XXXX.XXX....", ".....X.X..XX....", ".....X.X..XX....", ".....XXX.XXXX..."],
@@ -729,7 +729,7 @@ enum SpeciesData {
             Evolution(to: "scrapfox", req: Requirement(train: 3)),
             Evolution(to: "raggedy", req: Requirement())
         ]),
-        Species(id: "stalker", name: "Stalker", stage: .adult, blurb: "A silent hunter of the tall grass.", family: "fox", line: "hunter",
+        Species(id: "stalker", name: "Stalker", stage: .adult, blurb: "A silent hunter of the tall grass.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "...........X....", "...........X.X..", "..XXX......XXXX.", ".XXXXX....XX.XX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["................", "...........X....", "...........X.X..", "..XXX......XXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -742,7 +742,7 @@ enum SpeciesData {
             Evolution(to: "moonveil", req: Requirement(smarts: 40)),
             Evolution(to: "emberlord", req: Requirement())
         ]),
-        Species(id: "trickster", name: "Trickster", stage: .adult, blurb: "Outwits everyone, glasses and all.", family: "fox", line: "hunter",
+        Species(id: "trickster", name: "Trickster", stage: .adult, blurb: "Outwits everyone, glasses and all.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "........X.X.....", "........XXX.....", "........X.X.....", "..X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["................", "........X.X.....", "........XXX.....", "........XXX.....", "..X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -755,7 +755,7 @@ enum SpeciesData {
             Evolution(to: "starbrush", req: Requirement(smarts: 40)),
             Evolution(to: "moonveil", req: Requirement())
         ]),
-        Species(id: "brawler", name: "Brawler", stage: .adult, blurb: "Broad and strong, wins most scuffles.", family: "fox", line: "hunter",
+        Species(id: "brawler", name: "Brawler", stage: .adult, blurb: "Broad and strong, wins most scuffles.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["...........X....", "...X.......X....", "...X.......X.X..", "..XXXX.....XXXX.", ".XXXXX....XX.XX.", ".XXXXX.X..XXXXX.", ".XXXXX.X.XXXXXXX", ".XXXXXXXXXXXXXXX", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["...........X....", "...X.......X....", "...X.......X.X..", "..XXXX.....XXXX.", ".XXXXX....XXXXX.", ".XXXXX.X..XXXXX.", ".XXXXX.X.XXXXXXX", ".XXXXXXXXXXXXXXX", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -768,7 +768,7 @@ enum SpeciesData {
             Evolution(to: "emberlord", req: Requirement(wins: 5)),
             Evolution(to: "frostpelt", req: Requirement())
         ]),
-        Species(id: "swiftail", name: "Swiftail", stage: .adult, blurb: "The fastest fox in the valley.", family: "fox", line: "hunter",
+        Species(id: "swiftail", name: "Swiftail", stage: .adult, blurb: "The fastest fox in the valley.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", "...........X....", "...........X.X..", "...XX......XXXX.", "..XXX.....XX.XX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX......XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", ".....X.X..X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["................", "...........X....", "...........X.X..", "...XX......XXXX.", "..XXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX......XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", ".....X.X..X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -780,7 +780,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "wildfire", req: Requirement())
         ]),
-        Species(id: "thornback", name: "Thornback", stage: .adult, blurb: "Bristling spines in the bramble.", family: "fox", line: "forager",
+        Species(id: "thornback", name: "Thornback", stage: .adult, blurb: "Bristling spines in the bramble.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["...........X....", "...X.......X....", "...X.......X.X..", "..XXXX.....XXXX.", ".XXXXX....XX.XX.", ".XXXXX.X..XXXXX.", ".XXXXX.X.XXXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["...........X....", "...X.......X....", "...X.......X.X..", "..XXXX.....XXXX.", ".XXXXX....XXXXX.", ".XXXXX.X..XXXXX.", ".XXXXX.X.XXXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -793,7 +793,7 @@ enum SpeciesData {
             Evolution(to: "starbrush", req: Requirement(smarts: 40)),
             Evolution(to: "wildfire", req: Requirement())
         ]),
-        Species(id: "hazelwood", name: "Hazelwood", stage: .adult, blurb: "Gentle keeper of the woods.", family: "fox", line: "forager",
+        Species(id: "hazelwood", name: "Hazelwood", stage: .adult, blurb: "Gentle keeper of the woods.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["........XX......", "........XXX.....", "........XXX.....", "........X.X.....", "..X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["........XX......", "........XXX.....", "........XXX.....", "........XXX.....", "..X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -806,7 +806,7 @@ enum SpeciesData {
             Evolution(to: "starbrush", req: Requirement(smarts: 40)),
             Evolution(to: "wildfire", req: Requirement())
         ]),
-        Species(id: "sagetail", name: "Sagetail", stage: .adult, blurb: "Wise, with a second tail to match.", family: "fox", line: "forager",
+        Species(id: "sagetail", name: "Sagetail", stage: .adult, blurb: "Wise, with a second tail to match.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["................", "........X.X.....", "........XXX.....", ".X......X.X.....", ".XX....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["................", "........X.X.....", "........XXX.....", ".X......XXX.....", ".XX....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -818,7 +818,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "starbrush", req: Requirement())
         ]),
-        Species(id: "plumptail", name: "Plumptail", stage: .adult, blurb: "Round, fluffy and very well fed.", family: "fox", line: "riverside",
+        Species(id: "plumptail", name: "Plumptail", stage: .adult, blurb: "Round, fluffy and very well fed.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "................", "........X.X.....", "........X.X.....", "..X....XXXXX....", ".XXX...XXXXXXX..", ".XXX...XXXXXXX..", ".XXXX..XXXX.....", ".XXXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", "..XXXXXXXXX.....", "....XXXXXXXX...."],
                 ["................", "................", "........X.X.....", "........XXX.....", "..X....XXXXX....", ".XXX...XXXXXXX..", ".XXX...XXXXXXX..", ".XXXX..XXXX.....", ".XXXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", "..XXXXXXXXX.....", "....XXXXXXXX...."],
@@ -830,7 +830,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "frostpelt", req: Requirement())
         ]),
-        Species(id: "angler", name: "Angler", stage: .adult, blurb: "Patient river fisher, never misses.", family: "fox", line: "riverside",
+        Species(id: "angler", name: "Angler", stage: .adult, blurb: "Patient river fisher, never misses.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "...........X....", "...........X.X..", ".XXXX......XXXX.", ".XXXXX....XX.XX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXX.XX...", ".XXXXXX.XX.X....", ".XXXXXX.XX.XX...", ".XXXXXX.XX.XX...", "..XX.XX.XX.XX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["................", "...........X....", "...........X.X..", ".XXXX......XXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXX.XX...", ".XXXXXX.XX.X....", ".XXXXXX.XX.XX...", ".XXXXXX.XX.XX...", "..XX.XX.XX.XX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -842,7 +842,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "tidecaller", req: Requirement())
         ]),
-        Species(id: "reedwalker", name: "Reedwalker", stage: .adult, blurb: "Strides through the shallows.", family: "fox", line: "riverside",
+        Species(id: "reedwalker", name: "Reedwalker", stage: .adult, blurb: "Strides through the shallows.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "...........X....", "...........X.X..", "...XX......XXXX.", "..XXX.....XX.XX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX......XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "..........X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["................", "...........X....", "...........X.X..", "...XX......XXXX.", "..XXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX......XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", "..........X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -855,7 +855,7 @@ enum SpeciesData {
             Evolution(to: "tidecaller", req: Requirement(smarts: 40)),
             Evolution(to: "moonveil", req: Requirement())
         ]),
-        Species(id: "raggedy", name: "Raggedy", stage: .adult, blurb: "Ragged but resourceful.", family: "fox", line: "stray",
+        Species(id: "raggedy", name: "Raggedy", stage: .adult, blurb: "Ragged but resourceful.", family: "fox", line: "stray", bodyHex: "#9A948C",
             frames: [
                 ["...........X....", "...........X....", "...X.......X.X..", "..XXXX.....XXXX.", ".XXXXX....XX.XX.", ".XXXXX....XXXXX.", ".XXXXX.X.XXXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXX.XXXX...", ".XXXX.XXXXXXX...", "..XXXXXXXXXXX...", ".....XX.XXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["...........X....", "...........X....", "...X.......X.X..", "..XXXX.....XXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXX.", ".XXXXX.X.XXXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXX.XXXX...", ".XXXX.XXXXXXX...", "..XXXXXXXXXXX...", ".....XX.XXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -867,7 +867,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "gloamfox", req: Requirement())
         ]),
-        Species(id: "scrapfox", name: "Scrapfox", stage: .adult, blurb: "Dented, scarred and still smiling.", family: "fox", line: "stray",
+        Species(id: "scrapfox", name: "Scrapfox", stage: .adult, blurb: "Dented, scarred and still smiling.", family: "fox", line: "stray", bodyHex: "#9A948C",
             frames: [
                 ["...........X....", "...X.......X....", "...X.......X.X..", "...XX......XXXX.", "..XXX.....XX.XX.", ".XXXX.....XXXXX.", ".XXXX..X..XXXXX.", ".XXXXX.X.X.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", ".....X.X..X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["...........X....", "...X.......X....", "...X.......X.X..", "...XX......XXXX.", "..XXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX..X..XXXXX.", ".XXXXX.X.X.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", ".....X.X..X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -879,7 +879,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "gloamfox", req: Requirement())
         ]),
-        Species(id: "moonveil", name: "Moonveil", stage: .ultimate, blurb: "Three silver tails and a quiet halo.", family: "fox", line: "forager",
+        Species(id: "moonveil", name: "Moonveil", stage: .ultimate, blurb: "Three silver tails and a quiet halo.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 ["......X.....X...", ".......XXXXX....", ".X......X.X.....", ".XX.....X.X.....", "X.X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", "..XXXXXXXXX.....", "..XXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["......X.....X...", ".......XXXXX....", ".X......X.X.....", ".XX.....XXX.....", "X.X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", "..XXXXXXXXX.....", "..XXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -889,7 +889,7 @@ enum SpeciesData {
                 ["............XX..........XX......", "............XXX........XXX......", ".............XXXXXXXXXXXX.......", "..............XXXXXXXXXX........", "..XX...........XXX..XXX.........", "..XXX...........XX..XX..........", "..XXX...........XXXXXX..........", ".X.XXX.........XXXXXXXX.........", "XX..XX.........XXXXXXXX.........", "XX..XXX.......XXXXXXXXXXX.......", ".X.XXXX.......XXXXXXXXXXXXXXXX..", "..XXXXXX......XXXXXXXXXXXXXXXX..", "..XXXXXX......XXXXXXXXX.........", "..XXXXXX......XXXXXXXX..........", "..XXXXXX......XXXXXXXX..........", "...XXXXXX....XXXXXXXXX..........", "...XXXXXX....XXXXXXXXX..........", "....XXXXXX..XXXXXXXXXX..........", "....XXXXXXXXXXXXXXXXXX..........", "....XXXXXXXXXXXXXXXXX...........", "....XXXXXXXXXXXXXXXXX...........", "....XXXXXXXXXXXXXXXX............", "....XXXXXXXXXXXXXXXX............", "....XXXXXXXXXXXXXXXX............", "....XXXXXXXXXXXXXXXX............", ".....XXXXXXXXXXXXXXX............", ".......XXXXXXXXXXXXX............", ".........XXXXXXXXXXX............", "..........XXXXXXXXXX............", "..........XXXXXXXXXXX...........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "emberlord", name: "Emberlord", stage: .ultimate, blurb: "A crowned hunter with a flame-tipped tail.", family: "fox", line: "hunter",
+        Species(id: "emberlord", name: "Emberlord", stage: .ultimate, blurb: "A crowned hunter with a flame-tipped tail.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", ".X........XXX.X.", "..X.......XXXXX.", ".XXXX......XXXX.", ".XXXXX....XX.XX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["................", ".X........XXX.X.", "..X.......XXXXX.", ".XXXX......XXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -899,7 +899,7 @@ enum SpeciesData {
                 ["................................", "................................", "..XX.................XXXX...XX..", "..XXX...............XXXXXX..XX..", "....XX..............XXXXXXXXXX..", "....XXX..............XXXXXXXXX..", "...XXXXXX.............XXXXXXXX..", "..XXXXXXXXX...........XXXXXXXX..", "..XXXXXXXXX..........XXXXXXXXX..", "..XXXXXXXXXX........XXXXXXXXXX..", "..XXXXXXXXXX........XXXXXXXXXX..", "..XXXXXXXXXX........XXXXXXXXXXX.", "..XXXXXXXXXX........XXXXXXXXXXXX", "..XXXXXXXXXXX......X.XXXXXXXXXXX", "..XXXXXXXXXXXXXXXXX...XXXXX.....", "..XXXXXXXXXXXXXXXXXX..XXX.......", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXXX.......", "..XXXXXXXXXXXXXXXXXXXXXXXX......", "..XXXXXXXXXXXXXXXXXXXXXXXX......", "...XXXXXXXXXXXXXXXXXXXXXXX......", "...XXXXXXXXXXXXXXXXXXXXXXX......", ".....XXXXXXXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXX..XX......", "..........XXXXXXXXXXXX..XX......", "..........XX..XXX..XXX..XX......", "..........XX..XX....XX..XX......", "..........XX..XX....XX..XX......", ".........XXX..XX...XXX..XX......", "........XXXXXXXX..XXXXXXXX......", "........XXXXXXX...XXXXXXX......."],
             ],
             evolutions: []),
-        Species(id: "starbrush", name: "Starbrush", stage: .ultimate, blurb: "Five tails sweep the night sky.", family: "fox", line: "forager",
+        Species(id: "starbrush", name: "Starbrush", stage: .ultimate, blurb: "Five tails sweep the night sky.", family: "fox", line: "forager", bodyHex: "#D9A441",
             frames: [
                 [".......X.X.X....", ".......XXXXX....", ".X......X.X.....", ".XX.....X.X.....", "XXX....XXXXX....", "XXXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", "..XXXXXXXXX.....", "..XXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 [".......X.X.X....", ".......XXXXX....", ".X......X.X.....", ".XX.....XXX.....", "XXX....XXXXX....", "XXXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XXX.XXXXX.....", "..XXXXXXXXX.....", "..XXXXXXXX......", "..XXXXXXXX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -909,7 +909,7 @@ enum SpeciesData {
                 ["..............XX..XX..XX........", "..............XX..XX..XX........", "..............XXXXXXXXXX........", "...............XXXXXXXX.........", "..XX...........XXX..XXX.........", "..XXX...........XX..XX..........", "..XXX...........XXXXXX..........", ".XXXXX.........XXXXXXXX.........", ".XXXXX.........XXXXXXXX.........", "XXXXXXX.......XXXXXXXXXXX.......", "XXXXXXX.......XXXXXXXXXXXXXXXX..", ".XXXXXXX......XXXXXXXXXXXXXXXX..", ".XXXXXXX......XXXXXXXXX.........", "..XXXXXX......XXXXXXXX..........", "..XXXXXX......XXXXXXXX..........", "...XXXXXX....XXXXXXXXX..........", "...XXXXXX....XXXXXXXXX..........", "....XXXXXX..XXXXXXXXXX..........", "....XXXXXXXXXXXXXXXXXX..........", "....XXXXXXXXXXXXXXXXX...........", "....XXXXXXXXXXXXXXXXX...........", "....XXXXXXXXXXXXXXXX............", "....XXXXXXXXXXXXXXXX............", "....XXXXXXXXXXXXXXXX............", "....XXXXXXXXXXXXXXXX............", ".....XXXXXXXXXXXXXXX............", ".......XXXXXXXXXXXXX............", ".........XXXXXXXXXXX............", "..........XXXXXXXXXX............", "..........XXXXXXXXXXX...........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "frostpelt", name: "Frostpelt", stage: .ultimate, blurb: "Snow-white, serene and plush.", family: "fox", line: "riverside",
+        Species(id: "frostpelt", name: "Frostpelt", stage: .ultimate, blurb: "Snow-white, serene and plush.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 [".......X.X.X....", ".......XXXXX....", "........X.X.....", ".X......X.X.....", ".XX....XXXXX....", ".XXX...XXXXXXX..", ".XXX...XXXX.....", ".XXXX..XXXX.....", ".XXXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", "..XXXXXXXXX.....", "....XXXXXX......", "....XXXXXXXX...."],
                 [".......X.X.X....", ".......XXXXX....", "........X.X.....", ".X......XXX.....", ".XX....XXXXX....", ".XXX...XXXXXXX..", ".XXX...XXXX.....", ".XXXX..XXXX.....", ".XXXX.XXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", ".XXXXXXXXXX.....", "..XXXXXXXXX.....", "....XXXXXX......", "....XXXXXXXX...."],
@@ -919,7 +919,7 @@ enum SpeciesData {
                 ["..............XX..XX..XX........", "..............XX..XX..XX........", "..............XXXXXXXXXX........", "...............XXXXXXXX.........", "...............XXX..XXX.........", "................XX..XX..........", "..XX............XXXXXX..........", "..XXX..........XXXXXXXX.........", "..XXX..........XXXXXXXX.........", "..XXXXX.......XXXXXXXXXXX.......", "..XXXXX.......XXXXXXXXXXXXXX....", "..XXXXXX......XXXXXXXXXXXXXX....", "..XXXXXX......XXXXXXXXX.........", "..XXXXXXX.....XXXXXXXX..........", "..XXXXXXX.....XXXXXXXX..........", "..XXXXXXXX...XXXXXXXXX..........", "..XXXXXXXX...XXXXXXXXX..........", "..XXXXXXXX..XXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "..XXXXXXXXXXXXXXXXXXXX..........", "...XXXXXXXXXXXXXXXXXXX..........", "...XXXXXXXXXXXXXXXXXXX..........", ".....XXXXXXXXXXXXXXXX...........", ".......XXXXXXXXXXXXX............", "........XXXXXXXXXXXX............", "........XXXXXXXXXXXXXXXX........", ".........XXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "tidecaller", name: "Tidecaller", stage: .ultimate, blurb: "Calls the river with three striped tails.", family: "fox", line: "riverside",
+        Species(id: "tidecaller", name: "Tidecaller", stage: .ultimate, blurb: "Calls the river with three striped tails.", family: "fox", line: "riverside", bodyHex: "#8FA3B5",
             frames: [
                 ["................", "........X.X.....", ".X......X.X.....", ".XX.....X.X.....", "X.X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XX..X.XX......", "..XX.XX.XX......", "..XX.XX.XX......", "..XX.XX.XX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
                 ["................", "........X.X.....", ".X......X.X.....", ".XX.....XXX.....", "X.X....XXXXX....", ".XXX...XXXXXXXX.", ".XXX...XXXX.....", ".XXX...XXXX.....", "..XX..X.XX......", "..XX.XX.XX......", "..XX.XX.XX......", "..XX.XX.XX......", "..XXXXXXXX......", "....XXXXXX......", ".....XXXXX......", "....XXXXXXXX...."],
@@ -929,7 +929,7 @@ enum SpeciesData {
                 ["................................", "................................", "................XX..XX..........", "................XX..XX..........", "..XX............XX..XX..........", "..XXX...........XX..XX..........", "..XXX...........XXXXXX..........", ".X.XXX.........XXXXXXXX.........", "XX..XX.........XXXXXXXX.........", "XX..XXX.......XXXXXXXXXXX.......", ".X.XXXX.......XXXXXXXXXXXXXXXX..", "..XXXXXX......XXXXXXXXXXXXXXXX..", "..XXXXXX......XXXXXXXXX.........", "..XXXXXX......XXXXXXXX..........", "..XXXXXX......XXXXXXXX..........", "...XXXXX.....X.XXXXXX...........", "...XXXXX....XX..XXXXX...........", "....XXXX...XXX..XXXX............", "....XXXX...XXX..XXXX............", "....XXXX..XXXX..XXXX............", "....XXXX..XXXX..XXXX............", "....XXXX..XXXX..XXXX............", "....XXXX..XXXX..XXXX............", "....XXXX..XXXX..XXXX............", "....XXXXXXXXXXXXXXXX............", ".....XXXXXXXXXXXXXXX............", ".......XXXXXXXXXXXXX............", ".........XXXXXXXXXXX............", "..........XXXXXXXXXX............", "..........XXXXXXXXXXX...........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "wildfire", name: "Wildfire", stage: .ultimate, blurb: "Fast, fierce and trailing sparks.", family: "fox", line: "hunter",
+        Species(id: "wildfire", name: "Wildfire", stage: .ultimate, blurb: "Fast, fierce and trailing sparks.", family: "fox", line: "hunter", bodyHex: "#C2623A",
             frames: [
                 ["................", ".X.........X....", ".XX........X.X..", ".XXXX......XXXX.", "XXXXXX....XX.XX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["................", ".X.........X....", ".XX........X.X..", ".XXXX......XXXX.", "XXXXXX....XXXXX.", ".XXXXX....XXXXX.", ".XXXXX....XXXXXX", ".XXXXXXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", ".....XXXXXX.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -939,7 +939,7 @@ enum SpeciesData {
                 ["................................", "................................", "..XX..................XX........", "..XXX.................XX........", "..XXX.................XX..XX....", "..XXXXX...............XX..XXX...", "..XXXXXXX.............XXXXXXX...", ".XXXXXXXXXX..........XXXXXXXXX..", "XXXXXXXXXXX..........XXXXXXXXX..", "XXXXXXXXXXXX........XXXXXXXXXX..", ".XXXXXXXXXXX........XXXXXXXXXX..", "..XXXXXXXXXX........XXXXXXXXXXX.", "..XXXXXXXXXX........XXXXXXXXXXXX", "..XXXXXXXXXXX......X.XXXXXXXXXXX", "..XXXXXXXXXXXXXXXXX...XXXXX.....", "..XXXXXXXXXXXXXXXXXX..XXX.......", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXXX.......", "..XXXXXXXXXXXXXXXXXXXXXXXX......", "..XXXXXXXXXXXXXXXXXXXXXXXX......", "...XXXXXXXXXXXXXXXXXXXXXXX......", "...XXXXXXXXXXXXXXXXXXXXXXX......", ".....XXXXXXXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXX..XX......", "..........XXXXXXXXXXXX..XX......", "..........XX..XXX..XXX..XX......", "..........XX..XX....XX..XX......", "..........XX..XX....XX..XX......", ".........XXX..XX...XXX..XX......", "........XXXXXXXX..XXXXXXXX......", "........XXXXXXX...XXXXXXX......."],
             ],
             evolutions: []),
-        Species(id: "gloamfox", name: "Gloamfox", stage: .ultimate, blurb: "Dusk-dweller with a shadow tail.", family: "fox", line: "stray",
+        Species(id: "gloamfox", name: "Gloamfox", stage: .ultimate, blurb: "Dusk-dweller with a shadow tail.", family: "fox", line: "stray", bodyHex: "#9A948C",
             frames: [
                 ["...........X....", "...........X....", "...X.......X.X..", ".X.XX......XXXX.", ".XXXX.....XX.XX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXXX.X.X.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", ".....X.X..X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
                 ["...........X....", "...........X....", "...X.......X.X..", ".X.XX......XXXX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXX.....XXXXX.", ".XXXXX.X.X.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "....XXXXXXXXX...", ".....X.X..X.X...", ".....X.X..X.X...", ".....X.X..X.X...", "....XXXX.XXXX..."],
@@ -949,7 +949,7 @@ enum SpeciesData {
                 ["......................XX........", "......................XX........", "......................XX........", "......................XX........", "......XX..............XX..XX....", "......XXX.............XX..XXX...", "..XX..XXX.............XXXXXXX...", "..XX..XXXX...........XXXXXXXXX..", "..XXXXXXXX...........XXXXXXXXX..", "..XXXXXXXX..........XXXXXXXXXX..", "..XXXXXXXX..........XXXXXXXXXX..", "..XXXXXXXX..........XXXXXXXXXX..", "..XXXXXXXX..........XXXXXXXXXX..", "..XXXXXXXXX........X.XXXXXXXX...", "..XXXXXXXXX...XX..XX..XXXXX.....", "..XXXXXXXXXX..XX..XX..XXX.......", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXXX.......", "...XXXXXXXXXXXXXXXXXXXXXXX......", "...XXXXXXXXXXXXXXXXXXXXXXX......", ".....XXXXXXXXXXXXXXXXXXXXX......", ".......XXXXXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXXXXXX......", ".........XXX..XXX..XXX..XX......", "..........XX..XX....XX..XX......", "..........XX..XX....XX..XX......", "..........XX..XX....XX..XX......", "..........XX..XX....XX..XX......", ".........XXX..XX...XXX..XX......", "........XXXXXXXX..XXXXXXXX......", "........XXXXXXX...XXXXXXX......."],
             ],
             evolutions: []),
-        Species(id: "fish_bubblet", name: "Bubblet", stage: .baby, blurb: "Hatched inside a bubble and still wearing a bit of it.", family: "fish", line: "baby",
+        Species(id: "fish_bubblet", name: "Bubblet", stage: .baby, blurb: "Hatched inside a bubble and still wearing a bit of it.", family: "fish", line: "baby", bodyHex: "#BFD7DC",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "..........X.....", "................", "............X...", "........X.......", "........X.X.....", "....X..XXXX.....", "....XXXXXX......", "....XXXXXXX.....", ".......XXX......", "......XXXXX....."],
                 ["................", "................", "................", "................", "................", "................", "..........X.....", "................", "............X...", "........X.......", "........X.X.....", "....X..XXXX.....", "....XXXXXXX.....", "....XXXXXXX.....", ".......XXX......", "......XXXXX....."],
@@ -964,7 +964,7 @@ enum SpeciesData {
             Evolution(to: "fish_nibble", req: Requirement(lead: .veggie)),
             Evolution(to: "fish_dabble", req: Requirement(lead: .pasta))
         ]),
-        Species(id: "fish_pearlfry", name: "Pearlfry", stage: .baby, blurb: "A tiny fry with one shiny pearl.", family: "fish", line: "baby",
+        Species(id: "fish_pearlfry", name: "Pearlfry", stage: .baby, blurb: "A tiny fry with one shiny pearl.", family: "fish", line: "baby", bodyHex: "#BFD7DC",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", "................", "........X.......", "........X.......", "....X..XXXX.....", "....XXXXXX......", "....XXXXXXX.....", ".......XXXXX....", "......XXXX......"],
                 ["................", "................", "................", "................", "................", "................", "................", "................", "................", "........X.......", "........X.......", "....X..XXXX.....", "....XXXXXXX.....", "....XXXXXXX.....", ".......XXXXX....", "......XXXX......"],
@@ -979,7 +979,7 @@ enum SpeciesData {
             Evolution(to: "fish_nibble", req: Requirement(lead: .veggie)),
             Evolution(to: "fish_darter", req: Requirement(lead: .meat))
         ]),
-        Species(id: "fish_nibble", name: "Nibble", stage: .child, blurb: "Grazes on every green thing in the tank.", family: "fish", line: "reef",
+        Species(id: "fish_nibble", name: "Nibble", stage: .child, blurb: "Grazes on every green thing in the tank.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".......XX.......", "...X..XXXX......", "...XXXXXXX.X....", "....XXXXXXXXX...", "...XXXXXXXX.....", "...X.X.XX.......", "......X.........", ".....XX.XX.X...."],
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".......XX.......", "...X..XXXX......", "...XXXXXXXXX....", "....XXXXXXXXX...", "...XXXXXXXX.....", "...X.X.XX.......", "......X.........", ".....XX.XX.X...."],
@@ -994,7 +994,7 @@ enum SpeciesData {
             Evolution(to: "fish_curlfin", req: Requirement(smarts: 12)),
             Evolution(to: "fish_glimmer", req: Requirement())
         ]),
-        Species(id: "fish_darter", name: "Darter", stage: .child, blurb: "Zips after shrimp and never sits still.", family: "fish", line: "deep",
+        Species(id: "fish_darter", name: "Darter", stage: .child, blurb: "Zips after shrimp and never sits still.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "........X.......", "........XX......", ".......XXXX.....", "...X.XXXXXX.X...", "...XXXXXXXXXX...", "...X.XXXXXXXX...", ".......XXX......", ".......X........", ".....XX.XX.X...."],
                 ["................", "................", "................", "................", "................", "................", "................", "........X.......", "........XX......", ".......XXXX.....", "...X.XXXXXXXX...", "...XXXXXXXXXX...", "...X.XXXXXXXX...", ".......XXX......", ".......X........", ".....XX.XX.X...."],
@@ -1009,7 +1009,7 @@ enum SpeciesData {
             Evolution(to: "fish_lanternet", req: Requirement(smarts: 12)),
             Evolution(to: "fish_slinker", req: Requirement())
         ]),
-        Species(id: "fish_dabble", name: "Dabble", stage: .child, blurb: "A pond baby that loves to splash.", family: "fish", line: "pond",
+        Species(id: "fish_dabble", name: "Dabble", stage: .child, blurb: "A pond baby that loves to splash.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".......XX.......", "......XXX.X.....", "...X.X.XXXX.X...", "...XXXXXXXXXX...", "...X.XXX.XXXX...", "......XXXX......", "......X.........", ".....XX.XX.X...."],
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".......XX.......", "......XXX.X.....", "...X.X.XXXXXX...", "...XXXXXXXXXX...", "...X.XXX.XXXX...", "......XXXX......", "......X.........", ".....XX.XX.X...."],
@@ -1024,7 +1024,7 @@ enum SpeciesData {
             Evolution(to: "fish_driftbell", req: Requirement(smarts: 12)),
             Evolution(to: "fish_ripplekoi", req: Requirement())
         ]),
-        Species(id: "fish_silt", name: "Silt", stage: .child, blurb: "Tank-bottom dweller, murky and shy.", family: "fish", line: "stray",
+        Species(id: "fish_silt", name: "Silt", stage: .child, blurb: "Tank-bottom dweller, murky and shy.", family: "fish", line: "stray", bodyHex: "#8E8F78",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", ".......X........", ".......XXX......", "...X.XXXXX......", "...XXXX.XX.X....", "....XXXXXXXXX...", "...XX.XXX.X.....", "...X...XX.......", "......X.........", ".....XX.XX.X...."],
                 ["................", "................", "................", "................", "................", "................", "................", ".......X........", ".......XXX......", "...X.XXXXX......", "...XXXX.XXXX....", "....XXXXXXXXX...", "...XX.XXX.X.....", "...X...XX.......", "......X.........", ".....XX.XX.X...."],
@@ -1037,7 +1037,7 @@ enum SpeciesData {
             Evolution(to: "fish_dreg", req: Requirement(train: 3)),
             Evolution(to: "fish_muddle", req: Requirement())
         ]),
-        Species(id: "fish_pufflet", name: "Pufflet", stage: .teen, blurb: "Puffs up round whenever it is surprised.", family: "fish", line: "reef",
+        Species(id: "fish_pufflet", name: "Pufflet", stage: .teen, blurb: "Puffs up round whenever it is surprised.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", "................", "................", "........X.......", "........XX......", "......XXXXXX....", "..X..XXXXXXX....", "..XX.XXXXXX.X...", "..XXXXXXXXXXX...", "..XXXXXXXXXXX...", "..XX.XXXXXXX....", "..X...XXXXXX....", ".......XXXX.....", ".....X.X.X.X...."],
                 ["................", "................", "................", "................", "................", "........X.......", "........XX......", "......XXXXXX....", "..X..XXXXXXX....", "..XX.XXXXXXXX...", "..XXXXXXXXXXX...", "..XXXXXXXXXXX...", "..XX.XXXXXXX....", "..X...XXXXXX....", ".......XXXX.....", ".....X.X.X.X...."],
@@ -1050,7 +1050,7 @@ enum SpeciesData {
             Evolution(to: "fish_rustfin", req: Requirement(mistMin: 4)),
             Evolution(to: "fish_spineball", req: Requirement())
         ]),
-        Species(id: "fish_curlfin", name: "Curlfin", stage: .teen, blurb: "A young seahorse, curious and curly-tailed.", family: "fish", line: "reef",
+        Species(id: "fish_curlfin", name: "Curlfin", stage: .teen, blurb: "A young seahorse, curious and curly-tailed.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", ".........X......", "........XXX.....", "........X.XXX...", ".......XXXX.....", "......XXXXX.....", "......XXXXX.....", ".....XXXXXX.....", "......XXXXX.....", "......XXXX......", "......XXXX......", "....X.XXX.......", "....X..X........", "....XXXXXX......"],
                 ["................", "................", "................", ".........X......", "........XXX.....", "........XXXXX...", ".......XXXX.....", "......XXXXX.....", "......XXXXX.....", ".....XXXXXX.....", "......XXXXX.....", "......XXXX......", "......XXXX......", "....X.XXX.......", "....X..X........", "....XXXXXX......"],
@@ -1063,7 +1063,7 @@ enum SpeciesData {
             Evolution(to: "fish_rustfin", req: Requirement(mistMin: 4)),
             Evolution(to: "fish_seastallion", req: Requirement())
         ]),
-        Species(id: "fish_glimmer", name: "Glimmer", stage: .teen, blurb: "Scales that flash every colour of the reef.", family: "fish", line: "reef",
+        Species(id: "fish_glimmer", name: "Glimmer", stage: .teen, blurb: "Scales that flash every colour of the reef.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", "................", "................", "........X.......", ".......XXX......", "..X....XXX......", "..XX..XXXXXX....", "..XXXXXXXXX.X...", "...XX.X.X.XXXX..", "..XX.XXXXXXX....", "..X...XXXXX.....", "......X.X.......", "................", "....X.X.X.XX...."],
                 ["................", "................", "................", "................", "................", "........X.......", ".......XXX......", "..X....XXX......", "..XX..XXXXXX....", "..XXXXXXXXXXX...", "...XX.X.X.XXXX..", "..XX.XXXXXXX....", "..X...XXXXX.....", "......X.X.......", "................", "....X.X.X.XX...."],
@@ -1077,7 +1077,7 @@ enum SpeciesData {
             Evolution(to: "fish_parrotfin", req: Requirement(train: 3)),
             Evolution(to: "fish_coralback", req: Requirement())
         ]),
-        Species(id: "fish_gulper", name: "Gulper", stage: .teen, blurb: "Mostly mouth and always hungry.", family: "fish", line: "deep",
+        Species(id: "fish_gulper", name: "Gulper", stage: .teen, blurb: "Mostly mouth and always hungry.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", ".......X........", ".......XX.......", ".....XXXXXXX....", "..X.XXXXXXXXX...", "..XXXXXXXXXX.X..", "..XXXXXXXXXXXX..", "..X.XXXXXXX.....", ".....XXXXXXXX.X.", ".......XX.X.....", "......XX..X....."],
                 ["................", "................", "................", "................", "................", "................", ".......X........", ".......XX.......", ".....XXXXXXX....", "..X.XXXXXXXXX...", "..XXXXXXXXXXXX..", "..XXXXXXXXXXXX..", "..X.XXXXXXX.....", ".....XXXXXXXX.X.", ".......XX.X.....", "......XX..X....."],
@@ -1090,7 +1090,7 @@ enum SpeciesData {
             Evolution(to: "fish_rustfin", req: Requirement(mistMin: 4)),
             Evolution(to: "fish_gapjaw", req: Requirement())
         ]),
-        Species(id: "fish_lanternet", name: "Lanternet", stage: .teen, blurb: "Carries a little lamp into the dark.", family: "fish", line: "deep",
+        Species(id: "fish_lanternet", name: "Lanternet", stage: .teen, blurb: "Carries a little lamp into the dark.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "............XXX.", "............X.X.", ".......X....XXX.", ".......XX..XX...", "......XXXXXX....", "..X..XXXXXXXX...", "..XXXXXXXXXX.X..", "..XXXXXXXXXXXX..", "..X..XXXXXX.....", "......XXXXXXX.X.", ".......X..X.....", "......XX..X....."],
                 ["................", "................", "................", "................", "............XXX.", "............X.X.", ".......X....XXX.", ".......XX..XX...", "......XXXXXX....", "..X..XXXXXXXX...", "..XXXXXXXXXXXX..", "..XXXXXXXXXXXX..", "..X..XXXXXX.....", "......XXXXXXX.X.", ".......X..X.....", "......XX..X....."],
@@ -1103,7 +1103,7 @@ enum SpeciesData {
             Evolution(to: "fish_rustfin", req: Requirement(mistMin: 4)),
             Evolution(to: "fish_beaconfish", req: Requirement())
         ]),
-        Species(id: "fish_slinker", name: "Slinker", stage: .teen, blurb: "Slips through cracks in the rocks.", family: "fish", line: "deep",
+        Species(id: "fish_slinker", name: "Slinker", stage: .teen, blurb: "Slips through cracks in the rocks.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", "................", "............XX..", "....XXXX...XX.X.", "...XXXXXX..XXX..", "..XXX.XXXXXXXX..", "..XX...XXXXXX...", "..X.....XXXX....", "....XX.X.X.X...."],
                 ["................", "................", "................", "................", "................", "................", "................", "................", "................", "............XX..", "....XXXX...XXXX.", "...XXXXXX..XXX..", "..XXX.XXXXXXXX..", "..XX...XXXXXX...", "..X.....XXXX....", "....XX.X.X.X...."],
@@ -1117,7 +1117,7 @@ enum SpeciesData {
             Evolution(to: "fish_skimray", req: Requirement(train: 3)),
             Evolution(to: "fish_moray", req: Requirement())
         ]),
-        Species(id: "fish_plumpkoi", name: "Plumpkoi", stage: .teen, blurb: "Round, orange and very well fed.", family: "fish", line: "pond",
+        Species(id: "fish_plumpkoi", name: "Plumpkoi", stage: .teen, blurb: "Round, orange and very well fed.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "........X.......", ".......XXX......", "..X..XXXXXXXX...", "..X.XXXXXXXX.X..", "..XXXXXXXXXXXX..", "..XXXXXXXXXXXX..", "..X.XXXXXXXXXX..", "..X..XXXXXXX....", "......X.XX......", "....X.X.X.XX...."],
                 ["................", "................", "................", "................", "................", "................", "........X.......", ".......XXX......", "..X..XXXXXXXX...", "..X.XXXXXXXXXX..", "..XXXXXXXXXXXX..", "..XXXXXXXXXXXX..", "..X.XXXXXXXXXX..", "..X..XXXXXXX....", "......X.XX......", "....X.X.X.XX...."],
@@ -1130,7 +1130,7 @@ enum SpeciesData {
             Evolution(to: "fish_rustfin", req: Requirement(mistMin: 4)),
             Evolution(to: "fish_goldcarp", req: Requirement())
         ]),
-        Species(id: "fish_driftbell", name: "Driftbell", stage: .teen, blurb: "A soft little jelly that drifts with the tide.", family: "fish", line: "pond",
+        Species(id: "fish_driftbell", name: "Driftbell", stage: .teen, blurb: "A soft little jelly that drifts with the tide.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 [".........X.X....", "................", ".........X......", "................", "......XXXXX.....", ".....XXXXXX.....", ".....XXX.XXX....", ".....XXXXXXX....", "....XXXXXXXXX...", ".....XXXXXXX....", ".....X..X..X....", "......X..X.X....", ".....XX.XX.X....", ".....X..X..X....", "......X..X.X....", "......X..X.X...."],
                 [".........X.X....", "................", ".........X......", "................", "......XXXXX.....", ".....XXXXXX.....", ".....XXXXXXX....", ".....XXXXXXX....", "....XXXXXXXXX...", ".....XXXXXXX....", ".....X..X..X....", "......X..X.X....", ".....XX.XX.X....", ".....X..X..X....", "......X..X.X....", "......X..X.X...."],
@@ -1143,7 +1143,7 @@ enum SpeciesData {
             Evolution(to: "fish_rustfin", req: Requirement(mistMin: 4)),
             Evolution(to: "fish_moonjelly", req: Requirement())
         ]),
-        Species(id: "fish_ripplekoi", name: "Ripplekoi", stage: .teen, blurb: "Whiskered and calm, leaves rings on the pond.", family: "fish", line: "pond",
+        Species(id: "fish_ripplekoi", name: "Ripplekoi", stage: .teen, blurb: "Whiskered and calm, leaves rings on the pond.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "........X.......", ".......XXX......", "..X..XXXXXXXX..X", "..X.XXXX.XXX.XXX", "..XXX.XXXXXXXX..", "..X.XXXXXXXXXXXX", "..X...X.XXX....X", "......X.XX......", "................", "....X.X.X.XX...."],
                 ["................", "................", "................", "................", "................", "................", "........X.......", ".......XXX......", "..X..XXXXXXXX..X", "..X.XXXX.XXXXXXX", "..XXX.XXXXXXXX..", "..X.XXXXXXXXXXXX", "..X...X.XXX....X", "......X.XX......", "................", "....X.X.X.XX...."],
@@ -1157,7 +1157,7 @@ enum SpeciesData {
             Evolution(to: "fish_brocade", req: Requirement(train: 3)),
             Evolution(to: "fish_goldcarp", req: Requirement())
         ]),
-        Species(id: "fish_dreg", name: "Dreg", stage: .teen, blurb: "Rummages in the gravel for leftovers.", family: "fish", line: "stray",
+        Species(id: "fish_dreg", name: "Dreg", stage: .teen, blurb: "Rummages in the gravel for leftovers.", family: "fish", line: "stray", bodyHex: "#8E8F78",
             frames: [
                 ["................", "................", "................", "................", "................", "........X.......", "........XXX.....", "..X...XXXXX.X...", "..X.XXXXXXXXX...", "..XXXXXX.XXX.X..", "..XXX.XXXXXXXXX.", "..X.XXXXXXXXXX..", "........XXX.....", "......XXXX......", "................", "....X.X.X.XX...."],
                 ["................", "................", "................", "................", "................", "........X.......", "........XXX.....", "..X...XXXXX.X...", "..X.XXXXXXXXX...", "..XXXXXX.XXXXX..", "..XXX.XXXXXXXXX.", "..X.XXXXXXXXXX..", "........XXX.....", "......XXXX......", "................", "....X.X.X.XX...."],
@@ -1169,7 +1169,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_wreckfish", req: Requirement())
         ]),
-        Species(id: "fish_muddle", name: "Muddle", stage: .teen, blurb: "Cloudy water suits it just fine.", family: "fish", line: "stray",
+        Species(id: "fish_muddle", name: "Muddle", stage: .teen, blurb: "Cloudy water suits it just fine.", family: "fish", line: "stray", bodyHex: "#8E8F78",
             frames: [
                 ["................", "................", "................", "................", "................", "........X.......", "........X.......", "......XXXXX.....", "..X...XXXXXX....", "..XXXXXXXXX.X...", "...XXXXXXXXXXX..", "..XX.XXXXXXXX...", "..X.X.XXXXX.....", "....X.X.X.......", ".....X..........", "....XXX.X.XX...."],
                 ["................", "................", "................", "................", "................", "........X.......", "........X.......", "......XXXXX.....", "..X...XXXXXX....", "..XXXXXXXXXXX...", "...XXXXXXXXXXX..", "..XX.XXXXXXXX...", "..X.X.XXXXX.....", "....X.X.X.......", ".....X..........", "....XXX.X.XX...."],
@@ -1182,7 +1182,7 @@ enum SpeciesData {
             Evolution(to: "fish_wreckfish", req: Requirement(train: 3)),
             Evolution(to: "fish_rustfin", req: Requirement())
         ]),
-        Species(id: "fish_spineball", name: "Spineball", stage: .adult, blurb: "A great spiky puffer, round as a drum.", family: "fish", line: "reef",
+        Species(id: "fish_spineball", name: "Spineball", stage: .adult, blurb: "A great spiky puffer, round as a drum.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "........X.......", "........X.......", "......X.XXX.X...", "......XXXXX.X...", ".X..XXXXXXXXX...", ".XX.XXXXXXXXX...", ".XXXXXXXXXXX.X..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XX.XXXXXXXXXX..", ".X...XXXXXXXX...", "......XXXXXX....", ".......XXX......", ".....X.X.X.X...."],
                 ["................", "................", "........X.......", "........X.......", "......X.XXX.X...", "......XXXXX.X...", ".X..XXXXXXXXX...", ".XX.XXXXXXXXX...", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXXX..", ".XX.XXXXXXXXXX..", ".X...XXXXXXXX...", "......XXXXXX....", ".......XXX......", ".....X.X.X.X...."],
@@ -1195,7 +1195,7 @@ enum SpeciesData {
             Evolution(to: "fish_prismara", req: Requirement(wins: 5)),
             Evolution(to: "fish_tidewhale", req: Requirement())
         ]),
-        Species(id: "fish_seastallion", name: "Seastallion", stage: .adult, blurb: "Proud seahorse with a tall crest.", family: "fish", line: "reef",
+        Species(id: "fish_seastallion", name: "Seastallion", stage: .adult, blurb: "Proud seahorse with a tall crest.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["........XXX.....", ".........X......", "........XXXX....", "........XX.X....", "........XXXXXXX.", ".......XXXX.....", "......XXXXXX....", "......XXXXXX....", "....XXXXXXXX....", ".....XXXXXX.....", "......XXXX......", ".....XXXXX......", "...X..XXXX......", "...XX.XXX.......", "....X.XX........", "...XXXXXXX......"],
                 ["........XXX.....", ".........X......", "........XXXX....", "........XXXX....", "........XXXXXXX.", ".......XXXX.....", "......XXXXXX....", "......XXXXXX....", "....XXXXXXXX....", ".....XXXXXX.....", "......XXXX......", ".....XXXXX......", "...X..XXXX......", "...XX.XXX.......", "....X.XX........", "...XXXXXXX......"],
@@ -1208,7 +1208,7 @@ enum SpeciesData {
             Evolution(to: "fish_seamonarch", req: Requirement(smarts: 40)),
             Evolution(to: "fish_prismara", req: Requirement())
         ]),
-        Species(id: "fish_parrotfin", name: "Parrotfin", stage: .adult, blurb: "Bright and bold with a bony beak.", family: "fish", line: "reef",
+        Species(id: "fish_parrotfin", name: "Parrotfin", stage: .adult, blurb: "Bright and bold with a bony beak.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", "........X.......", ".......XX...X...", ".......XXXX.X...", ".X....XXXXX.....", ".XX..XXXXXXX....", ".XXX.XXXXXXX.X..", "..XXXX.X.X.XXXXX", ".XXX.XXXXXXXXX..", ".XX..XXX.X.X....", ".X....XXXXX.....", "......X.X.......", "................", "....X.X.X.X.X..."],
                 ["................", "................", "................", "........X.......", ".......XX...X...", ".......XXXX.X...", ".X....XXXXX.....", ".XX..XXXXXXX....", ".XXX.XXXXXXXXX..", "..XXXX.X.X.XXXXX", ".XXX.XXXXXXXXX..", ".XX..XXX.X.X....", ".X....XXXXX.....", "......X.X.......", "................", "....X.X.X.X.X..."],
@@ -1220,7 +1220,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_prismara", req: Requirement())
         ]),
-        Species(id: "fish_coralback", name: "Coralback", stage: .adult, blurb: "Wears a living garden of coral.", family: "fish", line: "reef",
+        Species(id: "fish_coralback", name: "Coralback", stage: .adult, blurb: "Wears a living garden of coral.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", "........X.......", ".......XX.......", ".......XXX......", ".X....XXXXX.....", ".XX..XXXXXXX....", ".XXX.XXXXXXX.X..", "..XXXXXXXXXXXXXX", ".XXX.XXXXXXXXX..", ".XX.XXXXXXXX....", ".X.XX.XXXXX.....", "....XXX.X.......", "....X...........", "....X.X.X.X.X..."],
                 ["................", "................", "................", "........X.......", ".......XX.......", ".......XXX......", ".X....XXXXX.....", ".XX..XXXXXXX....", ".XXX.XXXXXXXXX..", "..XXXXXXXXXXXXXX", ".XXX.XXXXXXXXX..", ".XX.XXXXXXXX....", ".X.XX.XXXXX.....", "....XXX.X.......", "....X...........", "....X.X.X.X.X..."],
@@ -1233,7 +1233,7 @@ enum SpeciesData {
             Evolution(to: "fish_seamonarch", req: Requirement(smarts: 40)),
             Evolution(to: "fish_prismara", req: Requirement())
         ]),
-        Species(id: "fish_gapjaw", name: "Gapjaw", stage: .adult, blurb: "Grins wide enough to swallow the moon.", family: "fish", line: "deep",
+        Species(id: "fish_gapjaw", name: "Gapjaw", stage: .adult, blurb: "Grins wide enough to swallow the moon.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "................", ".......X........", "......XXXXX.....", "....XXXXXXXXX...", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXX.XX.", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXX..XX.", ".X..XXXXXXXXXXX.", ".....XXXXXXXX...", ".......X..XX....", "......X....X...."],
                 ["................", "................", "................", "................", "................", ".......X........", "......XXXXX.....", "....XXXXXXXXX...", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXX..XX.", ".X..XXXXXXXXXXX.", ".....XXXXXXXX...", ".......X..XX....", "......X....X...."],
@@ -1246,7 +1246,7 @@ enum SpeciesData {
             Evolution(to: "fish_tidewyrm", req: Requirement(wins: 5)),
             Evolution(to: "fish_lanternking", req: Requirement())
         ]),
-        Species(id: "fish_beaconfish", name: "Beaconfish", stage: .adult, blurb: "Its lamp guides lost fish home.", family: "fish", line: "deep",
+        Species(id: "fish_beaconfish", name: "Beaconfish", stage: .adult, blurb: "Its lamp guides lost fish home.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "............X.X.", "............X...", ".......X....X.X.", "......XXX...X...", ".....XXXXXXXX...", ".X..XXXXXXXXXX..", ".XX.XXXXXXXX.XX.", ".XXXXXXXXXXXXXX.", ".XX.XXXXXXX..XX.", ".X..XXXXXXXXXXX.", "......XXXXXXXXX.", ".......X..XX....", "......X....X...."],
                 ["................", "................", "................", "............X.X.", "............X...", ".......X....X.X.", "......XXX...X...", ".....XXXXXXXX...", ".X..XXXXXXXXXX..", ".XX.XXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", ".XX.XXXXXXX..XX.", ".X..XXXXXXXXXXX.", "......XXXXXXXXX.", ".......X..XX....", "......X....X...."],
@@ -1258,7 +1258,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_lanternking", req: Requirement())
         ]),
-        Species(id: "fish_moray", name: "Moray", stage: .adult, blurb: "Long and sly, peeks out of every hole.", family: "fish", line: "deep",
+        Species(id: "fish_moray", name: "Moray", stage: .adult, blurb: "Long and sly, peeks out of every hole.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".............X..", "...XXXX.....X.XX", "..XXXXXXX..XXXXX", "XXXXXXXXXXXXXXXX", ".XXX..XXXXXXXXX.", ".XX....XXXXXXX..", "........XXXXX...", "...X.X.X.X.X...."],
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".............X..", "...XXXX.....XXXX", "..XXXXXXX..XXXXX", "XXXXXXXXXXXXXXXX", ".XXX..XXXXXXXXX.", ".XX....XXXXXXX..", "........XXXXX...", "...X.X.X.X.X...."],
@@ -1270,7 +1270,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_tidewyrm", req: Requirement())
         ]),
-        Species(id: "fish_skimray", name: "Skimray", stage: .adult, blurb: "Glides along the sea floor like a kite.", family: "fish", line: "deep",
+        Species(id: "fish_skimray", name: "Skimray", stage: .adult, blurb: "Glides along the sea floor like a kite.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", "XX..............", "XX......XX......", "XXX...XXXXX.XX..", ".XX.XXXXXXXXXX..", ".XXXXX.XXXXXXXX.", ".XXXXXXXXXXXXXX.", ".....XXXXXXX....", ".......XXX......"],
                 ["................", "................", "................", "................", "................", "................", "................", "................", "XX..............", "XX......XX......", "XXX...XXXXXXXX..", ".XX.XXXXXXXXXX..", ".XXXXX.XXXXXXXX.", ".XXXXXXXXXXXXXX.", ".....XXXXXXX....", ".......XXX......"],
@@ -1283,7 +1283,7 @@ enum SpeciesData {
             Evolution(to: "fish_aurorabell", req: Requirement(smarts: 40)),
             Evolution(to: "fish_tidewyrm", req: Requirement())
         ]),
-        Species(id: "fish_goldcarp", name: "Goldcarp", stage: .adult, blurb: "Slow, golden and wonderfully wise.", family: "fish", line: "pond",
+        Species(id: "fish_goldcarp", name: "Goldcarp", stage: .adult, blurb: "Slow, golden and wonderfully wise.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "................", "........X.......", ".......XX.......", "......XXXXX.....", ".X..XXXXXXXXXX..", ".XXXXXXXXXXXX.XX", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", ".X..XXXXXXXXXX..", "......XXXXX.....", "X....XX.X.......", "................", "....X.X.X.X.X..."],
                 ["................", "................", "................", "................", "........X.......", ".......XX.......", "......XXXXX.....", ".X..XXXXXXXXXX..", ".XXXXXXXXXXXXXXX", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", ".X..XXXXXXXXXX..", "......XXXXX.....", "X....XX.X.......", "................", "....X.X.X.X.X..."],
@@ -1296,7 +1296,7 @@ enum SpeciesData {
             Evolution(to: "fish_dragonkoi", req: Requirement(smarts: 40)),
             Evolution(to: "fish_tidewhale", req: Requirement())
         ]),
-        Species(id: "fish_moonjelly", name: "Moonjelly", stage: .adult, blurb: "Glows softly like a paper lantern.", family: "fish", line: "pond",
+        Species(id: "fish_moonjelly", name: "Moonjelly", stage: .adult, blurb: "Glows softly like a paper lantern.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 [".........XXX....", "................", "......XXXXX.....", ".....XXXXXXX....", "....XXXXXXXXX...", "....XXXX.XXXX...", "....XXXXXXXXX...", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X...", ".....X.X.X.X....", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X..."],
                 [".........XXX....", "................", "......XXXXX.....", ".....XXXXXXX....", "....XXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X...", ".....X.X.X.X....", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X..."],
@@ -1308,7 +1308,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_aurorabell", req: Requirement())
         ]),
-        Species(id: "fish_brocade", name: "Brocade", stage: .adult, blurb: "Patterned like a silk robe.", family: "fish", line: "pond",
+        Species(id: "fish_brocade", name: "Brocade", stage: .adult, blurb: "Patterned like a silk robe.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "................", "........X.......", ".......XX.......", "......XXXX......", ".X...XXXXXXXXX..", ".XX.XX.XX.XX..XX", ".XX.X...X.X..XX.", ".XX.XX.XX.XX.XXX", ".X...X..X.XX.X..", "......X..X......", "X....XX.X.......", "................", "....X.X.X.X.X..."],
                 ["................", "................", "................", "................", "........X.......", ".......XX.......", "......XXXX......", ".X...XXXXXXXXX..", ".XX.XX.XX.XX.XXX", ".XX.X...X.X..XX.", ".XX.XX.XX.XX.XXX", ".X...X..X.XX.X..", "......X..X......", "X....XX.X.......", "................", "....X.X.X.X.X..."],
@@ -1320,7 +1320,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_dragonkoi", req: Requirement())
         ]),
-        Species(id: "fish_rustfin", name: "Rustfin", stage: .adult, blurb: "Patchy and worn, but still swimming.", family: "fish", line: "stray",
+        Species(id: "fish_rustfin", name: "Rustfin", stage: .adult, blurb: "Patchy and worn, but still swimming.", family: "fish", line: "stray", bodyHex: "#8E8F78",
             frames: [
                 ["................", "................", "................", "........X.......", "........X.......", "........XXX.....", "......XXXXX.X...", ".XX.XXXXXXXXXX..", ".XXXXXXXXXXX.XX.", ".XXXXXX.XXXXXXXX", ".XXX.XXXXXXXXXX.", ".X...XXXXXXXXX..", ".......X.X......", "......XXX.......", "................", "....X.X.X.X.X..."],
                 ["................", "................", "................", "........X.......", "........X.......", "........XXX.....", "......XXXXX.X...", ".XX.XXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXX.XXXXXXXX", ".XXX.XXXXXXXXXX.", ".X...XXXXXXXXX..", ".......X.X......", "......XXX.......", "................", "....X.X.X.X.X..."],
@@ -1332,7 +1332,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_hollowfin", req: Requirement())
         ]),
-        Species(id: "fish_wreckfish", name: "Wreckfish", stage: .adult, blurb: "Lives in a sunken boot and calls it home.", family: "fish", line: "stray",
+        Species(id: "fish_wreckfish", name: "Wreckfish", stage: .adult, blurb: "Lives in a sunken boot and calls it home.", family: "fish", line: "stray", bodyHex: "#8E8F78",
             frames: [
                 ["................", "................", "................", "................", ".......X........", ".......X.X......", ".....XXXXXXX....", "...XXXXXXXXXX...", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXX.XX.", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXX..XX.", ".XX.XXXXXXXXXXX.", "..X..XXXXXXXX...", "....X..X..XX....", "....X.X....X...."],
                 ["................", "................", "................", "................", ".......X........", ".......X.X......", ".....XXXXXXX....", "...XXXXXXXXXX...", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXX..XX.", ".XX.XXXXXXXXXXX.", "..X..XXXXXXXX...", "....X..X..XX....", "....X.X....X...."],
@@ -1344,7 +1344,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "fish_hollowfin", req: Requirement())
         ]),
-        Species(id: "fish_prismara", name: "Prismara", stage: .ultimate, blurb: "The rainbow spirit of the reef.", family: "fish", line: "reef",
+        Species(id: "fish_prismara", name: "Prismara", stage: .ultimate, blurb: "The rainbow spirit of the reef.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 ["................", "................", "................", "........X.X.X.X.", ".......XX.....X.", ".......XXXX.X.X.", ".X....XXXXX.....", ".XX..XXXXXXX....", ".XXX.XXXXXXX.X..", "..XXXX.X.X.XXXXX", ".XXX.XXXXXXXXX..", ".XX..XXX.X.X....", ".X....XXXXX.....", "......X.X.......", "................", "....X.X.X.X.X..."],
                 ["................", "................", "................", "........X.X.X.X.", ".......XX.....X.", ".......XXXX.X.X.", ".X....XXXXX.....", ".XX..XXXXXXX....", ".XXX.XXXXXXXXX..", "..XXXX.X.X.XXXXX", ".XXX.XXXXXXXXX..", ".XX..XXX.X.X....", ".X....XXXXX.....", "......X.X.......", "................", "....X.X.X.X.X..."],
@@ -1354,7 +1354,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "................XX..XX..XX..XX..", "...............XXX..XX..XX..XX..", "...............XXX..........XX..", "..............XXXXX.........XX..", "..............XXXXXXX...XX..XX..", ".............XXXXXXXXX..XX..XX..", "..XX.........XXXXXXXXX..........", "..XXX......XXXXXXXXXXXX.........", "..XXX......XXXXXXXXXXXX.........", "..XXXXX...XXXXXXXXXXXXXXX.......", "..XXXXX...XXXXXXXXXXXXXXXXX.....", "...XXXXX..XXXXXXXXXXXXXXXXXXX...", "....XXXXXXXX..XX..XX..XXXXXXXXXX", "....XXXXXXXX..XX..XX..XXXXXXXXXX", "...XXXXX..XXXXXXXXXXXXXXXXXXX...", "..XXXXX...XXXXXXXXXXXXXXXXX.....", "..XXXXX...XXXXXX..XX..XXX.......", "..XXX......XXXXX..XX..XX........", "..XXX......XXXXXXXXXXXX.........", "..XX........XXXXXXXXXX..........", "............XX..XXX.............", "............XX..XX..............", "................................", "................................", "........XX..XX..XX..XX..XX......", "........XX..XX..XX..XX..XX......"],
             ],
             evolutions: []),
-        Species(id: "fish_seamonarch", name: "Sea Monarch", stage: .ultimate, blurb: "Crowned seahorse who rules the kelp.", family: "fish", line: "reef",
+        Species(id: "fish_seamonarch", name: "Sea Monarch", stage: .ultimate, blurb: "Crowned seahorse who rules the kelp.", family: "fish", line: "reef", bodyHex: "#E08A5C",
             frames: [
                 [".......XXXXXX...", ".........X......", "........XXXX....", "........XX.X....", "........XXXXXXX.", ".......XXXX.....", "......XXXXXX....", "......XXXXXX....", "....XXXXXXXX....", ".....XXXXXX.....", "......XXXX......", ".....XXXXX......", "...X..XXXX......", "...XX.XXX.......", "....X.XX........", "...XXXXXXX......"],
                 [".......XXXXXX...", ".........X......", "........XXXX....", "........XXXX....", "........XXXXXXX.", ".......XXXX.....", "......XXXXXX....", "......XXXXXX....", "....XXXXXXXX....", ".....XXXXXX.....", "......XXXX......", ".....XXXXX......", "...X..XXXX......", "...XX.XXX.......", "....X.XX........", "...XXXXXXX......"],
@@ -1364,7 +1364,7 @@ enum SpeciesData {
                 ["..............XXXXXXXXXXXX......", "..............XXXXXXXXXXXX......", "..................XX............", "..................XX............", ".................XXXXXX.........", "................XXXXXXXX........", "................XXXXXXXX........", "................XXXXXXXXX.......", "................XXXXXXXXXXXXXX..", "...............XXXXXXXXXXXXXXX..", "...............XXXXXXX..........", ".............XXXXXXXXX..........", ".............XXXXXXXXXX.........", "............XXXXXXXXXXXX........", "............XXXXXXXXXXXX........", "...........XXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXX.........", ".........XXXXXXXXXXXXXX.........", "...........XXXXXXXXXX...........", "............XXXXXXXXX...........", "............XXXXXXXX............", "..........XXXXXXXXXX............", "..........XXXXXXXXXX............", "......XX...XXXXXXXXX............", "......XXX...XXXXXXX.............", "......XXX...XXXXXXX.............", ".......XXX..XXXXX...............", "........XX..XXXX................", "........XX..XXXX................", "......XXXXXXXXXXXXXX............", "......XXXXXXXXXXXXXX............"],
             ],
             evolutions: []),
-        Species(id: "fish_lanternking", name: "Lantern King", stage: .ultimate, blurb: "The angler king, with a lamp like a star.", family: "fish", line: "deep",
+        Species(id: "fish_lanternking", name: "Lantern King", stage: .ultimate, blurb: "The angler king, with a lamp like a star.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", ".......X....X.X.", ".......X....X...", ".......X.X.XX.X.", "...X.XXXXXXXX...", "...XXXXXXXXXX...", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXX.XX.", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXX..XX.", ".X..XXXXXXXXXXX.", ".....XXXXXXXX...", ".......X..XX....", "......X....X...."],
                 ["................", "................", "................", ".......X....X.X.", ".......X....X...", ".......X.X.XX.X.", "...X.XXXXXXXX...", "...XXXXXXXXXX...", ".X.XXXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXXXXXX.", ".XXXXXXXXXX..XX.", ".X..XXXXXXXXXXX.", ".....XXXXXXXX...", ".......X..XX....", "......X....X...."],
@@ -1374,7 +1374,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "..............XX........XX..XX..", "..............XX........XX..XX..", "..............XX........XX......", "..............XX.......XXX......", "..............XX..XX...XXX..XX..", ".............XXX..XX..XXXX..XX..", "......XX...XXXXXXXXXXXXXXX......", "......XX..XXXXXXXXXXXXXXXX......", "......XXXXXXXXXXXXXXXXXXXX......", "......XXXXXXXXXXXXXXXXXXXXX.....", "..XX..XXXXXXXXXXXXXXXXXXXXX.....", "..XX..XXXXXXXXXXXXXXXXXXXXXXX...", "..XXXXXXXXXXXXXXXXXXXXXXXXXXX...", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXX..", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXX..", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXX..", "..XXXXXXXXXXXXXXXXXXXX....XXXX..", "..XXXXXXXXXXXXXXXXXXXX....XXXX..", "..XXX..XXXXXXXXXXXXXXXXXXXXXXX..", "..XX.....XXXXXXXXXXXXXXXXXXXX...", ".........XXXXXXXXXXXXXXXXXX.....", "...........XXXXXXXXXXXXXX.......", "..............XXX..XXXXXX.......", "..............XX.....XXX........", "............XXX......XXX........", "............XX........XX........"],
             ],
             evolutions: []),
-        Species(id: "fish_tidewyrm", name: "Tidewyrm", stage: .ultimate, blurb: "A gentle sea serpent with horns and a sail.", family: "fish", line: "deep",
+        Species(id: "fish_tidewyrm", name: "Tidewyrm", stage: .ultimate, blurb: "A gentle sea serpent with horns and a sail.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["................", "................", "................", "..............X.", "................", "...........X...X", "...........XX.XX", "............X.XX", ".............X..", "...XXXX.....X.XX", "..XXXXXXX..XXXXX", "XXXXXXXXXXXXXXXX", ".XXX..XXXXXXXXX.", ".XX....XXXXXXX..", "........XXXXX...", "...X.X.X.X.X...."],
                 ["................", "................", "................", "..............X.", "................", "...........X...X", "...........XX.XX", "............X.XX", ".............X..", "...XXXX.....XXXX", "..XXXXXXX..XXXXX", "XXXXXXXXXXXXXXXX", ".XXX..XXXXXXXXX.", ".XX....XXXXXXX..", "........XXXXX...", "...X.X.X.X.X...."],
@@ -1384,7 +1384,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "............................XX..", "............................XX..", "................................", "................................", "......................XX......XX", "......................XXX....XXX", "......................XXX....XXX", ".......................XXX..XXXX", ".......................XXX..XXXX", "........................XX...XX.", "..........................XX....", "..........................XX....", ".......XXXXXX............XXXXXX.", ".....XXXXXXXXXX........XXXXXXXXX", ".....XXXXXXXXXXXX......XXXXXXXXX", "...XXXXXXXXXXXXXXXX..XXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.", ".XXXXXXXX..XXXXXXXXXXXXXXXXXXXX.", "..XXXXX......XXXXXXXXXXXXXXXX...", "..XXXXX......XXXXXXXXXXXXXXXX...", "...XX..........XXXXXXXXXXXX.....", "................XXXXXXXXXXX.....", ".................XXXXXXXX.......", "......XX..XX..XX..XX..XXX.......", "......XX..XX..XX..XX..XX........"],
             ],
             evolutions: []),
-        Species(id: "fish_aurorabell", name: "Aurorabell", stage: .ultimate, blurb: "A jelly bright as the northern lights.", family: "fish", line: "deep",
+        Species(id: "fish_aurorabell", name: "Aurorabell", stage: .ultimate, blurb: "A jelly bright as the northern lights.", family: "fish", line: "deep", bodyHex: "#3F5F8A",
             frames: [
                 ["......XXXXX.....", "................", "......XXXXX.....", ".....XXXXXXX....", "....XXXXXXXXX...", "....XXXX.XXXX...", "....XXXXXXXXX...", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X...", ".....X.X.X.X....", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X..."],
                 ["......XXXXX.....", "................", "......XXXXX.....", ".....XXXXXXX....", "....XXXXXXXXX...", "....XXXXXXXXX...", "....XXXXXXXXX...", "...XXXXXXXXXXX..", "....XXXXXXXXX...", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X...", ".....X.X.X.X....", ".....X.X.X.X....", "......X.X.X.X...", "......X.X.X.X..."],
@@ -1394,7 +1394,7 @@ enum SpeciesData {
                 ["............XXXXXXXXXX..........", "............XXXXXXXXXX..........", "................................", "................................", ".............XXXXXXXX...........", "...........XXXXXXXXXXXX.........", "...........XXXXXXXXXXXX.........", ".........XXXXXXXXXXXXXXXX.......", ".........XXXXXXXXXXXXXXXX.......", "........XXXXXXXXXXXXXXXXXX......", "........XXXXXXXXXXXXXXXXXX......", "........XXXXXXXXXXXXXXXXXX......", "........XXXXXXXXXXXXXXXXXX......", ".......XXXXXXXXXXXXXXXXXXXX.....", "......XXXXXXXXXXXXXXXXXXXXXX....", "......XXXXXXXXXXXXXXXXXXXXXX....", ".......XXXXXXXXXXXXXXXXXXXX.....", ".........XXXXXXXXXXXXXXXX.......", ".........XXX..XX..XX..XX........", "..........XX..XX..XX..XX........", "...........XXX..XX..XX..XX......", "............XX..XX..XX..XX......", "............XX..XX..XX..XX......", "...........XXX..XX..XX..XX......", "..........XX..XX..XX..XXX.......", "..........XX..XX..XX..XX........", "..........XX..XX..XX..XX........", "..........XX..XX..XX..XXX.......", "...........XXX..XX..XX..XX......", "............XX..XX..XX..XX......", "............XX..XX..XX..XX......", "............XX..XX..XX..XX......"],
             ],
             evolutions: []),
-        Species(id: "fish_dragonkoi", name: "Koi Dragon", stage: .ultimate, blurb: "A koi that climbed the waterfall and became a dragon.", family: "fish", line: "pond",
+        Species(id: "fish_dragonkoi", name: "Koi Dragon", stage: .ultimate, blurb: "A koi that climbed the waterfall and became a dragon.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "................", "........X.......", ".......XX..X..XX", "......XXXXXX..X.", ".X..XXXXXXXXXXX.", ".XXXXXXXXXXXX.XX", ".XXXX.X.X.X.XXX.", ".XXXXXXXXXXXXXXX", ".X..XXX.X.X.XX..", "......XXXXX.....", "X....XX.X.......", "................", "....X.X.X.X.X..."],
                 ["................", "................", "................", "................", "........X.......", ".......XX..X..XX", "......XXXXXX..X.", ".X..XXXXXXXXXXX.", ".XXXXXXXXXXXXXXX", ".XXXX.X.X.X.XXX.", ".XXXXXXXXXXXXXXX", ".X..XXX.X.X.XX..", "......XXXXX.....", "X....XX.X.......", "................", "....X.X.X.X.X..."],
@@ -1404,7 +1404,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................XX..............", "...............XXX..............", "...............XXX....XX.....XXX", ".............XXXXXX..XXX....XXXX", ".............XXXXXXXXXXX....XXX.", "...........XXXXXXXXXXXXXX..XXX..", "..XX.....XXXXXXXXXXXXXXXXXXXXX..", "..XXX..XXXXXXXXXXXXXXXXXXXXXXXX.", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "..XXXXXXXX..XX..XX..XX..XXXXXX..", "..XXXXXXXX..XX..XX..XX..XXXXXX..", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "..XXX..XXXXXXX..XX..XX..XXXXX...", "..XX.....XXXXX..XX..XX...XX.....", "............XXXXXXXXXX..........", "............XXXXXXXXX...........", "XX........XXXX..XXX.............", "XX........XXX...XX..............", "................................", "................................", "........XX..XX..XX..XX..XX......", "........XX..XX..XX..XX..XX......"],
             ],
             evolutions: []),
-        Species(id: "fish_tidewhale", name: "Tidewhale", stage: .ultimate, blurb: "A great whale singing the tides in and out.", family: "fish", line: "pond",
+        Species(id: "fish_tidewhale", name: "Tidewhale", stage: .ultimate, blurb: "A great whale singing the tides in and out.", family: "fish", line: "pond", bodyHex: "#E3A04B",
             frames: [
                 ["................", "................", "................", "X...........XX..", ".X..X.....X..X.X", "..XXX.......X...", "..XXX.......X.X.", "..X...XXXXXX....", "...XXXXXXXXXXX..", "...XXXXXXXXXX.X.", "...XXXXXXXXXXXXX", "...XXXXXXXXXXXXX", "...XXXXXXXXXXXX.", "....XXXX.X..XXX.", "......XXXXXXXX..", "................"],
                 ["................", "................", "................", "X...........XX..", ".X..X.....X..X.X", "..XXX.......X...", "..XXX.......X.X.", "..X...XXXXXX....", "...XXXXXXXXXXX..", "...XXXXXXXXXXXX.", "...XXXXXXXXXXXXX", "...XXXXXXXXXXXXX", "...XXXXXXXXXXXX.", "....XXXX.X..XXX.", "......XXXXXXXX..", "................"],
@@ -1414,7 +1414,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "................................", "................................", "XX......................XXX.....", "XXX.....................XXXX....", ".XXX....XX..........XX....XX..XX", "..XXX..XXX..........XX....XX..XX", "...X.XXXXX..............XXX.....", "....XXXXXX..............XX......", "....XXXXXX..............XX..XX..", "....XXXXX..............XXX..XX..", "....XX.......XXXXXXXXXX.........", "....XX.....XXXXXXXXXXXXX........", ".....X.XXXXXXXXXXXXXXXXXXXX.....", "......XXXXXXXXXXXXXXXXXXXXXXX...", "......XXXXXXXXXXXXXXXXXXXXXXX...", "......XXXXXXXXXXXXXXXXXXXXXXXXX.", "......XXXXXXXXXXXXXXXXXXXXXXXXX.", "......XXXXXXXXXXXXXXXXXXXXXXXXXX", "......XXXXXXXXXXXXXXXXXXXXXXXXXX", "......XXXXXXXXXXXXXXXXXXXXXXXXX.", "......XXXXXXXXXXXXXXXXXXXXXXXXX.", ".......XXXXXXXXXXXXXXXXXXXXXXX..", ".......XXXXXXXXX..XX....XXXXXX..", ".........XXXXXXX..XX....XXXXX...", "...........XXXXXXXXXXXXXXXXXX...", ".............XXXXXXXXXXXXXX.....", "................................", "................................"],
             ],
             evolutions: []),
-        Species(id: "fish_hollowfin", name: "Hollowfin", stage: .ultimate, blurb: "A ghostly wreck-fish drifting by moonlight.", family: "fish", line: "stray",
+        Species(id: "fish_hollowfin", name: "Hollowfin", stage: .ultimate, blurb: "A ghostly wreck-fish drifting by moonlight.", family: "fish", line: "stray", bodyHex: "#8E8F78",
             frames: [
                 ["................", "................", ".............X..", "........X.......", "........X......X", "........XXX.....", "......XXXXX.X.X.", ".XX.XXXXXXXXXX..", ".XXXXXXXXXXX.XX.", ".XXXXXX.XXXXXXXX", ".XXX.XXXXXXXXXX.", ".XX..XXXXXXXXXX.", "..X....X.X......", "..X...XXX.......", "..X.............", "..X.X.X.X.X.X..."],
                 ["................", "................", ".............X..", "........X.......", "........X......X", "........XXX.....", "......XXXXX.X.X.", ".XX.XXXXXXXXXX..", ".XXXXXXXXXXXXXX.", ".XXXXXX.XXXXXXXX", ".XXX.XXXXXXXXXX.", ".XX..XXXXXXXXXX.", "..X....X.X......", "..X...XXX.......", "..X.............", "..X.X.X.X.X.X..."],
@@ -1424,7 +1424,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "..........................XX....", "..........................XX....", "................XX..............", "................XX..............", "................XX............XX", "................XXX...........XX", "................XXXXX...........", "...............XXXXXXX..........", ".............XXXXXXXXX..XX..XX..", "...........XXXXXXXXXXX..XX..XX..", "...XX....XXXXXXXXXXXXXXXXXX.....", "..XXXX..XXXXXXXXXXXXXXXXXXXX....", "..XXXXXXXXXXXXXXXXXXXXXXXXXXX...", "..XXXXXXXXXXXXXXXXXXXXXXXXXXXXX.", "..XXXXXXXXXXXX..XXXXXXXXXXXXXXXX", "..XXXXXXXXXXXX..XXXXXXXXXXXXXXXX", "..XXXXXX..XXXXXXXXXXXXXXXXXXXXX.", "..XXXXX...XXXXXXXXXXXXXXXXXXXX..", "..XXXXX...XXXXXXXXXXXXXXXXXXXX..", "...XXX.....XXXXXXXXXXXXXXXXXX...", "...XXX........XX..XXX...........", "....XX........XX..XX............", "....XX......XXXXXXX.............", "....XX......XXXXXX..............", "....XX..........................", "....XX..........................", "....XX..XX..XX..XX..XX..XX......", "....XX..XX..XX..XX..XX..XX......"],
             ],
             evolutions: []),
-        Species(id: "bird_downy", name: "Downy", stage: .baby, blurb: "All fluff and no feathers yet.", family: "bird", line: "baby",
+        Species(id: "bird_downy", name: "Downy", stage: .baby, blurb: "All fluff and no feathers yet.", family: "bird", line: "baby", bodyHex: "#EBDCA0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", "........XX......", "........XX......", ".......XX.X.....", ".....XXXXXXXX...", ".....XXXXXX.....", ".....XXXXXX.....", "......XXXX......", ".......XXX......"],
                 ["................", "................", "................", "................", "................", "................", "................", "................", "........XX......", "........XX......", ".......XXXX.....", ".....XXXXXXXX...", ".....XXXXXX.....", ".....XXXXXX.....", "......XXXX......", ".......XXX......"],
@@ -1439,7 +1439,7 @@ enum SpeciesData {
             Evolution(to: "bird_chirp", req: Requirement(lead: .veggie)),
             Evolution(to: "bird_ducklet", req: Requirement(lead: .pasta))
         ]),
-        Species(id: "bird_pipkin", name: "Pipkin", stage: .baby, blurb: "Peeps at everything, tuft askew.", family: "bird", line: "baby",
+        Species(id: "bird_pipkin", name: "Pipkin", stage: .baby, blurb: "Peeps at everything, tuft askew.", family: "bird", line: "baby", bodyHex: "#EBDCA0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "...........XX...", ".........X.X....", "........XXXX....", "........XX......", ".......XX.X.....", ".....XXXXXXXX...", ".....XXXXXX.....", ".....XXXXXX.....", ".....XXXXX......", ".......XXX......"],
                 ["................", "................", "................", "................", "................", "................", "...........XX...", ".........X.X....", "........XXXX....", "........XX......", ".......XXXX.....", ".....XXXXXXXX...", ".....XXXXXX.....", ".....XXXXXX.....", ".....XXXXX......", ".......XXX......"],
@@ -1454,7 +1454,7 @@ enum SpeciesData {
             Evolution(to: "bird_ducklet", req: Requirement(lead: .pasta)),
             Evolution(to: "bird_owlet", req: Requirement(lead: .meat))
         ]),
-        Species(id: "bird_chirp", name: "Chirp", stage: .child, blurb: "Sings before it can fly.", family: "bird", line: "songbird",
+        Species(id: "bird_chirp", name: "Chirp", stage: .child, blurb: "Sings before it can fly.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", "................", "................", "................", "...........XX...", "...........X....", ".........XXX....", "........X.......", ".......XXXX.....", ".......XXX.X....", ".....XXXXXXXX...", "....XXXXXXX.....", "....XXXXXXXX....", ".....XXXXXX.....", ".....XXXXX......", ".......XXXX....."],
                 ["................", "................", "................", "................", "...........XX...", "...........X....", ".........XXX....", "........X.......", ".......XXXX.....", ".......XXXXX....", ".....XXXXXXXX...", "....XXXXXXX.....", "....XXXXXXXX....", ".....XXXXXX.....", ".....XXXXX......", ".......XXXX....."],
@@ -1469,7 +1469,7 @@ enum SpeciesData {
             Evolution(to: "bird_robin", req: Requirement(smarts: 12)),
             Evolution(to: "bird_finch", req: Requirement())
         ]),
-        Species(id: "bird_owlet", name: "Owlet", stage: .child, blurb: "Wide-eyed and wobbly at night.", family: "bird", line: "raptor",
+        Species(id: "bird_owlet", name: "Owlet", stage: .child, blurb: "Wide-eyed and wobbly at night.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "......XXXXX.....", "......XXXXXX....", ".....XX.X.XX....", "......X.XXXX....", "......XXXXX.....", "......XXXXX.....", ".....XXXXXX.....", "......XXXXX.....", "......XXXX......", ".......XXXX....."],
                 ["................", "................", "................", "................", "................", "................", "......XXXXX.....", "......XXXXXX....", ".....XX.XXXX....", "......X.XXXX....", "......XXXXX.....", "......XXXXX.....", ".....XXXXXX.....", "......XXXXX.....", "......XXXX......", ".......XXXX....."],
@@ -1484,7 +1484,7 @@ enum SpeciesData {
             Evolution(to: "bird_hawk", req: Requirement(train: 3)),
             Evolution(to: "bird_falcon", req: Requirement())
         ]),
-        Species(id: "bird_ducklet", name: "Ducklet", stage: .child, blurb: "Waddles to every puddle.", family: "bird", line: "waterfowl",
+        Species(id: "bird_ducklet", name: "Ducklet", stage: .child, blurb: "Waddles to every puddle.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "..........XX....", "..........X.X...", "..........XXXXX.", "...X..XXX.X.....", "....XXXXXXX.....", "....XXXXXXXX....", "....XXXXXXX.....", ".......XX.......", ".......XXX......"],
                 ["................", "................", "................", "................", "................", "................", "................", "..........XX....", "..........XXX...", "..........XXXXX.", "...X..XXX.X.....", "....XXXXXXX.....", "....XXXXXXXX....", "....XXXXXXX.....", ".......XX.......", ".......XXX......"],
@@ -1499,7 +1499,7 @@ enum SpeciesData {
             Evolution(to: "bird_heron", req: Requirement(smarts: 12)),
             Evolution(to: "bird_teal", req: Requirement())
         ]),
-        Species(id: "bird_scruff", name: "Scruff", stage: .child, blurb: "Grubby and wary, sleeps on ledges.", family: "bird", line: "stray",
+        Species(id: "bird_scruff", name: "Scruff", stage: .child, blurb: "Grubby and wary, sleeps on ledges.", family: "bird", line: "stray", bodyHex: "#9A9A98",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "..........X.....", "........XXX.....", "......XXXXXXX...", "....XXXXXXXX....", "....XXXXXXXX....", "....XXXXXXXX....", "...XXXXXXXX.....", "..XXX.XXXX......", "...X...XXX......"],
                 ["................", "................", "................", "................", "................", "................", "................", "..........X.....", "........XXXX....", "......XXXXXXX...", "....XXXXXXXX....", "....XXXXXXXX....", "....XXXXXXXX....", "...XXXXXXXX.....", "..XXX.XXXX......", "...X...XXX......"],
@@ -1512,7 +1512,7 @@ enum SpeciesData {
             Evolution(to: "bird_dustling", req: Requirement(train: 3)),
             Evolution(to: "bird_sootwing", req: Requirement())
         ]),
-        Species(id: "bird_sparrow", name: "Sparrow", stage: .teen, blurb: "Small, brave and always hopping.", family: "bird", line: "songbird",
+        Species(id: "bird_sparrow", name: "Sparrow", stage: .teen, blurb: "Small, brave and always hopping.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "........XXXX....", "........XXX.X...", "......XXXXXXXX..", ".....XXXXXXX....", "....XX.XXXXX....", "....XXX.XXXX....", "...XXXXXXXXX....", "..XX..XXXXX.....", ".XX....X.X......", ".......XXXX....."],
                 ["................", "................", "................", "................", "................", "................", "........XXXX....", "........XXXXX...", "......XXXXXXXX..", ".....XXXXXXX....", "....XX.XXXXX....", "....XXX.XXXX....", "...XXXXXXXXX....", "..XX..XXXXX.....", ".XX....X.X......", ".......XXXX....."],
@@ -1526,7 +1526,7 @@ enum SpeciesData {
             Evolution(to: "bird_nightingale", req: Requirement(smarts: 20)),
             Evolution(to: "bird_lark", req: Requirement())
         ]),
-        Species(id: "bird_robin", name: "Robin", stage: .teen, blurb: "Round red breast, sharp wits.", family: "bird", line: "songbird",
+        Species(id: "bird_robin", name: "Robin", stage: .teen, blurb: "Round red breast, sharp wits.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "........XXXX....", "........XXX.X...", ".....XXXXXXXXX..", "....XXXXXXXX....", "....XX.XXXXXX...", "....XXX.XXXXX...", "...XX.....XX....", "..XX.XXXXXX.....", ".......X.X......", ".......XXXX....."],
                 ["................", "................", "................", "................", "................", "................", "........XXXX....", "........XXXXX...", ".....XXXXXXXXX..", "....XXXXXXXX....", "....XX.XXXXXX...", "....XXX.XXXXX...", "...XX.....XX....", "..XX.XXXXXX.....", ".......X.X......", ".......XXXX....."],
@@ -1540,7 +1540,7 @@ enum SpeciesData {
             Evolution(to: "bird_nightingale", req: Requirement(smarts: 20)),
             Evolution(to: "bird_jay", req: Requirement())
         ]),
-        Species(id: "bird_finch", name: "Finch", stage: .teen, blurb: "A bright little crest and a cheerful trill.", family: "bird", line: "songbird",
+        Species(id: "bird_finch", name: "Finch", stage: .teen, blurb: "A bright little crest and a cheerful trill.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", "................", ".........X......", ".......X.XX.....", ".......XXXXX....", "........XXXX....", "........XXXX....", "........XXX.X...", ".....XXXXXXXXX..", "....XXXXXXXX....", "....XX.XXXXXX...", "....XXX.XXXXX...", "...XXXXXXXXX....", "..XX.XXXXXX.....", ".......X.X......", ".......XXXX....."],
                 ["................", "................", ".........X......", ".......X.XX.....", ".......XXXXX....", "........XXXX....", "........XXXX....", "........XXXXX...", ".....XXXXXXXXX..", "....XXXXXXXX....", "....XX.XXXXXX...", "....XXX.XXXXX...", "...XXXXXXXXX....", "..XX.XXXXXX.....", ".......X.X......", ".......XXXX....."],
@@ -1554,7 +1554,7 @@ enum SpeciesData {
             Evolution(to: "bird_jay", req: Requirement(wins: 2)),
             Evolution(to: "bird_lark", req: Requirement())
         ]),
-        Species(id: "bird_owl", name: "Owl", stage: .teen, blurb: "Round, soft and very patient.", family: "bird", line: "raptor",
+        Species(id: "bird_owl", name: "Owl", stage: .teen, blurb: "Round, soft and very patient.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", "................", "...........X....", ".....XXXXXXX....", ".....XXXXXXX....", ".....XX.XX.XX...", ".....XX.XXXXX...", ".....XXXXXXX....", ".....XXXXX.X....", "....XXXXXX.XX...", "....XXXXXXX.X...", "....XXXXXX.XX...", ".....XXXX.XX....", ".....XXXXXX.....", ".......XXXX....."],
                 ["................", "................", "................", "...........X....", ".....XXXXXXX....", ".....XXXXXXX....", ".....XX.XXXXX...", ".....XX.XXXXX...", ".....XXXXXXX....", ".....XXXXX.X....", "....XXXXXX.XX...", "....XXXXXXX.X...", "....XXXXXX.XX...", ".....XXXX.XX....", ".....XXXXXX.....", ".......XXXX....."],
@@ -1567,7 +1567,7 @@ enum SpeciesData {
             Evolution(to: "bird_ledgewing", req: Requirement(mistMin: 4)),
             Evolution(to: "bird_hornowl", req: Requirement())
         ]),
-        Species(id: "bird_hawk", name: "Hawk", stage: .teen, blurb: "Sharp-eyed and strong-winged.", family: "bird", line: "raptor",
+        Species(id: "bird_hawk", name: "Hawk", stage: .teen, blurb: "Sharp-eyed and strong-winged.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", "................", "................", "................", ".........XXX....", "........XXX.XX..", "......XXXXXX.X..", ".....XXXXXXX....", "....XXX..XXX....", "....XX..XXXX....", "....XX.XXXXX....", "....X.XXXXX.....", "...XXXXXXXX.....", "..XXXXXXXX......", ".X.XX..XXXX....."],
                 ["................", "................", "................", "................", "................", ".........XXX....", "........XXXXXX..", "......XXXXXX.X..", ".....XXXXXXX....", "....XXX..XXX....", "....XX..XXXX....", "....XX.XXXXX....", "....X.XXXXX.....", "...XXXXXXXX.....", "..XXXXXXXX......", ".X.XX..XXXX....."],
@@ -1581,7 +1581,7 @@ enum SpeciesData {
             Evolution(to: "bird_peregrine", req: Requirement(wins: 3)),
             Evolution(to: "bird_harrier", req: Requirement())
         ]),
-        Species(id: "bird_falcon", name: "Falcon", stage: .teen, blurb: "Streaks across the sky.", family: "bird", line: "raptor",
+        Species(id: "bird_falcon", name: "Falcon", stage: .teen, blurb: "Streaks across the sky.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", "................", "................", "................", ".........XXX....", "........XXX.XX..", "......XXXXXX.X..", ".....XXXXXXX....", ".....XX..XX.....", ".....X..XXX.....", ".....X.XXXX.....", "......XXXXX.....", "...XXXXXXX......", "..XXXXXXXX......", "...XXX.XXXX....."],
                 ["................", "................", "................", "................", "................", ".........XXX....", "........XXXXXX..", "......XXXXXX.X..", ".....XXXXXXX....", ".....XX..XX.....", ".....X..XXX.....", ".....X.XXXX.....", "......XXXXX.....", "...XXXXXXX......", "..XXXXXXXX......", "...XXX.XXXX....."],
@@ -1595,7 +1595,7 @@ enum SpeciesData {
             Evolution(to: "bird_harrier", req: Requirement(wins: 3)),
             Evolution(to: "bird_peregrine", req: Requirement())
         ]),
-        Species(id: "bird_mallard", name: "Mallard", stage: .teen, blurb: "Plump, glossy and sure of itself.", family: "bird", line: "waterfowl",
+        Species(id: "bird_mallard", name: "Mallard", stage: .teen, blurb: "Plump, glossy and sure of itself.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "................", "................", "................", "...........XX...", "..........XX.X..", "..........XXXXXX", "..........XXXXXX", "..X..XXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXX.XXX....", "...XXXXXXXXX....", "....XXXXXXX.....", ".......XXX......"],
                 ["................", "................", "................", "................", "................", "...........XX...", "..........XXXX..", "..........XXXXXX", "..........XXXXXX", "..X..XXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXX....", "...XXXXX.XXX....", "...XXXXXXXXX....", "....XXXXXXX.....", ".......XXX......"],
@@ -1608,7 +1608,7 @@ enum SpeciesData {
             Evolution(to: "bird_ledgewing", req: Requirement(mistMin: 4)),
             Evolution(to: "bird_goose", req: Requirement())
         ]),
-        Species(id: "bird_heron", name: "Heron", stage: .teen, blurb: "Stands still in the shallows, thinking.", family: "bird", line: "waterfowl",
+        Species(id: "bird_heron", name: "Heron", stage: .teen, blurb: "Stands still in the shallows, thinking.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "................", "................", "..........XX....", "..........XXXXXX", "..........XX....", "..........XX....", ".....XXXXXXX....", "...XX..XX.XX....", "...XXX....X.....", ".....XXXXX......", ".......X.X......", ".......X.X......", ".......X.X......", ".......XXXX....."],
                 ["................", "................", "................", "................", "..........XXX...", "..........XXXXXX", "..........XX....", "..........XX....", ".....XXXXXXX....", "...XX..XX.XX....", "...XXX....X.....", ".....XXXXX......", ".......X.X......", ".......X.X......", ".......X.X......", ".......XXXX....."],
@@ -1622,7 +1622,7 @@ enum SpeciesData {
             Evolution(to: "bird_swan", req: Requirement(smarts: 20)),
             Evolution(to: "bird_egret", req: Requirement())
         ]),
-        Species(id: "bird_teal", name: "Teal", stage: .teen, blurb: "Quick little swimmer.", family: "bird", line: "waterfowl",
+        Species(id: "bird_teal", name: "Teal", stage: .teen, blurb: "Quick little swimmer.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "................", "................", "................", "...........XX...", "..........XX.X..", "..........XXXXXX", "..........XXX...", "..X..XXXXXXX....", "...XXXXXXXXX....", "...XX..X..XX....", "..........XX....", "....XXXXXXX.....", ".......XX.......", ".......XXX......"],
                 ["................", "................", "................", "................", "................", "...........XX...", "..........XXXX..", "..........XXXXXX", "..........XXX...", "..X..XXXXXXX....", "...XXXXXXXXX....", "...XX..X..XX....", "..........XX....", "....XXXXXXX.....", ".......XX.......", ".......XXX......"],
@@ -1636,7 +1636,7 @@ enum SpeciesData {
             Evolution(to: "bird_kingfisher", req: Requirement(wins: 2)),
             Evolution(to: "bird_goose", req: Requirement())
         ]),
-        Species(id: "bird_dustling", name: "Dustling", stage: .teen, blurb: "Scrappy pigeon, always dusty.", family: "bird", line: "stray",
+        Species(id: "bird_dustling", name: "Dustling", stage: .teen, blurb: "Scrappy pigeon, always dusty.", family: "bird", line: "stray", bodyHex: "#9A9A98",
             frames: [
                 ["................", "................", "................", "................", "...........X....", "...........X....", ".......X.XXX....", ".....X.X.XX.X...", ".....XXXXXXXXX..", "...XXXXXXXXX....", "...XX.XXXXXX....", "...XXX.X..XX....", "...XXXX..XXX....", ".XXXXXXXXXX.....", ".XXX..XXXX......", "..X....XXXX....."],
                 ["................", "................", "................", "................", "...........X....", "...........X....", ".......X.XXX....", ".....X.X.XXXX...", ".....XXXXXXXXX..", "...XXXXXXXXX....", "...XX.XXXXXX....", "...XXX.X..XX....", "...XXXX..XXX....", ".XXXXXXXXXX.....", ".XXX..XXXX......", "..X....XXXX....."],
@@ -1648,7 +1648,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_tatterdove", req: Requirement())
         ]),
-        Species(id: "bird_sootwing", name: "Sootwing", stage: .teen, blurb: "Patchy feathers, tough as nails.", family: "bird", line: "stray",
+        Species(id: "bird_sootwing", name: "Sootwing", stage: .teen, blurb: "Patchy feathers, tough as nails.", family: "bird", line: "stray", bodyHex: "#9A9A98",
             frames: [
                 ["................", "................", "................", "................", "................", "...........X....", ".........XXX....", ".....X.X.XX.X...", ".....XXXXXXXXX..", "....XXXXX.XX....", "...XX..XXXXX....", "...XXX.X..XX....", "...XXXX..XXX....", ".XXXXXXXXXX.....", ".XXX..XXXX......", "..X....XXXX....."],
                 ["................", "................", "................", "................", "................", "...........X....", ".........XXX....", ".....X.X.XXXX...", ".....XXXXXXXXX..", "....XXXXX.XX....", "...XX..XXXXX....", "...XXX.X..XX....", "...XXXX..XXX....", ".XXXXXXXXXX.....", ".XXX..XXXX......", "..X....XXXX....."],
@@ -1661,7 +1661,7 @@ enum SpeciesData {
             Evolution(to: "bird_tatterdove", req: Requirement(train: 3)),
             Evolution(to: "bird_ledgewing", req: Requirement())
         ]),
-        Species(id: "bird_lark", name: "Lark", stage: .adult, blurb: "Sings the sun up from a fencepost.", family: "bird", line: "songbird",
+        Species(id: "bird_lark", name: "Lark", stage: .adult, blurb: "Sings the sun up from a fencepost.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", ".........X.X.XX.", "........XXXX.X..", "........XXXXXX..", ".........XXX....", "........XXXXX...", "........XXX.XX..", ".....XXXXXXXXXX.", "....XXXXXXXXX...", "....X.XXXXXXX...", "...XXX..XXXXX...", "...XXXX.XXXXX...", ".XXXXXXXXXXX....", ".XX...XXXX......", "X......X.X......", ".......XXXX....."],
                 ["................", ".........X.X.XX.", "........XXXX.X..", "........XXXXXX..", ".........XXX....", "........XXXXX...", "........XXXXXX..", ".....XXXXXXXXXX.", "....XXXXXXXXX...", "....X.XXXXXXX...", "...XXX..XXXXX...", "...XXXX.XXXXX...", ".XXXXXXXXXXX....", ".XX...XXXX......", "X......X.X......", ".......XXXX....."],
@@ -1673,7 +1673,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_prismlark", req: Requirement())
         ]),
-        Species(id: "bird_nightingale", name: "Nightingale", stage: .adult, blurb: "A voice that stops the whole garden.", family: "bird", line: "songbird",
+        Species(id: "bird_nightingale", name: "Nightingale", stage: .adult, blurb: "A voice that stops the whole garden.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", ".............XX.", ".............X..", "............XX..", ".........XXX....", "........XXXXX...", "........XXX.XX..", ".....XXXXXXXXXX.", "....XXXXXXXXX...", "....X.XXXXXXX...", "...XXX..XXXXX...", "..XXXXX.XXXXX...", "..XXXXXXXXXX....", "XX....XXXX......", "XX.....X.X......", ".......XXXX....."],
                 ["................", ".............XX.", ".............X..", "............XX..", ".........XXX....", "........XXXXX...", "........XXXXXX..", ".....XXXXXXXXXX.", "....XXXXXXXXX...", "....X.XXXXXXX...", "...XXX..XXXXX...", "..XXXXX.XXXXX...", "..XXXXXXXXXX....", "XX....XXXX......", "XX.....X.X......", ".......XXXX....."],
@@ -1686,7 +1686,7 @@ enum SpeciesData {
             Evolution(to: "bird_moonfeather", req: Requirement(smarts: 40)),
             Evolution(to: "bird_prismlark", req: Requirement())
         ]),
-        Species(id: "bird_jay", name: "Jay", stage: .adult, blurb: "Bold, loud and rather clever.", family: "bird", line: "songbird",
+        Species(id: "bird_jay", name: "Jay", stage: .adult, blurb: "Bold, loud and rather clever.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", ".........X.X....", "........XXXX....", "........XXXX....", ".........XXX....", "........XXXXX...", "........XXX.XX..", ".....XXXXXXXXXX.", ".....XX.XX.XX...", "......X.XX.XX...", "...X.X..XX.XX...", "...X.XX.XX.XX...", ".XXXXXXXXXXX....", ".XX...XXXX......", "X......X.X......", ".......XXXX....."],
                 ["................", ".........X.X....", "........XXXX....", "........XXXX....", ".........XXX....", "........XXXXX...", "........XXXXXX..", ".....XXXXXXXXXX.", ".....XX.XX.XX...", "......X.XX.XX...", "...X.X..XX.XX...", "...X.XX.XX.XX...", ".XXXXXXXXXXX....", ".XX...XXXX......", "X......X.X......", ".......XXXX....."],
@@ -1699,7 +1699,7 @@ enum SpeciesData {
             Evolution(to: "bird_stormtalon", req: Requirement(wins: 5)),
             Evolution(to: "bird_prismlark", req: Requirement())
         ]),
-        Species(id: "bird_hornowl", name: "Hornowl", stage: .adult, blurb: "Tufted, wise and a little grumpy.", family: "bird", line: "raptor",
+        Species(id: "bird_hornowl", name: "Hornowl", stage: .adult, blurb: "Tufted, wise and a little grumpy.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", ".....X......X...", ".....XXXXX.XX...", ".....XXXXXXXX...", ".....XXXXXXXX...", "....XXX.XX.XX...", ".....XX.XXXXX...", ".....XXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", "....XXXXXXX.X...", "....XXXXXXX.X...", ".....X.....X....", ".....XXXXXXX....", "......XXXXX.....", "......XX.XX....."],
                 ["................", ".....X......X...", ".....XXXXX.XX...", ".....XXXXXXXX...", ".....XXXXXXXX...", "....XXX.XXXXX...", ".....XX.XXXXX...", ".....XXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", "....XXXXXXX.X...", "....XXXXXXX.X...", ".....X.....X....", ".....XXXXXXX....", "......XXXXX.....", "......XX.XX....."],
@@ -1711,7 +1711,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_moonfeather", req: Requirement())
         ]),
-        Species(id: "bird_peregrine", name: "Peregrine", stage: .adult, blurb: "The fastest bird in the valley.", family: "bird", line: "raptor",
+        Species(id: "bird_peregrine", name: "Peregrine", stage: .adult, blurb: "The fastest bird in the valley.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", "................", ".........XXXX...", "........XXX.X...", ".......XXXXXXXX.", ".....XXXXXXXX.X.", "....XXXXXXXX....", "....XX....XX....", "....XX..X.XX....", "....XX.XX.XX....", "....X..XX.XX....", "...XX.XXXXXX....", "..XXXXXXXXX.....", ".X.XXX.X.X......", "X.XXX..XXXX....."],
                 ["................", "................", "................", ".........XXXX...", "........XXXXX...", ".......XXXXXXXX.", ".....XXXXXXXX.X.", "....XXXXXXXX....", "....XX....XX....", "....XX..X.XX....", "....XX.XX.XX....", "....X..XX.XX....", "...XX.XXXXXX....", "..XXXXXXXXX.....", ".X.XXX.X.X......", "X.XXX..XXXX....."],
@@ -1724,7 +1724,7 @@ enum SpeciesData {
             Evolution(to: "bird_stormtalon", req: Requirement(wins: 5)),
             Evolution(to: "bird_emberwing", req: Requirement())
         ]),
-        Species(id: "bird_harrier", name: "Harrier", stage: .adult, blurb: "Glides low over the meadow.", family: "bird", line: "raptor",
+        Species(id: "bird_harrier", name: "Harrier", stage: .adult, blurb: "Glides low over the meadow.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", "................", ".........XXXX...", "........XXX.X...", ".......XXXXXXXX.", "......XXXXXXX.X.", ".....XXXXXXXX...", "....XXX.XXXX....", "....XX..XXXX....", "....XX.XXXXX....", "......XXXXXX....", "...XX.XXXXX.....", "..XXXXXXXX......", ".XXXXX.X.X......", "..XXX..XXXX....."],
                 ["................", "................", "................", ".........XXXX...", "........XXXXX...", ".......XXXXXXXX.", "......XXXXXXX.X.", ".....XXXXXXXX...", "....XXX.XXXX....", "....XX..XXXX....", "....XX.XXXXX....", "......XXXXXX....", "...XX.XXXXX.....", "..XXXXXXXX......", ".XXXXX.X.X......", "..XXX..XXXX....."],
@@ -1736,7 +1736,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_stormtalon", req: Requirement())
         ]),
-        Species(id: "bird_swan", name: "Swan", stage: .adult, blurb: "Serene on the water, fierce on land.", family: "bird", line: "waterfowl",
+        Species(id: "bird_swan", name: "Swan", stage: .adult, blurb: "Serene on the water, fierce on land.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "..........XX.X..", "..........XXXXXX", "...........XX...", "...........XX...", "...........XX...", "...........XXX..", "...........XXX..", ".X....XXX..XX...", "..XXXXXXXXXXX...", "..XX..XXXX.X....", "..XXX.....XX....", "..XXXXXXXXXX....", "....XXXXXXX.....", "......XXXX......"],
                 ["................", "................", "..........XXXX..", "..........XXXXXX", "...........XX...", "...........XX...", "...........XX...", "...........XXX..", "...........XXX..", ".X....XXX..XX...", "..XXXXXXXXXXX...", "..XX..XXXX.X....", "..XXX.....XX....", "..XXXXXXXXXX....", "....XXXXXXX.....", "......XXXX......"],
@@ -1748,7 +1748,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_snowcrest", req: Requirement())
         ]),
-        Species(id: "bird_egret", name: "Egret", stage: .adult, blurb: "Snow-white, with a lacy plume.", family: "bird", line: "waterfowl",
+        Species(id: "bird_egret", name: "Egret", stage: .adult, blurb: "Snow-white, with a lacy plume.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "...........X.X..", "...........XXXXX", "...........XX...", "...........XX...", "...........XX...", "....XXXXXXXX....", "..XXX.XXXXXX....", "..XXXX....XX....", "X...XXXXXXX.....", "X......X.X......", "XXXX...X.X......", "...XX..X.X......", "XXX....X.X......", ".......XXXX....."],
                 ["................", "................", "...........XXX..", "...........XXXXX", "...........XX...", "...........XX...", "...........XX...", "....XXXXXXXX....", "..XXX.XXXXXX....", "..XXXX....XX....", "X...XXXXXXX.....", "X......X.X......", "XXXX...X.X......", "...XX..X.X......", "XXX....X.X......", ".......XXXX....."],
@@ -1761,7 +1761,7 @@ enum SpeciesData {
             Evolution(to: "bird_tidecrane", req: Requirement(smarts: 40)),
             Evolution(to: "bird_snowcrest", req: Requirement())
         ]),
-        Species(id: "bird_goose", name: "Goose", stage: .adult, blurb: "Honks first and asks questions later.", family: "bird", line: "waterfowl",
+        Species(id: "bird_goose", name: "Goose", stage: .adult, blurb: "Honks first and asks questions later.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["................", "................", "..........XX.X..", "..........XXXXXX", "..........XXXXX.", "..........XXX...", "...........XX...", "...........XXX..", "...........XXX..", ".X....XXX..XXX..", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "..XXX.XXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "......XXXX......"],
                 ["................", "................", "..........XXXX..", "..........XXXXXX", "..........XXXXX.", "..........XXX...", "...........XX...", "...........XXX..", "...........XXX..", ".X....XXX..XXX..", ".XXXXXXXXXXXX...", "..XXXXXXXXXXX...", "..XXX.XXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "......XXXX......"],
@@ -1773,7 +1773,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_snowcrest", req: Requirement())
         ]),
-        Species(id: "bird_kingfisher", name: "Kingfisher", stage: .adult, blurb: "A blue flash over the stream.", family: "bird", line: "waterfowl",
+        Species(id: "bird_kingfisher", name: "Kingfisher", stage: .adult, blurb: "A blue flash over the stream.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["........XX.X....", "........X.XX....", "........XXXX....", ".........XXXX...", "........XXX.X...", ".......XXXXXXXX.", ".....XXXXXXXX.X.", "....XXXXXXXX....", "....XXX..XXX....", "....XX..XXXX....", "....XX.XXXXX....", "....X.XXXXXX....", "...X......XX....", "..XXXXXXXXX.....", ".X.XXX.X.X......", "X.XXX..XXXX....."],
                 ["........XX.X....", "........X.XX....", "........XXXX....", ".........XXXX...", "........XXXXX...", ".......XXXXXXXX.", ".....XXXXXXXX.X.", "....XXXXXXXX....", "....XXX..XXX....", "....XX..XXXX....", "....XX.XXXXX....", "....X.XXXXXX....", "...X......XX....", "..XXXXXXXXX.....", ".X.XXX.X.X......", "X.XXX..XXXX....."],
@@ -1785,7 +1785,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_tidecrane", req: Requirement())
         ]),
-        Species(id: "bird_ledgewing", name: "Ledgewing", stage: .adult, blurb: "Ragged but resourceful city bird.", family: "bird", line: "stray",
+        Species(id: "bird_ledgewing", name: "Ledgewing", stage: .adult, blurb: "Ragged but resourceful city bird.", family: "bird", line: "stray", bodyHex: "#9A9A98",
             frames: [
                 ["................", "................", "................", "................", "...........X....", ".......X.XXXXX..", ".....XXXXXXX.XX.", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "..XX.XXXXXXXXX..", "..XXX..XXXXXXX..", "..XXXX....XXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXX..XXXXXX.....", "......XX.XX....."],
                 ["................", "................", "................", "................", "...........X....", ".......X.XXXXX..", ".....XXXXXXXXXX.", "...XXXXXXXXXXX..", "...XXXXXXXXXX...", "..XX.XXXXXXXXX..", "..XXX..XXXXXXX..", "..XXXX....XXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXX..XXXXXX.....", "......XX.XX....."],
@@ -1797,7 +1797,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_duskdove", req: Requirement())
         ]),
-        Species(id: "bird_tatterdove", name: "Tatterdove", stage: .adult, blurb: "Dented, scruffy and still cooing.", family: "bird", line: "stray",
+        Species(id: "bird_tatterdove", name: "Tatterdove", stage: .adult, blurb: "Dented, scruffy and still cooing.", family: "bird", line: "stray", bodyHex: "#9A9A98",
             frames: [
                 ["................", "................", "................", "...........X....", ".......X...X....", ".......X.XXXXX..", "...X.XXXXXXX.XX.", "...XXXXXXXXXXX..", "...XXXXXXXXXXX..", "..XX.XXXXXXXXX..", "..XXX..XXXXXXX..", "..XXXX....XXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXX..XXXXXX.....", "......XX.XX....."],
                 ["................", "................", "................", "...........X....", ".......X...X....", ".......X.XXXXX..", "...X.XXXXXXXXXX.", "...XXXXXXXXXXX..", "...XXXXXXXXXXX..", "..XX.XXXXXXXXX..", "..XXX..XXXXXXX..", "..XXXX....XXXX..", ".XXXXXXXXXXXX...", "XXXXXXXXXXXXX...", "XXX..XXXXXX.....", "......XX.XX....."],
@@ -1809,7 +1809,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "bird_duskdove", req: Requirement())
         ]),
-        Species(id: "bird_emberwing", name: "Emberwing", stage: .ultimate, blurb: "A fire bird that rises from its own embers.", family: "bird", line: "raptor",
+        Species(id: "bird_emberwing", name: "Emberwing", stage: .ultimate, blurb: "A fire bird that rises from its own embers.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["........XX.X....", "........X.XX....", "........XXXX....", ".........XXXX...", "........XXX.X...", "X...X..XXXXXXXX.", "XX...XXXXXXXX.X.", "XXXXXXXXXXXX....", ".XXXXXXXXXXX....", "....XXXXXXXX....", "XXX....XXXXX....", ".......XXXXX....", ".XXX.XXXXXXX....", "XX....XXXXX.....", "X......X.X......", ".......XXXX....."],
                 ["........XX.X....", "........X.XX....", "........XXXX....", ".........XXXX...", "........XXXXX...", "X...X..XXXXXXXX.", "XX...XXXXXXXX.X.", "XXXXXXXXXXXX....", ".XXXXXXXXXXX....", "....XXXXXXXX....", "XXX....XXXXX....", ".......XXXXX....", ".XXX.XXXXXXX....", "XX....XXXXX.....", "X......X.X......", ".......XXXX....."],
@@ -1819,7 +1819,7 @@ enum SpeciesData {
                 [".................XXX..XX........", "................XXXX..XX........", "................XX...XXX........", "................XX..XXXX........", "................XXXXXXXX........", ".................XXXXXXXX.......", "..................XXXXXXX.......", "..................XXXXXXXX......", ".................XXXXXXXXX......", "...............XXXXXXXXXXXX.....", "XX......XX.....XXXXXXXXXXXXXX...", "XXX.....XXX..XXXXXXXXXXXXXXXXX..", "XXX........XXXXXXXXXXXXXXX..XX..", "XXXXX.....XXXXXXXXXXXXXXX...XX..", "XXXXXXXXXXXXXXXXXXXXXXXXX.......", ".XXXXXXXXXXXXXXXXXXXXXXX........", ".XXXXXXXXXXXXXXXXXXXXXXX........", "...XXXXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........", ".........XXXXXXXXXXXXXXX........", "XXXXXX.......XXXXXXXXXXX........", "XXXXXX........XXXXXXXXXX........", "..............XXXXXXXXXX........", ".............XXXXXXXXXXX........", "...XXXXX..XXXXXXXXXXXXXX........", ".XXXXXXX..XXXXXXXXXXXXX.........", ".XXXX......XXXXXXXXXXXX.........", "XXX..........XXXXXXXX...........", "XXX..........XXX..XX............", "XX............XX..XX............", "..............XXXXXXXX..........", "...............XXXXXXX.........."],
             ],
             evolutions: []),
-        Species(id: "bird_stormtalon", name: "Stormtalon", stage: .ultimate, blurb: "Thunder eagle, wings wide and crackling.", family: "bird", line: "raptor",
+        Species(id: "bird_stormtalon", name: "Stormtalon", stage: .ultimate, blurb: "Thunder eagle, wings wide and crackling.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 ["................", "................", ".......XXXX.....", "..X.XXX.XXXXX...", "...X..X.XXX.X...", "....X..X.XXXXXX.", ".....X...XXXX.X.", "....XXXX.XXX....", "....XXXXXXXX....", "....XXXXXXXX....", "....XXXXXXXX....", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".......X.X......", ".......XXXX....."],
                 ["................", "................", ".......XXXX.....", "..X.XXX.XXXXX...", "...X..X.XXXXX...", "....X..X.XXXXXX.", ".....X...XXXX.X.", "....XXXX.XXX....", "....XXXXXXXX....", "....XXXXXXXX....", "....XXXXXXXX....", "....XXXXXXXX....", ".....XXXXXXX....", ".....XXXXXX.....", ".......X.X......", ".......XXXX....."],
@@ -1829,7 +1829,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "..............XXXXXXX...........", ".............XXXXXXXXXX.........", "....XX..XXXXX...XXXXXXXXX.......", "....XX..XXXXXX..XXXXXXXXXX......", ".....XXX...XXX..XXXXXXXXXX......", "......XX....XX...XXXXXXXXXX.....", ".......XXX...XXX..XXXXXXXXXXX...", "........XXX...XX..XXXXXXXXXXXX..", "..........XX......XXXXXXXX..XX..", "..........XXX.....XXXXXXX...XX..", ".........XXXXXX...XXXXXXX.......", "........XXXXXXXX..XXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", "........XXXXXXXXXXXXXXXX........", ".........XXXXXXXXXXXXXXX........", ".........XXXXXXXXXXXXXXX........", "..........XXXXXXXXXXXXX.........", "..........XXXXXXXXXXXXX.........", "...........XXXXXXXXXX...........", ".............XXX..XX............", "..............XX..XX............", "..............XXXXXXXX..........", "...............XXXXXXX.........."],
             ],
             evolutions: []),
-        Species(id: "bird_moonfeather", name: "Moonfeather", stage: .ultimate, blurb: "A moon owl with a silver halo.", family: "bird", line: "raptor",
+        Species(id: "bird_moonfeather", name: "Moonfeather", stage: .ultimate, blurb: "A moon owl with a silver halo.", family: "bird", line: "raptor", bodyHex: "#A67C52",
             frames: [
                 [".....X.....X..X.", "..X..XXXXXX.X...", "X.X..XXXXX.XXXXX", "..X..XXXXXXXX...", ".....XXXXXXXX...", "....XXX.XX.XX...", ".....XX.XXXXX...", ".....XXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", "....XXXXXXX.X...", "....XXXXXXX.X...", ".....XXXXX.X....", ".....XXXXXXX....", "......XXXXX.....", "......XX.XX....."],
                 [".....X.....X..X.", "..X..XXXXXX.X...", "X.X..XXXXX.XXXXX", "..X..XXXXXXXX...", ".....XXXXXXXX...", "....XXX.XXXXX...", ".....XX.XXXXX...", ".....XXXXXXXX...", ".....XXXXXXX....", ".....XXXXXX.....", "....XXXXXXX.X...", "....XXXXXXX.X...", ".....XXXXX.X....", ".....XXXXXXX....", "......XXXXX.....", "......XX.XX....."],
@@ -1839,7 +1839,7 @@ enum SpeciesData {
                 ["..........XX..........XX....XX..", "..........XXX........XXXX...XX..", "....XX....XXXXXXXXXXXX..XX......", "....XX....XXXXXXXXXXXX..XXX.....", "XX..XX....XXXXXXXXXX...XXXXXXXXX", "XX..XX....XXXXXXXXXX..XXXXXXXXXX", "....XX....XXXXXXXXXXXXXXXXX.....", "....XX....XXXXXXXXXXXXXXXX......", "..........XXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXXXXXX......", "........XXXXXX..XXXXXXXXXX......", "........XXXXXX..XXXXXXXXXX......", ".........XXXXX..XXXXXXXXXX......", "..........XXXX..XXXXXXXXXX......", "..........XXXXXXXXXXXXXXXX......", "..........XXXXXXXXXXXXXXX.......", "..........XXXXXXXXXXXXXXX.......", "..........XXXXXXXXXXXXX.........", "..........XXXXXXXXXXXXX.........", ".........XXXXXXXXXXXXX..........", ".........XXXXXXXXXXXXX..XX......", "........XXXXXXXXXXXXXX..XX......", "........XXXXXXXXXXXXXX..XX......", ".........XXXXXXXXXXXX...XX......", ".........XXXXXXXXXXX..XXX.......", "..........XXXXXXXXXX..XX........", "..........XXXXXXXXXXXXXX........", "...........XXXXXXXXXXXX.........", "...........XXXXXXXXXXXX.........", "............XXXXXXXXXX..........", "............XXXX..XXXX..........", ".............XX....XX..........."],
             ],
             evolutions: []),
-        Species(id: "bird_prismlark", name: "Prismlark", stage: .ultimate, blurb: "A rainbow songbird with a seven-feather tail.", family: "bird", line: "songbird",
+        Species(id: "bird_prismlark", name: "Prismlark", stage: .ultimate, blurb: "A rainbow songbird with a seven-feather tail.", family: "bird", line: "songbird", bodyHex: "#C98A4B",
             frames: [
                 ["................", ".........X.X....", "........XXXX....", "........XXXX....", ".........XXX....", "X.......XXXXX...", "XX......XXX.XX..", "XXXX.XXXXXXXXXX.", ".XXXXXXXXXXXX...", "....XXXXXXXXX...", "XXX....XXXXXX...", ".......XXXXXX...", ".XXXXXXXXXXX....", "XX....XXXX......", "X......X.X......", ".......XXXX....."],
                 ["................", ".........X.X....", "........XXXX....", "........XXXX....", ".........XXX....", "X.......XXXXX...", "XX......XXXXXX..", "XXXX.XXXXXXXXXX.", ".XXXXXXXXXXXX...", "....XXXXXXXXX...", "XXX....XXXXXX...", ".......XXXXXX...", ".XXXXXXXXXXX....", "XX....XXXX......", "X......X.X......", ".......XXXX....."],
@@ -1849,7 +1849,7 @@ enum SpeciesData {
                 ["................................", "................................", "..................XX..XX........", ".................XXX..XX........", ".................XXXXXXX........", "................XXXXXXXX........", "................XXXXXXXX........", ".................XXXXXXX........", "..................XXXXXX........", "..................XXXXXXX.......", "XX...............XXXXXXXX.......", "XXX.............XXXXXXXXXXX.....", "XXX.............XXXXXXXXXXX.....", "XXXXX..........XXXXXXXXXXXXXX...", "XXXXXXX....XXXXXXXXXXXXXXXXXXX..", ".XXXXXXX..XXXXXXXXXXXXXXXXXXXX..", ".XXXXXXXXXXXXXXXXXXXXXXXXXX.....", "...XXXXXXXXXXXXXXXXXXXXXXX......", ".......XXXXXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXXXXXX......", "XXXXXX.......XXXXXXXXXXXXX......", "XXXXXX........XXXXXXXXXXXX......", "..............XXXXXXXXXXXX......", ".............XXXXXXXXXXXX.......", "...XXXXXXXXXXXXXXXXXXXXXX.......", ".XXXXXXXXXXXXXXXXXXXXXX.........", ".XXXX......XXXXXXXXXX...........", "XXX..........XXXXXXX............", "XXX..........XXX..XX............", "XX............XX..XXX...........", "..............XXXXXXXX..........", "...............XXXXXXX.........."],
             ],
             evolutions: []),
-        Species(id: "bird_snowcrest", name: "Snowcrest", stage: .ultimate, blurb: "A crowned swan, white as fresh snow.", family: "bird", line: "waterfowl",
+        Species(id: "bird_snowcrest", name: "Snowcrest", stage: .ultimate, blurb: "A crowned swan, white as fresh snow.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["..........XXXXX.", "..X.............", "X.X.......XX.XXX", "..X.......XXXXXX", "...........XX...", "...........XX...", "...........XX...", "...........XXX..", "...........XXX..", ".X....XXX..XX...", "..XXXXXXXXXXX...", "..XX..XXXX.X....", "..XXX.....XX....", "..XXXXXXXXXX....", "....XXXXXXX.....", "......XXXX......"],
                 ["..........XXXXX.", "..X.............", "X.X.......XXXXXX", "..X.......XXXXXX", "...........XX...", "...........XX...", "...........XX...", "...........XXX..", "...........XXX..", ".X....XXX..XX...", "..XXXXXXXXXXX...", "..XX..XXXX.X....", "..XXX.....XX....", "..XXXXXXXXXX....", "....XXXXXXX.....", "......XXXX......"],
@@ -1859,7 +1859,7 @@ enum SpeciesData {
                 ["....................XXXXXXXXXX..", "....................XXXXXXXXXX..", "....XX..........................", "....XX..........................", "XX..XX...............XXXXXXXXXX.", "XX..XX..............XXXXXXXXXXXX", "....XX..............XXXXXXXXXXXX", "....XX...............XXXXXXXXXX.", ".....................XXXXXX.....", "......................XXXX......", "......................XXXX......", "......................XXXX......", "......................XXXX......", "......................XXXXX.....", "......................XXXXX.....", "......................XXXXXX....", "......................XXXXXX....", "......................XXXXX.....", "..XX.........XXXX.....XXXXX.....", "..XXX......XXXXXXXX..XXXXX......", "...X.XXXXXXXXXXXXXXXXXXXXX......", "....XXXXXXXXXXXXXXXXXXXXX.......", "....XXXX...XXXXXXXXX..XXX.......", "....XXXX.....XXXXXX...XX........", "....XXXXX............XXX........", "....XXXXXXX.........XXXX........", "....XXXXXXXXXXXXXXXXXXXX........", ".....XXXXXXXXXXXXXXXXXX.........", ".......XXXXXXXXXXXXXXXX.........", ".........XXXXXXXXXXXX...........", "...........XXXXXXXXXX...........", ".............XXXXXX............."],
             ],
             evolutions: []),
-        Species(id: "bird_tidecrane", name: "Tidecrane", stage: .ultimate, blurb: "Calls the tide with long, trailing plumes.", family: "bird", line: "waterfowl",
+        Species(id: "bird_tidecrane", name: "Tidecrane", stage: .ultimate, blurb: "Calls the tide with long, trailing plumes.", family: "bird", line: "waterfowl", bodyHex: "#7FA0B0",
             frames: [
                 ["..........XXXXX.", "................", "...........X.X..", "...........XXXXX", "...........XX...", "...........XX...", "...........XX...", "....XXXXXXXX....", "..XXX.XXXXXX....", "..XXXX....XX....", "X...XXXXXXX.....", "X......X.X......", "XXXX...X.X......", "...XX..X.X......", "XXX....X.X......", ".......XXXX....."],
                 ["..........XXXXX.", "................", "...........XXX..", "...........XXXXX", "...........XX...", "...........XX...", "...........XX...", "....XXXXXXXX....", "..XXX.XXXXXX....", "..XXXX....XX....", "X...XXXXXXX.....", "X......X.X......", "XXXX...X.X......", "...XX..X.X......", "XXX....X.X......", ".......XXXX....."],
@@ -1869,7 +1869,7 @@ enum SpeciesData {
                 ["....................XXXXXXXXXX..", "....................XXXXXXXXXX..", "................................", "................................", ".......................XXXX.....", "......................XXXXXXX...", "......................XXXXXXXXXX", "......................XXXXXXXXXX", "......................XXXXX.....", "......................XXXX......", "......................XXXX......", "......................XXXX......", "......................XXXX......", ".....................XXXX.......", ".........XXXXXXXXXXXXXXXX.......", ".......XXXXXXXXXXXXXXXXX........", ".....XXXXX..XXXXXXXXXXXX........", "....XXXXXX...XXXXXXXXXXX........", "....XXXXXXX.........XXXX........", ".....XXXXXXX........XXX.........", "XX.....XXXXXXXXXXXXXXXX.........", "XX.......XXXXXXXXXXXX...........", "XX...........XXX..XXX...........", "XXX...........XX..XX............", "XXXXXXX.......XX..XX............", ".XXXXXXXX.....XX..XX............", "......XXXX....XX..XX............", ".......XXX....XX..XX............", "XXXXXXX.......XX..XX............", "XXXXXX........XX..XXX...........", "..............XXXXXXXX..........", "...............XXXXXXX.........."],
             ],
             evolutions: []),
-        Species(id: "bird_duskdove", name: "Duskdove", stage: .ultimate, blurb: "Evening-grey dove with a shadow tail.", family: "bird", line: "stray",
+        Species(id: "bird_duskdove", name: "Duskdove", stage: .ultimate, blurb: "Evening-grey dove with a shadow tail.", family: "bird", line: "stray", bodyHex: "#9A9A98",
             frames: [
                 ["................", ".........XXXXX..", "........X.....X.", ".........XXXXX..", "................", "X.........XXXX..", "XX......XXXX.XX.", "XXXX.XXXXXXXXX..", ".XXXXXXXXXXXX...", "....XXXXXXXXX...", "XXX....XXXXXX...", "..........XXX...", ".XXXXXXXXXXXX...", "XX..XXXXXXXX....", "X.....XXXX......", "......XX.XX....."],
                 ["................", ".........XXXXX..", "........X.....X.", ".........XXXXX..", "................", "X.........XXXX..", "XX......XXXXXXX.", "XXXX.XXXXXXXXX..", ".XXXXXXXXXXXX...", "....XXXXXXXXX...", "XXX....XXXXXX...", "..........XXX...", ".XXXXXXXXXXXX...", "XX..XXXXXXXX....", "X.....XXXX......", "......XX.XX....."],
@@ -1879,7 +1879,7 @@ enum SpeciesData {
                 ["................................", "................................", "..................XXXXXXXXXX....", ".................XXXXXXXXXXXX...", "................XX..........XX..", "................XX..........XX..", ".................XXXXXXXXXXXX...", "..................XXXXXXXXXX....", "................................", "................................", "XX...................XXXXXX.....", "XXX................XXXXXXXXXX...", "XXX..............XXXXXXXXXXXXX..", "XXXXX..........XXXXXXXXXXXXXXX..", "XXXXXXX....XXXXXXXXXXXXXXXXXX...", ".XXXXXXX..XXXXXXXXXXXXXXXXX.....", ".XXXXXXXXXXXXXXXXXXXXXXXXXX.....", "...XXXXXXXXXXXXXXXXXXXXXXX......", ".......XXXXXXXXXXXXXXXXXXX......", ".........XXXXXXXXXXXXXXXXX......", "XXXXXX.......XXXXXXXXXXXXX......", "XXXXXX.........XXXXXXXXXXX......", "....................XXXXXX......", "....................XXXXXX......", "...XXXXXXXXXXXXXXXXXXXXXXX......", ".XXXXXXXXXXXXXXXXXXXXXXXX.......", ".XXXX..XXXXXXXXXXXXXXXXXX.......", "XXX......XXXXXXXXXXXXXX.........", "XXX........XXXXXXXXX............", "XX..........XXXXXXXX............", "............XXXX..XXXX..........", ".............XX....XXX.........."],
             ],
             evolutions: []),
-        Species(id: "cat_mittens", name: "Mittens", stage: .baby, blurb: "A tiny kitten with four white socks.", family: "cat", line: "baby",
+        Species(id: "cat_mittens", name: "Mittens", stage: .baby, blurb: "A tiny kitten with four white socks.", family: "cat", line: "baby", bodyHex: "#EADFC8",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", ".......X..X.....", ".......XXXX.....", "......XXXXX.....", "......XXX.XX....", "...XX..XXXX.....", "...X.XXXXX.X....", "...X.XXXXX......", "....XXXXX.......", ".....XXXXXX....."],
                 ["................", "................", "................", "................", "................", "................", "................", ".......X..X.....", ".......XXXX.....", "......XXXXX.....", "......XXXXXX....", "...XX..XXXX.....", "...X.XXXXX.X....", "...X.XXXXX......", "....XXXXX.......", ".....XXXXXX....."],
@@ -1894,7 +1894,7 @@ enum SpeciesData {
             Evolution(to: "cat_scrap", req: Requirement(lead: .veggie)),
             Evolution(to: "cat_pudding", req: Requirement(lead: .pasta))
         ]),
-        Species(id: "cat_pip", name: "Pip", stage: .baby, blurb: "Chases its own tail and wins.", family: "cat", line: "baby",
+        Species(id: "cat_pip", name: "Pip", stage: .baby, blurb: "Chases its own tail and wins.", family: "cat", line: "baby", bodyHex: "#EADFC8",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", ".......X..X.....", ".......XXXX.....", "......XXXXX.....", "......XXX.XX....", "...XX..XXXX.....", "...X.XXXXX.X....", "...X.XXXXXX.X...", "....XXXXX.XX....", ".....XXXXXXX...."],
                 ["................", "................", "................", "................", "................", "................", "................", ".......X..X.....", ".......XXXX.....", "......XXXXX.....", "......XXXXXX....", "...XX..XXXX.....", "...X.XXXXX.X....", "...X.XXXXXX.X...", "....XXXXX.XX....", ".....XXXXXXX...."],
@@ -1909,7 +1909,7 @@ enum SpeciesData {
             Evolution(to: "cat_scrap", req: Requirement(lead: .veggie)),
             Evolution(to: "cat_pounce", req: Requirement(lead: .meat))
         ]),
-        Species(id: "cat_pounce", name: "Pounce", stage: .child, blurb: "Springs at every shadow and dust bunny.", family: "cat", line: "hunter",
+        Species(id: "cat_pounce", name: "Pounce", stage: .child, blurb: "Springs at every shadow and dust bunny.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "..........X.X...", "....X.....X.X...", "...X.......X.X..", "...X......XXX...", "...X..XXXXXXXX..", "...XXXX.X.X.....", "......XXXXX.....", ".....XXXXXX.....", ".....XX..XX.....", "......XX.XX....."],
                 ["................", "................", "................", "................", "................", "................", "..........X.X...", "....X.....X.X...", "...X.......XXX..", "...X......XXX...", "...X..XXXXXXXX..", "...XXXX.X.X.....", "......XXXXX.....", ".....XXXXXX.....", ".....XX..XX.....", "......XX.XX....."],
@@ -1924,7 +1924,7 @@ enum SpeciesData {
             Evolution(to: "cat_stripling", req: Requirement(train: 3)),
             Evolution(to: "cat_tuftkin", req: Requirement())
         ]),
-        Species(id: "cat_scrap", name: "Scrap", stage: .child, blurb: "Street-smart kitten with a cheeky grin.", family: "cat", line: "alley",
+        Species(id: "cat_scrap", name: "Scrap", stage: .child, blurb: "Street-smart kitten with a cheeky grin.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "..........X.....", "....X.....X.X...", "...X......XX.X..", "...X......XXX...", "...X..XXXXXXXX..", "...XXXXXXXX.....", ".....XXXXXX.....", ".....XXXXXX.....", ".....XX..XX.....", "......XX.XX....."],
                 ["................", "................", "................", "................", "................", "................", "..........X.....", "....X.....X.X...", "...X......XXXX..", "...X......XXX...", "...X..XXXXXXXX..", "...XXXXXXXX.....", ".....XXXXXX.....", ".....XXXXXX.....", ".....XX..XX.....", "......XX.XX....."],
@@ -1938,7 +1938,7 @@ enum SpeciesData {
             Evolution(to: "cat_rascal", req: Requirement(train: 3)),
             Evolution(to: "cat_bandit", req: Requirement())
         ]),
-        Species(id: "cat_pudding", name: "Pudding", stage: .child, blurb: "Round, warm and always sleepy.", family: "cat", line: "sofa",
+        Species(id: "cat_pudding", name: "Pudding", stage: .child, blurb: "Round, warm and always sleepy.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".........X.X....", ".........XXX....", ".........XX.X...", ".....XXXXXXX....", "...XXXXXXXXXX...", "...XXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXXX...."],
                 ["................", "................", "................", "................", "................", "................", "................", "................", ".........X.X....", ".........XXX....", ".........XXXX...", ".....XXXXXXX....", "...XXXXXXXXXX...", "...XXXXXXXXX....", "...XXXXXXXX.....", "....XXXXXXXX...."],
@@ -1953,7 +1953,7 @@ enum SpeciesData {
             Evolution(to: "cat_bellkin", req: Requirement(smarts: 12)),
             Evolution(to: "cat_fluffkin", req: Requirement())
         ]),
-        Species(id: "cat_smudge", name: "Smudge", stage: .child, blurb: "A scruffy kitten who hides under porches.", family: "cat", line: "stray",
+        Species(id: "cat_smudge", name: "Smudge", stage: .child, blurb: "A scruffy kitten who hides under porches.", family: "cat", line: "stray", bodyHex: "#8E8A84",
             frames: [
                 ["................", "................", "................", "................", "................", "..........X.....", "....X.....X.....", "....X.....X.X...", "...X......XX....", "...X..X.X.XXX...", "...X..XXXXXXX...", "...XXXXXXXX.....", ".....XXXXXX.....", ".....XXXXXX.....", ".....XX..XX.....", "......XX.XX....."],
                 ["................", "................", "................", "................", "................", "..........X.....", "....X.....X.....", "....X.....X.X...", "...X......XXX...", "...X..X.X.XXX...", "...X..XXXXXXX...", "...XXXXXXXX.....", ".....XXXXXX.....", ".....XXXXXX.....", ".....XX..XX.....", "......XX.XX....."],
@@ -1966,7 +1966,7 @@ enum SpeciesData {
             Evolution(to: "cat_scruff", req: Requirement(train: 3)),
             Evolution(to: "cat_tatterclaw", req: Requirement())
         ]),
-        Species(id: "cat_stripling", name: "Stripling", stage: .teen, blurb: "Tabby stripes and boundless energy.", family: "cat", line: "hunter",
+        Species(id: "cat_stripling", name: "Stripling", stage: .teen, blurb: "Tabby stripes and boundless energy.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "................", "................", "................", "..........X..X..", "..XXX.....X.XX..", "..X.......XX.XX.", "..X.......XXXX..", "..X..XXXXXXXXXX.", "..XXXX.X.XXX....", "....XXXXXXX.....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
                 ["................", "................", "................", "................", "................", "..........X..X..", "..XXX.....X.XX..", "..X.......XXXXX.", "..X.......XXXX..", "..X..XXXXXXXXXX.", "..XXXX.X.XXX....", "....XXXXXXX.....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
@@ -1980,7 +1980,7 @@ enum SpeciesData {
             Evolution(to: "cat_spotclaw", req: Requirement(wins: 3)),
             Evolution(to: "cat_brindle", req: Requirement())
         ]),
-        Species(id: "cat_tuftkin", name: "Tuftkin", stage: .teen, blurb: "Tufted ears, a keen eye and a short tail.", family: "cat", line: "hunter",
+        Species(id: "cat_tuftkin", name: "Tuftkin", stage: .teen, blurb: "Tufted ears, a keen eye and a short tail.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "................", "................", "..........X..X..", "..........X..X..", "..........XXXX..", "..........XX.XX.", "..........XXXX..", "..X..XXXXXXXX.X.", "...XXXXXXXXX....", "...XXXXXXXXX....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
                 ["................", "................", "................", "................", "..........X..X..", "..........X..X..", "..........XXXX..", "..........XXXXX.", "..........XXXX..", "..X..XXXXXXXX.X.", "...XXXXXXXXX....", "...XXXXXXXXX....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
@@ -1994,7 +1994,7 @@ enum SpeciesData {
             Evolution(to: "cat_bobtuft", req: Requirement(smarts: 20)),
             Evolution(to: "cat_spotclaw", req: Requirement())
         ]),
-        Species(id: "cat_thudpaw", name: "Thudpaw", stage: .teen, blurb: "Heavy-footed. The floor knows when it lands.", family: "cat", line: "hunter",
+        Species(id: "cat_thudpaw", name: "Thudpaw", stage: .teen, blurb: "Heavy-footed. The floor knows when it lands.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "................", "................", "........XX.X....", "........X.XX....", "........XX.X....", "........XXXX....", ".......XXXXX....", "...XXXXXXXXX....", "..XX.X.XXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXX.....", "..XXXXXXXXX.....", "...XXXXXXXXX...."],
                 ["................", "................", "................", "................", "........XX.X....", "........X.XX....", "........XXXX....", "........XXXX....", ".......XXXXX....", "...XXXXXXXXX....", "..XX.X.XXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXX.....", "..XXXXXXXXX.....", "...XXXXXXXXX...."],
@@ -2008,7 +2008,7 @@ enum SpeciesData {
             Evolution(to: "cat_brindle", req: Requirement(wins: 3)),
             Evolution(to: "cat_thunderpaw", req: Requirement())
         ]),
-        Species(id: "cat_rascal", name: "Rascal", stage: .teen, blurb: "Knocks things off shelves on purpose.", family: "cat", line: "alley",
+        Species(id: "cat_rascal", name: "Rascal", stage: .teen, blurb: "Knocks things off shelves on purpose.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", "................", "................", "................", "..........X.....", "..XXX.....XXXX..", "..X.......XX.XX.", "..X.......XXXX..", "..X..XXXXXXXXXX.", "..XXXXXXXXXX....", "....XXXXXXX.....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
                 ["................", "................", "................", "................", "................", "..........X.....", "..XXX.....XXXX..", "..X.......XXXXX.", "..X.......XXXX..", "..X..XXXXXXXXXX.", "..XXXXXXXXXX....", "....XXXXXXX.....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
@@ -2022,7 +2022,7 @@ enum SpeciesData {
             Evolution(to: "cat_gingertom", req: Requirement(wins: 2)),
             Evolution(to: "cat_roofrunner", req: Requirement())
         ]),
-        Species(id: "cat_bandit", name: "Bandit", stage: .teen, blurb: "Masked and quick, steals socks.", family: "cat", line: "alley",
+        Species(id: "cat_bandit", name: "Bandit", stage: .teen, blurb: "Masked and quick, steals socks.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", "................", "................", "........X..X....", "........XXXX....", "........XX.XX...", "........XXXX....", "........XXXXX...", "...XXXXXXXXXX...", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..XX.XXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "................", "................", "................", "........X..X....", "........XXXX....", "........XXXXX...", "........XXXX....", "........XXXXX...", "...XXXXXXXXXX...", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..XX.XXXX.X.....", "...XXXXXXXXX...."],
@@ -2036,7 +2036,7 @@ enum SpeciesData {
             Evolution(to: "cat_jinx", req: Requirement(smarts: 20)),
             Evolution(to: "cat_roofrunner", req: Requirement())
         ]),
-        Species(id: "cat_loaf", name: "Loaf", stage: .teen, blurb: "Tucks all four paws away and becomes bread.", family: "cat", line: "sofa",
+        Species(id: "cat_loaf", name: "Loaf", stage: .teen, blurb: "Tucks all four paws away and becomes bread.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "................", "................", "................", "................", "............X...", "..........X.X...", ".........XXXX...", ".........XXX.XX.", ".....XXXXXXXXX..", "..XXXXXXXXXXX.X.", "..XXXXXXXXXXX...", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXXX..."],
                 ["................", "................", "................", "................", "................", "................", "............X...", "..........X.X...", ".........XXXX...", ".........XXXXXX.", ".....XXXXXXXXX..", "..XXXXXXXXXXX.X.", "..XXXXXXXXXXX...", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "...XXXXXXXXXX..."],
@@ -2049,7 +2049,7 @@ enum SpeciesData {
             Evolution(to: "cat_raggle", req: Requirement(mistMin: 4)),
             Evolution(to: "cat_lapwarmer", req: Requirement())
         ]),
-        Species(id: "cat_bellkin", name: "Bellkin", stage: .teen, blurb: "Collar bell jingling, never quite sneaks.", family: "cat", line: "sofa",
+        Species(id: "cat_bellkin", name: "Bellkin", stage: .teen, blurb: "Collar bell jingling, never quite sneaks.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "................", "................", "........X..X....", "........XXXX....", "........XX.XX...", "........XXXX....", "........XXXXX...", "...XXXXXX.......", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..XX.XXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "................", "................", "................", "........X..X....", "........XXXX....", "........XXXXX...", "........XXXX....", "........XXXXX...", "...XXXXXX.......", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..X.XXXXXXX.....", "..XX.XXXX.X.....", "...XXXXXXXXX...."],
@@ -2063,7 +2063,7 @@ enum SpeciesData {
             Evolution(to: "cat_dowager", req: Requirement(smarts: 20)),
             Evolution(to: "cat_velvet", req: Requirement())
         ]),
-        Species(id: "cat_fluffkin", name: "Fluffkin", stage: .teen, blurb: "Fur by the armful. Mind the sofa.", family: "cat", line: "sofa",
+        Species(id: "cat_fluffkin", name: "Fluffkin", stage: .teen, blurb: "Fur by the armful. Mind the sofa.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "................", "................", "........XX.X....", "........XXXX....", "........XX.XX...", "........XXXX....", ".......XXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXX.....", "..XXXXXXXXX.....", "..XXXXXXXXX.....", "...XXXXXXXXX...."],
                 ["................", "................", "................", "................", "........XX.X....", "........XXXX....", "........XXXXX...", "........XXXX....", ".......XXXXXX...", "...XXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "..XXXXXXXXX.....", "..XXXXXXXXX.....", "..XXXXXXXXX.....", "...XXXXXXXXX...."],
@@ -2076,7 +2076,7 @@ enum SpeciesData {
             Evolution(to: "cat_raggle", req: Requirement(mistMin: 4)),
             Evolution(to: "cat_marmalade", req: Requirement())
         ]),
-        Species(id: "cat_scruff", name: "Scruff", stage: .teen, blurb: "Digs, climbs and tumbles through bins.", family: "cat", line: "stray",
+        Species(id: "cat_scruff", name: "Scruff", stage: .teen, blurb: "Digs, climbs and tumbles through bins.", family: "cat", line: "stray", bodyHex: "#8E8A84",
             frames: [
                 ["................", "................", "................", "................", "...X............", "...X......X.....", "..XXX.....XXXX..", "..X....X..XX.X..", "..X..X.X.XXXXX..", "..X..XXXXXXXXX..", "..XXXXXXXXXX....", "....XXXXXXX.....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
                 ["................", "................", "................", "................", "...X............", "...X......X.....", "..XXX.....XXXX..", "..X....X..XXXX..", "..X..X.X.XXXXX..", "..X..XXXXXXXXX..", "..XXXXXXXXXX....", "....XXXXXXX.....", "....XXXXXXX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
@@ -2088,7 +2088,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "cat_moggy", req: Requirement())
         ]),
-        Species(id: "cat_tatterclaw", name: "Tatterclaw", stage: .teen, blurb: "Patchy coat, torn ear, tough as nails.", family: "cat", line: "stray",
+        Species(id: "cat_tatterclaw", name: "Tatterclaw", stage: .teen, blurb: "Patchy coat, torn ear, tough as nails.", family: "cat", line: "stray", bodyHex: "#8E8A84",
             frames: [
                 ["................", "................", "................", "................", "................", "...X......X.....", "..XXX.....XXXX..", "..X.......XX.X..", "..X..X.X.XXXXX..", "..X..XXXX.XXXX..", "..XXXX.XXXXX....", "....XXXXXXX.....", "....XXXX.XX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
                 ["................", "................", "................", "................", "................", "...X......X.....", "..XXX.....XXXX..", "..X.......XXXX..", "..X..X.X.XXXXX..", "..X..XXXX.XXXX..", "..XXXX.XXXXX....", "....XXXXXXX.....", "....XXXX.XX.....", ".....XX..XX.....", ".....XX..XX.....", ".....X.X.X.X...."],
@@ -2101,7 +2101,7 @@ enum SpeciesData {
             Evolution(to: "cat_moggy", req: Requirement(train: 3)),
             Evolution(to: "cat_raggle", req: Requirement())
         ]),
-        Species(id: "cat_brindle", name: "Brindle", stage: .adult, blurb: "Handsome tabby, fast and graceful.", family: "cat", line: "hunter",
+        Species(id: "cat_brindle", name: "Brindle", stage: .adult, blurb: "Handsome tabby, fast and graceful.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "................", "...........X....", "..X........X.XX.", ".XX.......XX.XX.", "XX........XXX.XX", "X.........XXXXX.", "XX.XXXXXXXXXXX.X", ".XX.X.X.X.XX....", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
                 ["................", "................", "................", "...........X....", "..X........X.XX.", ".XX.......XX.XX.", "XX........XXXXXX", "X.........XXXXX.", "XX.XXXXXXXXXXX.X", ".XX.X.X.X.XX....", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
@@ -2114,7 +2114,7 @@ enum SpeciesData {
             Evolution(to: "cat_hoarfrost", req: Requirement(smarts: 40)),
             Evolution(to: "cat_emberstripe", req: Requirement())
         ]),
-        Species(id: "cat_bobtuft", name: "Bobtuft", stage: .adult, blurb: "A lynx-eared hunter with a bobbed tail.", family: "cat", line: "hunter",
+        Species(id: "cat_bobtuft", name: "Bobtuft", stage: .adult, blurb: "A lynx-eared hunter with a bobbed tail.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "...........X....", "...........X..X.", "...........X.XX.", "..........XXXXX.", "..........XXX.XX", "..........XXXXX.", "..X.XXXXXXXXXX.X", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", ".....XX...XX...."],
                 ["................", "................", "...........X....", "...........X..X.", "...........X.XX.", "..........XXXXX.", "..........XXXXXX", "..........XXXXX.", "..X.XXXXXXXXXX.X", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", ".....XX...XX...."],
@@ -2127,7 +2127,7 @@ enum SpeciesData {
             Evolution(to: "cat_mooncat", req: Requirement(smarts: 40)),
             Evolution(to: "cat_hoarfrost", req: Requirement())
         ]),
-        Species(id: "cat_thunderpaw", name: "Thunderpaw", stage: .adult, blurb: "Broad and strong, wins most scuffles.", family: "cat", line: "hunter",
+        Species(id: "cat_thunderpaw", name: "Thunderpaw", stage: .adult, blurb: "Broad and strong, wins most scuffles.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "...........X..X.", "...........X..X.", "...X.......XXXX.", ".XX.......XX.XX.", ".XX.......XXX.X.", ".X........XXXXX.", ".X...XXXXXXXXXX.", ".XXXXX.X.XXXXXX.", "..XX.XXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", ".....XXXXX.X....", ".....XX..X.X....", ".....XX...XX...."],
                 ["................", "................", "...........X..X.", "...........X..X.", "...X.......XXXX.", ".XX.......XX.XX.", ".XX.......XXXXX.", ".X........XXXXX.", ".X...XXXXXXXXXX.", ".XXXXX.X.XXXXXX.", "..XX.XXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", ".....XXXXX.X....", ".....XX..X.X....", ".....XX...XX...."],
@@ -2140,7 +2140,7 @@ enum SpeciesData {
             Evolution(to: "cat_sovereign", req: Requirement(wins: 5)),
             Evolution(to: "cat_emberstripe", req: Requirement())
         ]),
-        Species(id: "cat_spotclaw", name: "Spotclaw", stage: .adult, blurb: "Spotted wildcat, lean as a whip.", family: "cat", line: "hunter",
+        Species(id: "cat_spotclaw", name: "Spotclaw", stage: .adult, blurb: "Spotted wildcat, lean as a whip.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "...........X....", "...........X..X.", "..X........X.XX.", ".XX.......XXXXX.", "XX........XXX.X.", "X.........XXXXX.", "XX.XXXXXXXXXXX..", ".XXXXXX.XXXX....", "..XX.XXXXXXXX...", "..XXXXXXXXXX....", "....XX.XXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
                 ["................", "................", "...........X....", "...........X..X.", "..X........X.XX.", ".XX.......XXXXX.", "XX........XXXXX.", "X.........XXXXX.", "XX.XXXXXXXXXXX..", ".XXXXXX.XXXX....", "..XX.XXXXXXXX...", "..XXXXXXXXXX....", "....XX.XXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
@@ -2152,7 +2152,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "cat_emberstripe", req: Requirement())
         ]),
-        Species(id: "cat_roofrunner", name: "Roofrunner", stage: .adult, blurb: "King of the rooftops and fences.", family: "cat", line: "alley",
+        Species(id: "cat_roofrunner", name: "Roofrunner", stage: .adult, blurb: "King of the rooftops and fences.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", "................", "...........X....", "..X........X.XX.", ".XX.......XXXXX.", "XX........XXX.XX", "X.........XXXXX.", "XX.XXXXXXXXXXX.X", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
                 ["................", "................", "................", "...........X....", "..X........X.XX.", ".XX.......XXXXX.", "XX........XXXXXX", "X.........XXXXX.", "XX.XXXXXXXXXXX.X", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
@@ -2165,7 +2165,7 @@ enum SpeciesData {
             Evolution(to: "cat_luckypaw", req: Requirement(smarts: 40)),
             Evolution(to: "cat_umbra", req: Requirement())
         ]),
-        Species(id: "cat_jinx", name: "Jinx", stage: .adult, blurb: "Outwits everyone, glasses and all.", family: "cat", line: "alley",
+        Species(id: "cat_jinx", name: "Jinx", stage: .adult, blurb: "Outwits everyone, glasses and all.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", ".........X.X....", "........XXXXX...", "........XXXXX...", "........XXX.XX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXXXX.....", ".XX.XXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "................", ".........X.X....", "........XXXXX...", "........XXXXX...", "........XXXXXX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXXXX.....", ".XX.XXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
@@ -2178,7 +2178,7 @@ enum SpeciesData {
             Evolution(to: "cat_mooncat", req: Requirement(smarts: 40)),
             Evolution(to: "cat_luckypaw", req: Requirement())
         ]),
-        Species(id: "cat_gingertom", name: "Ginger Tom", stage: .adult, blurb: "Scarred champion of the back alley.", family: "cat", line: "alley",
+        Species(id: "cat_gingertom", name: "Ginger Tom", stage: .adult, blurb: "Scarred champion of the back alley.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", "................", "...........X....", "...X.......XXXX.", ".XX.......XXXXX.", ".XX.......XXX.XX", ".X........XXXXX.", ".X...XXXXXXXXXXX", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", ".....XXXXX.X....", ".....XX..X.X....", ".....XX...XX...."],
                 ["................", "................", "................", "...........X....", "...X.......XXXX.", ".XX.......XXXXX.", ".XX.......XXXXXX", ".X........XXXXX.", ".X...XXXXXXXXXXX", ".XXXXXXXXXXXXXX.", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", ".....XXXXX.X....", ".....XX..X.X....", ".....XX...XX...."],
@@ -2191,7 +2191,7 @@ enum SpeciesData {
             Evolution(to: "cat_sovereign", req: Requirement(wins: 5)),
             Evolution(to: "cat_umbra", req: Requirement())
         ]),
-        Species(id: "cat_marmalade", name: "Marmalade", stage: .adult, blurb: "Orange, round and very well fed.", family: "cat", line: "sofa",
+        Species(id: "cat_marmalade", name: "Marmalade", stage: .adult, blurb: "Orange, round and very well fed.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "........XX.X....", "........XXXXX...", "........XXXXX...", "........XXX.XX..", "........XXXXX...", ".......XXXXXXX..", "..XX.XXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXX.....", "...XXXXXXXXX...."],
                 ["................", "................", "........XX.X....", "........XXXXX...", "........XXXXX...", "........XXXXXX..", "........XXXXX...", ".......XXXXXXX..", "..XX.XXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXX.....", "...XXXXXXXXX...."],
@@ -2203,7 +2203,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "cat_hearthpurr", req: Requirement())
         ]),
-        Species(id: "cat_dowager", name: "Dowager", stage: .adult, blurb: "Wise old puss with pearls and spectacles.", family: "cat", line: "sofa",
+        Species(id: "cat_dowager", name: "Dowager", stage: .adult, blurb: "Wise old puss with pearls and spectacles.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", ".........X.X....", "........XXXXX...", "........XXXXX...", "........XXX.XX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXXXXXX...", ".XX.XXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "................", ".........X.X....", "........XXXXX...", "........XXXXX...", "........XXXXXX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXXXXXX...", ".XX.XXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
@@ -2216,7 +2216,7 @@ enum SpeciesData {
             Evolution(to: "cat_mooncat", req: Requirement(smarts: 40)),
             Evolution(to: "cat_hearthpurr", req: Requirement())
         ]),
-        Species(id: "cat_lapwarmer", name: "Lapwarmer", stage: .adult, blurb: "Purrs on request. Moves rarely.", family: "cat", line: "sofa",
+        Species(id: "cat_lapwarmer", name: "Lapwarmer", stage: .adult, blurb: "Purrs on request. Moves rarely.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "................", "................", "..........X.....", "..........X..X..", "..........XXXX..", ".........XXXXX..", ".........XXX.XX.", ".....XXXXXXXXX..", "...XXXXXXXXXXXX.", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX.X.", ".XXXXXXXXXXXXX.X", ".XXXXXXXXXXXXX.X", "..XXXXXXXXXXXXX."],
                 ["................", "................", "................", "................", "..........X.....", "..........X..X..", "..........XXXX..", ".........XXXXX..", ".........XXXXXX.", ".....XXXXXXXXX..", "...XXXXXXXXXXXX.", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX.X.", ".XXXXXXXXXXXXX.X", ".XXXXXXXXXXXXX.X", "..XXXXXXXXXXXXX."],
@@ -2228,7 +2228,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "cat_hearthpurr", req: Requirement())
         ]),
-        Species(id: "cat_velvet", name: "Velvet", stage: .adult, blurb: "Elegant and slender, with a collar bell.", family: "cat", line: "sofa",
+        Species(id: "cat_velvet", name: "Velvet", stage: .adult, blurb: "Elegant and slender, with a collar bell.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", ".........X.X....", "........XXXXX...", "........XXXXX...", "........XXX.XX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXX.......", ".XX.XXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "................", ".........X.X....", "........XXXXX...", "........XXXXX...", "........XXXXXX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXX.......", ".XX.XXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
@@ -2241,7 +2241,7 @@ enum SpeciesData {
             Evolution(to: "cat_luckypaw", req: Requirement(smarts: 40)),
             Evolution(to: "cat_mooncat", req: Requirement())
         ]),
-        Species(id: "cat_raggle", name: "Raggle", stage: .adult, blurb: "Ragged but resourceful.", family: "cat", line: "stray",
+        Species(id: "cat_raggle", name: "Raggle", stage: .adult, blurb: "Ragged but resourceful.", family: "cat", line: "stray", bodyHex: "#8E8A84",
             frames: [
                 ["................", "................", "...........X....", "...X.......X....", "...X.......XXXX.", ".XX.......XXXXX.", ".X........XXX.X.", ".X...X.X.XXXXXX.", ".X...XXXXXXXXXX.", "..XXXXXX.XXX....", "..XXX.XXXXXX....", "...XXXXXXXXX....", ".....XX.XX.X....", ".....XX..X.X....", ".....XX..X.X....", ".....XX...XX...."],
                 ["................", "................", "...........X....", "...X.......X....", "...X.......XXXX.", ".XX.......XXXXX.", ".X........XXXXX.", ".X...X.X.XXXXXX.", ".X...XXXXXXXXXX.", "..XXXXXX.XXX....", "..XXX.XXXXXX....", "...XXXXXXXXX....", ".....XX.XX.X....", ".....XX..X.X....", ".....XX..X.X....", ".....XX...XX...."],
@@ -2253,7 +2253,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "cat_umbra", req: Requirement())
         ]),
-        Species(id: "cat_moggy", name: "Moggy", stage: .adult, blurb: "Dented, scarred and still purring.", family: "cat", line: "stray",
+        Species(id: "cat_moggy", name: "Moggy", stage: .adult, blurb: "Dented, scarred and still purring.", family: "cat", line: "stray", bodyHex: "#8E8A84",
             frames: [
                 ["................", "................", "..X.............", "..X.......XX....", "..X.......XX.X..", ".XX.......XXXXX.", "XX....X...XXX.X.", "X...X.X.X.XXXXX.", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXX....", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
                 ["................", "................", "..X.............", "..X.......XX....", "..X.......XX.X..", ".XX.......XXXXX.", "XX....X...XXXXX.", "X...X.X.X.XXXXX.", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXX....", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
@@ -2265,7 +2265,7 @@ enum SpeciesData {
             evolutions: [
             Evolution(to: "cat_umbra", req: Requirement())
         ]),
-        Species(id: "cat_mooncat", name: "Mooncat", stage: .ultimate, blurb: "Silver fur and a crescent moon overhead.", family: "cat", line: "sofa",
+        Species(id: "cat_mooncat", name: "Mooncat", stage: .ultimate, blurb: "Silver fur and a crescent moon overhead.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "....X...........", "...XX....X.X....", "...XX...XXXXX...", "....XXX.XXXXX...", "........XXX.XX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXXXX.....", ".XX.XXXXXXX.....", "...XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "....X...........", "...XX....X.X....", "...XX...XXXXX...", "....XXX.XXXXX...", "........XXXXXX..", "........XXXXX...", "........XXXX.X..", "..XX.XXXXXX.....", ".XX.XXXXXXX.....", "...XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
@@ -2275,7 +2275,7 @@ enum SpeciesData {
                 ["................................", "................................", "........XX......................", ".......XXX......................", ".......XXX........XX..XX........", "......XXXX.......XXX..XXX.......", "......XXXX.......XXXXXXXX.......", ".......XXXX.....XXXXXXXXXX......", ".......XXXXXXX..XXXXXXXXXX......", ".........XXXXX..XXXXXXXXXXX.....", "................XXXXXXXXXXXX....", "................XXXXXXXXXXXX....", "................XXXXXXXXXX......", "................XXXXXXXXX.......", "................XXXXXXXX..XX....", "...............XXXXXXXX...XX....", ".....XXX...XXXXXXXXXXXX.........", "...XXXXX..XXXXXXXXXXXX..........", "..XXXX...XXXXXXXXXXXXX..........", "..XXX...XXXXXXXXXXXXXX..........", ".....X.XXXXXXXXXXXXXXX..........", "......XXXXXXXXXXXXXXXX..........", "..XX..XXXXXXXXXXXXXXXX..........", "..XX..XXXXXXXXXXXXXXXX..........", "..XX..XXXXXXXXXXXXXXXX..........", "..XX..XXXXXXXXXXXXXXXX..........", "..XX..XXXXXXXXXXXXXXXX..........", "..XX..XXXXXXXXXXXXXXXX..........", "...XXXXXXXXXXXXXXX..XX..........", "....XXXXXXXXXXXXXX..XXX.........", ".....XXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "cat_luckypaw", name: "Luckypaw", stage: .ultimate, blurb: "Waves a lucky paw. Good fortune follows.", family: "cat", line: "alley",
+        Species(id: "cat_luckypaw", name: "Luckypaw", stage: .ultimate, blurb: "Waves a lucky paw. Good fortune follows.", family: "cat", line: "alley", bodyHex: "#D08A4A",
             frames: [
                 ["................", "................", "........XX.X....", "........XXXXX...", "........XXXXX...", "........XXX.XXX.", "........XXXXXX..", ".......XXXXX.XX.", "..XX.XXXX....X..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXX.....", "..XXXXXXXXX.....", "...XXXXXXXXX...."],
                 ["................", "................", "........XX.X....", "........XXXXX...", "........XXXXX...", "........XXXXXXX.", "........XXXXXX..", ".......XXXXX.XX.", "..XX.XXXX....X..", ".XXXXXXXXXXXXX..", ".XXXXXXXXXXXX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXX.....", "..XXXXXXXXX.....", "...XXXXXXXXX...."],
@@ -2285,7 +2285,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", ".................XX...XX........", "................XXXX..XXX.......", "................XXXXXXXXX.......", "................XXXXXXXXXX......", "................XXXXXXXXXX......", "................XXXXXXXXXXX.....", "................XXXXXXXXXXXXXX..", "................XXXXXXXXXXXXXX..", "................XXXXXXXXXXXX....", "...............XXXXXXXXXXXXX....", "...............XXXXXXXXX..XXXX..", ".............XXXXXXXXXX...XXXX..", ".....XX....XXXXXXX........XXX...", "...XXXXX..XXXXXXXX.......XXX....", "...XXXXXXXXXXXXXXXXXXXXXXXXX....", "..XXXXXXXXXXXXXXXXXXXXXXXXX.....", "..XXXXXXXXXXXXXXXXXXXXXXXXX.....", "..XXXXXXXXXXXXXXXXXXXXXXX.......", "..XXXXXXXXXXXXXXXXXXXXXXX.......", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXX.........", "..XXXXXXXXXXXXXXXXXXXXX.........", "...XXXXXXXXXXXXXXXXXXX..........", "...XXXXXXXXXXXXXXXXXXX..........", ".....XXXXXXXXXXXXXXXXXX.........", ".....XXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "cat_sovereign", name: "Sovereign", stage: .ultimate, blurb: "Lion-maned monarch of the sunny wall.", family: "cat", line: "hunter",
+        Species(id: "cat_sovereign", name: "Sovereign", stage: .ultimate, blurb: "Lion-maned monarch of the sunny wall.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "........XXXXX...", "........XXXXX...", ".......XXX..X...", "......XX.XXX.X..", "......XX.XX.X...", "......XX.XXXXX..", "......XX..XX.X..", "..XX.XXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
                 ["................", "........XXXXX...", "........XXXXX...", ".......XXX..X...", "......XX.XXX.X..", "......XX.XXXX...", "......XX.XXXXX..", "......XX..XX.X..", "..XX.XXXXX.XX...", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".XXXXXXXXXXX....", ".X.XXXXXXXX.....", "..XXXXXXX.X.....", "...XXXXXXXXX...."],
@@ -2295,7 +2295,7 @@ enum SpeciesData {
                 ["................................", "................................", ".................XXXXXXXX.......", "................XXXXXXXXXX......", "................XXXXXXXXXX......", "...............XXXXXXXXXXX......", "...............XXXXX....XX......", ".............XXXXXXX....XXX.....", ".............XXX..XXXXX...XX....", "............XXXX..XXXXXX..XX....", "............XXXX..XXXXXXX.......", "............XXXX..XXXXXXXX......", "............XXXX..XXXXXXXXX.....", "............XXXX...XXXXXXXXX....", "............XXXX....XXXX..XX....", "...........XXXXXX....XXX..XX....", ".....XX....XXXXXXXX...XXXXX.....", "...XXXXX..XXXXXXXXXX..XXXX......", "...XXXXXXXXXXXXXXXXXXXXXX.......", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXXX........", "..XXXXXXXXXXXXXXXXXXXXX.........", "..XX..XXXXXXXXXXXXXXXXX.........", "..XX..XXXXXXXXXXXXXXXX..........", "...XXXXXXXXXXXXXXX..XX..........", "....XXXXXXXXXXXXXX..XXX.........", ".....XXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........"],
             ],
             evolutions: []),
-        Species(id: "cat_umbra", name: "Umbra", stage: .ultimate, blurb: "A shadow panther, quiet as dusk.", family: "cat", line: "stray",
+        Species(id: "cat_umbra", name: "Umbra", stage: .ultimate, blurb: "A shadow panther, quiet as dusk.", family: "cat", line: "stray", bodyHex: "#8E8A84",
             frames: [
                 ["................", "................", "...........X....", "..X.....X..X..X.", "..X....XXXXX.XX.", ".XX.....X.XXXXX.", "XX........XXX.X.", "X...X.X.X.XXXXX.", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXX....", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
                 ["................", "................", "...........X....", "..X.....X..X..X.", "..X....XXXXX.XX.", ".XX.....X.XXXXX.", "XX........XXXXX.", "X...X.X.X.XXXXX.", "XX.XXXXXXXXXXX..", ".XXXXXXXXXXX....", "..XXXXXXXXXXX...", "..XXXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", "....X.X..X.X....", "....X.X...XX...."],
@@ -2305,7 +2305,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "......................XX........", "......................XX........", "....XX..........XX....XX....XX..", "....XX.........XXXX..XXX...XXX..", "....XX........XXXXXXXXXX...XXX..", "...XXX........XXXXXXXXXX..XXXX..", "...XXX.........XXX..XXXXXXXXXX..", ".XXXX...........XX..XXXXXXXXXX..", ".XXXX...............XXXXXXXXXX..", "XXX.................XXXXXXXXXX..", "XX......XX..XX..XX..XXXXXXXXXX..", "XX.....XXX..XX..XX..XXXXXXXXX...", "XXX....XXXXXXXXXXXXXXXXXXXXXX...", ".XXX..XXXXXXXXXXXXXXXXXXXXX.....", ".XXXXXXXXXXXXXXXXXXXXXXX........", "...XXXXXXXXXXXXXXXXXXXXX........", "...XXXXXXXXXXXXXXXXXXXXXXX......", "....XXXXXXXXXXXXXXXXXXXXXX......", "....XXXXXXXXXXXXXXXXXXXXX.......", ".....XXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXX..XX........", "........XXXXXXXXXXXX..XX........", "........XX..XXX..XXX..XX........", "........XX..XX....XX..XX........", "........XX..XX....XX..XX........", "........XX..XX....XX..XX........", "........XX..XX.....XXXXX........", "........XX..XX......XXX........."],
             ],
             evolutions: []),
-        Species(id: "cat_hoarfrost", name: "Hoarfrost", stage: .ultimate, blurb: "A snow lynx wrapped in frosty fluff.", family: "cat", line: "hunter",
+        Species(id: "cat_hoarfrost", name: "Hoarfrost", stage: .ultimate, blurb: "A snow lynx wrapped in frosty fluff.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", "...........X....", "........X..X..X.", ".......XXX.X.XX.", "........X.XXXXX.", "..........XXX.XX", "..........XXXXX.", "..X.XXXXXXXXXXXX", "..XXXXXXXXXXXX..", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", ".....XX...XX...."],
                 ["................", "................", "...........X....", "........X..X..X.", ".......XXX.X.XX.", "........X.XXXXX.", "..........XXXXXX", "..........XXXXX.", "..X.XXXXXXXXXXXX", "..XXXXXXXXXXXX..", "..XXXXXXXXXX....", "..XXXXXXXXXX....", "...XXXXXXXXX....", "....XXXXXX.X....", "....X.X..X.X....", ".....XX...XX...."],
@@ -2315,7 +2315,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "......................XX........", "......................XX........", "................XX....XX....XX..", "...............XXXX...XX...XXX..", "..............XXXXXX..XX...XXX..", "..............XXXXXX..XX..XXXX..", "...............XXX...XXXXXXXXX..", "................XX..XXXXXXXXXXX.", "....................XXXXXXXXXXXX", "....................XXXXXXXXXXXX", "....................XXXXXXXXXX..", "...................XXXXXXXXXXX..", "....XX...XXXXXXXXXXXXXXXXXXXXXXX", "....XX..XXXXXXXXXXXXXXXXXXXXXXXX", "....XXXXXXXXXXXXXXXXXXXXXXXXX...", "....XXXXXXXXXXXXXXXXXXXXXXX.....", "....XXXXXXXXXXXXXXXXXXXXX.......", "....XXXXXXXXXXXXXXXXXXXX........", "....XXXXXXXXXXXXXXXXXXXX........", ".....XXXXXXXXXXXXXXXXXXX........", ".....XXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXX..XX........", "........XXXXXXXXXXXX..XX........", "........XX..XXX..XXX..XX........", "........XX..XX....XX..XX........", ".........XXXXX.....XXXXX........", "..........XXX.......XXX........."],
             ],
             evolutions: []),
-        Species(id: "cat_emberstripe", name: "Emberstripe", stage: .ultimate, blurb: "Striped and fiery, with a glowing tail.", family: "cat", line: "hunter",
+        Species(id: "cat_emberstripe", name: "Emberstripe", stage: .ultimate, blurb: "Striped and fiery, with a glowing tail.", family: "cat", line: "hunter", bodyHex: "#A8885C",
             frames: [
                 ["................", "................", ".X.........X..X.", "..X........X..X.", ".X.X.......XXXX.", ".XX.......XX.XX.", ".X........XXX.X.", ".X........XXXXX.", ".X...XXXXXXXXXX.", "..XXXX.X.XXX....", "..XX.XXXXXXX....", "...XXXXXXXXX....", ".....XXXXX.X....", ".....XX..X.X....", ".....XX..X.X....", ".....XX...XX...."],
                 ["................", "................", ".X.........X..X.", "..X........X..X.", ".X.X.......XXXX.", ".XX.......XX.XX.", ".X........XXXXX.", ".X........XXXXX.", ".X...XXXXXXXXXX.", "..XXXX.X.XXX....", "..XX.XXXXXXX....", "...XXXXXXXXX....", ".....XXXXX.X....", ".....XX..X.X....", ".....XX..X.X....", ".....XX...XX...."],
@@ -2325,7 +2325,7 @@ enum SpeciesData {
                 ["................................", "................................", "................................", "................................", "..XX..................XX....XX..", "..XXX.................XX....XX..", "....XX................XX....XX..", "....XXX...............XXX..XXX..", "..XX..XX..............XXXXXXXX..", "..XX..XX.............XXXXXXXXX..", "..XXXXX..............XXX..XXXX..", "..XXXX..............XXXX..XXXX..", "..XXX...............XXXXXXXXXX..", "..XX................XXXXXXXXXX..", "..XX................XXXXXXXXXX..", "..XX...............XXXXXXXXXXX..", "..XX.......XXXXXXXXXXXXXXXXXXX..", "..XXX....XXXXXXXXXXXXXXXXXXXX...", "...X.XXXXXXX..XX..XXXXXXX.......", "....XXXXXXXX..XX..XXXXXX........", "....XXXX..XXXXXXXXXXXXXX........", ".....XXX..XXXXXXXXXXXXXX........", ".....XXXXXXXXXXXXXXXXXXX........", ".......XXXXXXXXXXXXXXXXX........", ".........XXXXXXXXXXX..XX........", "..........XXXXXXXXXX..XX........", "..........XXXXX..XXX..XX........", "..........XXXX....XX..XX........", "..........XXXX....XX..XX........", "..........XXXX....XX..XX........", "..........XXXX.....XXXXX........", "...........XX.......XXX........."],
             ],
             evolutions: []),
-        Species(id: "cat_hearthpurr", name: "Hearthpurr", stage: .ultimate, blurb: "The warmest cat. Everyone gathers round.", family: "cat", line: "sofa",
+        Species(id: "cat_hearthpurr", name: "Hearthpurr", stage: .ultimate, blurb: "The warmest cat. Everyone gathers round.", family: "cat", line: "sofa", bodyHex: "#D9CBB0",
             frames: [
                 ["................", "................", "................", ".........XXXXX..", "........X.X...X.", ".........XXXXX..", "..........XXXX..", ".........XXXXX..", ".........XXX.XX.", ".....XXXXXXXXX..", "...XXXXXXXXXXXX.", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".X.XXXXXXXXX....", "..XXXXXXXXXXXX.."],
                 ["................", "................", "................", ".........XXXXX..", "........X.X...X.", ".........XXXXX..", "..........XXXX..", ".........XXXXX..", ".........XXXXXX.", ".....XXXXXXXXX..", "...XXXXXXXXXXXX.", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".XXXXXXXXXXXX...", ".X.XXXXXXXXX....", "..XXXXXXXXXXXX.."],

@@ -20,7 +20,10 @@ for fam, sid, (name, stage, blurb, rec) in all_species():
                 swift = {'mist_min': 'mistMin', 'mist_max': 'mistMax'}.get(k, k)
                 parts.append(f"{swift}: {v}")
         evo.append(f'            Evolution(to: "{child}", req: Requirement({", ".join(parts)}))')
-    out.append(f'        Species(id: "{sid}", name: "{name}", stage: {STAGE[stage]}, blurb: "{blurb}", family: "{FAMILY}", line: "{LINE[sid]}",')
+    colors = getattr(fam, 'LINE_COLORS', None)
+    if colors is not None and LINE[sid] not in colors: raise SystemExit(f"{sid}: line '{LINE[sid]}' has no LINE_COLORS entry in {FAMILY}")
+    body = f'"{colors[LINE[sid]]}"' if colors is not None else 'nil'
+    out.append(f'        Species(id: "{sid}", name: "{name}", stage: {STAGE[stage]}, blurb: "{blurb}", family: "{FAMILY}", line: "{LINE[sid]}", bodyHex: {body},')
     out.append('            frames: [')
     out.append('                [' + ", ".join(f'"{r}"' for r in a) + '],')
     out.append('                [' + ", ".join(f'"{r}"' for r in b) + '],')

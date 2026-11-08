@@ -147,6 +147,8 @@ struct LCDScreen: View {
             if model.statsPage == 0 { statusPanel(m) } else { detailPanel(m) }
         case .dex:
             dexPanel(m)
+        case .chooseEgg:
+            chooserPanel(m)
         }
     }
 
@@ -168,13 +170,13 @@ struct LCDScreen: View {
                 .overlay(Rectangle().strokeBorder(palette.ink, lineWidth: 1))
                 .padding(.top, m.unit)
             Spacer(minLength: 0)
-            PixelButton("NEW EGG", pixel: m.unit, selected: true) { model.startNewEgg() }
+            PixelButton("NEW EGG", pixel: m.unit, selected: true) { model.requestNewEgg() }
         }
         .padding(m.pad)
     }
 
     private func feedPanel(_ m: Metrics) -> some View {
-        let titles = ["MEAT", "VEGGIES", "PASTA", "SNACK", "CANCEL"]
+        let titles = Species.foodLabels(family: model.pet.family).map { $0.uppercased() } + ["SNACK", "CANCEL"]
         return panel(m, spacing: m.unit) {
             PixelText("FEED", pixel: m.unit)
                 .padding(.bottom, m.unit)
@@ -183,6 +185,29 @@ struct LCDScreen: View {
                     model.menuIndex = i
                     model.confirm()
                 }
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// Choose your egg: one row per family; Plus families are marked until unlocked.
+    private func chooserPanel(_ m: Metrics) -> some View {
+        let ents = model.entitlements
+        return panel(m, spacing: m.unit) {
+            PixelText("CHOOSE YOUR EGG", pixel: m.unit)
+                .padding(.bottom, m.unit)
+            ForEach(Array(Species.families.enumerated()), id: \.element.id) { i, fam in
+                let locked = !ents.canHatch(family: fam.id)
+                PixelButton(locked ? "\(fam.name) PLUS" : fam.name, pixel: m.unit,
+                            selected: model.menuIndex == i, outlined: false) {
+                    model.menuIndex = i
+                    model.confirm()
+                }
+            }
+            PixelButton("CANCEL", pixel: m.unit, selected: model.menuIndex == Species.families.count,
+                        outlined: false) {
+                model.menuIndex = Species.families.count
+                model.confirm()
             }
             Spacer(minLength: 0)
         }
@@ -300,7 +325,8 @@ struct LCDScreen: View {
 
     private func dexPanel(_ m: Metrics) -> some View {
         let u = m.unit
-        let family = model.pet.family
+        let family = model.dexFamily ?? model.pet.family
+        let locked = !model.entitlements.canHatch(family: family)
         let found = Set(model.pet.dex.filter { Species.named($0)?.family == family })
         let stages: [(String, Stage)] = [("BABY", .baby), ("CHILD", .child), ("TEEN", .teen),
                                          ("ADULT", .adult), ("ULTIMATE", .ultimate)]
@@ -310,6 +336,11 @@ struct LCDScreen: View {
                     .frame(width: u * 20)
                 PixelText("DEX \(found.count)/\(Species.dexSize(family: family))", pixel: u)
                 Spacer(minLength: 0)
+                if model.eggChooserAvailable {
+                    PixelButton(locked && found.isEmpty ? "PLUS" : (Species.family(family)?.name ?? "DINOS"),
+                                pixel: u) { model.cycleDexFamily() }
+                        .frame(width: u * 30)
+                }
             }
             MaybeScroll {
                 VStack(alignment: .leading, spacing: u * 2) {

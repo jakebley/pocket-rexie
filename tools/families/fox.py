@@ -66,6 +66,9 @@ LINE = {
  'ashpaw': 'stray', 'scrabble': 'stray', 'tatter': 'stray', 'raggedy': 'stray', 'scrapfox': 'stray', 'gloamfox': 'stray',
 }
 
+# Technicolor body colour per lineage (same values the app used when the fox lines were first drawn).
+LINE_COLORS = {'hunter': '#C2623A', 'forager': '#D9A441', 'riverside': '#8FA3B5', 'stray': '#9A948C', 'baby': '#E7DCC0'}
+
 # parent -> ordered (child, requirements); first match wins; the last entry has no requirements.
 EVO = {
  'dewkit': [('ashpaw', dict(mist_min=1)), ('scamp', dict(lead='meat')), ('bramble', dict(lead='veggie')), ('ripple', dict(lead='pasta'))],

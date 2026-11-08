@@ -51,6 +51,9 @@ struct Species {
     let family: String
     /// Lineage color family: baby, meat, veggie, pasta or neglect (drives the Technicolor body color).
     let line: String
+    /// Technicolor body color ("#RRGGBB") from the species' family palette. nil for the dino family,
+    /// whose bodies are colored by `line` through `PetLine`.
+    let bodyHex: String?
     /// frames[0] is the open-eyed sprite, frames[1] the blink.
     let frames: [[String]]
     /// 32x32 Scale2x-smoothed version of `frames` for the high-resolution scene.
@@ -68,6 +71,11 @@ struct Species {
     static let families: [Family] = SpeciesData.families
     static func family(_ id: String) -> Family? { families.first { $0.id == id } }
     static func dexSize(family id: String) -> Int { all.filter { $0.family == id }.count }
+    /// Feed menu labels (meat, veggie, pasta) for a family; unknown families get the dino labels.
+    static func foodLabels(family id: String) -> [String] {
+        if let f = family(id), f.foods.count == 3 { return f.foods }
+        return ["Meat", "Veggies", "Pasta"]
+    }
     /// Hatchling species ids for a family.
     static func babies(family id: String) -> [String] { SpeciesData.babies.filter { byID[$0]?.family == id } }
 

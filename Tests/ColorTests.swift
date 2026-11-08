@@ -150,12 +150,19 @@ final class ColorTests: XCTestCase {
     func testLineComesFromTheSpecies() {
         for sp in Species.all {
             let p = makePet(stage: sp.stage, species: sp.id)
-            XCTAssertEqual(SceneRenderer.lineOf(p).rawValue, sp.line, sp.id)
-            XCTAssertEqual(SceneRenderer.still(pet: p, calendar: utc).line.rawValue, sp.line, sp.id)
+            if PetLine(rawValue: sp.line) != nil {
+                XCTAssertEqual(SceneRenderer.lineOf(p).rawValue, sp.line, sp.id)
+                XCTAssertEqual(SceneRenderer.still(pet: p, calendar: utc).line.rawValue, sp.line, sp.id)
+            } else {
+                // family-only lines (raptor, reef...) are colored by bodyHex; the line only sets the dark blend
+                XCTAssertNotNil(sp.bodyHex, sp.id)
+                XCTAssertEqual(SceneRenderer.lineOf(p), sp.stage == .baby ? .baby : .meat, sp.id)
+            }
         }
         XCTAssertEqual(SceneRenderer.lineOf(makePet(stage: .egg, species: "")), .baby)
         XCTAssertEqual(SceneRenderer.lineOf(makePet(stage: .ghost, species: "rawr")), .neglect)
-        XCTAssertTrue(Species.all.allSatisfy { PetLine(rawValue: $0.line) != nil }, "every species has a known line")
+        XCTAssertTrue(Species.all.allSatisfy { PetLine(rawValue: $0.line) != nil || $0.bodyHex != nil },
+                      "every species has a known line or a family body color")
         let withBody = Species.all.filter { sp in
             sp.hiFrames.contains { SceneLayer.petLayers($0).joined().contains(.body) }
         }
