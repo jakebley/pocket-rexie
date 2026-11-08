@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StatusBar as StatusBar2, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { statusLine } from './src/core/pet';
 import { ColorModeProvider } from './src/ui/ColorModeContext';
@@ -43,6 +44,7 @@ export function layoutFor(availW: number, availH: number): Layout {
 
 /** Safe-area insets: CSS env() probe on web, a guess on native. */
 function useInsets(vw: number, vh: number) {
+  const native = useSafeAreaInsets();
   const [ins, setIns] = useState({ top: 0, bottom: 0, left: 0, right: 0 });
   useEffect(() => {
     if (Platform.OS === 'web') {
@@ -53,9 +55,12 @@ function useInsets(vw: number, vh: number) {
       const c = getComputedStyle(p);
       setIns({ top: parseFloat(c.paddingTop) || 0, right: parseFloat(c.paddingRight) || 0, bottom: parseFloat(c.paddingBottom) || 0, left: parseFloat(c.paddingLeft) || 0 });
       document.body.removeChild(p);
-    } else setIns({ top: Platform.OS === 'ios' ? 50 : (StatusBar2.currentHeight ?? 24), bottom: Platform.OS === 'ios' ? 20 : 0, left: 0, right: 0 });
+    }
   }, [vw, vh]);
-  return ins;
+  if (Platform.OS === 'web') return ins;
+  // Native: real insets from the OS (Dynamic Island, notch, home indicator); Android falls back to the status bar height.
+  const top = native.top > 0 ? native.top : Platform.OS === 'android' ? (StatusBar2.currentHeight ?? 24) : 0;
+  return { top: top + 4, bottom: native.bottom, left: native.left, right: native.right };
 }
 
 /** Web only: no pinch/double-tap zoom, no tap flash, no selection, no scrolling. */
@@ -92,7 +97,7 @@ function NameModal({ onDone }: { onDone: (n: string) => void }) {
 }
 
 export default function App() {
-  return <ColorModeProvider><AppBody /></ColorModeProvider>;
+  return <SafeAreaProvider><ColorModeProvider><AppBody /></ColorModeProvider></SafeAreaProvider>;
 }
 
 function AppBody() {
