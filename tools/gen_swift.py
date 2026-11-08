@@ -17,7 +17,8 @@ for fam, sid, (name, stage, blurb, rec) in all_species():
     evo = []
     for child, req in EVO.get(sid, []):
         parts = []
-        for k, v in req.items():
+        ORDER = ['mist_min', 'mist_max', 'train', 'wins', 'smarts', 'disc', 'heavy', 'lead']  # Swift memberwise order
+        for k, v in sorted(req.items(), key=lambda kv: ORDER.index(kv[0]) if kv[0] in ORDER else 99):
             if k == 'lead': parts.append(f"lead: .{v}")
             elif k == 'heavy': parts.append("heavy: true")
             else:

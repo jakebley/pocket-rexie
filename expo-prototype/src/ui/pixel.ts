@@ -120,13 +120,14 @@ export const ICONS: Record<string, string[]> = {
   // drumstick: meat knob top-right, bone handle bottom-left
   feed: ['...XXXX.', '..XXXXXX', '..XXXXXX', '..XXXXXX', '...XXXX.', '..XXX...', '.XXX....', 'XX.XX...'],
   // light bulb
-  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '...XX...', '..XXXX..', '...XX...'],
-  play: ['..XXXX..', '.X.XX.X.', 'X..XX..X', 'XXXXXXXX', 'XXXXXXXX', 'X..XX..X', '.X.XX.X.', '..XXXX..'],
+  light: ['..XXXX..', '.X....X.', '.X....X.', '.X....X.', '..X..X..', '..XXXX..', '..X..X..', '...XX...'],
+  // game controller: d-pad and two buttons cut out of the body
+  play: ['........', '.XXXXXX.', 'XX.XXXXX', 'X...XX.X', 'XX.XX.XX', 'XXXXXXXX', 'XX....XX', '........'],
   train: ['........', 'X......X', 'XX....XX', 'XXXXXXXX', 'XXXXXXXX', 'XX....XX', 'X......X', '........'],
   // medical cross
   medicine: ['..XXXX..', '..XXXX..', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', '..XXXX..', '..XXXX..'],
   // broom (clean)
-  clean: ['......XX', '.....XX.', '....XX..', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X.X.X.'],
+  clean: ['...XX...', '...XX...', '...XX...', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X..X.X'],
   climate: ['..XXX...', '..X.X...', '..X.X...', '..X.X...', '.XX.XX..', '.X.X.X..', '.XX.XX..', '..XXX...'],
   scold: ['...XX...', '...XX...', '...XX...', '...XX...', '...XX...', '........', '...XX...', '...XX...'],
   // crossed swords with hilts
@@ -135,6 +136,19 @@ export const ICONS: Record<string, string[]> = {
 };
 export const ICON_ORDER = ['feed', 'light', 'play', 'train', 'medicine', 'clean', 'climate', 'scold', 'battle', 'stats'] as const;
 export const ICON_LABELS = ['FEED', 'LIGHT', 'PLAY', 'TRAIN', 'MEDICINE', 'CLEAN', 'CLIMATE', 'SCOLD', 'BATTLE', 'STATS'];
+/** What each icon does; shown when the icon is held down. */
+export const ICON_HELP = [
+  'FEED: meal or snack. Fills hunger.',
+  'LIGHT: turn the lights off so it can sleep.',
+  'PLAY: guess game. Makes it happy.',
+  'TRAIN: exercise. Gets stronger, burns weight.',
+  'MEDICINE: cures a sick pet.',
+  'CLEAN: wipe up the poop.',
+  'CLIMATE: fix hot or cold.',
+  'SCOLD: only when it is being naughty.',
+  'BATTLE: fight for wins.',
+  'STATS: hunger, mood and growth.',
+];
 
 /** Square framebuffer (n x n) of layer codes: 0 is unlit, any other value is a lit pixel tagged with its layer. */
 export class Buf {

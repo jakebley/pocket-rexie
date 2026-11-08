@@ -1,7 +1,9 @@
 // Draws the 64x64 living scene into a Buf (ink only). Pure: everything comes from Scene + Pet.
 import { SPECIES_BY_ID, needsAttention, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
-import { Layer, petLayers } from './layers';
+import { DIM_FLAG, LAYER_MASK, Layer, SCENERY_FROM, petLayers } from './layers';
+import { biomeOf, type Biome } from './biomes';
+import { drawBackdrop, drawFore } from './biomeDraw';
 import { Buf, G7 } from './pixel';
 import { BED_X, GROUND_Y, HEAD_Y, MAX_X, POOP_X, SCENE_N, SPRITE_N, TICK_MS, maxXFor, phaseOf, type Pop, type Prop, type Scene } from './scene';
 
@@ -105,7 +107,8 @@ function spriteRows(pet: Pet, blink: boolean): Rows | null {
 }
 
 /** Draw the pet mirrored when facing left; scanline-clears the background behind its silhouette. */
-function drawPet(b: Buf, s: Scene, pet: Pet) {
+const SPAN_LO = new Int16Array(40), SPAN_HI = new Int16Array(40);
+function drawPet(b: Buf, s: Scene, pet: Pet, biome: Biome) {
   const pose = poseOf(s);
   const blinkNow = pose.blink || (!s.still && (Math.floor(s.nowMs / 200) + (s.seed % 20)) % 20 === 0 && s.state !== 'sleep');
   const spr = spriteRows(pet, blinkNow);
@@ -115,6 +118,22 @@ function drawPet(b: Buf, s: Scene, pet: Pet) {
   // pose wiggles (squat, shiver, sneeze) must not push the ink into a poop; the sleeper stays on the bed
   if (s.state !== 'sleep') px = Math.min(px, maxXFor(pet.species, s.poopMask));
   const py = HEAD_Y + pose.dy;
+  if (biome !== 'meadow') {
+    // clear a 1px ring of biome scenery around the silhouette so the pet reads against any backdrop (shared meadow layers are untouched)
+    const h = Math.min(rows.length, SPAN_LO.length);
+    for (let j = 0; j < h; j++) { SPAN_LO[j] = rows[j].indexOf('X'); SPAN_HI[j] = rows[j].lastIndexOf('X'); }
+    for (let j = -1; j <= h; j++) {
+      let lo = 999, hi = -1;
+      for (let k = j - 1; k <= j + 1; k++) if (k >= 0 && k < h && SPAN_HI[k] >= 0) { lo = Math.min(lo, SPAN_LO[k]); hi = Math.max(hi, SPAN_HI[k]); }
+      if (hi < 0) continue;
+      const y = py + j;
+      if (y < 0 || y >= b.n) continue;
+      for (let x = Math.max(0, px + lo - 1); x <= Math.min(b.n - 1, px + hi + 1); x++) {
+        const i = y * b.n + x;
+        if ((b.px[i] & LAYER_MASK) >= SCENERY_FROM) b.px[i] &= DIM_FLAG;
+      }
+    }
+  }
   for (let j = 0; j < rows.length; j++) {
     const r = rows[j];
     const lo = r.indexOf('X'), hi = r.lastIndexOf('X');
@@ -328,13 +347,16 @@ function drawButterfly(b: Buf, s: Scene) {
 }
 
 /** Paint the whole home scene. */
-export function drawScene(b: Buf, s: Scene, pet: Pet) {
+export function drawScene(b: Buf, s: Scene, pet: Pet, biomeOverride?: Biome) {
+  const biome = biomeOverride ?? biomeOf(pet);
+  drawBackdrop(b, s, biome);
   drawSky(b, s);
   drawGround(b, s);
+  drawFore(b, s, biome);
   if (s.dim) drawDim(b);
   drawButterfly(b, s);
   drawHud(b, s, pet);
-  drawPet(b, s, pet);
+  drawPet(b, s, pet, biome);
   const hx = Math.round(s.x);
   // bed: a woven mat in front of the sleeping pet's feet
   if (s.state === 'sleep' || pet.asleep) {

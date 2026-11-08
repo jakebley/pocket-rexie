@@ -1,7 +1,7 @@
 // Turns a layer-coded framebuffer into a few colored SVG paths for the selected color mode.
 import { forceSpecies, newPet, SPECIES_BY_ID, type Pet } from '../core/pet';
-import { DIM_FLAG, LAYER_MASK, type Line } from './layers';
-import { darken, DIM_DITHER, DIM_SKY, paletteTable, screenColors, skyFor, soilFor, type ColorMode, type PaletteCtx } from './palette';
+import { DIM_FLAG, LAYER_MASK, tradVisible, type Line } from './layers';
+import { darken, darkSky, DIM_DITHER, DIM_SKY, paletteTable, screenColors, skyFor, soilFor, type ColorMode, type PaletteCtx } from './palette';
 import { allCellsPath, litPath, type Buf } from './pixel';
 import { GROUND_Y, TICK_MS, initScene, type Scene } from './scene';
 import { renderScreen, type Rendered } from './screens';
@@ -19,20 +19,28 @@ export interface Frame {
 
 export interface FrameStyle { mode: ColorMode; dark: boolean; line?: Line; bodyHex?: string }
 
+let SCRATCH = new Uint8Array(0);
+const scratch = (len: number) => (SCRATCH.length === len ? SCRATCH : (SCRATCH = new Uint8Array(len)));
+
 /** Group the lit pixels by their color: one path per color (Traditional: a single ink path). */
 export function buildFrame(r: Rendered, st: FrameStyle): Frame {
   const { buf } = r;
   const n = buf.n;
   if (st.mode === 'traditional') {
     const ink = screenColors('traditional', st.dark).ink;
-    const d = litPath(buf.px, n);
+    // biome scenery is Technicolor-only: it prints as unlit (a dimmed one keeps the dither dot of an unlit pixel)
+    const src = buf.px;
+    const px = scratch(src.length);
+    for (let i = 0; i < src.length; i++) { const c = src[i]; px[i] = c && !tradVisible(c & LAYER_MASK) ? c & DIM_FLAG : c; }
+    const d = litPath(px, n);
     return { n, sky: null, soil: null, groups: [{ color: ink, d }], key: `${n}t${st.dark ? 'd' : 'l'}${d}` };
   }
-  const night = r.sky?.phase === 'night';
-  const ctx: PaletteCtx = { mode: 'technicolor', dark: st.dark, line: st.line, bodyHex: st.bodyHex, night };
+  const biome = r.sky?.biome ?? 'meadow';
+  const night = r.sky ? darkSky(biome, r.sky.phase) : false;
+  const ctx: PaletteCtx = { mode: 'technicolor', dark: st.dark, line: st.line, bodyHex: st.bodyHex, night, biome, phase: r.sky?.phase, rain: r.sky?.rain };
   const tbl = paletteTable(ctx);
   const dim = !!r.sky?.dim;
-  const sky = r.sky ? skyFor(ctx, r.sky.phase, r.sky.rain) : null;
+  const sky = r.sky ? skyFor(ctx, r.sky.phase, r.sky.rain, biome) : null;
   const skyShown = sky && dim ? darken(sky, DIM_SKY) : sky;
   const groups = new Map<string, string>();
   const px = buf.px;
@@ -48,7 +56,7 @@ export function buildFrame(r: Rendered, st: FrameStyle): Frame {
   }
   const arr = [...groups].map(([color, d]) => ({ color, d }));
   const skyF = skyShown ? { color: skyShown, h: GROUND_Y } : null;
-  const soilF = r.sky ? { color: dim ? darken(soilFor(ctx), DIM_SKY) : soilFor(ctx), y: GROUND_Y } : null;
+  const soilF = r.sky ? { color: dim ? darken(soilFor(ctx, biome), DIM_SKY) : soilFor(ctx, biome), y: GROUND_Y } : null;
   return {
     n, sky: skyF, soil: soilF, groups: arr,
     key: `${n}c${st.dark ? 'd' : 'l'}${skyShown ?? ''}${soilF?.color ?? ''}${arr.map((g) => g.color + g.d).join('|')}`,

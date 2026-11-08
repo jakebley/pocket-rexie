@@ -7,6 +7,7 @@ import {
 } from '../core/pet';
 import { loadPreviewPlus, resolveEggFamily, savePreviewPlus, familyById, type Entitlements } from '../core/entitlements';
 import { AWAY_MIN_MS, awaySummary } from './away';
+import { ICON_HELP } from './pixel';
 import { GROUND_TAP_Y, type SceneEvent } from './scene';
 import { dexPageCount, nextDexFamily, statsPageCount, type Evo, type Mode, type PlayState } from './screens';
 import * as sound from './sound';
@@ -280,6 +281,8 @@ export function useGame() {
     setSel(i);
     perform(i);
   };
+  /** Long-press on an icon: say what it does, without doing it. */
+  const describeIcon = (i: number) => { sound.beep(); say(ICON_HELP[i] ?? '', 4500); };
   const tapFeedRow = (i: number) => { sound.beep(); setFeedSel(i); confirmFeed(i); };
   const tapPlayOption = (i: 0 | 1) => {
     const pl = playRef.current;
@@ -362,6 +365,13 @@ export function useGame() {
       commit(newPet(Date.now(), { gentle: cur?.gentle ?? true }));
       goHome(); setSel(-1); say('New egg');
     },
+    /** Dev: start a fresh egg of any family, ignoring Plus gating. */
+    newEgg: (family: string) => {
+      const cur = petRef.current;
+      offsetRef.current = 0; setOffsetState(0);
+      commit(newPet(Date.now(), { gentle: cur?.gentle ?? true, family }));
+      goHome(); setSel(-1); say(`New ${familyById(family)?.name.toLowerCase() ?? ''} egg`);
+    },
     toggleClassic: () => mutate((p) => { p.gentle = !p.gentle; return p.gentle ? 'Gentle mode' : 'Classic mode'; }),
     toggleVacation: () => mutate((p) => { p.paused = !p.paused; return p.paused ? 'Vacation on' : 'Vacation off'; }),
     force: (id: string) => mutate((p) => { forceSpecies(p, id); }),
@@ -374,7 +384,7 @@ export function useGame() {
   return {
     ready: pet !== null, pet, mode, sel, feedSel, statsPage, dexPage, play, msg, evo, offset, muted, devOpen, setDevOpen,
     needsName, setName, hatchNew, choosingEgg, chooseEgg, cancelChooseEgg, canCancelEgg: !firstRun.current, ent, setPreviewPlus, dexFamily,
-    pressA, pressB, pressC, selectIcon, tapFeedRow, tapPlayOption, tapScreen, tapScene, dismissMsg, dev,
+    pressA, pressB, pressC, selectIcon, describeIcon, tapFeedRow, tapPlayOption, tapScreen, tapScene, dismissMsg, dev,
     takeSceneEvents, sceneEnv, forcedHour, forcedRain,
     now,
   };

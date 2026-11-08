@@ -49,7 +49,7 @@ const PHASES = ['dawn', 'day', 'dusk', 'night'] as const;
       for (const v of b.px) seen.add(v & LAYER_MASK);
     }
   }
-  const missing = ALL_LAYERS.filter((l) => !seen.has(l));
+  const missing = ALL_LAYERS.filter((l) => l < Layer.WAVE && !seen.has(l)); // the biome cue and scenery layers are covered by test/biomes.ts
   // every layer must be reachable by the drawing code; BODY_LIGHT etc. are covered via species cases
   ok(missing.length === 0, `every layer appears in some drawing (missing: ${missing.join(',')})`);
 }

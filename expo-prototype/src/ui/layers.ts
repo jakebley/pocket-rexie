@@ -10,9 +10,25 @@ export const Layer = {
   BODY_LIGHT: 29,
   /** the play ball (own tone, tools stay wooden) */
   BALL: 30,
+  // ---- biome cues (drawn in Traditional too, a few pixels each) ----
+  /** fish: surface wave line */ WAVE: 31,
+  /** bunny: burrow mouth outline */ HOLE: 32,
+  /** dragon: a small far peak outline */ PEAK: 33,
+  // ---- biome scenery (Technicolor only: Traditional renders these as unlit) ----
+  BARK: 34, CANOPY: 35, LITTER: 36, MOSS: 37, SHROOM: 38, FIREFLY: 39, FERN: 40,
+  WATER_LIGHT: 41, AIR_BUBBLE: 42, SEAWEED: 43, CORAL_A: 44, CORAL_B: 45, SAND: 46,
+  HILL: 47, WALL: 48, ROOF: 49, WINDOW: 50, WOOD: 51, YARN: 52,
+  TWINKLE: 53, CLOUD_SHADE: 54, EMBER: 55, ASH: 56, ROCK: 57, CRAG: 58, CAVE: 59, LAVA: 60,
+  GRIDLINE: 61, PANEL: 62, GEAR: 63, LED_A: 64, LED_B: 65, SCREEN: 66, CABLE: 67,
+  STALAC: 68, GLOW_SHROOM: 69, PUDDLE: 70, DEW: 71,
+  BURROW: 72, CLOVER: 73, CARROT: 74, DAISY: 75, DAISY_C: 76, LEAF_BIG: 77,
 } as const;
 export type LayerCode = (typeof Layer)[keyof typeof Layer];
-export const LAYER_COUNT = 31;
+export const LAYER_COUNT = 78;
+/** First biome-scenery layer. Codes from here up are Technicolor-only (Traditional draws them unlit), except the cue layers. */
+export const SCENERY_FROM = Layer.BARK;
+/** Does Traditional mode draw this layer code? (Shared layers 1..30 and the three cues: yes. Scenery: no.) */
+export const tradVisible = (l: number) => l < SCENERY_FROM;
 /** OR-ed onto a code by the lights-off dither: the pixel is drawn darker in Technicolor (still non-zero, so ink in Traditional). */
 export const DIM_FLAG = 0x80;
 export const LAYER_MASK = 0x7f;

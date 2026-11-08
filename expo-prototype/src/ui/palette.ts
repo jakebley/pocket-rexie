@@ -1,13 +1,14 @@
 // Color modes: the Traditional monochrome LCD and the muted, nostalgic Technicolor palette.
 // Spec and rationale: docs/COLOR_MODES.md. Hex values are the design; tune by eye.
-import { ALL_LAYERS, Layer, type Line } from './layers';
+import { ALL_LAYERS, LAYER_COUNT, Layer, type Line } from './layers';
+import { ALWAYS_DARK, type Biome } from './biomes';
 import type { Phase } from './scene';
 
 export type ColorMode = 'traditional' | 'technicolor';
 export const COLOR_MODES: ColorMode[] = ['traditional', 'technicolor'];
 export const isColorMode = (v: unknown): v is ColorMode => v === 'traditional' || v === 'technicolor';
 
-export interface PaletteCtx { mode: ColorMode; dark: boolean; line?: Line; /** per-family body colour; wins over `line` */ bodyHex?: string; /** the scene sky is the night sky (ink-like layers flip light) */ night?: boolean }
+export interface PaletteCtx { mode: ColorMode; dark: boolean; line?: Line; /** per-family body colour; wins over `line` */ bodyHex?: string; /** the scene sky is the night sky (ink-like layers flip light) */ night?: boolean; /** biome scenery and remaps (default: the dino meadow) */ biome?: Biome; phase?: Phase; rain?: boolean }
 export interface ScreenColors { ground: string; ink: string }
 
 // ---------- color math ----------
@@ -46,7 +47,89 @@ const T_LIGHT: Record<number, string> = {
   [Layer.FOOD_MEAT]: '#A9573E', [Layer.FOOD_VEG]: '#6F9A5B', [Layer.FOOD_PASTA]: '#D8B65D', [Layer.SNACK]: '#C98AA0',
   [Layer.TOOL]: '#9A7B52', [Layer.BALL]: '#C0634F', [Layer.SPARK]: '#F0D77A', [Layer.BUBBLE]: '#34384A',
   [Layer.WATER_DROP]: '#6FA3B8', [Layer.SNOW]: '#BFD8E2', [Layer.MAT]: '#8E6F8F', [Layer.BUTTERFLY]: '#C98AA0', [Layer.ALERT]: '#B8392E',
+  // biome cues and scenery (docs/BIOMES.md)
+  [Layer.WAVE]: '#D5F0F0', [Layer.HOLE]: '#4A3A2A', [Layer.PEAK]: '#6A5E6E',
+  [Layer.BARK]: '#6E5238', [Layer.CANOPY]: '#4C7544', [Layer.LITTER]: '#B8793F', [Layer.MOSS]: '#7FA356', [Layer.SHROOM]: '#C4503C', [Layer.FIREFLY]: '#F4EA7A', [Layer.FERN]: '#5E9150',
+  [Layer.WATER_LIGHT]: '#93DAE0', [Layer.AIR_BUBBLE]: '#D8F4F4', [Layer.SEAWEED]: '#2F8F6A', [Layer.CORAL_A]: '#E8826E', [Layer.CORAL_B]: '#B77FC0', [Layer.SAND]: '#E6D6A4',
+  [Layer.HILL]: '#6F98B4', [Layer.WALL]: '#D8C6AA', [Layer.ROOF]: '#8C5A52', [Layer.WINDOW]: '#F4D06A', [Layer.WOOD]: '#C9B48C', [Layer.YARN]: '#D66F8E',
+  [Layer.TWINKLE]: '#F2C84E', [Layer.CLOUD_SHADE]: '#DCE6F2', [Layer.EMBER]: '#FF9A3C', [Layer.ASH]: '#8A8284', [Layer.ROCK]: '#6E6560', [Layer.CRAG]: '#8F8092', [Layer.CAVE]: '#3A3038', [Layer.LAVA]: '#F2663A',
+  [Layer.GRIDLINE]: '#5CC8C4', [Layer.PANEL]: '#6A7794', [Layer.GEAR]: '#9AA4B8', [Layer.LED_A]: '#6CF08C', [Layer.LED_B]: '#F2605A', [Layer.SCREEN]: '#7CE4F0', [Layer.CABLE]: '#2E3446',
+  [Layer.STALAC]: '#54665C', [Layer.GLOW_SHROOM]: '#5FF0C0', [Layer.PUDDLE]: '#3F8074', [Layer.DEW]: '#D4EEF6',
+  [Layer.BURROW]: '#3A2C20', [Layer.CLOVER]: '#82B055', [Layer.CARROT]: '#E98A36', [Layer.DAISY]: '#F6F2E4', [Layer.DAISY_C]: '#F0C640', [Layer.LEAF_BIG]: '#5FA64C',
 };
+
+// ---------- biomes ----------
+type Remap = Partial<Record<number, string>>;
+/** Shared layers (sun, clouds, grass, ...) re-coloured to what they stand for in each biome. The pixels are the meadow's; only the colour changes. */
+const REMAP: Partial<Record<Biome, Remap>> = {
+  woods: { [Layer.GRASS]: '#5F8A4E', [Layer.GROUND]: '#8A6E48', [Layer.DIRT]: '#6E5638', [Layer.FLOWER_A]: '#C9553F', [Layer.FLOWER_B]: '#E6D8B0', [Layer.CLOUD]: '#DDE6D6' },
+  underwater: {
+    [Layer.SUN]: '#EAF8EA', [Layer.MOON]: '#DCECF8', [Layer.STAR]: '#CDEBF4', [Layer.CLOUD]: '#A8DCE2', [Layer.RAIN]: '#CFEAF0',
+    [Layer.GRASS]: '#35956C', [Layer.GROUND]: '#D8C58F', [Layer.DIRT]: '#BBA874', [Layer.FLOWER_A]: '#E8826E', [Layer.FLOWER_B]: '#C58AC4', [Layer.BUTTERFLY]: '#F0A060',
+  },
+  sky: { [Layer.GRASS]: '#4F8A4A', [Layer.GROUND]: '#8A6A44', [Layer.DIRT]: '#6E5236', [Layer.FLOWER_A]: '#E89AB0', [Layer.FLOWER_B]: '#F2D878', [Layer.CLOUD]: '#FFFFFF' },
+  yard: { [Layer.GROUND]: '#B79B6E', [Layer.DIRT]: '#957B54' },
+  clouds: {
+    [Layer.SUN]: '#F6DFA0', [Layer.MOON]: '#F4EEFF', [Layer.STAR]: '#FFFFFF', [Layer.CLOUD]: '#FFFFFF', [Layer.RAIN]: '#A9B6DE',
+    [Layer.GRASS]: '#DDD6F0', [Layer.GROUND]: '#F6F2FD', [Layer.DIRT]: '#CFC6E6', [Layer.FLOWER_A]: '#F2A6C8', [Layer.FLOWER_B]: '#F6E08A', [Layer.BUTTERFLY]: '#9FD0F0',
+  },
+  ember: {
+    [Layer.SUN]: '#FF9A4A', [Layer.MOON]: '#F0A070', [Layer.STAR]: '#FFB060', [Layer.CLOUD]: '#6E5E5E', [Layer.RAIN]: '#A09490',
+    [Layer.GRASS]: '#8A5A3A', [Layer.GROUND]: '#4A3C3C', [Layer.DIRT]: '#32282A', [Layer.FLOWER_A]: '#E8602E', [Layer.FLOWER_B]: '#F0B040', [Layer.BUTTERFLY]: '#FF8A4A',
+  },
+  warren: { [Layer.GROUND]: '#9A7B55', [Layer.DIRT]: '#7C6044' },
+  crags: {
+    [Layer.SUN]: '#F0A850', [Layer.CLOUD]: '#BCABA2', [Layer.RAIN]: '#7C8A98', [Layer.GRASS]: '#7E7A58', [Layer.GROUND]: '#7A6E64', [Layer.DIRT]: '#5A5048',
+    [Layer.FLOWER_A]: '#D8683C', [Layer.FLOWER_B]: '#E8B848', [Layer.BUTTERFLY]: '#E88050',
+  },
+  workshop: {
+    [Layer.SUN]: '#F6E6A0', [Layer.MOON]: '#E8EEF4', [Layer.STAR]: '#7CE0C8', [Layer.CLOUD]: '#C8CED8', [Layer.RAIN]: '#8AB4D0',
+    [Layer.GRASS]: '#7A88A6', [Layer.GROUND]: '#5A6684', [Layer.DIRT]: '#3E465C', [Layer.FLOWER_A]: '#E86060', [Layer.FLOWER_B]: '#F0C850', [Layer.BUTTERFLY]: '#6FD0E0',
+  },
+  swamp: {
+    [Layer.SUN]: '#C8E8A0', [Layer.MOON]: '#B8D8C0', [Layer.STAR]: '#8CF0C0', [Layer.CLOUD]: '#5E7C70', [Layer.RAIN]: '#6CC0A0',
+    [Layer.GRASS]: '#4F7A3E', [Layer.GROUND]: '#3C4A34', [Layer.DIRT]: '#2A3628', [Layer.FLOWER_A]: '#7CE0B0', [Layer.FLOWER_B]: '#B8E86C', [Layer.BUTTERFLY]: '#B8F070',
+  },
+  garden: { [Layer.GRASS]: '#5C9A44', [Layer.GROUND]: '#8E7048', [Layer.DIRT]: '#6E5636' },
+};
+/** Layers that glow: they keep their colour at dusk and night instead of sinking into the shade. */
+const GLOWS = new Set<number>([
+  Layer.SUN, Layer.MOON, Layer.STAR, Layer.SPARK, Layer.WATER_LIGHT, Layer.FIREFLY, Layer.WINDOW, Layer.LAVA, Layer.EMBER, Layer.LED_A, Layer.LED_B,
+  Layer.SCREEN, Layer.GLOW_SHROOM, Layer.TWINKLE, Layer.AIR_BUBBLE, Layer.WAVE, Layer.GRIDLINE,
+]);
+const SCENERY_OLD = new Set<number>([Layer.GRASS, Layer.GROUND, Layer.DIRT, Layer.FLOWER_A, Layer.FLOWER_B, Layer.CLOUD, Layer.BUTTERFLY]);
+const isScenery = (l: number) => l >= Layer.WAVE || SCENERY_OLD.has(l);
+/** Phase shade of non-glowing scenery: [colour, amount]. Night also sinks per biome (underwater goes deep blue). */
+const SHADE_NIGHT = 0.42;
+const SHADE_NIGHT_TINT: Partial<Record<Biome, string>> = { underwater: '#0C2A52', swamp: '#0C1A18', workshop: '#141830', ember: '#1A0C10' };
+function shadeFor(ctx: PaletteCtx): [string, number] | null {
+  if (ctx.phase === 'night') return [SHADE_NIGHT_TINT[ctx.biome ?? 'meadow'] ?? '#101830', SHADE_NIGHT];
+  if (ctx.rain && (ctx.phase === 'day' || ctx.phase === 'dusk')) return [ctx.biome === 'underwater' ? '#0E3A5E' : '#5A6A78', ctx.biome === 'underwater' ? 0.3 : 0.14];
+  if (ctx.phase === 'dusk') return ['#8A4A6A', 0.14];
+  if (ctx.phase === 'dawn') return ['#E8A878', 0.08];
+  return null;
+}
+
+// Per biome and phase: dawn, day, dusk, night and rain sky; plus the fill under the ground band.
+const SKY_BIOME: Record<Exclude<Biome, 'meadow'>, Record<Phase | 'rain', string>> = {
+  woods: { dawn: '#C9C79C', day: '#9DB88E', dusk: '#B08A78', night: '#1F2B3A', rain: '#8A9C94' },
+  underwater: { dawn: '#6AB0C2', day: '#5FB8CC', dusk: '#5496B2', night: '#0F3566', rain: '#58A0B2' },
+  sky: { dawn: '#F0C9A8', day: '#8FC8F0', dusk: '#E0A088', night: '#27345E', rain: '#8E9EAE' },
+  yard: { dawn: '#E6CBA9', day: '#B3D0DC', dusk: '#D2A08C', night: '#2A3558', rain: '#9CAAB2' },
+  clouds: { dawn: '#F0D4DC', day: '#C3D2F2', dusk: '#D8BCE4', night: '#3A3E7A', rain: '#B1B8D4' },
+  ember: { dawn: '#74423E', day: '#6C3A3A', dusk: '#7A3234', night: '#2C1620', rain: '#523638' },
+  warren: { dawn: '#E3C9A9', day: '#AACBD4', dusk: '#D0A38F', night: '#2F3A5A', rain: '#9AA8B0' },
+  crags: { dawn: '#E2B496', day: '#C9B6A2', dusk: '#C9785A', night: '#251D30', rain: '#8C8490' },
+  workshop: { dawn: '#4F5B76', day: '#56627C', dusk: '#4E5872', night: '#262B40', rain: '#56627C' },
+  swamp: { dawn: '#2E4A42', day: '#2F4C44', dusk: '#2A403C', night: '#16262A', rain: '#28403E' },
+  garden: { dawn: '#E3D2A8', day: '#B5D8A0', dusk: '#D0A78F', night: '#26364A', rain: '#9DB0A0' },
+};
+const SOIL_BIOME: Record<Exclude<Biome, 'meadow'>, string> = {
+  woods: '#7A6444', underwater: '#BCA874', sky: '#7C5E3C', yard: '#B9A27A', clouds: '#E4DEF2', ember: '#3A2E30',
+  warren: '#9A7B55', crags: '#625850', workshop: '#3C445A', swamp: '#2C3A2A', garden: '#6E5A3E',
+};
+/** Does the biome's backdrop read as dark in this phase (HUD glyphs and rim light use the night palette)? */
+export const darkSky = (biome: Biome, phase: Phase): boolean => phase === 'night' || ALWAYS_DARK.has(biome);
 const BODY_LIGHT_TINT = 0.3; // BODY_LIGHT = body blended this far toward white
 const BODY: Record<Line, string> = {
   meat: '#C27358', veggie: '#6E9A6B', pasta: '#D1A94A', neglect: '#8A8F96', baby: '#E7DCC0',
@@ -73,17 +156,22 @@ const DARK_SKY_NIGHT = '#1B2240';
 const cache = new Map<string, string[]>();
 /** Layer-indexed color table (index = layer code) for one context. Index 0 (unlit) is the screen ground. */
 export function paletteTable(ctx: PaletteCtx): string[] {
-  const key = `${ctx.mode}|${ctx.dark}|${ctx.line ?? ''}|${ctx.bodyHex ?? ''}|${ctx.night ? 'n' : ''}`;
+  const biome = ctx.biome ?? 'meadow';
+  const key = `${ctx.mode}|${ctx.dark}|${ctx.line ?? ''}|${ctx.bodyHex ?? ''}|${ctx.night ? 'n' : ''}|${biome}|${biome === 'meadow' ? '' : `${ctx.phase ?? ''}${ctx.rain ? 'r' : ''}`}`;
   let t = cache.get(key);
   if (t) return t;
   const sc = screenColors(ctx.mode, ctx.dark);
-  t = new Array<string>(32).fill(sc.ink);
+  t = new Array<string>(LAYER_COUNT + 1).fill(sc.ink);
   t[0] = sc.ground;
   if (ctx.mode === 'technicolor') {
     const g = sc.ground;
     const tone = (light: string) => (ctx.dark ? mixHex(light, g, DARK_BLEND) : light);
+    const remap = REMAP[biome];
+    const shade = biome === 'meadow' ? null : shadeFor(ctx);
     for (const l of ALL_LAYERS) {
-      t[l] = ctx.dark && DARK_OVERRIDE[l] ? DARK_OVERRIDE[l] : !ctx.dark && ctx.night && NIGHT_OVERRIDE[l] ? NIGHT_OVERRIDE[l] : tone(T_LIGHT[l] ?? T_LIGHT[Layer.INK]);
+      let c = remap?.[l] ?? T_LIGHT[l] ?? T_LIGHT[Layer.INK];
+      if (shade && isScenery(l) && !GLOWS.has(l)) c = mixHex(c, shade[0], shade[1]);
+      t[l] = ctx.dark && DARK_OVERRIDE[l] ? DARK_OVERRIDE[l] : !ctx.dark && ctx.night && NIGHT_OVERRIDE[l] ? NIGHT_OVERRIDE[l] : tone(c);
     }
     const body = ctx.bodyHex ?? BODY[ctx.line ?? 'baby'] ?? BODY.baby;
     t[Layer.BODY] = ctx.dark ? mixHex(body, g, ctx.line === 'baby' || !ctx.line ? DARK_BODY_BLEND_BABY : DARK_BODY_BLEND) : body;
@@ -101,13 +189,19 @@ export function colorFor(layer: number, ctx: PaletteCtx): string {
 }
 
 /** Technicolor sky behind the scene by local phase and weather (rain overrides day and dusk). */
-export function skyFor(ctx: PaletteCtx, phase: Phase, rain: boolean): string {
+export function skyFor(ctx: PaletteCtx, phase: Phase, rain: boolean, biome: Biome = 'meadow'): string {
   const k: Phase | 'rain' = rain && (phase === 'day' || phase === 'dusk') ? 'rain' : phase;
+  if (biome !== 'meadow') {
+    const c = SKY_BIOME[biome][k];
+    if (!ctx.dark) return c;
+    return mixHex(c, screenColors(ctx.mode, true).ground, ALWAYS_DARK.has(biome) ? 0.3 : k === 'night' ? 0.4 : 0.6);
+  }
   if (ctx.dark) return k === 'night' ? DARK_SKY_NIGHT : mixHex(SKY[k], screenColors(ctx.mode, true).ground, DARK_SKY_BLEND);
   return SKY[k];
 }
 /** Technicolor fill under the ground band. */
-export function soilFor(ctx: PaletteCtx): string {
+export function soilFor(ctx: PaletteCtx, biome: Biome = 'meadow'): string {
+  if (biome !== 'meadow') return ctx.dark ? mixHex(SOIL_BIOME[biome], screenColors(ctx.mode, true).ground, 0.55) : SOIL_BIOME[biome];
   return ctx.dark ? mixHex(SOIL_LIGHT, screenColors(ctx.mode, true).ground, 0.55) : SOIL_LIGHT;
 }
 /** Lights-off darkening of final colors (whole sky) and the extra dither darkening. */
