@@ -31,6 +31,7 @@
     "test:families": "tsx test/families.ts",
     "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families",
     "lint": "eslint .",
+    "contact-sheet": "node tools/contact-sheet.js",
     "test:balance": "tsx test/balance.ts 20"
   },
   "private": true
