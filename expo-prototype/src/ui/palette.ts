@@ -44,9 +44,14 @@ export interface ShadeRamp { hi: string; shade: string; deep: string; belly: str
 export function shadeRamp(body: string, dark = false): ShadeRamp {
   const [h, s, l] = rgb2hsl(body);
   const gray = s < 0.12; // neutral bodies keep a neutral ramp but still lean warm / cool
-  const hi = hsl2hex(hueToward(h, 48, 12), clamp01(s * 0.92), clamp01(l + (dark ? 0.1 : 0.12)));
-  const shade = hsl2hex(hueToward(h, 252, 12), clamp01(s * 0.92 + (gray ? 0.04 : 0)), clamp01(l * 0.8));
-  const deep = hsl2hex(hueToward(h, 258, 22), clamp01(s * 0.8 + 0.03), clamp01(l * 0.6));
+  // lightness in HSL is not luminance (yellows are bright already), so each step is checked by contrast and pushed until it reads
+  const step = (c: string, ref: string, ratio: number, toward: string): string => {
+    for (let i = 0; i < 8 && (luminance(toward) > luminance(ref) ? luminance(c) < (luminance(ref) + 0.05) * ratio - 0.05 : luminance(c) > (luminance(ref) + 0.05) / ratio - 0.05); i++) c = mixHex(c, toward, 0.14);
+    return c;
+  };
+  const hi = step(hsl2hex(hueToward(h, 48, 12), clamp01(s * 0.92), clamp01(l + (dark ? 0.1 : 0.12))), body, 1.14, '#FFFAE6');
+  const shade = step(hsl2hex(hueToward(h, 252, 12), Math.min(0.6, clamp01(s * 0.92 + (gray ? 0.04 : 0))), clamp01(l * 0.8)), body, 1.2, '#1C1830');
+  const deep = step(hsl2hex(hueToward(h, 258, 22), Math.min(0.46, clamp01(s * 0.8 + 0.03)), clamp01(l * 0.62)), shade, 1.22, '#1C1830');
   const belly = mixHex(mixHex(body, '#F6EBCB', dark ? 0.42 : 0.55), hi, 0.15);
   const ah = h < 200 ? h + 34 : h - 34;
   const accent = hsl2hex(ah, clamp01(Math.max(s * 0.95, 0.34)), clamp01(Math.min(0.58, Math.max(0.36, l + (l > 0.5 ? -0.06 : 0.06)))));
@@ -212,6 +217,8 @@ export function paletteTable(ctx: PaletteCtx): string[] {
     t[Layer.BODY] = ctx.dark ? mixHex(body, g, ctx.line === 'baby' || !ctx.line ? DARK_BODY_BLEND_BABY : DARK_BODY_BLEND) : body;
     // against the night sky a dark outline vanishes: rim-light it (only bodies dark enough to stand apart from a light rim; the rest keep the dark outline and read against the sky)
     if (ctx.night && !ctx.dark && contrast(t[Layer.BODY], '#E4DCC4') >= 3) t[Layer.OUTLINE] = '#E4DCC4';
+    // a mid-tone body on a mid-dark backdrop (the workshop) can leave the dark outline too close to the sky: lift it to a dim cream
+    if (ctx.night && !ctx.dark && ctx.phase && t[Layer.OUTLINE] === T_LIGHT[Layer.OUTLINE] && contrast(t[Layer.OUTLINE], skyFor(ctx, ctx.phase, !!ctx.rain, biome)) < 2.6) t[Layer.OUTLINE] = '#CFC7AE';
     const ramp = shadeRamp(t[Layer.BODY], ctx.dark);
     t[Layer.BODY_LIGHT] = ramp.hi;
     t[Layer.SHADE] = ramp.shade; t[Layer.DEEP] = ramp.deep; t[Layer.BELLY] = ramp.belly;
@@ -219,7 +226,7 @@ export function paletteTable(ctx: PaletteCtx): string[] {
     t[Layer.EYE] = ctx.dark ? '#12141F' : '#1E2030';
     // rim light: the outline on the lit side. On a dark sky it glows; on a light sky it is the ink softened toward the body.
     const darkBackdrop = ctx.dark || !!ctx.night;
-    t[Layer.RIM] = darkBackdrop ? mixHex(ramp.hi, '#FFF4D6', 0.45) : mixHex(t[Layer.OUTLINE], t[Layer.BODY], 0.22);
+    t[Layer.RIM] = darkBackdrop ? mixHex(mixHex(t[Layer.OUTLINE], ramp.hi, 0.3), '#FFF8E4', 0.4) : mixHex(t[Layer.OUTLINE], t[Layer.BODY], 0.12);
   }
   cache.set(key, t);
   return t;

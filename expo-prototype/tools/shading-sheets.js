@@ -3,7 +3,8 @@
  * Shading contact sheets from the real scene renderer (tools/shading-dump.ts), composed as SVG like Toy.tsx and screenshotted with
  * playwright-core + chromium.
  *   node tools/shading-sheets.js <out.png> "<title>" species_a species_b ...   (one row per species: day, dusk, night, dark day, dark night)
- *   CROP=1 zooms on the pet (default: whole scene)    SIZE=176 cell size    CHROME=/path/to/chrome    DUMPCWD=dir (render another checkout)
+ * env: CROP=1 zoom on the pet (default: whole scene)   SIZE=176 cell size   VARS="day,night" which variants   CHROME=/path/to/chrome
+ *      BEFORE=<dir of another checkout's expo-prototype, with tools/shading-dump.ts copied in>  -> each variant shows before | after
  */
 /* global __dirname */
 const fs = require('fs');
@@ -18,11 +19,17 @@ const { chromium } = load('playwright-core');
 const ROOT = path.resolve(__dirname, '..');
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const [outFile, title, ...ids] = process.argv.slice(2);
-const tmp = path.join(os.tmpdir(), `shading-${process.pid}.json`);
-execSync(`npx tsx tools/shading-dump.ts ${tmp} ${ids.join(' ')}`, { cwd: process.env.DUMPCWD || ROOT, stdio: 'inherit' });
-const data = JSON.parse(fs.readFileSync(tmp, 'utf8'));
-fs.unlinkSync(tmp);
+function dump(cwd) {
+  const tmp = path.join(os.tmpdir(), `shading-${process.pid}-${Math.random().toString(36).slice(2)}.json`);
+  execSync(`npx tsx tools/shading-dump.ts ${tmp} ${ids.join(' ')}`, { cwd, stdio: 'inherit' });
+  const d = JSON.parse(fs.readFileSync(tmp, 'utf8'));
+  fs.unlinkSync(tmp);
+  return d;
+}
+const after = dump(ROOT);
+const before = process.env.BEFORE ? dump(process.env.BEFORE) : null;
 const SIZE = Number(process.env.SIZE || 176);
+const VARS = process.env.VARS ? process.env.VARS.split(',') : null;
 const VIEW = process.env.CROP ? [10, 22, 40, 40] : null; // the pet stands near x 14..46, y 26..58
 function svg(c) {
   const f = c.frame, n = f.n, vb = VIEW ? VIEW.join(' ') : `0 0 ${n} ${n}`;
@@ -34,11 +41,14 @@ function svg(c) {
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const pg = await (await b.newContext({ deviceScaleFactor: 1 })).newPage();
+  const pick = (data, id) => data.filter((d) => d.id === id && (!VARS || VARS.includes(d.label)));
   const rows = ids.map((id) => {
-    const cs = data.filter((d) => d.id === id && (!process.env.VARS || process.env.VARS.split(",").includes(d.label)));
-    return `<div class="r"><b>${id}<br>${cs[0].stage}</b>${cs.map((c) => `<div class="c">${svg(c)}<i>${c.label}</i></div>`).join('')}</div>`;
+    const cs = pick(after, id), bs = before ? pick(before, id) : null;
+    const cells = cs.map((c, i) => (bs ? `<div class="c">${svg(bs[i])}<i>${c.label} before</i></div>` : '') + `<div class="c">${svg(c)}<i>${c.label}${bs ? ' after' : ''}</i></div>`).join('');
+    return `<div class="r"><b>${id}<br>${cs[0].stage}</b>${cells}</div>`;
   }).join('');
-  await pg.setViewportSize({ width: 100 + (process.env.VARS ? process.env.VARS.split(",").length : 5) * (SIZE + 10), height: 400 });
+  const cols = (VARS ? VARS.length : 5) * (before ? 2 : 1);
+  await pg.setViewportSize({ width: 100 + cols * (SIZE + 10), height: 400 });
   await pg.setContent(`<style>body{margin:0;background:#fff;font:12px ui-monospace,monospace;color:#111}h1{margin:8px 10px;font-size:15px}
     .r{display:flex;align-items:center;gap:8px;padding:4px 10px}.r>b{width:84px;overflow:hidden}.c{text-align:center}i{display:block;color:#666;font-style:normal}</style><h1>${title}</h1>${rows}`);
   fs.mkdirSync(path.dirname(path.resolve(outFile)), { recursive: true });
