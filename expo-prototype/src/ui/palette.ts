@@ -113,7 +113,7 @@ function shadeFor(ctx: PaletteCtx): [string, number] | null {
 // Per biome and phase: dawn, day, dusk, night and rain sky; plus the fill under the ground band.
 const SKY_BIOME: Record<Exclude<Biome, 'meadow'>, Record<Phase | 'rain', string>> = {
   woods: { dawn: '#C9C79C', day: '#9DB88E', dusk: '#B08A78', night: '#1F2B3A', rain: '#8A9C94' },
-  underwater: { dawn: '#6AB0C2', day: '#5FB8CC', dusk: '#4A88A8', night: '#0F3566', rain: '#3F7E96' },
+  underwater: { dawn: '#6AB0C2', day: '#5FB8CC', dusk: '#5496B2', night: '#0F3566', rain: '#58A0B2' },
   sky: { dawn: '#F0C9A8', day: '#8FC8F0', dusk: '#E0A088', night: '#27345E', rain: '#8E9EAE' },
   yard: { dawn: '#E6CBA9', day: '#B3D0DC', dusk: '#D2A08C', night: '#2A3558', rain: '#9CAAB2' },
   clouds: { dawn: '#F0D4DC', day: '#C3D2F2', dusk: '#D8BCE4', night: '#3A3E7A', rain: '#B1B8D4' },

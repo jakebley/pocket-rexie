@@ -5,6 +5,7 @@
  *   node tools/biome-sheets.js        -> docs/screens/biomes-light-{1,2,3}.png, biomes-dark.png, biomes-traditional.png
  *   CHROME=/path/to/chrome            (default /opt/pw-browsers/chromium-1194/chrome-linux/chrome)
  */
+/* global __dirname */
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -25,8 +26,6 @@ fs.unlinkSync(tmp);
 
 function svg(c, size) {
   const f = c.frame, n = f.n;
-  let cells = '';
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) cells += `M${x + 0.06} ${y + 0.06}h0.88v0.88h-0.88z`;
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><rect width="${n}" height="${n}" fill="${c.ground}"/>`
     + (f.soil ? `<rect y="${f.soil.y}" width="${n}" height="${n - f.soil.y}" fill="${f.soil.color}"/>` : '')
     + (f.sky ? `<rect width="${n}" height="${f.sky.h}" fill="${f.sky.color}"/>` : '')
