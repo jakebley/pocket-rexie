@@ -1,7 +1,7 @@
 """Registry of every animal family. Add a family module under tools/families/ and list it here."""
 import importlib, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'families'))
-ORDER = ['dino', 'fox']          # display order; the first is the default and must be free
+ORDER = ['dino', 'fox', 'fish', 'bird', 'cat']
 FAMILIES = [importlib.import_module(n) for n in ORDER]
 
 def all_species():
