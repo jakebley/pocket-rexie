@@ -2,7 +2,8 @@
 // ordered-dithered shadow, deep underside, belly, accent tips on extremities, rim light and eye rings. Everything derives from the
 // silhouette (plus a small per-family rule table), so all ~400 species are shaded without hand painting.
 //
-// Invariant: the LIT PIXEL SET never changes (every lit pixel gets a non-zero code, every unlit one stays 0). Traditional mode prints
+// Invariant: the LIT PIXEL SET never changes: every lit pixel gets a non-zero code; unlit cells stay 0 except eye-hole fills (EYE_FILL,
+// EYE_SHINE: Technicolor-only codes that Traditional prints as unlit, like scenery). Traditional mode prints
 // every non-zero code as ink, so it stays pixel-identical. Only the code a pixel gets differs from the flat petLayers() split.
 import { Layer, type Rows } from './layers';
 
@@ -31,6 +32,8 @@ const STYLE: Record<string, Style> = {
 const DEFAULT_STYLE: Style = { belly: true, sheen: false, top: A, foot: D, side: A };
 
 // tuning
+/** how far down the silhouette an eye hole may sit; cats and bots carry spots and vents lower down, so they only look near the head */
+const EYE_FRAC: Record<string, number> = { cat: 0.5, bot: 0.5 };
 const R_MAX = 7;
 const T_HI = 0.42, T_SH = 0.5, T_DITHER = 0.28;
 const VBIAS = 0.22;
@@ -243,12 +246,13 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
       let sy = 0;
       for (const i of cells) sy += (i / w) | 0;
       const y = sy / cells.length;
-      if ((y - ymin) / span <= 0.5) eyes.push({ cells, y });
+      if ((y - ymin) / span <= (EYE_FRAC[family ?? ''] ?? 0.75)) eyes.push({ cells, y });
     }
-    if (eyes.length) {
-      const top = Math.min(...eyes.map((e) => e.y));
-      for (const e of eyes) {
-        if (e.y > top + 2.5) continue;
+    // the topmost row of holes is the eyes; three or more in that row is a pattern (spots, vents, windows) and stays open
+    const top = eyes.length ? Math.min(...eyes.map((e) => e.y)) : 0;
+    const row = eyes.filter((e) => e.y <= top + 2.5);
+    if (row.length && row.length <= 2) {
+      for (const e of row) {
         let gx = w, gy = h;
         for (const i of e.cells) {
           const x = i % w, y = (i / w) | 0;
@@ -256,8 +260,11 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
           if (y < gy) gy = y;
           for (const [ax, ay] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) if (isOl(ax, ay)) out[ay * w + ax] = Layer.EYE;
         }
-        // catch-light: the ring's upper-left corner (it is body, not outline, so the lit set is untouched)
-        if (isOn(gx - 1, gy - 1) && !isOl(gx - 1, gy - 1)) out[(gy - 1) * w + gx - 1] = Layer.GLINT;
+        // fill the see-through hole: dark pupil, one bright catch-light at its upper-left (Technicolor-only codes: Traditional leaves the hole unlit)
+        let gi = e.cells[0];
+        for (const i of e.cells) { out[i] = Layer.EYE_FILL; if ((i % w) + ((i / w) | 0) < (gi % w) + ((gi / w) | 0)) gi = i; }
+        if (e.cells.length >= 2) out[gi] = Layer.EYE_SHINE;
+        else if (isOn(gx - 1, gy - 1) && !isOl(gx - 1, gy - 1)) out[(gy - 1) * w + gx - 1] = Layer.GLINT;
       }
     }
   }

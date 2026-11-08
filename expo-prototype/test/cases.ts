@@ -1,6 +1,7 @@
 // Deterministic drawing cases shared by the golden generator and test/color.ts.
 import { forceSpecies, newPet, type Pet } from '../src/core/pet';
 import { SPECIES } from '../src/core/speciesData';
+import { DIM_FLAG, LAYER_MASK, tradVisible } from '../src/ui/layers';
 import { Buf } from '../src/ui/pixel';
 import { SCENE_N, SCENE_STATES, TICK_MS, initScene, type Scene } from '../src/ui/scene';
 import { drawScene } from '../src/ui/sceneDraw';
@@ -61,4 +62,5 @@ export function screenCases(): Case[] {
   return out;
 }
 
-export const lit = (b: Buf): number[] => Array.from(b.px, (v) => (v ? 1 : 0));
+/** What Traditional prints: every drawn layer except the Technicolor-only ones (biome scenery, eye fills). */
+export const lit = (b: Buf): number[] => Array.from(b.px, (v) => (v && (tradVisible(v & LAYER_MASK) || (v & DIM_FLAG)) ? 1 : 0));

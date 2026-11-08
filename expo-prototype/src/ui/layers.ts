@@ -26,9 +26,11 @@ export const Layer = {
   GRIDLINE: 70, PANEL: 71, GEAR: 72, LED_A: 73, LED_B: 74, SCREEN: 75, CABLE: 76,
   STALAC: 77, GLOW_SHROOM: 78, PUDDLE: 79, DEW: 80,
   BURROW: 81, CLOVER: 82, CARROT: 83, DAISY: 84, DAISY_C: 85, LEAF_BIG: 86,
+  // ---- pet eyes (Technicolor only, like scenery: Traditional leaves the unlit eye hole unlit). Opaque pupil and catch-light that fill the hole ----
+  EYE_FILL: 87, EYE_SHINE: 88,
 } as const;
 export type LayerCode = (typeof Layer)[keyof typeof Layer];
-export const LAYER_COUNT = 87;
+export const LAYER_COUNT = 89;
 /** First biome-scenery layer. Codes from here up are Technicolor-only (Traditional draws them unlit), except the cue layers. */
 export const SCENERY_FROM = Layer.BARK;
 /** Does Traditional mode draw this layer code? (Shared layers 1..30 and the three cues: yes. Scenery: no.) */
@@ -43,7 +45,7 @@ export type Rows = string[];
 
 /** Every code a pet sprite can carry (the scenery must never overwrite these). */
 export const PET_LAYER_CODES: ReadonlySet<number> = new Set<number>([
-  Layer.OUTLINE, Layer.BODY, Layer.BODY_LIGHT, Layer.SHADE, Layer.DEEP, Layer.BELLY, Layer.ACCENT, Layer.ACCENT_DARK, Layer.ACCENT_LIGHT, Layer.RIM, Layer.EYE, Layer.GLINT,
+  Layer.OUTLINE, Layer.BODY, Layer.BODY_LIGHT, Layer.SHADE, Layer.DEEP, Layer.BELLY, Layer.ACCENT, Layer.ACCENT_DARK, Layer.ACCENT_LIGHT, Layer.RIM, Layer.EYE, Layer.GLINT, Layer.EYE_FILL, Layer.EYE_SHINE,
 ]);
 
 /**

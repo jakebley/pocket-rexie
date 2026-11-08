@@ -223,7 +223,10 @@ export function paletteTable(ctx: PaletteCtx): string[] {
     t[Layer.BODY_LIGHT] = ramp.hi;
     t[Layer.SHADE] = ramp.shade; t[Layer.DEEP] = ramp.deep; t[Layer.BELLY] = ramp.belly;
     t[Layer.ACCENT] = ramp.accent; t[Layer.ACCENT_DARK] = ramp.accentDark; t[Layer.ACCENT_LIGHT] = ramp.accentLight; t[Layer.GLINT] = ramp.glint;
-    t[Layer.EYE] = ctx.dark ? '#12141F' : '#1E2030';
+    // eyes: an opaque dark pupil with a bright catch-light; on a very dark body the ring around it turns cream so the eye still reads
+    const pupil = ctx.dark ? '#12141F' : '#1E2030';
+    t[Layer.EYE_FILL] = pupil; t[Layer.EYE_SHINE] = '#FFFBEA';
+    t[Layer.EYE] = luminance(t[Layer.BODY]) < 0.09 ? '#E4DCC4' : pupil;
     // rim light: the outline on the lit side. On a dark sky it glows; on a light sky it is the ink softened toward the body.
     const darkBackdrop = ctx.dark || !!ctx.night;
     t[Layer.RIM] = darkBackdrop ? mixHex(mixHex(t[Layer.OUTLINE], ramp.hi, 0.3), '#FFF8E4', 0.4) : mixHex(t[Layer.OUTLINE], t[Layer.BODY], 0.12);

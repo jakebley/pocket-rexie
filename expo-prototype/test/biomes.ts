@@ -95,7 +95,7 @@ const render = (p: Pet, sc: Scene, biome?: Biome) => { const b = new Buf(SCENE_N
         // shared layers identical to the meadow render, ignoring scenery and cue pixels
         const na = la >= Layer.WAVE ? a.px[i] & DIM_FLAG : a.px[i], nm = lm >= Layer.WAVE ? m.px[i] & DIM_FLAG : m.px[i];
         if (na !== nm) sharedBad++;
-        if (la >= SCENERY_FROM) {
+        if (la >= SCENERY_FROM && !PET_LAYERS.has(la)) {
           const cx = i % SCENE_N, cy = (i / SCENE_N) | 0;
           for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
             const nx = cx + dx, ny = cy + dy;
@@ -123,7 +123,7 @@ const render = (p: Pet, sc: Scene, biome?: Biome) => { const b = new Buf(SCENE_N
     for (const ph of PHASES) for (const rain of [false, true]) {
       const sc = sceneOf(p, HOURS[ph], 10, 1, rain);
       const a = render(p, sc), m = render(p, sc, 'meadow');
-      for (let i = 0; i < a.px.length; i++) { if ((a.px[i] & LAYER_MASK) >= Layer.WAVE) stray++; if (a.px[i] !== m.px[i]) stray++; }
+      for (let i = 0; i < a.px.length; i++) { if ((a.px[i] & LAYER_MASK) >= Layer.WAVE && !PET_LAYERS.has(a.px[i] & LAYER_MASK)) stray++; if (a.px[i] !== m.px[i]) stray++; }
     }
   }
   ok(stray === 0, `dino scenes contain no biome pixels (${stray})`);
@@ -201,7 +201,7 @@ const render = (p: Pet, sc: Scene, biome?: Biome) => { const b = new Buf(SCENE_N
       ok(contrast(t[Layer.HEART], sky) >= 1.6, `${biome} ${ph}${rain ? '/rain' : ''} ${dark ? 'dark' : 'light'}: heart vs sky ${contrast(t[Layer.HEART], sky).toFixed(2)} >= 1.6`);
     }
   }
-  const missing = ALL_LAYERS.filter((l) => l >= Layer.WAVE && !seen.has(l));
+  const missing = ALL_LAYERS.filter((l) => l >= Layer.WAVE && !PET_LAYERS.has(l) && !seen.has(l));
   ok(missing.length === 0, `every biome layer appears in some scene (missing: ${missing.join(',')})`);
   ok(maxScenery <= 1300, `background pixel budget (max ${maxScenery} scenery pixels <= 1300)`);
   ok(maxGroups <= 70, `few SVG paths per biome frame (max ${maxGroups} <= 70)`);
