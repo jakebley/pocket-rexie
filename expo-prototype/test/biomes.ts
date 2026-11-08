@@ -2,7 +2,7 @@
 import { forceSpecies, newPet, type Pet } from '../src/core/pet';
 import { FAMILIES, SPECIES } from '../src/core/speciesData';
 import { ALWAYS_DARK, BIOMES, EMBER_SPIRITS, FAMILY_BIOME, biomeOf, biomeOfSpecies, type Biome } from '../src/ui/biomes';
-import { ALL_LAYERS, DIM_FLAG, LAYER_COUNT, LAYER_MASK, Layer, SCENERY_FROM, tradVisible } from '../src/ui/layers';
+import { ALL_LAYERS, DIM_FLAG, LAYER_COUNT, LAYER_MASK, Layer, PET_LAYER_CODES, SCENERY_FROM, tradVisible } from '../src/ui/layers';
 import { contrast, darkSky, paletteTable, skyFor, soilFor, type PaletteCtx } from '../src/ui/palette';
 import { Buf, litPath } from '../src/ui/pixel';
 import { buildFrame } from '../src/ui/render';
@@ -20,7 +20,7 @@ const ok = (c: boolean, m: string) => { checks++; if (!c) { fails++; console.log
 const HEX = /^#[0-9a-f]{6}$/i;
 const PHASES: Phase[] = ['dawn', 'day', 'dusk', 'night'];
 const HOURS: Record<Phase, number> = { dawn: 6, day: 12, dusk: 19, night: 23 };
-const PET_LAYERS = new Set<number>([Layer.OUTLINE, Layer.BODY, Layer.BODY_LIGHT]);
+const PET_LAYERS = PET_LAYER_CODES;
 const isCue = (l: number) => l === Layer.WAVE || l === Layer.HOLE || l === Layer.PEAK;
 
 function petOf(id: string, seed = 11): Pet {
