@@ -43,6 +43,7 @@ for (const [fam, n] of Object.entries(COUNTS)) {
       ok(/^#[0-9a-f]{6}$/i.test(t[Layer.BODY]), `${s.id}: body colour valid (dark=${dark})`);
     }
   }
+  { const fp = newPet(T0, { seed: 5 }); forceSpecies(fp, 'stalker'); ok(fp.family === 'fox' && fp.species === 'stalker', 'forcing a fox species switches the pet to the fox family'); }
   const dinoLine = paletteTable({ mode: 'technicolor', dark: false, line: 'meat' });
   ok(dinoLine[Layer.BODY] === '#C27358', 'dino meat body unchanged');
   ok(bodyOf({ species: 'rawr' } as Pet) === undefined && bodyOf({ species: 'stalker' } as Pet) === SPECIES_BY_ID['stalker'].bodyHex && /^#[0-9A-F]{6}$/.test(bodyOf({ species: 'stalker' } as Pet) ?? ''), 'bodyOf reads the species');

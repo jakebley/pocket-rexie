@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ageMs, leadFood, overweight, requirementMet, speciesName, SPECIES_BY_ID, type Pet } from '../core/pet';
-import { SPECIES } from '../core/speciesData';
+import { FAMILIES, SPECIES } from '../core/speciesData';
 import type { Requirement, Stage } from '../core/types';
 import { PixelButton, PixelText } from './PixelText';
 import { useTheme } from './theme';
@@ -36,6 +36,7 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
   const age = ageMs(p);
   const need = STAGE_HOURS[p.stage];
   const d = game.dev;
+  const [fam, setFam] = useState(p.family ?? 'dino');
   const t = useTheme();
   const mono = Platform.select({ web: 'ui-monospace, Menlo, Consolas, monospace', default: 'Courier' });
   const body = [s.body, { color: t.ink, fontFamily: mono }];
@@ -46,6 +47,10 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
         <View style={s.head}>
           <PixelText text="DEV PANEL" ps={3} color={t.ink} />
           <PixelButton label="CLOSE" ps={2} onPress={onClose} />
+        </View>
+        <Text style={[s.small, { color: t.ink, fontFamily: mono }]}>Quick: start a new egg (any family, no Plus needed)</Text>
+        <View style={[s.row, { marginBottom: 8 }]}>
+          {FAMILIES.map((f) => <Btn key={f.id} label={f.name} on={p.family === f.id && p.stage === 'egg'} onPress={() => { d.newEgg(f.id); onClose(); }} />)}
         </View>
         <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
           <Text style={h}>Now</Text>
@@ -127,11 +132,14 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
           </View>
 
           <Text style={h}>Force species</Text>
+          <View style={[s.row, { marginBottom: 8 }]}>
+            {FAMILIES.map((f) => <Btn key={f.id} label={f.name} on={fam === f.id} onPress={() => setFam(f.id)} />)}
+          </View>
           {(['baby', 'child', 'teen', 'adult', 'ultimate'] as const).map((st) => (
             <View key={st} style={{ marginBottom: 6 }}>
               <Text style={[s.small, { color: t.ink, fontFamily: mono }]}>{st}</Text>
               <View style={s.row}>
-                {SPECIES.filter((x) => x.stage === st).map((x) => (
+                {SPECIES.filter((x) => x.family === fam && x.stage === st).map((x) => (
                   <Btn key={x.id} label={x.name} on={p.species === x.id} onPress={() => d.force(x.id)} />
                 ))}
               </View>

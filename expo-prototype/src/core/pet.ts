@@ -437,6 +437,7 @@ export function newEgg(p: Pet, now: number, family?: string): Pet {
 export function forceSpecies(p: Pet, id: string): void {
   if (!SPECIES_BY_ID[id]) return;
   const wasEgg = p.stage === 'egg' || p.stage === 'ghost';
+  p.family = SPECIES_BY_ID[id].family; // a forced species brings its family (feed labels, Dex, colours)
   if (p.stage === 'ghost') { p.diedAt = null; p.causeOfDeath = null; p.sickTicks = 0; p.starveTicks = 0; }
   evolve(p, id, p.lastTick);
   if (wasEgg) { p.hunger = 4; p.happy = 4; }

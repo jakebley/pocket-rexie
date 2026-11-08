@@ -362,6 +362,13 @@ export function useGame() {
       commit(newPet(Date.now(), { gentle: cur?.gentle ?? true }));
       goHome(); setSel(-1); say('New egg');
     },
+    /** Dev: start a fresh egg of any family, ignoring Plus gating. */
+    newEgg: (family: string) => {
+      const cur = petRef.current;
+      offsetRef.current = 0; setOffsetState(0);
+      commit(newPet(Date.now(), { gentle: cur?.gentle ?? true, family }));
+      goHome(); setSel(-1); say(`New ${familyById(family)?.name.toLowerCase() ?? ''} egg`);
+    },
     toggleClassic: () => mutate((p) => { p.gentle = !p.gentle; return p.gentle ? 'Gentle mode' : 'Classic mode'; }),
     toggleVacation: () => mutate((p) => { p.paused = !p.paused; return p.paused ? 'Vacation on' : 'Vacation off'; }),
     force: (id: string) => mutate((p) => { forceSpecies(p, id); }),
