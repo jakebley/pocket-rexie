@@ -1,7 +1,8 @@
 // Draws the 64x64 living scene into a Buf (ink only). Pure: everything comes from Scene + Pet.
 import { SPECIES_BY_ID, needsAttention, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
-import { DIM_FLAG, LAYER_MASK, Layer, SCENERY_FROM, petLayers } from './layers';
+import { DIM_FLAG, LAYER_MASK, Layer, SCENERY_FROM } from './layers';
+import { shadedPetLayers } from './shading';
 import { biomeOf, type Biome } from './biomes';
 import { drawBackdrop, drawFore } from './biomeDraw';
 import { Buf, G7 } from './pixel';
@@ -91,13 +92,13 @@ export function poseOf(s: Scene): Pose {
   return { blink, dx: dx + s.pdx, dy: dy + s.pdy, facing };
 }
 
-// pet layer grids per sprite frame and facing (the BODY_LIGHT rule depends on direction)
+// pet layer grids per sprite frame and facing (the light always comes from the top-left of the screen, so a mirrored sprite is shaded again)
 const petCache = new WeakMap<Rows, Uint8Array>();
 const petCacheFlip = new WeakMap<Rows, Uint8Array>();
-function petCodes(spr: Rows, flipped: boolean, rows: Rows): Uint8Array {
+function petCodes(spr: Rows, flipped: boolean, rows: Rows, family: string): Uint8Array {
   const cache = flipped ? petCacheFlip : petCache;
   let c = cache.get(spr);
-  if (!c) { c = petLayers(rows); cache.set(spr, c); }
+  if (!c) { c = shadedPetLayers(rows, family); cache.set(spr, c); }
   return c;
 }
 
@@ -140,7 +141,7 @@ function drawPet(b: Buf, s: Scene, pet: Pet, biome: Biome) {
     if (lo < 0) continue;
     for (let i = lo; i <= hi; i++) b.set(px + i, py + j, 0);
   }
-  b.layers(petCodes(spr, pose.facing !== 1, rows), rows[0].length, px, py);
+  b.layers(petCodes(spr, pose.facing !== 1, rows, SPECIES_BY_ID[pet.species]?.family ?? ''), rows[0].length, px, py);
 }
 
 // ---------- sky ----------

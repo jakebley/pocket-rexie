@@ -10,21 +10,27 @@ export const Layer = {
   BODY_LIGHT: 29,
   /** the play ball (own tone, tools stay wooden) */
   BALL: 30,
+  // ---- pet shading (Technicolor tones; Traditional prints all of them as ink, see shading.ts) ----
+  /** shadow side of the body (bottom-right, cool) */ SHADE: 31, /** deep underside shadow */ DEEP: 32, /** lighter belly / chest */ BELLY: 33,
+  /** accent tip: analogous hue */ ACCENT: 34, /** accent tip: dark (socks, ear tips) */ ACCENT_DARK: 35, /** accent tip: cream (paws, tail tip, horns) */ ACCENT_LIGHT: 36,
+  /** outline on the lit (top-left) side: rim light */ RIM: 37, /** dark ring of an eye hole */ EYE: 38, /** tiny specular glint / sheen */ GLINT: 39,
   // ---- biome cues (drawn in Traditional too, a few pixels each) ----
-  /** fish: surface wave line */ WAVE: 31,
-  /** bunny: burrow mouth outline */ HOLE: 32,
-  /** dragon: a small far peak outline */ PEAK: 33,
+  /** fish: surface wave line */ WAVE: 40,
+  /** bunny: burrow mouth outline */ HOLE: 41,
+  /** dragon: a small far peak outline */ PEAK: 42,
   // ---- biome scenery (Technicolor only: Traditional renders these as unlit) ----
-  BARK: 34, CANOPY: 35, LITTER: 36, MOSS: 37, SHROOM: 38, FIREFLY: 39, FERN: 40,
-  WATER_LIGHT: 41, AIR_BUBBLE: 42, SEAWEED: 43, CORAL_A: 44, CORAL_B: 45, SAND: 46,
-  HILL: 47, WALL: 48, ROOF: 49, WINDOW: 50, WOOD: 51, YARN: 52,
-  TWINKLE: 53, CLOUD_SHADE: 54, EMBER: 55, ASH: 56, ROCK: 57, CRAG: 58, CAVE: 59, LAVA: 60,
-  GRIDLINE: 61, PANEL: 62, GEAR: 63, LED_A: 64, LED_B: 65, SCREEN: 66, CABLE: 67,
-  STALAC: 68, GLOW_SHROOM: 69, PUDDLE: 70, DEW: 71,
-  BURROW: 72, CLOVER: 73, CARROT: 74, DAISY: 75, DAISY_C: 76, LEAF_BIG: 77,
+  BARK: 43, CANOPY: 44, LITTER: 45, MOSS: 46, SHROOM: 47, FIREFLY: 48, FERN: 49,
+  WATER_LIGHT: 50, AIR_BUBBLE: 51, SEAWEED: 52, CORAL_A: 53, CORAL_B: 54, SAND: 55,
+  HILL: 56, WALL: 57, ROOF: 58, WINDOW: 59, WOOD: 60, YARN: 61,
+  TWINKLE: 62, CLOUD_SHADE: 63, EMBER: 64, ASH: 65, ROCK: 66, CRAG: 67, CAVE: 68, LAVA: 69,
+  GRIDLINE: 70, PANEL: 71, GEAR: 72, LED_A: 73, LED_B: 74, SCREEN: 75, CABLE: 76,
+  STALAC: 77, GLOW_SHROOM: 78, PUDDLE: 79, DEW: 80,
+  BURROW: 81, CLOVER: 82, CARROT: 83, DAISY: 84, DAISY_C: 85, LEAF_BIG: 86,
+  // ---- pet eyes (Technicolor only, like scenery: Traditional leaves the unlit eye hole unlit). Opaque pupil and catch-light that fill the hole ----
+  EYE_FILL: 87, EYE_SHINE: 88,
 } as const;
 export type LayerCode = (typeof Layer)[keyof typeof Layer];
-export const LAYER_COUNT = 78;
+export const LAYER_COUNT = 89;
 /** First biome-scenery layer. Codes from here up are Technicolor-only (Traditional draws them unlit), except the cue layers. */
 export const SCENERY_FROM = Layer.BARK;
 /** Does Traditional mode draw this layer code? (Shared layers 1..30 and the three cues: yes. Scenery: no.) */
@@ -37,7 +43,13 @@ export const ALL_LAYERS: number[] = Array.from({ length: LAYER_COUNT - 1 }, (_, 
 export type Line = 'baby' | 'meat' | 'veggie' | 'pasta' | 'neglect';
 export type Rows = string[];
 
+/** Every code a pet sprite can carry (the scenery must never overwrite these). */
+export const PET_LAYER_CODES: ReadonlySet<number> = new Set<number>([
+  Layer.OUTLINE, Layer.BODY, Layer.BODY_LIGHT, Layer.SHADE, Layer.DEEP, Layer.BELLY, Layer.ACCENT, Layer.ACCENT_DARK, Layer.ACCENT_LIGHT, Layer.RIM, Layer.EYE, Layer.GLINT, Layer.EYE_FILL, Layer.EYE_SHINE,
+]);
+
 /**
+ * The original flat split, kept as the reference for the lit pixel set (test/shading.ts); the renderer uses shading.ts.
  * Split a sprite into pet layers: OUTLINE = lit pixel with an unlit 4-neighbour (or on the grid edge),
  * BODY_LIGHT = interior pixel whose upper or left neighbour is outline, otherwise BODY. Returns one code per cell (0 = unlit).
  */

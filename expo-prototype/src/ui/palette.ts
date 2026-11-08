@@ -19,6 +19,47 @@ export function mixHex(a: string, b: string, t: number): string {
   const x = hex2rgb(a), y = hex2rgb(b);
   return rgb2hex(x.map((v, i) => v + (y[i] - v) * t));
 }
+// HSL helpers for the shading ramp (hue shifts, not just darkening)
+function rgb2hsl(h: string): [number, number, number] {
+  const [r, g, b] = hex2rgb(h).map((v) => v / 255);
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  if (d === 0) return [0, 0, l];
+  const sat = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+  const hue = mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [hue * 60, sat, l];
+}
+function hsl2hex(hue: number, s: number, l: number): string {
+  const hh = (((hue % 360) + 360) % 360) / 360, q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  const f = (t: number) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
+  return rgb2hex([f(hh + 1 / 3) * 255, f(hh) * 255, f(hh - 1 / 3) * 255]);
+}
+/** move hue `a` toward `b` by at most `deg` along the short way */
+function hueToward(a: number, b: number, deg: number): number {
+  const d = ((b - a + 540) % 360) - 180;
+  return a + Math.max(-deg, Math.min(deg, d));
+}
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+export interface ShadeRamp { hi: string; shade: string; deep: string; belly: string; accent: string; accentDark: string; accentLight: string; glint: string }
+/** Four-tone body ramp (highlight warm and light, base, shadow cool and darker, deep underside) plus belly and accent tones, all derived from one body colour. */
+export function shadeRamp(body: string, dark = false): ShadeRamp {
+  const [h, s, l] = rgb2hsl(body);
+  const gray = s < 0.12; // neutral bodies keep a neutral ramp but still lean warm / cool
+  // lightness in HSL is not luminance (yellows are bright already), so each step is checked by contrast and pushed until it reads
+  const step = (c: string, ref: string, ratio: number, toward: string): string => {
+    for (let i = 0; i < 8 && (luminance(toward) > luminance(ref) ? luminance(c) < (luminance(ref) + 0.05) * ratio - 0.05 : luminance(c) > (luminance(ref) + 0.05) / ratio - 0.05); i++) c = mixHex(c, toward, 0.14);
+    return c;
+  };
+  const hi = step(hsl2hex(hueToward(h, 48, 12), clamp01(s * 0.92), clamp01(l + (dark ? 0.1 : 0.12))), body, 1.14, '#FFFAE6');
+  const shade = step(hsl2hex(hueToward(h, 252, 12), Math.min(0.6, clamp01(s * 0.92 + (gray ? 0.04 : 0))), clamp01(l * 0.8)), body, 1.2, '#1C1830');
+  const deep = step(hsl2hex(hueToward(h, 258, 22), Math.min(0.46, clamp01(s * 0.8 + 0.03)), clamp01(l * 0.62)), shade, 1.22, '#1C1830');
+  const belly = mixHex(mixHex(body, '#F6EBCB', dark ? 0.42 : 0.55), hi, 0.15);
+  const ah = h < 200 ? h + 34 : h - 34;
+  const accent = hsl2hex(ah, clamp01(Math.max(s * 0.95, 0.34)), clamp01(Math.min(0.58, Math.max(0.36, l + (l > 0.5 ? -0.06 : 0.06)))));
+  const accentDark = mixHex(deep, body, 0.3);
+  const accentLight = mixHex(body, dark ? '#E4DCC4' : '#F7EDD2', dark ? 0.62 : 0.78);
+  return { hi, shade, deep, belly, accent, accentDark, accentLight, glint: dark ? '#E8E0CC' : '#FFFBEA' };
+}
+
 function luminance(h: string): number {
   const [r, g, b] = hex2rgb(h).map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -130,7 +171,6 @@ const SOIL_BIOME: Record<Exclude<Biome, 'meadow'>, string> = {
 };
 /** Does the biome's backdrop read as dark in this phase (HUD glyphs and rim light use the night palette)? */
 export const darkSky = (biome: Biome, phase: Phase): boolean => phase === 'night' || ALWAYS_DARK.has(biome);
-const BODY_LIGHT_TINT = 0.3; // BODY_LIGHT = body blended this far toward white
 const BODY: Record<Line, string> = {
   meat: '#C27358', veggie: '#6E9A6B', pasta: '#D1A94A', neglect: '#8A8F96', baby: '#E7DCC0',
 };
@@ -177,7 +217,19 @@ export function paletteTable(ctx: PaletteCtx): string[] {
     t[Layer.BODY] = ctx.dark ? mixHex(body, g, ctx.line === 'baby' || !ctx.line ? DARK_BODY_BLEND_BABY : DARK_BODY_BLEND) : body;
     // against the night sky a dark outline vanishes: rim-light it (only bodies dark enough to stand apart from a light rim; the rest keep the dark outline and read against the sky)
     if (ctx.night && !ctx.dark && contrast(t[Layer.BODY], '#E4DCC4') >= 3) t[Layer.OUTLINE] = '#E4DCC4';
-    t[Layer.BODY_LIGHT] = mixHex(t[Layer.BODY], '#FFFFFF', ctx.dark ? 0.18 : BODY_LIGHT_TINT);
+    // a mid-tone body on a mid-dark backdrop (the workshop) can leave the dark outline too close to the sky: lift it to a dim cream
+    if (ctx.night && !ctx.dark && ctx.phase && t[Layer.OUTLINE] === T_LIGHT[Layer.OUTLINE] && contrast(t[Layer.OUTLINE], skyFor(ctx, ctx.phase, !!ctx.rain, biome)) < 2.6) t[Layer.OUTLINE] = '#CFC7AE';
+    const ramp = shadeRamp(t[Layer.BODY], ctx.dark);
+    t[Layer.BODY_LIGHT] = ramp.hi;
+    t[Layer.SHADE] = ramp.shade; t[Layer.DEEP] = ramp.deep; t[Layer.BELLY] = ramp.belly;
+    t[Layer.ACCENT] = ramp.accent; t[Layer.ACCENT_DARK] = ramp.accentDark; t[Layer.ACCENT_LIGHT] = ramp.accentLight; t[Layer.GLINT] = ramp.glint;
+    // eyes: an opaque dark pupil with a bright catch-light; on a very dark body the ring around it turns cream so the eye still reads
+    const pupil = ctx.dark ? '#12141F' : '#1E2030';
+    t[Layer.EYE_FILL] = pupil; t[Layer.EYE_SHINE] = '#FFFBEA';
+    t[Layer.EYE] = luminance(t[Layer.BODY]) < 0.09 ? '#E4DCC4' : pupil;
+    // rim light: the outline on the lit side. On a dark sky it glows; on a light sky it is the ink softened toward the body.
+    const darkBackdrop = ctx.dark || !!ctx.night;
+    t[Layer.RIM] = darkBackdrop ? mixHex(mixHex(t[Layer.OUTLINE], ramp.hi, 0.3), '#FFF8E4', 0.4) : mixHex(t[Layer.OUTLINE], t[Layer.BODY], 0.12);
   }
   cache.set(key, t);
   return t;
