@@ -190,26 +190,38 @@ struct LCDScreen: View {
         }
     }
 
-    /// Choose your egg: one row per family; Plus families are marked until unlocked.
+    /// Choose your egg: one row per family (it scrolls: there are eleven); "+" marks a Plus family
+    /// that is still locked. Names are cut to one line of the pixel font.
     private func chooserPanel(_ m: Metrics) -> some View {
         let ents = model.entitlements
+        let cancelIndex = Species.families.count
         return panel(m, spacing: m.unit) {
-            PixelText("CHOOSE YOUR EGG", pixel: m.unit)
-                .padding(.bottom, m.unit)
-            ForEach(Array(Species.families.enumerated()), id: \.element.id) { i, fam in
-                let locked = !ents.canHatch(family: fam.id)
-                PixelButton(locked ? "\(fam.name) PLUS" : fam.name, pixel: m.unit,
-                            selected: model.menuIndex == i, outlined: false) {
-                    model.menuIndex = i
-                    model.confirm()
+            PixelText("CHOOSE EGG", pixel: m.unit)
+            ScrollViewReader { proxy in
+                MaybeScroll {
+                    VStack(spacing: m.unit) {
+                        ForEach(Array(Species.families.enumerated()), id: \.element.id) { i, fam in
+                            let locked = !ents.canHatch(family: fam.id)
+                            PixelButton(String((locked ? "+ " + fam.name : fam.name).prefix(m.cap)).uppercased(),
+                                        pixel: m.unit, selected: model.menuIndex == i, outlined: false) {
+                                model.menuIndex = i
+                                model.confirm()
+                            }
+                            .id(i)
+                        }
+                        PixelButton("CANCEL", pixel: m.unit, selected: model.menuIndex == cancelIndex,
+                                    outlined: false) {
+                            model.menuIndex = cancelIndex
+                            model.confirm()
+                        }
+                        .id(cancelIndex)
+                    }
+                }
+                .onChange(of: model.menuIndex) { _, index in
+                    withAnimation { proxy.scrollTo(index, anchor: .center) }
                 }
             }
-            PixelButton("CANCEL", pixel: m.unit, selected: model.menuIndex == Species.families.count,
-                        outlined: false) {
-                model.menuIndex = Species.families.count
-                model.confirm()
-            }
-            Spacer(minLength: 0)
+            PixelText("+ NEEDS PLUS", pixel: m.unit)
         }
     }
 
@@ -336,11 +348,11 @@ struct LCDScreen: View {
                     .frame(width: u * 20)
                 PixelText("DEX \(found.count)/\(Species.dexSize(family: family))", pixel: u)
                 Spacer(minLength: 0)
-                if model.eggChooserAvailable {
-                    PixelButton(locked && found.isEmpty ? "PLUS" : (Species.family(family)?.name ?? "DINOS"),
-                                pixel: u) { model.cycleDexFamily() }
-                        .frame(width: u * 30)
-                }
+            }
+            if model.eggChooserAvailable {
+                // family switch; a locked family nobody has found anything in is marked "+"
+                PixelButton(String(((locked && found.isEmpty ? "+ " : "") + family).prefix(m.cap)).uppercased(),
+                            pixel: u) { model.cycleDexFamily() }
             }
             MaybeScroll {
                 VStack(alignment: .leading, spacing: u * 2) {

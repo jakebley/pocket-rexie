@@ -12,7 +12,9 @@ final class FamilyTests: XCTestCase {
     /// 09:00 UTC on a Monday.
     private let start = Date(timeIntervalSince1970: 1_767_603_600)
 
-    private let familyIDs = ["dino", "fox", "fish", "bird", "cat"]
+    private let familyIDs = ["dino", "fox", "fish", "bird", "cat", "spirits", "bunny", "dragon", "bot", "slime", "bug"]
+    private let dexSizes = ["dino": 39, "fox": 36, "fish": 38, "bird": 36, "cat": 36, "spirits": 36,
+                            "bunny": 35, "dragon": 35, "bot": 36, "slime": 36, "bug": 37]
 
     private func deadPet(family: String = "dino") -> Pet {
         var p = Pet(now: start)
@@ -29,8 +31,9 @@ final class FamilyTests: XCTestCase {
         XCTAssertEqual(Species.families.filter { $0.isFree }.count, 1, "only dino is free")
         for fam in Species.families {
             let members = Species.all.filter { $0.family == fam.id }
-            XCTAssertGreaterThan(members.count, 10, fam.id)
+            XCTAssertGreaterThan(members.count, 30, fam.id)
             XCTAssertEqual(Species.dexSize(family: fam.id), members.count, fam.id)
+            XCTAssertEqual(members.count, dexSizes[fam.id], fam.id)
             let babies = Species.babies(family: fam.id)
             XCTAssertFalse(babies.isEmpty, fam.id)
             for id in babies {
@@ -81,6 +84,12 @@ final class FamilyTests: XCTestCase {
         XCTAssertEqual(Species.foodLabels(family: "fish"), ["Shrimp", "Algae", "Plankton"])
         XCTAssertEqual(Species.foodLabels(family: "bird"), ["Worms", "Seeds", "Minnows"])
         XCTAssertEqual(Species.foodLabels(family: "cat"), ["Tuna", "Catnip", "Milk"])
+        // every family: three non-empty labels that match its Family record and fit one line of pixel text
+        for fam in Species.families {
+            XCTAssertEqual(Species.foodLabels(family: fam.id), fam.foods, fam.id)
+            XCTAssertEqual(fam.foods.count, 3, fam.id)
+            XCTAssertTrue(fam.foods.allSatisfy { !$0.isEmpty && $0.count <= 12 }, fam.id)
+        }
         XCTAssertEqual(Species.foodLabels(family: "no-such-family"), ["Meat", "Veggies", "Pasta"])
     }
 
@@ -199,12 +208,13 @@ final class FamilyTests: XCTestCase {
         }
     }
 
-    func testFoxColorsAreUnchanged() {
-        let expected = ["hunter": "#C2623A", "forager": "#D9A441", "riverside": "#8FA3B5",
-                        "stray": "#9A948C", "baby": "#E7DCC0"]
-        for sp in Species.all where sp.family == "fox" {
-            XCTAssertEqual(sp.bodyHex, expected[sp.line], sp.id)
+    func testLineColorsAnchorTheSpread() {
+        // Hatchlings keep the family's plain line color; the other species spread around theirs.
+        for sp in Species.all where sp.family == "fox" && sp.line == "baby" {
+            XCTAssertEqual(sp.bodyHex, "#E7DCC0", sp.id)
         }
+        let foxHex = Set(Species.all.filter { $0.family == "fox" }.compactMap { $0.bodyHex })
+        XCTAssertGreaterThan(foxHex.count, 10, "look-alike species get different colors")
     }
 
     func testRendererCarriesTheFamilyColor() {
