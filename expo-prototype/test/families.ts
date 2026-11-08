@@ -4,6 +4,7 @@ import { BABIES, FAMILIES, SPECIES } from '../src/core/speciesData';
 import {
   NO_ENTITLEMENTS, familyIdUnlocked, familyUnlocked, foodLabels, hasPlus, loadPreviewPlus, resolveEggFamily, savePreviewPlus, type Entitlements,
 } from '../src/core/entitlements';
+import { reactionFor } from '../src/core/reactions';
 import { Layer } from '../src/ui/layers';
 import { paletteTable } from '../src/ui/palette';
 import { bodyOf, buildFrame, previewFrame } from '../src/ui/render';
@@ -44,6 +45,23 @@ for (const [fam, n] of Object.entries(COUNTS)) {
     }
   }
   { const fp = newPet(T0, { seed: 5 }); forceSpecies(fp, 'stalker'); ok(fp.family === 'fox' && fp.species === 'stalker', 'forcing a fox species switches the pet to the fox family'); }
+  { // pet reactions: every species speaks in its own voice, short enough for the LCD message, and only cats purr
+    const base = { name: 'Rexie', stage: 'adult', line: 'meat', sick: false, hunger: 4, happy: 4, poops: 0, heavy: false };
+    let bad = 0, purr = 0, longest = 0;
+    for (const sp of SPECIES) {
+      for (let step = 0; step < 6; step++) {
+        const m = reactionFor({ ...base, name: 'Rexie', species: sp.id, stage: sp.stage, line: sp.line }, step);
+        longest = Math.max(longest, m.length);
+        if (!m || m.includes('{n}') || m.includes('Dinos can')) bad++;
+        if (/purr/i.test(m) && sp.family !== 'cat' && !m.includes('Hearthpurr')) purr++;
+      }
+    }
+    ok(bad === 0, `every species has clean reaction lines (${bad} bad)`);
+    ok(purr === 0, `only cats purr (${purr} others)`);
+    ok(longest <= 40, `reaction lines fit the message (longest ${longest})`);
+    ok(reactionFor({ ...base, species: 'rawr', sick: true }, 0).includes('unwell') || reactionFor({ ...base, species: 'rawr', sick: true }, 1).includes('weakly'), 'a sick pet says so');
+    ok(new Set([0, 1, 2].map((i) => reactionFor({ ...base, species: 'cat_stalker' }, i))).size === 3, 'taps vary');
+  }
   const dinoLine = paletteTable({ mode: 'technicolor', dark: false, line: 'meat' });
   ok(dinoLine[Layer.BODY] === '#C27358', 'dino meat body unchanged');
   ok(bodyOf({ species: 'rawr' } as Pet) === undefined && bodyOf({ species: 'stalker' } as Pet) === SPECIES_BY_ID['stalker'].bodyHex && /^#[0-9A-F]{6}$/.test(bodyOf({ species: 'stalker' } as Pet) ?? ''), 'bodyOf reads the species');

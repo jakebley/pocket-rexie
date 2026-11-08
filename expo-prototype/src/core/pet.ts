@@ -1,5 +1,6 @@
 // TypeScript port of Shared/Pet.swift. Time is plain epoch milliseconds so the engine is easy to test.
 import { BABIES, SPECIES } from './speciesData';
+import { reactionFor } from './reactions';
 import type { Call, Food, Requirement, SpeciesDef, Stage } from './types';
 
 export const TICK = 5 * 60 * 1000;
@@ -383,7 +384,8 @@ export function petIt(p: Pet): string {
   p.petProgress++; p.smarts = Math.min(100, p.smarts + 1); p.stageSmarts += 1;
   if (p.petProgress >= 3) { p.petProgress = 0; if (p.happy < MAX_HEARTS) p.happy++; }
   touch(p);
-  return `${p.name} purrs. Dinos can purr.`;
+  const sp = SPECIES_BY_ID[p.species];
+  return reactionFor({ name: p.name, species: p.species, stage: p.stage, line: sp?.line ?? '', sick: p.sick, hunger: p.hunger, happy: p.happy, poops: p.poops, heavy: overweight(p) });
 }
 export function toggleLight(p: Pet): string {
   if (p.stage === 'egg' || p.stage === 'ghost') return '...';
