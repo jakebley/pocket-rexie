@@ -4,6 +4,13 @@ from archetypes import ARCH
 from archetypes_fox import ARCH_FOX
 ARCH = dict(ARCH); ARCH.update(ARCH_FOX)
 
+# Hooks for family modules (no need to edit this file):
+#   register_archetypes({name: dict(rows=...) or dict(by_stage={1..5: dict(rows,head,eye,body)})})
+#   EXTRA_HANDLERS['name'] = fn(g, c): draws a decoration; c has hx, hy, hr, ex, ey, b0, b1, f, ox, oy (head, eye, body span)
+EXTRA_HANDLERS = {}
+def register_archetypes(table):
+    ARCH.update(table)
+
 W = 16
 SCALE = {1: 0.0, 2: 0.62, 3: 0.82, 4: 1.0, 5: 1.0}
 
@@ -206,6 +213,8 @@ def draw(r, blink=False):
             g.set(hx - 2, hy + hr + 1); g.set(hx - 1, hy + hr + 1)
         elif e == 'arms':
             g.set(b1 + 1, 9); g.set(b1 + 2, 10)
+        elif e in EXTRA_HANDLERS:
+            EXTRA_HANDLERS[e](g, dict(hx=hx, hy=hy, hr=hr, ex=ex, ey=ey, b0=b0, b1=b1, f=f, ox=ox, oy=oy))
     g.set(ex, ey, 1 if blink else 0)
     return g
 

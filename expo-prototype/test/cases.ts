@@ -26,7 +26,7 @@ const STATES = SCENE_STATES;
 
 export function sceneCases(): Case[] {
   const out: Case[] = [];
-  for (const sp of SPECIES) {
+  for (const sp of SPECIES.filter((s) => s.family === 'dino')) { // golden hashes cover the original dino sprites only
     for (const facing of [1, -1] as const) {
       for (let v = 0; v < 6; v++) {
         const state = STATES[(v * 5 + sp.id.length + (facing === 1 ? 0 : 3)) % STATES.length];

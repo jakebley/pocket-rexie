@@ -209,11 +209,15 @@ final class PetEngineTests: XCTestCase {
     }
 
     func testEverySpeciesBelongsToTheFreeDinoFamily() {
-        XCTAssertTrue(Species.all.allSatisfy { $0.family == "dino" })
-        XCTAssertEqual(Species.families.map { $0.id }, ["dino"])
+        XCTAssertEqual(Species.families.map { $0.id }, ["dino", "fox"])
         XCTAssertTrue(Species.family("dino")?.isFree == true)
-        XCTAssertEqual(Species.dexSize(family: "dino"), Species.dexSize)
+        XCTAssertTrue(Species.family("fox")?.isFree == false, "fox is a Plus family")
+        XCTAssertEqual(Species.dexSize(family: "dino"), 39)
+        XCTAssertEqual(Species.dexSize(family: "fox"), 36)
+        XCTAssertTrue(Species.all.allSatisfy { Species.family($0.family) != nil })
         XCTAssertFalse(Species.babies(family: "dino").isEmpty)
+        XCTAssertFalse(Species.babies(family: "fox").isEmpty)
+        XCTAssertEqual(Species.family("fox")?.foods, ["Mice", "Berries", "Fish"])
     }
 
     func testOldSavesWithoutAFamilyDecodeAsDinoAndNewEggsKeepOrFallBack() throws {

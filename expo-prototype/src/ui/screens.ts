@@ -1,5 +1,5 @@
 // Pure functions that paint the LCD (64x64 scene and text) for a given game state.
-import { DEX_SIZE, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
+import { dexSizeOf, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
 import { SPECIES } from '../core/speciesData';
 import { Layer } from './layers';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
@@ -69,7 +69,7 @@ export function dexLines(p: Pet): string[] {
   const lines: string[] = [];
   for (const stage of ['baby', 'child', 'teen', 'adult', 'ultimate'] as const) {
     lines.push(`-${stage}-`);
-    for (const s of SPECIES.filter((x) => x.stage === stage)) lines.push(p.dex.includes(s.id) ? s.name : '???');
+    for (const s of SPECIES.filter((x) => x.stage === stage && x.family === p.family)) lines.push(p.dex.includes(s.id) ? s.name : '???');
   }
   return lines.map(lineStr);
 }
@@ -78,7 +78,7 @@ export const dexPageCount = (p: Pet) => Math.ceil(dexLines(p).length / DEX_PER_P
 
 function paintDex(b: Buf, p: Pet, page: number, tick: number) {
   const pages = dexPageCount(p);
-  b.text(`DEX ${p.dex.length}/${DEX_SIZE}`, 1, 1);
+  b.text(`DEX ${p.dex.filter((id) => SPECIES_BY_ID[id]?.family === p.family).length}/${dexSizeOf(p.family)}`, 1, 1);
   const pg = `${page + 1}/${pages}`;
   b.text(pg, b.n - textWidth(pg) - 1, 1);
   b.rect(0, 7, b.n, 1);

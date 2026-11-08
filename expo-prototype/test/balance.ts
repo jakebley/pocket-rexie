@@ -82,7 +82,7 @@ for (const stage of stages) {
     console.log(`  ${sp.id.padEnd(13)} ${pct}%  ${'#'.repeat(Math.round((40 * n) / runs))}`);
   }
 }
-const never = SPECIES.filter((s) => !(reached.get(s.id) ?? 0)).map((s) => s.id);
+const never = SPECIES.filter((s) => s.family === 'dino').filter((s) => !(reached.get(s.id) ?? 0)).map((s) => s.id);
 const rare = SPECIES.filter((s) => s.stage !== 'baby' && (reached.get(s.id) ?? 0) / runs < 0.01 && (reached.get(s.id) ?? 0) > 0).map((s) => s.id);
 console.log('\nnever reached:', never.join(', ') || 'none');
 console.log('rare (<1%):', rare.join(', ') || 'none');

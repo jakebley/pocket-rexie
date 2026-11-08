@@ -38,6 +38,8 @@ struct Family: Equatable {
     let name: String
     /// Free families are always available; the others need Plus.
     let isFree: Bool
+    /// Feed menu labels for the three engine foods, in order meat, veggie, pasta.
+    let foods: [String]
 }
 
 struct Species {
@@ -57,12 +59,13 @@ struct Species {
 
     static let all = SpeciesData.all
     static let byID: [String: Species] = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
-    static var dexSize: Int { all.count }
+    /// Size of the free family's Dex (kept for older call sites; use `dexSize(family:)`).
+    static var dexSize: Int { dexSize(family: "dino") }
 
     static func named(_ id: String) -> Species? { byID[id] }
 
     /// The families the app knows. Only `dino` is free; the rest is the Plus plan in docs/PLUS.md.
-    static let families: [Family] = [Family(id: "dino", name: "Dinos", isFree: true)]
+    static let families: [Family] = SpeciesData.families
     static func family(_ id: String) -> Family? { families.first { $0.id == id } }
     static func dexSize(family id: String) -> Int { all.filter { $0.family == id }.count }
     /// Hatchling species ids for a family.

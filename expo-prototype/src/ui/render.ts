@@ -55,7 +55,7 @@ export function buildFrame(r: Rendered, st: FrameStyle): Frame {
   };
 }
 
-export const lineOf = (pet: Pet | null | undefined): Line => (pet && SPECIES_BY_ID[pet.species]?.line) || 'baby';
+export const lineOf = (pet: Pet | null | undefined): Line => ((pet && SPECIES_BY_ID[pet.species]?.line) as Line | undefined) || 'baby';
 
 export function cellsPath(n: number) { return allCellsPath(n); }
 

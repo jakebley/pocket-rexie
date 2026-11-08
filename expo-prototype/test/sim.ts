@@ -1,5 +1,5 @@
 import { advance, newPet, newEgg, feed, train, battle, DEX_SIZE, type Pet } from '../src/core/pet';
-import { SPECIES } from '../src/core/speciesData';
+import { FAMILIES, SPECIES } from '../src/core/speciesData';
 
 let fails = 0;
 const ok = (c: boolean, m: string) => { if (!c) { fails++; console.log('FAIL', m); } };
@@ -48,8 +48,11 @@ ok(meat.p.stage === 'ghost' ? true : true, 'ran');
 ok(lazy.path.length >= 3, 'neglect still progresses in gentle mode');
 ok(classic.p.stage === 'ghost', 'classic neglect dies');
 ok(meat.path.length >= 5, `meat line reaches ultimate (${meat.path.length} stages)`);
-ok(new Set(SPECIES.map((s) => s.id)).size === DEX_SIZE, 'unique species ids');
-ok(SPECIES.every((s) => s.family === 'dino'), 'every species belongs to the free dino family');
+ok(new Set(SPECIES.map((s) => s.id)).size === SPECIES.length, 'unique species ids');
+ok(SPECIES.filter((s) => s.family === 'dino').length === 39, 'the free dino family has 39 species');
+ok(SPECIES.filter((s) => s.family === 'fox').length === 36, 'the fox family has 36 species');
+ok(FAMILIES.map((f) => f.id).join() === 'dino,fox' && FAMILIES[0].isFree && !FAMILIES[1].isFree, 'dino is free, fox needs Plus');
+ok(SPECIES.every((s) => FAMILIES.some((f) => f.id === s.family)), 'every species belongs to a known family');
 ok(newPet(0).family === 'dino', 'new pets default to dino');
 ok(newEgg(newPet(0), 1, 'no-such-family').family === 'dino', 'an unknown family falls back to dino');
 

@@ -48,6 +48,8 @@ enum ColorModeStore {
 /// Lineage color family of a species (`Species.line`).
 enum PetLine: String, CaseIterable, Sendable {
     case baby, meat, veggie, pasta, neglect
+    /// Fox family lines (first pass from docs/FOX_FAMILY.md; colours to be tuned by eye).
+    case hunter, forager, riverside, stray
 
     init(name: String) { self = PetLine(rawValue: name) ?? .baby }
 }
@@ -160,6 +162,10 @@ enum ScenePalette {
         case .pasta: return RGB(hex: "#D1A94A")
         case .neglect: return RGB(hex: "#8A8F96")
         case .baby: return RGB(hex: "#E7DCC0")
+        case .hunter: return RGB(hex: "#C2623A")
+        case .forager: return RGB(hex: "#D9A441")
+        case .riverside: return RGB(hex: "#8FA3B5")
+        case .stray: return RGB(hex: "#9A948C")
         }
     }
 

@@ -48,7 +48,11 @@ const T_LIGHT: Record<number, string> = {
   [Layer.WATER_DROP]: '#6FA3B8', [Layer.SNOW]: '#BFD8E2', [Layer.MAT]: '#8E6F8F', [Layer.BUTTERFLY]: '#C98AA0', [Layer.ALERT]: '#B8392E',
 };
 const BODY_LIGHT_TINT = 0.3; // BODY_LIGHT = body blended this far toward white
-const BODY: Record<Line, string> = { meat: '#C27358', veggie: '#6E9A6B', pasta: '#D1A94A', neglect: '#8A8F96', baby: '#E7DCC0' };
+const BODY: Record<Line, string> = {
+  meat: '#C27358', veggie: '#6E9A6B', pasta: '#D1A94A', neglect: '#8A8F96', baby: '#E7DCC0',
+  // fox family lines (first pass from docs/FOX_FAMILY.md; to be tuned by eye)
+  hunter: '#C2623A', forager: '#D9A441', riverside: '#8FA3B5', stray: '#9A948C',
+};
 const SKY: Record<Phase | 'rain', string> = { dawn: '#E3C9A9', day: '#A9C9D6', dusk: '#D0A38F', night: '#2F3A5A', rain: '#9AA8B0' };
 const SOIL_LIGHT = '#CDBF9E';
 

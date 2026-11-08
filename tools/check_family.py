@@ -26,10 +26,10 @@ while fr:
 if set(S) - reach: err(f'unreachable species: {sorted(set(S) - reach)}')
 def meets(r, v):
     return (v['mist'] >= r.get('mist_min', 0) and v['mist'] <= r.get('mist_max', 10**9) and v['train'] >= r.get('train', 0)
-            and v['wins'] >= r.get('wins', 0) and v['smarts'] >= r.get('smarts', 0) and (not r.get('heavy') or v['heavy'])
+            and v['wins'] >= r.get('wins', 0) and v['smarts'] >= r.get('smarts', 0) and v['disc'] >= r.get('disc', 0) and (not r.get('heavy') or v['heavy'])
             and ('lead' not in r or v['lead'] == r['lead']))
-vecs = [dict(mist=a, train=b, wins=c, smarts=d, heavy=f, lead=g) for a, b, c, d, f, g in
-        itertools.product([0, 1, 2, 4, 6], [0, 3, 5], [0, 2, 3, 5], [0, 12, 20, 40], [False, True], ['meat', 'veggie', 'pasta'])]
+vecs = [dict(mist=a, train=b, wins=c, smarts=d, heavy=f, lead=g, disc=h) for a, b, c, d, f, g, h in
+        itertools.product([0, 1, 2, 4, 6], [0, 3, 5], [0, 2, 3, 5], [0, 12, 20, 40], [False, True], ['meat', 'veggie', 'pasta'], [0, 25, 50, 75])]
 for p, lst in EVO.items():
     for i, (c, r) in enumerate(lst):
         if not any(meets(r, v) and not any(meets(r2, v) for _, r2 in lst[:i]) for v in vecs): err(f'branch {p} -> {c} is shadowed')

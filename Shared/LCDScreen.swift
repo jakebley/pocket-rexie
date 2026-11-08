@@ -300,14 +300,15 @@ struct LCDScreen: View {
 
     private func dexPanel(_ m: Metrics) -> some View {
         let u = m.unit
-        let found = Set(model.pet.dex)
+        let family = model.pet.family
+        let found = Set(model.pet.dex.filter { Species.named($0)?.family == family })
         let stages: [(String, Stage)] = [("BABY", .baby), ("CHILD", .child), ("TEEN", .teen),
                                          ("ADULT", .adult), ("ULTIMATE", .ultimate)]
         return panel(m) {
             HStack(spacing: u * 2) {
                 PixelButton("BACK", pixel: u, selected: true) { model.openStats() }
                     .frame(width: u * 20)
-                PixelText("DEX \(found.count)/\(Species.dexSize)", pixel: u)
+                PixelText("DEX \(found.count)/\(Species.dexSize(family: family))", pixel: u)
                 Spacer(minLength: 0)
             }
             MaybeScroll {
@@ -315,7 +316,7 @@ struct LCDScreen: View {
                     ForEach(stages, id: \.0) { title, stage in
                         PixelText("-\(title)-", pixel: u)
                             .padding(.top, u * 2)
-                        ForEach(Species.all.filter { $0.stage == stage }, id: \.id) { sp in
+                        ForEach(Species.all.filter { $0.stage == stage && $0.family == family }, id: \.id) { sp in
                             PixelParagraph(text: found.contains(sp.id) ? sp.name : "???",
                                            pixel: u, maxChars: m.cap)
                         }

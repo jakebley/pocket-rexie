@@ -12,7 +12,9 @@ export const LIGHT_MISTAKE_TICKS = 24;
 const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 11, child: 36, teen: 72, adult: 168 };
 
 export const SPECIES_BY_ID: Record<string, SpeciesDef> = Object.fromEntries(SPECIES.map((s) => [s.id, s]));
-export const DEX_SIZE = SPECIES.length;
+export const DEX_SIZE = SPECIES.filter((s) => s.family === 'dino').length;
+/** Species count of one family (the Dex is per family). */
+export const dexSizeOf = (family: string) => SPECIES.filter((s) => s.family === family).length;
 
 export interface PetEvent {
   kind: 'hatched' | 'evolved' | 'poop' | 'sick' | 'sleep' | 'wake' | 'call' | 'died';

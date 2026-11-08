@@ -5,6 +5,7 @@ Lines (for Technicolor body colour): meat -> 'hunter', veggie -> 'forager', past
 """
 FAMILY = 'fox'
 NAME = 'Foxes'
+IS_FREE = False  # a Plus family (docs/PLUS.md)
 FOOD_LABELS = {'meat': 'Mice', 'veggie': 'Berries', 'pasta': 'Fish'}
 
 # id: (name, stage, blurb, recipe)
