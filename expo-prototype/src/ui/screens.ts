@@ -3,6 +3,7 @@ import { dexSizeOf, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pe
 import { familyIdUnlocked, foodLabels, NO_ENTITLEMENTS, type Entitlements } from '../core/entitlements';
 import { FAMILIES, SPECIES } from '../core/speciesData';
 import { Layer } from './layers';
+import { biomeOf, type Biome } from './biomes';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
 import { initScene, phaseOf, type Phase, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
@@ -194,7 +195,7 @@ export const isTextMode = (ctx: ScreenCtx) =>
   !(ctx.evo && ctx.evo.until > Date.now()) && ((ctx.pet.stage === 'ghost' && ctx.mode === 'home') || (ctx.mode !== 'home' && ctx.mode !== 'dev'));
 
 /** What the Technicolor renderer needs to paint behind the scene. */
-export interface SkyInfo { phase: Phase; rain: boolean; dim: boolean }
+export interface SkyInfo { phase: Phase; rain: boolean; dim: boolean; biome: Biome }
 export interface Rendered { buf: Buf; dark: boolean; sky?: SkyInfo }
 
 export function renderScreen(ctx: ScreenCtx): Rendered {
@@ -223,5 +224,5 @@ export function renderScreen(ctx: ScreenCtx): Rendered {
   const sc = ctx.scene ?? initScene(p, Date.now());
   paintHome(b, ctx, sc);
   if (p.stage === 'egg') return { buf: b, dark };
-  return { buf: b, dark, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim } };
+  return { buf: b, dark, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim, biome: biomeOf(p) } };
 }
