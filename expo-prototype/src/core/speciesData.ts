@@ -4959,6 +4959,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A damp little kit with enormous ears.",
   "family": "fox",
   "line": "baby",
+  "bodyHex": "#E7DCC0",
   "frames": [
    [
     "................",
@@ -5101,6 +5102,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Born with a warm glow at the tail tip.",
   "family": "fox",
   "line": "baby",
+  "bodyHex": "#E7DCC0",
   "frames": [
    [
     "................",
@@ -5243,6 +5245,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Quick, nosy and always pouncing.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -5383,6 +5386,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Collects berries and leaves in its fur.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "................",
@@ -5523,6 +5527,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Loves the riverbank and a good fish.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -5663,6 +5668,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Scruffy and wary, sleeps under porches.",
   "family": "fox",
   "line": "stray",
+  "bodyHex": "#9A948C",
   "frames": [
    [
     "................",
@@ -5791,6 +5797,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Follows any trail, nose to the ground.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -5925,6 +5932,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Heavy-pawed and patient.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -6059,6 +6067,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Light on its feet, hard to spot.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -6193,6 +6202,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Burrows into hedges and bramble.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "................",
@@ -6321,6 +6331,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Clever and quick with a trick.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "................",
@@ -6455,6 +6466,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Calm forager in the ferns.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "................",
@@ -6583,6 +6595,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Round, wet and cheerful.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -6711,6 +6724,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Thoughtful, watches the water.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -6845,6 +6859,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Easygoing river wanderer.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -6979,6 +6994,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Scrappy digger, always muddy.",
   "family": "fox",
   "line": "stray",
+  "bodyHex": "#9A948C",
   "frames": [
    [
     "................",
@@ -7101,6 +7117,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Patchy coat, tough as nails.",
   "family": "fox",
   "line": "stray",
+  "bodyHex": "#9A948C",
   "frames": [
    [
     "................",
@@ -7229,6 +7246,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A silent hunter of the tall grass.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -7357,6 +7375,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Outwits everyone, glasses and all.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -7485,6 +7504,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Broad and strong, wins most scuffles.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "...........X....",
@@ -7613,6 +7633,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "The fastest fox in the valley.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -7735,6 +7756,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Bristling spines in the bramble.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "...........X....",
@@ -7863,6 +7885,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Gentle keeper of the woods.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "........XX......",
@@ -7991,6 +8014,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Wise, with a second tail to match.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "................",
@@ -8113,6 +8137,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Round, fluffy and very well fed.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -8235,6 +8260,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Patient river fisher, never misses.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -8357,6 +8383,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Strides through the shallows.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -8485,6 +8512,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Ragged but resourceful.",
   "family": "fox",
   "line": "stray",
+  "bodyHex": "#9A948C",
   "frames": [
    [
     "...........X....",
@@ -8607,6 +8635,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Dented, scarred and still smiling.",
   "family": "fox",
   "line": "stray",
+  "bodyHex": "#9A948C",
   "frames": [
    [
     "...........X....",
@@ -8729,6 +8758,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Three silver tails and a quiet halo.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     "......X.....X...",
@@ -8846,6 +8876,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A crowned hunter with a flame-tipped tail.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -8963,6 +8994,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Five tails sweep the night sky.",
   "family": "fox",
   "line": "forager",
+  "bodyHex": "#D9A441",
   "frames": [
    [
     ".......X.X.X....",
@@ -9080,6 +9112,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Snow-white, serene and plush.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     ".......X.X.X....",
@@ -9197,6 +9230,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Calls the river with three striped tails.",
   "family": "fox",
   "line": "riverside",
+  "bodyHex": "#8FA3B5",
   "frames": [
    [
     "................",
@@ -9314,6 +9348,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Fast, fierce and trailing sparks.",
   "family": "fox",
   "line": "hunter",
+  "bodyHex": "#C2623A",
   "frames": [
    [
     "................",
@@ -9431,6 +9466,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Dusk-dweller with a shadow tail.",
   "family": "fox",
   "line": "stray",
+  "bodyHex": "#9A948C",
   "frames": [
    [
     "...........X....",
@@ -9548,6 +9584,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Hatched inside a bubble and still wearing a bit of it.",
   "family": "fish",
   "line": "baby",
+  "bodyHex": "#BFD7DC",
   "frames": [
    [
     "................",
@@ -9690,6 +9727,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A tiny fry with one shiny pearl.",
   "family": "fish",
   "line": "baby",
+  "bodyHex": "#BFD7DC",
   "frames": [
    [
     "................",
@@ -9832,6 +9870,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Grazes on every green thing in the tank.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -9972,6 +10011,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Zips after shrimp and never sits still.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -10112,6 +10152,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A pond baby that loves to splash.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -10252,6 +10293,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Tank-bottom dweller, murky and shy.",
   "family": "fish",
   "line": "stray",
+  "bodyHex": "#8E8F78",
   "frames": [
    [
     "................",
@@ -10380,6 +10422,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Puffs up round whenever it is surprised.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -10508,6 +10551,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A young seahorse, curious and curly-tailed.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -10636,6 +10680,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Scales that flash every colour of the reef.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -10770,6 +10815,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Mostly mouth and always hungry.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -10898,6 +10944,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Carries a little lamp into the dark.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -11026,6 +11073,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Slips through cracks in the rocks.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -11160,6 +11208,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Round, orange and very well fed.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -11288,6 +11337,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A soft little jelly that drifts with the tide.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     ".........X.X....",
@@ -11416,6 +11466,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Whiskered and calm, leaves rings on the pond.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -11550,6 +11601,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Rummages in the gravel for leftovers.",
   "family": "fish",
   "line": "stray",
+  "bodyHex": "#8E8F78",
   "frames": [
    [
     "................",
@@ -11672,6 +11724,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Cloudy water suits it just fine.",
   "family": "fish",
   "line": "stray",
+  "bodyHex": "#8E8F78",
   "frames": [
    [
     "................",
@@ -11800,6 +11853,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A great spiky puffer, round as a drum.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -11928,6 +11982,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Proud seahorse with a tall crest.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "........XXX.....",
@@ -12056,6 +12111,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Bright and bold with a bony beak.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -12178,6 +12234,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Wears a living garden of coral.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -12306,6 +12363,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Grins wide enough to swallow the moon.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -12434,6 +12492,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Its lamp guides lost fish home.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -12556,6 +12615,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Long and sly, peeks out of every hole.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -12678,6 +12738,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Glides along the sea floor like a kite.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -12806,6 +12867,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Slow, golden and wonderfully wise.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -12934,6 +12996,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Glows softly like a paper lantern.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     ".........XXX....",
@@ -13056,6 +13119,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Patterned like a silk robe.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -13178,6 +13242,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Patchy and worn, but still swimming.",
   "family": "fish",
   "line": "stray",
+  "bodyHex": "#8E8F78",
   "frames": [
    [
     "................",
@@ -13300,6 +13365,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Lives in a sunken boot and calls it home.",
   "family": "fish",
   "line": "stray",
+  "bodyHex": "#8E8F78",
   "frames": [
    [
     "................",
@@ -13422,6 +13488,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "The rainbow spirit of the reef.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     "................",
@@ -13539,6 +13606,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Crowned seahorse who rules the kelp.",
   "family": "fish",
   "line": "reef",
+  "bodyHex": "#E08A5C",
   "frames": [
    [
     ".......XXXXXX...",
@@ -13656,6 +13724,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "The angler king, with a lamp like a star.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -13773,6 +13842,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A gentle sea serpent with horns and a sail.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "................",
@@ -13890,6 +13960,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A jelly bright as the northern lights.",
   "family": "fish",
   "line": "deep",
+  "bodyHex": "#3F5F8A",
   "frames": [
    [
     "......XXXXX.....",
@@ -14007,6 +14078,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A koi that climbed the waterfall and became a dragon.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -14124,6 +14196,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A great whale singing the tides in and out.",
   "family": "fish",
   "line": "pond",
+  "bodyHex": "#E3A04B",
   "frames": [
    [
     "................",
@@ -14241,6 +14314,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A ghostly wreck-fish drifting by moonlight.",
   "family": "fish",
   "line": "stray",
+  "bodyHex": "#8E8F78",
   "frames": [
    [
     "................",
@@ -14358,6 +14432,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "All fluff and no feathers yet.",
   "family": "bird",
   "line": "baby",
+  "bodyHex": "#EBDCA0",
   "frames": [
    [
     "................",
@@ -14500,6 +14575,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Peeps at everything, tuft askew.",
   "family": "bird",
   "line": "baby",
+  "bodyHex": "#EBDCA0",
   "frames": [
    [
     "................",
@@ -14642,6 +14718,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Sings before it can fly.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -14782,6 +14859,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Wide-eyed and wobbly at night.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -14922,6 +15000,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Waddles to every puddle.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -15062,6 +15141,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Grubby and wary, sleeps on ledges.",
   "family": "bird",
   "line": "stray",
+  "bodyHex": "#9A9A98",
   "frames": [
    [
     "................",
@@ -15190,6 +15270,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Small, brave and always hopping.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -15324,6 +15405,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Round red breast, sharp wits.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -15458,6 +15540,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A bright little crest and a cheerful trill.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -15592,6 +15675,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Round, soft and very patient.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -15720,6 +15804,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Sharp-eyed and strong-winged.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -15854,6 +15939,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Streaks across the sky.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -15988,6 +16074,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Plump, glossy and sure of itself.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -16116,6 +16203,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Stands still in the shallows, thinking.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -16250,6 +16338,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Quick little swimmer.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -16384,6 +16473,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Scrappy pigeon, always dusty.",
   "family": "bird",
   "line": "stray",
+  "bodyHex": "#9A9A98",
   "frames": [
    [
     "................",
@@ -16506,6 +16596,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Patchy feathers, tough as nails.",
   "family": "bird",
   "line": "stray",
+  "bodyHex": "#9A9A98",
   "frames": [
    [
     "................",
@@ -16634,6 +16725,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Sings the sun up from a fencepost.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -16756,6 +16848,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A voice that stops the whole garden.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -16884,6 +16977,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Bold, loud and rather clever.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -17012,6 +17106,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Tufted, wise and a little grumpy.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -17134,6 +17229,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "The fastest bird in the valley.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -17262,6 +17358,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Glides low over the meadow.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -17384,6 +17481,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Serene on the water, fierce on land.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -17506,6 +17604,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Snow-white, with a lacy plume.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -17634,6 +17733,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Honks first and asks questions later.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "................",
@@ -17756,6 +17856,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A blue flash over the stream.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "........XX.X....",
@@ -17878,6 +17979,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Ragged but resourceful city bird.",
   "family": "bird",
   "line": "stray",
+  "bodyHex": "#9A9A98",
   "frames": [
    [
     "................",
@@ -18000,6 +18102,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Dented, scruffy and still cooing.",
   "family": "bird",
   "line": "stray",
+  "bodyHex": "#9A9A98",
   "frames": [
    [
     "................",
@@ -18122,6 +18225,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A fire bird that rises from its own embers.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "........XX.X....",
@@ -18239,6 +18343,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Thunder eagle, wings wide and crackling.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     "................",
@@ -18356,6 +18461,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A moon owl with a silver halo.",
   "family": "bird",
   "line": "raptor",
+  "bodyHex": "#A67C52",
   "frames": [
    [
     ".....X.....X..X.",
@@ -18473,6 +18579,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A rainbow songbird with a seven-feather tail.",
   "family": "bird",
   "line": "songbird",
+  "bodyHex": "#C98A4B",
   "frames": [
    [
     "................",
@@ -18590,6 +18697,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A crowned swan, white as fresh snow.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "..........XXXXX.",
@@ -18707,6 +18815,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Calls the tide with long, trailing plumes.",
   "family": "bird",
   "line": "waterfowl",
+  "bodyHex": "#7FA0B0",
   "frames": [
    [
     "..........XXXXX.",
@@ -18824,6 +18933,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Evening-grey dove with a shadow tail.",
   "family": "bird",
   "line": "stray",
+  "bodyHex": "#9A9A98",
   "frames": [
    [
     "................",
@@ -18941,6 +19051,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A tiny kitten with four white socks.",
   "family": "cat",
   "line": "baby",
+  "bodyHex": "#EADFC8",
   "frames": [
    [
     "................",
@@ -19083,6 +19194,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Chases its own tail and wins.",
   "family": "cat",
   "line": "baby",
+  "bodyHex": "#EADFC8",
   "frames": [
    [
     "................",
@@ -19225,6 +19337,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Springs at every shadow and dust bunny.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -19365,6 +19478,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Street-smart kitten with a cheeky grin.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -19499,6 +19613,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Round, warm and always sleepy.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -19639,6 +19754,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A scruffy kitten who hides under porches.",
   "family": "cat",
   "line": "stray",
+  "bodyHex": "#8E8A84",
   "frames": [
    [
     "................",
@@ -19767,6 +19883,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Tabby stripes and boundless energy.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -19901,6 +20018,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Tufted ears, a keen eye and a short tail.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -20035,6 +20153,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Heavy-footed. The floor knows when it lands.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -20169,6 +20288,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Knocks things off shelves on purpose.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -20303,6 +20423,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Masked and quick, steals socks.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -20437,6 +20558,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Tucks all four paws away and becomes bread.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -20565,6 +20687,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Collar bell jingling, never quite sneaks.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -20699,6 +20822,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Fur by the armful. Mind the sofa.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -20827,6 +20951,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Digs, climbs and tumbles through bins.",
   "family": "cat",
   "line": "stray",
+  "bodyHex": "#8E8A84",
   "frames": [
    [
     "................",
@@ -20949,6 +21074,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Patchy coat, torn ear, tough as nails.",
   "family": "cat",
   "line": "stray",
+  "bodyHex": "#8E8A84",
   "frames": [
    [
     "................",
@@ -21077,6 +21203,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Handsome tabby, fast and graceful.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -21205,6 +21332,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A lynx-eared hunter with a bobbed tail.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -21333,6 +21461,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Broad and strong, wins most scuffles.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -21461,6 +21590,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Spotted wildcat, lean as a whip.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -21583,6 +21713,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "King of the rooftops and fences.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -21711,6 +21842,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Outwits everyone, glasses and all.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -21839,6 +21971,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Scarred champion of the back alley.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -21967,6 +22100,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Orange, round and very well fed.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -22089,6 +22223,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Wise old puss with pearls and spectacles.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -22217,6 +22352,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Purrs on request. Moves rarely.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -22339,6 +22475,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Elegant and slender, with a collar bell.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -22467,6 +22604,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Ragged but resourceful.",
   "family": "cat",
   "line": "stray",
+  "bodyHex": "#8E8A84",
   "frames": [
    [
     "................",
@@ -22589,6 +22727,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Dented, scarred and still purring.",
   "family": "cat",
   "line": "stray",
+  "bodyHex": "#8E8A84",
   "frames": [
    [
     "................",
@@ -22711,6 +22850,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Silver fur and a crescent moon overhead.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",
@@ -22828,6 +22968,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Waves a lucky paw. Good fortune follows.",
   "family": "cat",
   "line": "alley",
+  "bodyHex": "#D08A4A",
   "frames": [
    [
     "................",
@@ -22945,6 +23086,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Lion-maned monarch of the sunny wall.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -23062,6 +23204,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A shadow panther, quiet as dusk.",
   "family": "cat",
   "line": "stray",
+  "bodyHex": "#8E8A84",
   "frames": [
    [
     "................",
@@ -23179,6 +23322,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "A snow lynx wrapped in frosty fluff.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -23296,6 +23440,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "Striped and fiery, with a glowing tail.",
   "family": "cat",
   "line": "hunter",
+  "bodyHex": "#A8885C",
   "frames": [
    [
     "................",
@@ -23413,6 +23558,7 @@ export const SPECIES: SpeciesDef[] = [
   "blurb": "The warmest cat. Everyone gathers round.",
   "family": "cat",
   "line": "sofa",
+  "bodyHex": "#D9CBB0",
   "frames": [
    [
     "................",

@@ -18,7 +18,7 @@ export const DIM_FLAG = 0x80;
 export const LAYER_MASK = 0x7f;
 export const ALL_LAYERS: number[] = Array.from({ length: LAYER_COUNT - 1 }, (_, i) => i + 1);
 
-export type Line = 'baby' | 'meat' | 'veggie' | 'pasta' | 'neglect' | 'hunter' | 'forager' | 'riverside' | 'stray';
+export type Line = 'baby' | 'meat' | 'veggie' | 'pasta' | 'neglect';
 export type Rows = string[];
 
 /**

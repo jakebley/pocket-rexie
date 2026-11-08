@@ -1,6 +1,7 @@
 // Pure functions that paint the LCD (64x64 scene and text) for a given game state.
 import { dexSizeOf, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
-import { SPECIES } from '../core/speciesData';
+import { familyIdUnlocked, foodLabels, NO_ENTITLEMENTS, type Entitlements } from '../core/entitlements';
+import { FAMILIES, SPECIES } from '../core/speciesData';
 import { Layer } from './layers';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
 import { initScene, phaseOf, type Phase, type Scene } from './scene';
@@ -16,8 +17,13 @@ export interface Evo { from: string; to: string; until: number }
 export interface ScreenCtx {
   pet: Pet; tick: number; mode: Mode; feedSel: number; play: PlayState | null;
   statsPage: number; dexPage: number; evo: Evo | null; scene?: Scene | null;
+  /** the family the Dex is showing (default: the pet's own) */
+  dexFamily?: string;
+  /** what the player may use; gates the locked Dex families */
+  ent?: Entitlements;
 }
-export const FEED_ROWS = ['MEAT', 'VEGGIES', 'PASTA', 'SNACK', 'CANCEL'];
+/** Feed menu rows: the three foods are named for the pet's family (Mice / Berries / Fish ...). */
+export const feedRows = (family: string) => [...foodLabels(family), 'SNACK', 'CANCEL'];
 
 const spriteOf = (id: string, blink: boolean): string[] | null => {
   const sp = SPECIES_BY_ID[id];
@@ -65,25 +71,45 @@ export function legacyLines(p: Pet): string[] {
 const LEGACY_PER_PAGE = 8;
 export const statsPageCount = (p: Pet) => 2 + Math.max(1, Math.ceil(legacyLines(p).length / LEGACY_PER_PAGE));
 
-export function dexLines(p: Pet): string[] {
+/** Is this family's Dex open? A pet's own family always is; the rest follow the entitlement. */
+export const dexUnlocked = (p: Pet, family: string, ent: Entitlements = NO_ENTITLEMENTS) => family === p.family || familyIdUnlocked(family, ent);
+/** Next family in the Dex switcher, wrapping around. */
+export function nextDexFamily(current: string): string {
+  const i = FAMILIES.findIndex((f) => f.id === current);
+  return FAMILIES[(i + 1) % FAMILIES.length].id;
+}
+export function dexLines(p: Pet, family: string = p.family): string[] {
   const lines: string[] = [];
   for (const stage of ['baby', 'child', 'teen', 'adult', 'ultimate'] as const) {
     lines.push(`-${stage}-`);
-    for (const s of SPECIES.filter((x) => x.stage === stage && x.family === p.family)) lines.push(p.dex.includes(s.id) ? s.name : '???');
+    for (const s of SPECIES.filter((x) => x.stage === stage && x.family === family)) lines.push(p.dex.includes(s.id) ? s.name : '???');
   }
   return lines.map(lineStr);
 }
-const DEX_PER_PAGE = 8;
-export const dexPageCount = (p: Pet) => Math.ceil(dexLines(p).length / DEX_PER_PAGE);
+const DEX_PER_PAGE = 6;
+export const dexPageCount = (p: Pet, family: string = p.family, ent: Entitlements = NO_ENTITLEMENTS) =>
+  dexUnlocked(p, family, ent) ? Math.ceil(dexLines(p, family).length / DEX_PER_PAGE) : 1;
 
-function paintDex(b: Buf, p: Pet, page: number, tick: number) {
-  const pages = dexPageCount(p);
-  b.text(`DEX ${p.dex.filter((id) => SPECIES_BY_ID[id]?.family === p.family).length}/${dexSizeOf(p.family)}`, 1, 1);
+function paintDex(b: Buf, p: Pet, page: number, tick: number, family: string, ent: Entitlements) {
+  const fam = FAMILIES.find((f) => f.id === family) ?? FAMILIES[0];
+  const open = dexUnlocked(p, fam.id, ent);
+  const pages = dexPageCount(p, fam.id, ent);
+  const name = fam.name.toUpperCase();
+  b.text(name, 1, 1);
+  if (!open) b.rows(GLYPHS.lock, textWidth(name) + 4, 1);
   const pg = `${page + 1}/${pages}`;
   b.text(pg, b.n - textWidth(pg) - 1, 1);
-  b.rect(0, 7, b.n, 1);
-  dexLines(p).slice(page * DEX_PER_PAGE, (page + 1) * DEX_PER_PAGE).forEach((l, i) => {
-    const y = 9 + i * LINE_H;
+  const total = dexSizeOf(fam.id);
+  b.text(open ? `DEX ${p.dex.filter((id) => SPECIES_BY_ID[id]?.family === fam.id).length}/${total}` : `DEX ?/${total}`, 1, 8);
+  b.rect(0, 14, b.n, 1);
+  if (!open) {
+    b.rowsScaled(GLYPHS.lock, 24, 20, 3);
+    center(b, 'LOCKED', 40);
+    center(b, 'NEEDS PLUS', 49);
+    return;
+  }
+  dexLines(p, fam.id).slice(page * DEX_PER_PAGE, (page + 1) * DEX_PER_PAGE).forEach((l, i) => {
+    const y = 17 + i * LINE_H;
     if (l.startsWith('-')) { b.text(l, 1, y); b.rect(textWidth(l) + 3, y + 2, b.n - textWidth(l) - 4, 1); }
     else b.ticker(l, y, tick, 5, b.n - 6);
   });
@@ -155,7 +181,7 @@ function paintGhost(b: Buf, ctx: ScreenCtx) {
 function paintFeed(b: Buf, ctx: ScreenCtx) {
   center(b, 'FEED', 2);
   b.rect(0, 8, b.n, 1);
-  FEED_ROWS.forEach((r, i) => {
+  feedRows(ctx.pet.family).forEach((r, i) => {
     const top = FEED_TOP + i * FEED_ROW_H;
     b.text(r, 14, top + 2);
     if (i === ctx.feedSel) { b.text('>', 5, top + 2); b.invert(1, top, b.n - 2, FEED_ROW_H - 1); }
@@ -188,7 +214,7 @@ export function renderScreen(ctx: ScreenCtx): Rendered {
       case 'feed': paintFeed(b, ctx); break;
       case 'play': if (ctx.play) paintPlay(b, ctx.play); break;
       case 'stats': paintStats(b, ctx); break;
-      case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick); break;
+      case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick, ctx.dexFamily ?? p.family, ctx.ent ?? NO_ENTITLEMENTS); break;
     }
     return { buf: b, dark };
   }

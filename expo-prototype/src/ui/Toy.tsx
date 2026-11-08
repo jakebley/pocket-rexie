@@ -3,7 +3,7 @@ import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-n
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER } from './pixel';
-import { buildFrame, lineOf, type Frame } from './render';
+import { bodyOf, buildFrame, lineOf, type Frame } from './render';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
@@ -100,7 +100,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
       pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel, play: g.play,
       statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc,
     });
-    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet) });
+    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet), bodyHex: bodyOf(pet) });
     if (frame.key !== lastKey.current) { lastKey.current = frame.key; setFr(frame); }
   }, []);
 
