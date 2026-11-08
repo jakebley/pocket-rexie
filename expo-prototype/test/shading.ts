@@ -6,7 +6,7 @@ import { screenCases, sceneCases, lit, T0 } from './cases';
 import { FAMILIES, SPECIES } from '../src/core/speciesData';
 import { SPECIES_BY_ID, forceSpecies, newPet } from '../src/core/pet';
 import { BIOMES, FAMILY_BIOME, type Biome } from '../src/ui/biomes';
-import { ALL_LAYERS, Layer, PET_LAYER_CODES, petLayers } from '../src/ui/layers';
+import { ALL_LAYERS, Layer, PET_LAYER_CODES, petLayers, tradVisible } from '../src/ui/layers';
 import { contrast, darkSky, paletteTable, shadeRamp, skyFor, type PaletteCtx } from '../src/ui/palette';
 import { Buf } from '../src/ui/pixel';
 import { buildFrame } from '../src/ui/render';
@@ -34,7 +34,7 @@ const lum = (hex: string) => {
     frames++;
     if (now.length !== old.length) { litBad++; continue; }
     for (let i = 0; i < old.length; i++) {
-      if ((old[i] !== 0) !== (now[i] !== 0)) litBad++;
+      if ((old[i] !== 0) !== (now[i] !== 0 && tradVisible(now[i]))) litBad++; // Traditional-visible cells only: eye fills print as unlit
       const wasOutline = old[i] === Layer.OUTLINE;
       const isOutline = now[i] === Layer.OUTLINE || now[i] === Layer.RIM || now[i] === Layer.EYE;
       if (wasOutline !== isOutline) outlineBad++;
@@ -46,6 +46,54 @@ const lum = (hex: string) => {
   ok(outlineBad === 0, `outline cells unchanged (${outlineBad} differ): OUTLINE / RIM / EYE are exactly the old outline`);
   ok(unknown === 0, 'shading only emits pet layer codes');
   for (const l of [...SHADING_LAYERS, Layer.BODY, Layer.OUTLINE]) ok(seen.has(l), `layer ${l} is produced by some species`);
+}
+
+// 1b. eyes are opaque in Technicolor: the see-through eye holes (and only those) are filled; blink frames without a hole draw nothing
+{
+  let frames = 0, withEye = 0, seeThrough = 0, tooMany = 0, notHole = 0, noShine = 0, speciesWithEye = 0, blinkEyeless = 0;
+  for (const sp of SPECIES) {
+    let any = false;
+    sp.hiFrames.forEach((fr, fi) => {
+      const L = shadedPetLayers(fr, sp.family), w = fr[0].length;
+      let fill = 0, shine = 0;
+      for (let i = 0; i < L.length; i++) {
+        if (L[i] !== Layer.EYE_FILL && L[i] !== Layer.EYE_SHINE) continue;
+        fill++; if (L[i] === Layer.EYE_SHINE) shine++;
+        if (fr[(i / w) | 0][i % w] === 'X') notHole++; // only unlit cells (the holes) are filled
+        const x = i % w, y = (i / w) | 0;
+        for (const [ax, ay] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) if (!L[ay * w + ax]) seeThrough++; // every fill cell is enclosed by body, ring or fill
+      }
+      frames++;
+      // a lone one-pixel pupil has no room for a shine: the ring corner carries the glint
+      if (fill) { withEye++; any = true; if (!shine && fill > 2) noShine++; }
+      if (fill > 12) tooMany++;
+      if (fi === 1 && !fill && sp.hiFrames[0].join('') !== fr.join('')) blinkEyeless++;
+    });
+    if (any) speciesWithEye++;
+  }
+  ok(notHole === 0, `eye fills only cover unlit hole cells (${notHole} on lit cells)`);
+  ok(seeThrough === 0, `eye fills are enclosed, no see-through gap around them (${seeThrough})`);
+  ok(tooMany === 0, 'at most two small eyes per frame: spots, windows and cut-outs stay holes');
+  ok(noShine === 0, 'every filled eye has a catch-light');
+  ok(speciesWithEye >= SPECIES.length * 0.78, `${speciesWithEye} of ${SPECIES.length} species have an opaque eye`);
+  console.log(`  eyes: ${withEye} of ${frames} frames filled; ${blinkEyeless} blink frames without a hole draw none`);
+  const cat = SPECIES.find((s) => s.id === 'cat_brindle')!;
+  const Lc = shadedPetLayers(cat.hiFrames[0], 'cat');
+  let unlitInside = 0;
+  cat.hiFrames[0].forEach((r, y) => [...r].forEach((c, x) => { if (c !== 'X' && Lc[y * 32 + x] === 0 && x > 5 && x < 27) unlitInside++; }));
+  ok(unlitInside > 20, 'cat back spots are still holes');
+  // Technicolor frame: the eye cells are painted with the pupil and shine colours; Traditional prints them as unlit
+  const fox = newPet(T0, { seed: 5 }); forceSpecies(fox, 'stalker'); fox.named = true;
+  const b = new Buf(SCENE_N);
+  drawScene(b, { ...initScene(fox, T0, 12), nowMs: T0 + 1234, still: true, weather: 'clear' }, fox);
+  const eyeCells = [...b.px].filter((v) => v === Layer.EYE_FILL || v === Layer.EYE_SHINE).length;
+  ok(eyeCells >= 2, `the scene buffer carries the eye fill (${eyeCells} cells)`);
+  const col = buildFrame({ buf: b, dark: false }, { mode: 'technicolor', dark: false, bodyHex: '#D09A40' });
+  const t = paletteTable({ mode: 'technicolor', dark: false, bodyHex: '#D09A40' });
+  ok(col.groups.some((g) => g.color === t[Layer.EYE_FILL]) && col.groups.some((g) => g.color === t[Layer.EYE_SHINE]), 'Technicolor paints the pupil and the shine');
+  const tr = buildFrame({ buf: b, dark: false }, { mode: 'traditional', dark: false });
+  const noEye = Uint8Array.from(b.px, (v) => (v === Layer.EYE_FILL || v === Layer.EYE_SHINE ? 0 : v));
+  ok(tr.groups.length === 1 && tr.groups[0].d === buildFrame({ buf: { ...b, px: noEye } as unknown as Buf, dark: false }, { mode: 'traditional', dark: false }).groups[0].d, 'Traditional frame is the same with or without the eye fill');
 }
 
 // 2. Traditional is pixel-identical: the dino golden (same hashes as test/color.ts) and one ink path for every family

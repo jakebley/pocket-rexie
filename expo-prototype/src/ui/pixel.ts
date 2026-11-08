@@ -1,5 +1,5 @@
 // Pixel art tables + a tiny square bitmap buffer (64x64 scene and text mode) used by the LCD.
-import { DIM_FLAG, Layer } from './layers';
+import { DIM_FLAG, LAYER_MASK, Layer } from './layers';
 
 /** Home-scene framebuffer: 64x64 (species sprites are 32x32 hiFrames, drawn 1:1). */
 export const GRID = 64;
@@ -188,7 +188,7 @@ export class Buf {
   /** Flip lit and unlit (lit pixels go dark, unlit pixels become ink). */
   invert(x0: number, y0: number, w: number, h: number) {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
-      if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] = this.px[y * this.n + x] ? 0 : Layer.INK;
+      if (x >= 0 && y >= 0 && x < this.n && y < this.n) { const v = this.px[y * this.n + x]; this.px[y * this.n + x] = v && (v & LAYER_MASK) < Layer.EYE_FILL ? 0 : Layer.INK; } // eye fills are unlit in Traditional, so they flip to ink like any hole
     }
   }
   /** Mark a pixel as dimmed (lights-off dither): keeps its layer, adds the dim flag. */
