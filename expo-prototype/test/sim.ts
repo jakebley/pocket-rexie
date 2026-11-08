@@ -50,8 +50,9 @@ ok(classic.p.stage === 'ghost', 'classic neglect dies');
 ok(meat.path.length >= 5, `meat line reaches ultimate (${meat.path.length} stages)`);
 ok(new Set(SPECIES.map((s) => s.id)).size === SPECIES.length, 'unique species ids');
 ok(SPECIES.filter((s) => s.family === 'dino').length === 39, 'the free dino family has 39 species');
-ok(SPECIES.filter((s) => s.family === 'fox').length === 36, 'the fox family has 36 species');
-ok(FAMILIES.map((f) => f.id).join() === 'dino,fox' && FAMILIES[0].isFree && !FAMILIES[1].isFree, 'dino is free, fox needs Plus');
+const COUNTS: Record<string, number> = { dino: 39, fox: 36, fish: 38, bird: 36, cat: 36 };
+for (const [fam, n] of Object.entries(COUNTS)) ok(SPECIES.filter((s) => s.family === fam).length === n, `the ${fam} family has ${n} species`);
+ok(FAMILIES.map((f) => f.id).join() === 'dino,fox,fish,bird,cat' && FAMILIES[0].isFree && FAMILIES.slice(1).every((f) => !f.isFree), 'dino is free; fox, fish, bird, cat need Plus');
 ok(SPECIES.every((s) => FAMILIES.some((f) => f.id === s.family)), 'every species belongs to a known family');
 ok(newPet(0).family === 'dino', 'new pets default to dino');
 ok(newEgg(newPet(0), 1, 'no-such-family').family === 'dino', 'an unknown family falls back to dino');
@@ -77,5 +78,5 @@ for (let s = 1; s <= 300; s++) {
   path.forEach((x: string) => seen.add(x));
 }
 console.log('species seen in 300 random runs:', seen.size, '/', DEX_SIZE);
-console.log('never seen:', SPECIES.filter((s) => !seen.has(s.id)).map((s) => s.id).join(', ') || 'none');
+console.log('never seen (dino only; these runs are all dino):', SPECIES.filter((s) => s.family === 'dino' && !seen.has(s.id)).map((s) => s.id).join(', ') || 'none');
 process.exit(fails ? 1 : 0);

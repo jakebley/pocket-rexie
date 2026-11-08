@@ -101,6 +101,8 @@ export function SettingsSheet({ game, onClose, onDev }: { game: Game; onClose: (
             {pet && <ToggleRow label="CLASSIC" hint="STRICT CARE, MORE MISTAKES" on={!pet.gentle} onPress={game.dev.toggleClassic} />}
             {pet && <ToggleRow label="VACATION" hint="PAUSE THE PET" on={pet.paused} onPress={game.dev.toggleVacation} />}
           </View>
+          <Section title="PLUS" />
+          <ToggleRow label="PREVIEW PLUS (TESTING)" hint="UNLOCK PLUS FAMILIES. NO PAYMENT" on={game.ent.previewPlus} onPress={() => game.setPreviewPlus(!game.ent.previewPlus)} />
           <Section title="MORE" />
           <PixelButton label="DEVELOPER TOOLS" ps={2.5} onPress={onDev} style={{ minHeight: 56 }} />
         </ScrollView>

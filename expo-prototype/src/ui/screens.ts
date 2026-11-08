@@ -86,7 +86,7 @@ export function dexLines(p: Pet, family: string = p.family): string[] {
   }
   return lines.map(lineStr);
 }
-const DEX_PER_PAGE = 6;
+const DEX_PER_PAGE = 8;
 export const dexPageCount = (p: Pet, family: string = p.family, ent: Entitlements = NO_ENTITLEMENTS) =>
   dexUnlocked(p, family, ent) ? Math.ceil(dexLines(p, family).length / DEX_PER_PAGE) : 1;
 
@@ -94,22 +94,23 @@ function paintDex(b: Buf, p: Pet, page: number, tick: number, family: string, en
   const fam = FAMILIES.find((f) => f.id === family) ?? FAMILIES[0];
   const open = dexUnlocked(p, fam.id, ent);
   const pages = dexPageCount(p, fam.id, ent);
-  const name = fam.name.toUpperCase();
-  b.text(name, 1, 1);
-  if (!open) b.rows(GLYPHS.lock, textWidth(name) + 4, 1);
+  // the free dino Dex keeps its original header; the other families put their name there
+  const label = fam.id === 'dino' ? 'DEX' : fam.name.toUpperCase();
+  const total = dexSizeOf(fam.id);
+  const head = `${label} ${open ? p.dex.filter((id) => SPECIES_BY_ID[id]?.family === fam.id).length : '?'}/${total}`;
+  b.text(head, 1, 1);
+  if (!open) b.rows(GLYPHS.lock, textWidth(head) + 3, 1);
   const pg = `${page + 1}/${pages}`;
   b.text(pg, b.n - textWidth(pg) - 1, 1);
-  const total = dexSizeOf(fam.id);
-  b.text(open ? `DEX ${p.dex.filter((id) => SPECIES_BY_ID[id]?.family === fam.id).length}/${total}` : `DEX ?/${total}`, 1, 8);
-  b.rect(0, 14, b.n, 1);
+  b.rect(0, 7, b.n, 1);
   if (!open) {
-    b.rowsScaled(GLYPHS.lock, 24, 20, 3);
+    b.rowsScaled(GLYPHS.lock, 24, 18, 3);
     center(b, 'LOCKED', 40);
     center(b, 'NEEDS PLUS', 49);
     return;
   }
   dexLines(p, fam.id).slice(page * DEX_PER_PAGE, (page + 1) * DEX_PER_PAGE).forEach((l, i) => {
-    const y = 17 + i * LINE_H;
+    const y = 9 + i * LINE_H;
     if (l.startsWith('-')) { b.text(l, 1, y); b.rect(textWidth(l) + 3, y + 2, b.n - textWidth(l) - 4, 1); }
     else b.ticker(l, y, tick, 5, b.n - 6);
   });
