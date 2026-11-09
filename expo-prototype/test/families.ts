@@ -14,7 +14,7 @@ let fails = 0, checks = 0;
 const ok = (c: boolean, m: string) => { checks++; if (!c) { fails++; console.log('FAIL', m); } };
 
 const T0 = 1_800_000_000_000;
-const COUNTS: Record<string, number> = { dino: 39, fox: 36, fish: 38, bird: 36, cat: 36, spirits: 36, bunny: 35, dragon: 35, bot: 36, slime: 36, bug: 37 };
+const COUNTS: Record<string, number> = { dino: 39, fox: 36, fish: 38, bird: 36, cat: 36, spirits: 36, bunny: 35, dragon: 35, bot: 36, slime: 36, bug: 37, alien: 38 };
 const PREVIEW: Entitlements = { plus: false, previewPlus: true };
 
 // 1. family counts and structure
@@ -155,7 +155,7 @@ for (const [fam, n] of Object.entries(COUNTS)) {
   ok(dexPageCount(p, 'fox', PREVIEW) > 1 && dexLines(p, 'fox').length > 36, 'an open Dex lists the family');
   let f = 'dino'; const order: string[] = [];
   for (let i = 0; i < FAMILIES.length; i++) { f = nextDexFamily(f); order.push(f); }
-  ok(order.join() === 'fox,fish,bird,cat,spirits,bunny,dragon,bot,slime,bug,dino', 'the switcher cycles every family and wraps');
+  ok(order.join() === 'fox,fish,bird,cat,spirits,bunny,dragon,bot,slime,bug,alien,dino', 'the switcher cycles every family and wraps');
   const base: Omit<ScreenCtx, 'pet'> = { tick: 0, mode: 'dex', feedSel: 0, play: null, statsPage: 0, dexPage: 0, evo: null };
   const lockedFrame = buildFrame(renderScreen({ ...base, pet: p, dexFamily: 'fox' }), { mode: 'traditional', dark: false }).key;
   const openFrame = buildFrame(renderScreen({ ...base, pet: p, dexFamily: 'fox', ent: PREVIEW }), { mode: 'traditional', dark: false }).key;

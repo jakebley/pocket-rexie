@@ -16,6 +16,7 @@ Each pet family has its own background, chosen by the species' family (`src/ui/b
 | bot | workshop | wall plates, gears, blinking LEDs, cables, monitor, grid floor |
 | slime | swamp | stalactites and drips, glowing mushrooms, puddles |
 | bug | garden | giant leaves, flower heads, dew, long grass |
+| alien | space | deep starfield, ringed planet and far moon, lunar hills with pits, a landed saucer with blinking lights, glowing crystals, a shooting star; dark in every phase |
 
 ## How it is drawn
 
@@ -25,6 +26,6 @@ Each pet family has its own background, chosen by the species' family (`src/ui/b
 * Scenery uses Technicolor-only layer codes (`Layer.BARK` and up, `SCENERY_FROM`). Traditional renders them unlit, so Traditional stays the plain scene plus three tiny cues: `WAVE` (fish surface line), `HOLE` (bunny burrow arch), `PEAK` (dragon far peak).
 * The pet clears a 1 px ring of scenery around its silhouette (`drawPet`); shared layers are never touched, so Traditional and the dino are unaffected.
 * Static art is painted once per (biome, phase, rain) and blitted from a cache; only animated bits are drawn per frame.
-* Caves, the ember realm and the lit workshop have a dark backdrop in every phase (`ALWAYS_DARK`): HUD glyphs use the night ink there.
+* Caves, the ember realm, deep space and the lit workshop have a dark backdrop in every phase (`ALWAYS_DARK`): HUD glyphs use the night ink there.
 
 Sheets: `node tools/biome-sheets.js` writes `docs/screens/biomes-*.png`. Tests: `test/biomes.ts`.

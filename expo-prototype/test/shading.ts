@@ -66,7 +66,7 @@ const lum = (hex: string) => {
       frames++;
       // a lone one-pixel pupil has no room for a shine: the ring corner carries the glint
       if (fill) { withEye++; any = true; if (!shine && fill > 2) noShine++; }
-      if (fill > 12) tooMany++;
+      if (fill > (sp.family === 'alien' ? 64 : 12)) tooMany++; // aliens carry big eyes (up to three)
       if (fi === 1 && !fill && sp.hiFrames[0].join('') !== fr.join('')) blinkEyeless++;
     });
     if (any) speciesWithEye++;

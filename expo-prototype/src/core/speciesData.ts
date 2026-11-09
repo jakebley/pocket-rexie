@@ -51422,7 +51422,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_nubb",
+    "to": "alien_oggle",
     "req": {
      "lead": "meat"
     }
@@ -51442,8 +51442,8 @@ export const SPECIES: SpeciesDef[] = [
   ]
  },
  {
-  "id": "alien_glint",
-  "name": "Glint",
+  "id": "alien_blink",
+  "name": "Blink",
   "stage": "baby",
   "blurb": "A one-eyed orb that blinks like a faraway star.",
   "family": "alien",
@@ -51577,7 +51577,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_nubb",
+    "to": "alien_oggle",
     "req": {
      "lead": "meat"
     }
@@ -51585,8 +51585,8 @@ export const SPECIES: SpeciesDef[] = [
   ]
  },
  {
-  "id": "alien_nubb",
-  "name": "Nubb",
+  "id": "alien_oggle",
+  "name": "Oggle",
   "stage": "child",
   "blurb": "Chunky, one big eye and zero doubts.",
   "family": "alien",
@@ -51714,7 +51714,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_shellback",
+    "to": "alien_carapace",
     "req": {}
    }
   ]
@@ -52260,7 +52260,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_beacon",
+    "to": "alien_lamplight",
     "req": {
      "train": 3
     }
@@ -52665,7 +52665,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_beacon",
+    "to": "alien_lamplight",
     "req": {
      "smarts": 20
     }
@@ -52800,20 +52800,20 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_titan",
+    "to": "alien_goliath",
     "req": {
      "wins": 3
     }
    },
    {
-    "to": "alien_bulwark",
+    "to": "alien_bastion",
     "req": {}
    }
   ]
  },
  {
-  "id": "alien_shellback",
-  "name": "Shellback",
+  "id": "alien_carapace",
+  "name": "Carapace",
   "stage": "teen",
   "blurb": "Armoured insect scout with a sense of rhythm.",
   "family": "alien",
@@ -52935,7 +52935,7 @@ export const SPECIES: SpeciesDef[] = [
     }
    },
    {
-    "to": "alien_titan",
+    "to": "alien_goliath",
     "req": {
      "wins": 2
     }
@@ -53598,8 +53598,8 @@ export const SPECIES: SpeciesDef[] = [
   ]
  },
  {
-  "id": "alien_beacon",
-  "name": "Beacon",
+  "id": "alien_lamplight",
+  "name": "Lamplight",
   "stage": "adult",
   "blurb": "Its antennae light the way home.",
   "family": "alien",
@@ -54231,8 +54231,8 @@ export const SPECIES: SpeciesDef[] = [
   ]
  },
  {
-  "id": "alien_bulwark",
-  "name": "Bulwark",
+  "id": "alien_bastion",
+  "name": "Bastion",
   "stage": "adult",
   "blurb": "A big round hull plated in space rock.",
   "family": "alien",
@@ -54483,8 +54483,8 @@ export const SPECIES: SpeciesDef[] = [
   ]
  },
  {
-  "id": "alien_titan",
-  "name": "Titan",
+  "id": "alien_goliath",
+  "name": "Goliath",
   "stage": "adult",
   "blurb": "One eye, two horns and a lot of heart.",
   "family": "alien",
@@ -56184,7 +56184,7 @@ export const SPECIES: SpeciesDef[] = [
  }
 ];
 
-export const BABIES: string[] = ["pip", "nubb", "dewkit", "cinder", "fish_bubblet", "fish_pearlfry", "bird_downy", "bird_pipkin", "cat_mittens", "cat_pip", "spirits_puffet", "spirits_nubbin", "bunny_pellet", "bunny_button", "dr_cinder", "dr_pebble", "bot_blip", "bot_nibble", "slime_bead", "slime_dollop", "bug_speck", "bug_nub", "alien_bloop", "alien_glint"];
+export const BABIES: string[] = ["pip", "nubb", "dewkit", "cinder", "fish_bubblet", "fish_pearlfry", "bird_downy", "bird_pipkin", "cat_mittens", "cat_pip", "spirits_puffet", "spirits_nubbin", "bunny_pellet", "bunny_button", "dr_cinder", "dr_pebble", "bot_blip", "bot_nibble", "slime_bead", "slime_dollop", "bug_speck", "bug_nub", "alien_bloop", "alien_blink"];
 
 export const FAMILIES: FamilyDef[] = [
  {

@@ -11,7 +11,7 @@ declare const require: (m: string) => any;
 declare const process: { argv: string[] };
 const { writeFileSync } = require('fs');
 const T = 1_800_000_000_000 - (1_800_000_000_000 % TICK_MS);
-const FAMS = ['dino', 'fox', 'fish', 'bird', 'cat', 'spirits', 'bunny', 'dragon', 'bot', 'slime', 'bug'];
+const FAMS = ['dino', 'fox', 'fish', 'bird', 'cat', 'spirits', 'bunny', 'dragon', 'bot', 'slime', 'bug', 'alien'];
 const ENTRIES: [string, string][] = FAMS.map((f) => [f, SPECIES.find((s) => s.family === f && s.stage === 'adult')!.id]);
 ENTRIES.splice(6, 0, ['ember', 'spirits_emberhorn']);
 const PHASES: Record<string, [number, boolean]> = { day: [12, false], dusk: [19, false], night: [23, false], rain: [12, true], dawn: [6, false] };

@@ -28,12 +28,17 @@ const STYLE: Record<string, Style> = {
   bot: { belly: false, sheen: true, top: A, foot: D, side: D },
   slime: { belly: false, sheen: true, top: L, foot: 0, side: 0 },
   bug: { belly: false, sheen: true, top: D, foot: D, side: A },
+  alien: { belly: false, sheen: true, top: A, foot: D, side: L }, // glowing antenna tips and crystal points, dark feet, pale trailing tips
 };
 const DEFAULT_STYLE: Style = { belly: true, sheen: false, top: A, foot: D, side: A };
 
 // tuning
 /** how far down the silhouette an eye hole may sit; cats and bots carry spots and vents lower down, so they only look near the head */
 const EYE_FRAC: Record<string, number> = { cat: 0.5, bot: 0.5 };
+/** Aliens have big dark eyes (2x2 and slanted almonds, a giant single eye) and up to three of them (the forehead eye sits higher): the cell cap, the row tolerance and the count allowed per frame grow for them. */
+const EYE_MAX_CELLS: Record<string, number> = { alien: 64 };
+const EYE_ROW_TOL: Record<string, number> = { alien: 5.5 };
+const EYE_ROW_MAX: Record<string, number> = { alien: 3 };
 const R_MAX = 7;
 const T_HI = 0.42, T_SH = 0.5, T_DITHER = 0.28;
 const VBIAS = 0.22;
@@ -242,7 +247,7 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
     // eyes are the small holes highest up (a cat's back spots or a bot's vents are lower and stay plain outline)
     const eyes: { cells: number[]; y: number }[] = [];
     for (const cells of list) {
-      if (!cells.length || cells.length > 6) continue;
+      if (!cells.length || cells.length > (EYE_MAX_CELLS[family ?? ''] ?? 6)) continue;
       let sy = 0;
       for (const i of cells) sy += (i / w) | 0;
       const y = sy / cells.length;
@@ -250,8 +255,8 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
     }
     // the topmost row of holes is the eyes; three or more in that row is a pattern (spots, vents, windows) and stays open
     const top = eyes.length ? Math.min(...eyes.map((e) => e.y)) : 0;
-    const row = eyes.filter((e) => e.y <= top + 2.5);
-    if (row.length && row.length <= 2) {
+    const row = eyes.filter((e) => e.y <= top + (EYE_ROW_TOL[family ?? ''] ?? 2.5));
+    if (row.length && row.length <= (EYE_ROW_MAX[family ?? ''] ?? 2)) {
       for (const e of row) {
         let gx = w, gy = h;
         for (const i of e.cells) {
@@ -264,6 +269,8 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
         let gi = e.cells[0];
         for (const i of e.cells) { out[i] = Layer.EYE_FILL; if ((i % w) + ((i / w) | 0) < (gi % w) + ((gi / w) | 0)) gi = i; }
         if (e.cells.length >= 2) out[gi] = Layer.EYE_SHINE;
+        // a big eye gets a second sparkle beside the first (the alien glow)
+        if (e.cells.length >= 10) for (const j of [gi + 1, gi + w]) if (out[j] === Layer.EYE_FILL) { out[j] = Layer.EYE_SHINE; break; }
         else if (isOn(gx - 1, gy - 1) && !isOl(gx - 1, gy - 1)) out[(gy - 1) * w + gx - 1] = Layer.GLINT;
       }
     }
