@@ -6,6 +6,7 @@ Keep every line short (about 32 characters with a 10-letter name) and in the pet
 KIND_OF = {
     # dino
     'trex': 'dino_trex', 'bronto': 'dino_bronto', 'trike': 'dino_trike', 'raptor': 'dino_raptor', 'ankylo': 'dino_ankylo', 'stego': 'dino_stego',
+    'rawr': 'dino_trex', 'fang': 'dino_trex', 'grime': 'dino_trex', 'chomper': 'dino_trex', 'petalrex': 'dino_trex', 'gremlin': 'dino_trex', 'tyrannox': 'dino_trex', 'wreckage': 'dino_trex', 'pip': 'dino_trex', 'nubb': 'dino_trex', 'sprig': 'dino_bronto', 'bloom': 'dino_bronto', 'longneck': 'dino_bronto', 'sage': 'dino_bronto', 'twirl': 'dino_trike', 'horn': 'dino_trike', 'ravi': 'dino_trike', 'tricera': 'dino_trike', 'plumpkin': 'dino_trike', 'triceron': 'dino_trike', 'plumpking': 'dino_trike', 'mud': 'dino_raptor', 'dash': 'dino_raptor', 'curlie': 'dino_raptor', 'zest': 'dino_raptor', 'razor': 'dino_raptor', 'sprinter': 'dino_raptor', 'noodlord': 'dino_raptor', 'professor': 'dino_raptor', 'skywing': 'dino_raptor', 'noodlemancer': 'dino_raptor', 'brute': 'dino_ankylo', 'moss': 'dino_ankylo', 'bruiser': 'dino_ankylo', 'shellback': 'dino_ankylo', 'bulwark': 'dino_ankylo', 'scrap': 'dino_stego', 'plated': 'dino_stego', 'scrapper': 'dino_stego',
     # fox
     'fox_stand': 'fox', 'fox_sit': 'foxsit', 'fox_fennec': 'fennec', 'fox_arctic': 'arctic', 'fox_kitsune': 'kitsune',
     # fish
