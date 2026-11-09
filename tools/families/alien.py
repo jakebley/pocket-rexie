@@ -30,9 +30,9 @@ SPECIES = {
  'alien_stomp':     ('Stomp', 3, 'Round and heavy. The ground feels every step.', dict(arch='al_blob')),
  'alien_carapace': ('Carapace', 3, 'Armoured insect scout with a sense of rhythm.', dict(arch='al_insect', extra=['al_plates'])),
  'alien_drifter':   ('Drifter', 3, 'A tiny saucer pilot who got lost on purpose.', dict(arch='al_saucer')),
- 'alien_shardling': ('Shardling', 3, 'A crystal that hums when the moon is out.', dict(arch='al_crystal')),
+ 'alien_shardling': ('Shardling', 3, 'A little crystal cluster that hums when the moon is out.', dict(arch='al_crystal')),
  'alien_squidge':   ('Squidge', 3, 'Six tentacles, no elbows.', dict(arch='al_tent6')),
- 'alien_flicker':   ('Flicker', 3, 'Half lit and half forgotten.', dict(arch='al_antenna', extra=['al_glitch'])),
+ 'alien_flicker':   ('Flicker', 3, 'Half lit and half forgotten.', dict(arch='al_antbroken', extra=['al_glitch'])),
  'alien_lostling':  ('Lostling', 3, 'Waits at the window for a ship that never lands.', dict(arch='al_tall', extra=['al_glitch'])),
  # stage 4 adults
  'alien_lamplight':   ('Lamplight', 4, 'Its antennae light the way home.', dict(arch='al_ant3', extra=['al_spark'])),
@@ -44,18 +44,18 @@ SPECIES = {
  'alien_mantid':   ('Mantid', 4, 'Insect scout with very clever claws.', dict(arch='al_insectbig', extra=['al_stars'])),
  'alien_goliath':    ('Goliath', 4, 'One eye, two horns and a lot of heart.', dict(arch='al_cyclobig')),
  'alien_skipper':  ('Skipper', 4, 'Flies a spotless little saucer.', dict(arch='al_saucerbig')),
- 'alien_prism':    ('Prism', 4, 'A crystal that splits the starlight.', dict(arch='al_crystal2')),
+ 'alien_prism':    ('Prism', 4, 'A bigger cluster of spikes that splits the starlight.', dict(arch='al_crystal2')),
  'alien_octoid':   ('Octoid', 4, 'Six arms, six snacks.', dict(arch='al_tent6', extra=['horns2'])),
  'alien_static':   ('Static', 4, 'Fuzzy, dim and tuned between stations.', dict(arch='al_tallbig', extra=['al_glitch'])),
- 'alien_dropout':  ('Dropout', 4, 'Fell out of orbit and landed fine.', dict(arch='al_wobblebig', extra=['al_glitch'])),
+ 'alien_dropout':  ('Dropout', 4, 'Fell out of orbit and landed fine.', dict(arch='al_dropout', extra=['al_glitch'])),
  # stage 5 ultimates
  'alien_starmaw':    ('Starmaw', 5, 'Eats stars and burps constellations.', dict(arch='al_maw')),
- 'alien_nebula':     ('Nebula', 5, 'A swirling cloud with a very kind face.', dict(arch='al_nebula', extra=['al_spark'])),
+ 'alien_nebula':     ('Nebula', 5, 'A fluffy star cloud with a very kind face.', dict(arch='al_nebula', extra=['al_spark'])),
  'alien_cosmojelly': ('Cosmojelly', 5, 'Drifts between galaxies on the solar wind.', dict(arch='al_jelly', extra=['al_stars'])),
  'alien_mothership': ('Mothership', 5, 'A friendly mothership. Everyone is invited aboard.', dict(arch='al_ship', extra=['al_stars'])),
  'alien_eldermind':  ('Eldermind', 5, 'The wisest brain in the neighbourhood.', dict(arch='al_brainking', extra=['al_spark'])),
  'alien_lunamoth':   ('Lunamoth', 5, 'Moth-folk with a crescent moon for company.', dict(arch='al_luna', extra=['al_moon'])),
- 'alien_heartstone': ('Heartstone', 5, 'A crystal giant. Warm to hold.', dict(arch='al_crystal3')),
+ 'alien_heartstone': ('Heartstone', 5, 'A giant crystal cluster. Warm to hold.', dict(arch='al_crystal3')),
  'alien_echo':       ('Echo', 5, 'A lost signal that finally found someone.', dict(arch='al_ring', extra=['al_glitch'])),
 }
 
@@ -71,6 +71,7 @@ LINE = {
  'alien_skipper': 'void', 'alien_prism': 'void', 'alien_octoid': 'void', 'alien_nebula': 'void', 'alien_cosmojelly': 'void', 'alien_heartstone': 'void',
  'alien_fizz': 'stray', 'alien_flicker': 'stray', 'alien_lostling': 'stray', 'alien_static': 'stray', 'alien_dropout': 'stray', 'alien_echo': 'stray',
 }
+COLOR_OVERRIDES = {'alien_static': '#A9B6C4', 'alien_dropout': '#7C6F5E'}  # the two grey strays: cool pale vs warm dark
 LINE_COLORS = {'hull': '#7D93A8', 'scout': '#8FB57C', 'void': '#9A86C4', 'stray': '#8C908C', 'baby': '#BFDCB6'}
 
 # parent -> ordered (child, requirements); first match wins; the last entry has no requirements.
@@ -107,3 +108,7 @@ EVO = {
  'alien_dropout': [('alien_echo', {})],
 }
 BABIES = ['alien_bloop', 'alien_blink']
+
+# every alien blinks with ALL its eyes (the engine's blink only closes the first one); the decoration runs last so it sees the final holes
+for _sid, (_n, _st, _b, _rec) in SPECIES.items():
+    _rec['extra'] = list(_rec.get('extra', [])) + ['al_blink']

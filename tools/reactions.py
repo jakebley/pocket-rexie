@@ -59,7 +59,7 @@ KIND_OF = {
     'bug_mantlet': 'mantis', 'bug_mantis': 'mantis', 'bug_roach': 'roach', 'bug_bigroach': 'roach',
     # alien
     'al_babe': 'alienbaby', 'al_orb': 'alienbaby', 'al_wobble': 'grey', 'al_wobblebig': 'grey', 'al_tall': 'grey', 'al_tallbig': 'grey', 'al_sage': 'grey',
-    'al_antenna': 'antennae', 'al_antbig': 'antennae', 'al_ant3': 'antennae', 'al_tentacle': 'tentacle', 'al_tent6': 'tentacle',
+    'al_antenna': 'antennae', 'al_antbig': 'antennae', 'al_ant3': 'antennae', 'al_antbroken': 'antennae', 'al_dropout': 'grey', 'al_tentacle': 'tentacle', 'al_tent6': 'tentacle',
     'al_three': 'threeeye', 'al_threefat': 'threeeye', 'al_brain': 'brainfloat', 'al_brainbig': 'brainfloat', 'al_brainking': 'brainfloat',
     'al_cyclops': 'cyclops', 'al_cyclohorn': 'cyclops', 'al_cyclobig': 'cyclops', 'al_blob': 'alienblob', 'al_blobfat': 'alienblob',
     'al_insect': 'insectoid', 'al_insectbig': 'insectoid', 'al_moth': 'mothfolk', 'al_mothbig': 'mothfolk', 'al_luna': 'mothfolk',
