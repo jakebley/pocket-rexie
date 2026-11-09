@@ -7,7 +7,13 @@ KIND_OF = {
     # dino
     'trex': 'dino_trex', 'bronto': 'dino_bronto', 'trike': 'dino_trike', 'raptor': 'dino_raptor', 'ankylo': 'dino_ankylo', 'stego': 'dino_stego',
     # fox
-    'fox_stand': 'fox', 'fox_sit': 'foxsit', 'fox_fennec': 'fennec', 'fox_arctic': 'arctic', 'fox_kitsune': 'kitsune',
+    'fox_scamp': 'fox', 'fox_bramble': 'fox', 'fox_ashpaw': 'fox', 'fox_tracker': 'fox', 'fox_prowler': 'fox', 'fox_sneak': 'fox',
+    'fox_thicket': 'fox', 'fox_whisk': 'fox', 'fox_bracken': 'fox', 'fox_scrabble': 'fox', 'fox_tatter': 'fox', 'fox_stalker': 'fox',
+    'fox_trickster': 'fox', 'fox_brawler': 'fox', 'fox_thornback': 'fox', 'fox_hazelwood': 'fox', 'fox_sagetail': 'fox', 'fox_raggedy': 'fox',
+    'fox_emberlord': 'fox', 'fox_wildfire': 'fox', 'fox_dewkit': 'fox', 'fox_cinder': 'foxsit', 'fox_ripple': 'foxfish', 'fox_splash': 'foxfish',
+    'fox_reed': 'foxfish', 'fox_brook': 'foxfish', 'fox_angler': 'foxfish', 'fox_reedwalker': 'foxfish', 'fox_swiftail': 'fennec',
+    'fox_scrapfox': 'fennec', 'fox_gloamfox': 'fennec', 'fox_plumptail': 'arctic', 'fox_frostpelt': 'arctic', 'fox_moonveil': 'kitsune',
+    'fox_starbrush': 'kitsune', 'fox_tidecaller': 'kitsune',
     # fish
     'fish_fry': 'fry', 'fish_guppy': 'fishy', 'fish_slim': 'fishy', 'fish_fancy': 'fishy', 'fish_koi': 'koi', 'fish_koi2': 'koi', 'fish_puffer': 'puffer',
     'fish_horse': 'seahorse', 'fish_angler': 'angler', 'fish_angler2': 'angler', 'fish_eel': 'eel', 'fish_jelly': 'jelly', 'fish_jelly3': 'jelly',
@@ -76,6 +82,7 @@ KIND_LINES = {
     'dino_ankylo': ['{n} thumps its tail club.', '{n} curls up, proud.', '{n} knocks on its own armor.'],
     'dino_stego': ['{n} flares its back plates.', '{n} wiggles its spikes.', '{n} plods over happily.'],
     'fox': ['{n} yips happily.', '{n} pounces on nothing.', '{n} swishes its big tail.'],
+    'foxfish': ['{n} proudly shows off a fish.', '{n} shakes off the water.', '{n} watches the ripples.'],
     'foxsit': ['{n} sits tall and watches.', '{n} licks a paw.', '{n} tilts its ears at you.'],
     'fennec': ['{n} swivels its huge ears.', '{n} zooms in a tight loop.', '{n} chirps like a fennec.'],
     'arctic': ['{n} fluffs up its coat.', '{n} nuzzles into the snow.', '{n} wags a fluffy tail.'],
