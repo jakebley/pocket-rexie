@@ -400,7 +400,45 @@ export const REACTIONS = {
   "bug_queen": "bee",
   "bug_tempest": "dragonfly",
   "bug_jade": "mantis",
-  "bug_ghostmoth": "moth"
+  "bug_ghostmoth": "moth",
+  "alien_bloop": "alienbaby",
+  "alien_glint": "alienbaby",
+  "alien_nubb": "cyclops",
+  "alien_zibbit": "antennae",
+  "alien_tenti": "tentacle",
+  "alien_fizz": "grey",
+  "alien_bulbo": "antennae",
+  "alien_peeper": "threeeye",
+  "alien_noggin": "brainfloat",
+  "alien_flit": "mothfolk",
+  "alien_stomp": "alienblob",
+  "alien_shellback": "insectoid",
+  "alien_drifter": "pilot",
+  "alien_shardling": "crystalbeing",
+  "alien_squidge": "tentacle",
+  "alien_flicker": "antennae",
+  "alien_lostling": "grey",
+  "alien_beacon": "antennae",
+  "alien_seer": "threeeye",
+  "alien_cortex": "brainfloat",
+  "alien_lumina": "mothfolk",
+  "alien_elder": "grey",
+  "alien_bulwark": "alienblob",
+  "alien_mantid": "insectoid",
+  "alien_titan": "cyclops",
+  "alien_skipper": "pilot",
+  "alien_prism": "crystalbeing",
+  "alien_octoid": "tentacle",
+  "alien_static": "grey",
+  "alien_dropout": "grey",
+  "alien_starmaw": "starmaw",
+  "alien_nebula": "nebula",
+  "alien_cosmojelly": "cosmojelly",
+  "alien_mothership": "mothership",
+  "alien_eldermind": "brainfloat",
+  "alien_lunamoth": "mothfolk",
+  "alien_heartstone": "crystalbeing",
+  "alien_echo": "echoring"
  },
  "kindLines": {
   "baby": [
@@ -924,6 +962,91 @@ export const REACTIONS = {
    "{n} scuttles, then waves.",
    "{n} wiggles its feelers.",
    "{n} survives the attention."
+  ],
+  "alienbaby": [
+   "{n} blinks its big dark eyes.",
+   "{n} beeps and wobbles.",
+   "{n} boops your finger."
+  ],
+  "grey": [
+   "{n} tilts its big head.",
+   "{n} stares. Then waves.",
+   "{n} hums a faint signal."
+  ],
+  "antennae": [
+   "{n} twitches its antennae.",
+   "{n} picks up a faint beep.",
+   "{n} glows at the tips."
+  ],
+  "tentacle": [
+   "{n} wiggles all its tentacles.",
+   "{n} wraps your finger. Gently.",
+   "{n} blorps happily."
+  ],
+  "threeeye": [
+   "{n} blinks. All three eyes.",
+   "{n} looks at you thrice.",
+   "{n} spots a snack. Triple."
+  ],
+  "brainfloat": [
+   "{n} hums with big thoughts.",
+   "{n} floats a bit higher.",
+   "{n} ponders your finger."
+  ],
+  "cyclops": [
+   "{n} stares with its one big eye.",
+   "{n} blinks, slowly.",
+   "{n} stomps in place."
+  ],
+  "alienblob": [
+   "{n} jiggles with joy.",
+   "{n} bounces on its tiny feet.",
+   "{n} gurgles in alien."
+  ],
+  "insectoid": [
+   "{n} clicks its claws.",
+   "{n} wiggles its feelers.",
+   "{n} scans you. All good."
+  ],
+  "mothfolk": [
+   "{n} circles the nearest light.",
+   "{n} dusts you with stardust.",
+   "{n} folds its big wings."
+  ],
+  "pilot": [
+   "{n} waves from the cockpit.",
+   "{n} hovers, then lands.",
+   "{n} flashes its landing lights."
+  ],
+  "crystalbeing": [
+   "{n} chimes like glass.",
+   "{n} splits the light.",
+   "{n} glints at you."
+  ],
+  "mothership": [
+   "{n} beams you a warm hello.",
+   "{n} blinks every light.",
+   "{n} hums: welcome aboard."
+  ],
+  "cosmojelly": [
+   "{n} drifts on the solar wind.",
+   "{n} glows like a nebula.",
+   "{n} trails stardust."
+  ],
+  "nebula": [
+   "{n} swirls closer.",
+   "{n} sparkles with new stars.",
+   "{n} spins a slow arm."
+  ],
+  "starmaw": [
+   "{n} chomps a passing star.",
+   "{n} burps a tiny comet.",
+   "{n} grins, full of sparkle."
+  ],
+  "echoring": [
+   "{n} crackles, then clears.",
+   "{n} hums your name back.",
+   "{n} flickers, then stays."
   ]
  },
  "context": {
@@ -974,6 +1097,15 @@ export const REACTIONS = {
   ],
   "fish_tidewhale": [
    "{n} sings to the whole ocean."
+  ],
+  "alien_mothership": [
+   "{n} beams you aboard."
+  ],
+  "alien_starmaw": [
+   "{n} swallows a star. Hiccup."
+  ],
+  "alien_echo": [
+   "{n} found its signal: you."
   ]
  }
 } as const;

@@ -43,6 +43,14 @@ KIND_OF = {
     'bug_swallow': 'butterfly', 'bug_skimmer': 'dragonfly', 'bug_dragon': 'dragonfly', 'bug_fuzzmoth': 'moth', 'bug_moth': 'moth', 'bug_lady': 'ladybug',
     'bug_rhino': 'beetle', 'bug_stag': 'beetle', 'bug_firefly': 'firefly', 'bug_bumble': 'bee', 'bug_bee': 'bee', 'bug_ant': 'ant', 'bug_bigant': 'ant',
     'bug_mantlet': 'mantis', 'bug_mantis': 'mantis', 'bug_roach': 'roach', 'bug_bigroach': 'roach',
+    # alien
+    'al_babe': 'alienbaby', 'al_orb': 'alienbaby', 'al_wobble': 'grey', 'al_wobblebig': 'grey', 'al_tall': 'grey', 'al_tallbig': 'grey', 'al_sage': 'grey',
+    'al_antenna': 'antennae', 'al_antbig': 'antennae', 'al_ant3': 'antennae', 'al_tentacle': 'tentacle', 'al_tent6': 'tentacle',
+    'al_three': 'threeeye', 'al_threefat': 'threeeye', 'al_brain': 'brainfloat', 'al_brainbig': 'brainfloat', 'al_brainking': 'brainfloat',
+    'al_cyclops': 'cyclops', 'al_cyclohorn': 'cyclops', 'al_cyclobig': 'cyclops', 'al_blob': 'alienblob', 'al_blobfat': 'alienblob',
+    'al_insect': 'insectoid', 'al_insectbig': 'insectoid', 'al_moth': 'mothfolk', 'al_mothbig': 'mothfolk', 'al_luna': 'mothfolk',
+    'al_saucer': 'pilot', 'al_saucerbig': 'pilot', 'al_crystal': 'crystalbeing', 'al_crystal2': 'crystalbeing', 'al_crystal3': 'crystalbeing',
+    'al_ship': 'mothership', 'al_jelly': 'cosmojelly', 'al_nebula': 'nebula', 'al_maw': 'starmaw', 'al_ring': 'echoring',
 }
 
 KIND_LINES = {
@@ -151,6 +159,23 @@ KIND_LINES = {
     'ant': ['{n} marches in a line.', '{n} lifts a crumb proudly.', '{n} waves its feelers.'],
     'mantis': ['{n} folds its claws politely.', '{n} sways like a leaf.', '{n} tilts its triangle head.'],
     'roach': ['{n} scuttles, then waves.', '{n} wiggles its feelers.', '{n} survives the attention.'],
+    'alienbaby': ['{n} blinks its big dark eyes.', '{n} beeps and wobbles.', '{n} boops your finger.'],
+    'grey': ['{n} tilts its big head.', '{n} stares. Then waves.', '{n} hums a faint signal.'],
+    'antennae': ['{n} twitches its antennae.', '{n} picks up a faint beep.', '{n} glows at the tips.'],
+    'tentacle': ['{n} wiggles all its tentacles.', '{n} wraps your finger. Gently.', '{n} blorps happily.'],
+    'threeeye': ['{n} blinks. All three eyes.', '{n} looks at you thrice.', '{n} spots a snack. Triple.'],
+    'brainfloat': ['{n} hums with big thoughts.', '{n} floats a bit higher.', '{n} ponders your finger.'],
+    'cyclops': ['{n} stares with its one big eye.', '{n} blinks, slowly.', '{n} stomps in place.'],
+    'alienblob': ['{n} jiggles with joy.', '{n} bounces on its tiny feet.', '{n} gurgles in alien.'],
+    'insectoid': ['{n} clicks its claws.', '{n} wiggles its feelers.', '{n} scans you. All good.'],
+    'mothfolk': ['{n} circles the nearest light.', '{n} dusts you with stardust.', '{n} folds its big wings.'],
+    'pilot': ['{n} waves from the cockpit.', '{n} hovers, then lands.', '{n} flashes its landing lights.'],
+    'crystalbeing': ['{n} chimes like glass.', '{n} splits the light.', '{n} glints at you.'],
+    'mothership': ['{n} beams you a warm hello.', '{n} blinks every light.', '{n} hums: welcome aboard.'],
+    'cosmojelly': ['{n} drifts on the solar wind.', '{n} glows like a nebula.', '{n} trails stardust.'],
+    'nebula': ['{n} swirls closer.', '{n} sparkles with new stars.', '{n} spins a slow arm.'],
+    'starmaw': ['{n} chomps a passing star.', '{n} burps a tiny comet.', '{n} grins, full of sparkle.'],
+    'echoring': ['{n} crackles, then clears.', '{n} hums your name back.', '{n} flickers, then stays.'],
 }
 
 # context lines apply to everyone (kind lines still mix in)
@@ -172,5 +197,8 @@ SPECIES_LINES = {
     'cat_umbra': ['{n} melts into the shadows.'],
     'bot_modem': ['{n} screeches. Dial-up!'],
     'fish_tidewhale': ['{n} sings to the whole ocean.'],
+    'alien_mothership': ['{n} beams you aboard.'],
+    'alien_starmaw': ['{n} swallows a star. Hiccup.'],
+    'alien_echo': ['{n} found its signal: you.'],
     'bird_phoenix_placeholder': [],
 }
