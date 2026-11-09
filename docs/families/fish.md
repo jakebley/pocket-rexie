@@ -30,7 +30,7 @@ Aquatic pets in a bowl-sized world: guppies, puffers, seahorses, rays, jellies, 
 | Species | Line | Look | Becomes (first match wins) |
 |---|---|---|---|
 | Bubblet | baby | Hatched inside a bubble and still wearing a bit of it. | Silt (1+ care mistakes); Darter (mostly shrimp); Nibble (mostly algae); Dabble (mostly plankton) |
-| Pearlfry | baby | A tiny fry with one shiny pearl. | Silt (1+ care mistakes); Dabble (mostly plankton); Nibble (mostly algae); Darter (mostly shrimp) |
+| Pearlfry | baby | A tiny fry that found one big shiny pearl. | Silt (1+ care mistakes); Dabble (mostly plankton); Nibble (mostly algae); Darter (mostly shrimp) |
 
 ### Children
 | Species | Line | Look | Becomes (first match wins) |
@@ -51,7 +51,7 @@ Aquatic pets in a bowl-sized world: guppies, puffers, seahorses, rays, jellies, 
 | Slinker | deep | Slips through cracks in the rocks. | Rustfin (4+ care mistakes); Skimray (3+ trainings); Moray (default) |
 | Plumpkoi | pond | Round, orange and very well fed. | Rustfin (4+ care mistakes); Goldcarp (default) |
 | Driftbell | pond | A soft little jelly that drifts with the tide. | Rustfin (4+ care mistakes); Moonjelly (default) |
-| Ripplekoi | pond | Whiskered and calm, leaves rings on the pond. | Rustfin (4+ care mistakes); Brocade (3+ trainings); Goldcarp (default) |
+| Ripplekoi | pond | Whiskered and calm, glides through the pond without a ripple. | Rustfin (4+ care mistakes); Brocade (3+ trainings); Goldcarp (default) |
 | Dreg | stray | Rummages in the gravel for leftovers. | Wreckfish (default) |
 | Muddle | stray | Cloudy water suits it just fine. | Wreckfish (3+ trainings); Rustfin (default) |
 
@@ -82,26 +82,23 @@ Aquatic pets in a bowl-sized world: guppies, puffers, seahorses, rays, jellies, 
 | Aurorabell | deep | A jelly bright as the northern lights. | (final form) |
 | Koi Dragon | pond | A koi that climbed the waterfall and became a dragon. | (final form) |
 | Tidewhale | pond | A great whale singing the tides in and out. | (final form) |
-| Hollowfin | stray | A ghostly wreck-fish drifting by moonlight. | (final form) |
+| Hollowfin | stray | A ghostly fish skeleton drifting by moonlight. | (final form) |
 
 ## Art direction
-- **Silhouette:** every fish is side-on and facing right, read from a fin plus a round eye hole: dorsal fin (at least 2 px tall), tail fan (2+ px wide), pectoral fin. Seahorse (curled tail, snout, crest), ray (wide diamond), jelly (dome plus tentacles), eel (S-curve), angler (big mouth, lantern), puffer (circle), koi (long, whiskered), whale (flat belly, flukes).
-- **Archetypes** (`tools/archetypes_fish.py`, all built natively per stage): `fish_fry`, `fish_guppy`, `fish_fancy`, `fish_slim`, `fish_puffer`, `fish_horse`, `fish_ray`, `fish_jelly`, `fish_jelly3`, `fish_eel`, `fish_angler`, `fish_angler2`, `fish_koi`, `fish_koi2`, `fish_whale`.
-- **Resting on the ground line:** the sprite touches row 15 through a row of sparse pebbles (fish, koi), a curled tail (seahorse), dangling tentacles (jelly), the wing/body bottom (ray, eel), a flat belly (whale) or walking fins (angler).
-- **New decorations** (`spritegen.EXTRA_HANDLERS`): `fish_bubbles`, `fish_whisker`, `fish_lantern`, `fish_spout`, `fish_scales`, `fish_coral`, `fish_weed`, `fish_shell`. Existing ones reused: crown, halo, crest, horns2, fangs, scarf, spots, stripes, fur, spikes.
+- **Silhouette:** every fish is side-on and facing right (the ray is seen from above), read from its own body plus a round eye hole. Seahorses have a snout, crest and curled tail (Curlfin, Seastallion, Sea Monarch with a crown and a forward curl); the ray has swept wings with notched trailing edges and a long tail; the eels have a head with open jaws, dorsal spines and fins (Slinker, Moray) and the serpent Tidewyrm rears up out of its humps with horns and a neck sail; puffers are round and spiked; jellies are a bell over wavy tentacles; anglers carry a stalked lure (a star lamp on the adults and the king) and a toothy mouth; the whale has flukes, a flat belly and a spout; koi have fan tails and whiskers; Hollowfin is a fish skeleton.
+- **One body per species:** since the polish pass there are no shared archetypes with decorations. `tools/archetypes_fish.py` draws every species by hand with a small toolkit (ellipses, polygons, brush strokes, ASCII art blocks), registers it as `fish_<id>`, and sizes it for its stage (babies ~10 px, children ~12, teens ~14, adults and ultimates up to 16).
+- **Eye rule:** the eye is the only enclosed hole in a sprite (the builder fills every other pocket) and is moved to the nearest cell with ink on all four sides if a drawing leaves it uncovered, so the Technicolor eye shader (one isolated 1-px hole high on the sprite) always fires. The blink frame fills that one pixel and nothing else.
+- **Resting on the ground line:** every sprite touches row 15 (gravel-like fins, curled tail, tentacles, flat belly, boot sole), as before.
+- **Reactions:** `tools/reactions.py` maps each `fish_<id>` to its reaction kind (fry, fishy, koi, puffer, seahorse, angler, eel, jelly, ray, whale).
 
 ## Floating later
 The app can lift the sprite in a water scene: draw the pebble row as a separate "floor" layer (everything on row 15 that is not connected to the body above row 14 is floor), then offset the body 2-4 px upward with a slow sine bob and spawn bubbles; seahorse, jelly, ray and whale can float with no floor layer at all. A "tank" background with the ground line as gravel would keep the current layout working.
 
-## Weak spots
-- Skimray (ray) reads as a flat fish; Tidewyrm and Moray are thin, wavy shapes that depend on Scale2x.
-- Many teens and adults share fish bodies; they differ mainly by fins, patterns and decorations, so plain-ink differences are subtle (Nibble, Darter, Dabble and Silt at 16x16).
-- Pearlfry's shell pearl is tiny; the Koi Dragon horns and whiskers crowd the head.
-- Decorations are placed from the head anchor, so lanterns and spouts sit slightly differently per body.
+## Polish pass
+Addressed after the first art pass: Skimray now reads as a ray (swept wings, long tail); the eels (Slinker, Moray, Tidewyrm) have heads, jaws, spines and fins and different silhouettes; Nibble, Darter, Dabble and Silt differ in pose and shape (sprig-nibbler, tilted arrow, round-tailed baby koi, flat whiskered catfish); teens and adults each have their own body; Pearlfry's pearl is large; the Koi Dragon rises up a waterfall with horns and whiskers separated; lanterns and spouts are part of each body. Remaining weak spots: Dreg (a nose-down bottom feeder) is the least distinct of the strays, and Wreckfish's boot is a simple L.
 
 ## Integration notes
-- `tools/families/fish.py` imports `archetypes_fish` to register archetypes and decorations; the generators that read family modules must import it by name (as `check_family`/`sheet_family` already do).
-- Decorations reference `c['ex']`, `c['ey']` as floats; any renderer ports (Swift/TS) need the same handlers or baked rows.
+- `tools/families/fish.py` imports `archetypes_fish` to register the archetypes; the generators that read family modules must import it by name (as `check_family`/`sheet_family` already do). Species recipes carry no decorations any more, so ports only need the baked rows.
 - Technicolor: body colour from `LINE_COLORS`; optional layers: pale belly, fin tint, lantern glow.
 - Plus gating via `IS_FREE = False`.
 
