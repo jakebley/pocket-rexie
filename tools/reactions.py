@@ -34,10 +34,12 @@ KIND_OF = {
     'bot_boombox': 'boombox', 'bot_mech': 'mech', 'bot_mechw': 'mech', 'bot_crt': 'crt', 'bot_floppy': 'floppy', 'bot_drone': 'drone',
     'bot_toaster': 'toaster', 'bot_quad': 'quad', 'bot_modem': 'modem',
     # slime
-    'slime_bead': 'jiggle', 'slime_dollop': 'jiggle', 'slime_drop': 'jiggle', 'slime_blob': 'jiggle', 'slime_gel': 'gel', 'slime_tall': 'gel',
-    'slime_cap': 'shroom', 'slime_capfat': 'shroom', 'slime_morel': 'shroom', 'slime_puddle': 'puddle', 'slime_lump': 'lump', 'slime_lump2': 'lump',
-    'slime_twin': 'twin', 'slime_twin2': 'twin', 'slime_stalk': 'stalk', 'slime_stalk3': 'stalk', 'slime_shell': 'snail', 'slime_jelly': 'sjelly',
-    'slime_bell': 'sjelly', 'slime_ghost': 'sghost', 'slime_melt': 'melt', 'slime_melt2': 'melt', 'slime_mimic': 'mimic',
+    'slime_bead': 'jiggle', 'slime_dollop': 'jiggle', 'slime_drop': 'jiggle', 'slime_pumpkin': 'jiggle', 'slime_gel': 'gel', 'slime_jelmould': 'gel',
+    'slime_tower': 'gel', 'slime_crystal': 'gel', 'slime_cake': 'gel', 'slime_toad': 'shroom', 'slime_hat': 'shroom', 'slime_puff': 'shroom',
+    'slime_grove': 'shroom', 'slime_morel': 'shroom', 'slime_puddle': 'puddle', 'slime_lump': 'lump', 'slime_slug': 'lump', 'slime_tarpit': 'puddle',
+    'slime_heart': 'twin', 'slime_twin2': 'twin', 'slime_stalk': 'stalk', 'slime_stalk3': 'stalk', 'slime_root': 'stalk', 'slime_shell': 'snail',
+    'slime_shell2': 'snail', 'slime_jelly': 'sjelly', 'slime_bell': 'sjelly', 'slime_ribbon': 'sjelly', 'slime_ghost': 'sghost', 'slime_ghost2': 'sghost',
+    'slime_ghost3': 'sghost', 'slime_wraith': 'sghost', 'slime_candle': 'melt', 'slime_slump': 'melt', 'slime_mimic': 'mimic', 'slime_mimic2': 'mimic',
     # bug
     'bug_egg': 'bugegg', 'bug_nub': 'larva', 'bug_larva': 'larva', 'bug_fatgrub': 'larva', 'bug_pill': 'pill', 'bug_pupa': 'pupa', 'bug_flutter': 'butterfly',
     'bug_swallow': 'butterfly', 'bug_skimmer': 'dragonfly', 'bug_dragon': 'dragonfly', 'bug_fuzzmoth': 'moth', 'bug_moth': 'moth', 'bug_lady': 'ladybug',
