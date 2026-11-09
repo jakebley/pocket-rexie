@@ -31,7 +31,7 @@ KIND_OF = {
     'cat_kita': 'kitten', 'cat_kitb': 'kitten', 'cat_walk': 'cat', 'cat_trot': 'cat', 'cat_stalk': 'cat', 'cat_sniff': 'cat', 'cat_arch': 'cat', 'cat_leap': 'catlean', 'cat_walkl': 'catlean', 'cat_lynx': 'catlean', 'cat_panther': 'catlean', 'cat_sphinx': 'loaf', 'cat_loaf': 'loaf', 'cat_supine': 'catround', 'cat_fluffy': 'catround', 'cat_sitfat': 'catround', 'cat_sitcurl': 'catsit', 'cat_sitback': 'catsit', 'cat_sitwrap': 'catsit', 'cat_beckon': 'catsit', 'cat_lynxfluff': 'catsit', 'cat_king': 'catking',
     # spirits
     'spr_feet': 'halobaby', 'spr_cloud': 'cloud', 'spr_bigcloud': 'cloud', 'spr_ember': 'emberimp', 'spr_emberb': 'emberimp', 'spr_bigember': 'emberimp',
-    'spr_imp': 'imp', 'spr_chub': 'chubimp', 'spr_bigfeet': 'spirit', 'spr_big': 'spirit',
+    'spr_imp': 'imp', 'spr_chub': 'chubimp', 'spr_bigfeet': 'spirit', 'spr_big': 'spirit', 'spr_brute': 'emberimp', 'spr_chubember': 'chubimp', 'spr_imp2': 'imp', 'spr_robe': 'spirit', 'spr_champ': 'spirit', 'spr_tall': 'spirit', 'spr_tallimp': 'imp',
     # bunny
     'bun_baby': 'bunbaby', 'bun_sit': 'bunny', 'bun_hare': 'hare', 'bun_hare2': 'hare', 'bun_lop': 'lop', 'bun_plump': 'lop', 'bun_pika': 'pika',
     'bun_ham': 'hamster', 'bun_hamfat': 'hamster', 'bun_pig': 'guineapig', 'bun_pigfl': 'guineapig', 'bun_chin': 'chinchilla', 'bun_chinfl': 'chinchilla',
