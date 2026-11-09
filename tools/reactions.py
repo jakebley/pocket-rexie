@@ -7,15 +7,28 @@ KIND_OF = {
     # dino
     'trex': 'dino_trex', 'bronto': 'dino_bronto', 'trike': 'dino_trike', 'raptor': 'dino_raptor', 'ankylo': 'dino_ankylo', 'stego': 'dino_stego',
     # fox
-    'fox_stand': 'fox', 'fox_sit': 'foxsit', 'fox_fennec': 'fennec', 'fox_arctic': 'arctic', 'fox_kitsune': 'kitsune',
+    'fox_scamp': 'fox', 'fox_bramble': 'fox', 'fox_ashpaw': 'fox', 'fox_tracker': 'fox', 'fox_prowler': 'fox', 'fox_sneak': 'fox',
+    'fox_thicket': 'fox', 'fox_whisk': 'fox', 'fox_bracken': 'fox', 'fox_scrabble': 'fox', 'fox_tatter': 'fox', 'fox_stalker': 'fox',
+    'fox_trickster': 'fox', 'fox_brawler': 'fox', 'fox_thornback': 'fox', 'fox_hazelwood': 'fox', 'fox_sagetail': 'fox', 'fox_raggedy': 'fox',
+    'fox_emberlord': 'fox', 'fox_wildfire': 'fox', 'fox_dewkit': 'fox', 'fox_cinder': 'foxsit', 'fox_ripple': 'foxfish', 'fox_splash': 'foxfish',
+    'fox_reed': 'foxfish', 'fox_brook': 'foxfish', 'fox_angler': 'foxfish', 'fox_reedwalker': 'foxfish', 'fox_swiftail': 'fennec',
+    'fox_scrapfox': 'fennec', 'fox_gloamfox': 'fennec', 'fox_plumptail': 'arctic', 'fox_frostpelt': 'arctic', 'fox_moonveil': 'kitsune',
+    'fox_starbrush': 'kitsune', 'fox_tidecaller': 'kitsune',
     # fish
-    'fish_fry': 'fry', 'fish_guppy': 'fishy', 'fish_slim': 'fishy', 'fish_fancy': 'fishy', 'fish_koi': 'koi', 'fish_koi2': 'koi', 'fish_puffer': 'puffer',
-    'fish_horse': 'seahorse', 'fish_angler': 'angler', 'fish_angler2': 'angler', 'fish_eel': 'eel', 'fish_jelly': 'jelly', 'fish_jelly3': 'jelly',
-    'fish_ray': 'ray', 'fish_whale': 'whale',
+    'fish_bubblet': 'fry', 'fish_pearlfry': 'fry',
+    'fish_nibble': 'fishy', 'fish_darter': 'fishy', 'fish_dabble': 'fishy', 'fish_silt': 'fishy', 'fish_glimmer': 'fishy', 'fish_dreg': 'fishy', 'fish_muddle': 'fishy', 'fish_parrotfin': 'fishy', 'fish_coralback': 'fishy', 'fish_rustfin': 'fishy', 'fish_wreckfish': 'fishy', 'fish_prismara': 'fishy', 'fish_hollowfin': 'fishy',
+    'fish_plumpkoi': 'koi', 'fish_ripplekoi': 'koi', 'fish_goldcarp': 'koi', 'fish_brocade': 'koi', 'fish_dragonkoi': 'koi',
+    'fish_pufflet': 'puffer', 'fish_spineball': 'puffer',
+    'fish_curlfin': 'seahorse', 'fish_seastallion': 'seahorse', 'fish_seamonarch': 'seahorse',
+    'fish_gulper': 'angler', 'fish_lanternet': 'angler', 'fish_gapjaw': 'angler', 'fish_beaconfish': 'angler', 'fish_lanternking': 'angler',
+    'fish_slinker': 'eel', 'fish_moray': 'eel', 'fish_tidewyrm': 'eel',
+    'fish_driftbell': 'jelly', 'fish_moonjelly': 'jelly', 'fish_aurorabell': 'jelly',
+    'fish_skimray': 'ray',
+    'fish_tidewhale': 'whale',
     # bird
     'bird_downy': 'chick', 'bird_pipkin': 'chick', 'bird_chirp': 'chick', 'bird_owlet': 'owl', 'bird_owl': 'owl', 'bird_hornowl': 'owl', 'bird_moonfeather': 'owl', 'bird_ducklet': 'duck', 'bird_mallard': 'duck', 'bird_teal': 'duck', 'bird_scruff': 'pigeon', 'bird_dustling': 'pigeon', 'bird_sootwing': 'pigeon', 'bird_ledgewing': 'pigeon', 'bird_tatterdove': 'pigeon', 'bird_duskdove': 'doveshow', 'bird_sparrow': 'songbird', 'bird_robin': 'songbird', 'bird_finch': 'songbird', 'bird_lark': 'songbird', 'bird_jay': 'songbird', 'bird_nightingale': 'songbird', 'bird_prismlark': 'songfan', 'bird_hawk': 'raptorbird', 'bird_falcon': 'raptorbird', 'bird_peregrine': 'raptorbird', 'bird_harrier': 'raptorbird', 'bird_kingfisher': 'raptorbird', 'bird_stormtalon': 'raptorbird', 'bird_emberwing': 'phoenix', 'bird_heron': 'heron', 'bird_egret': 'heron', 'bird_tidecrane': 'heron', 'bird_swan': 'swan', 'bird_goose': 'swan', 'bird_snowcrest': 'swan',
     # cat
-    'cat_kitten': 'kitten', 'cat_stand': 'cat', 'cat_lean': 'catlean', 'cat_bob': 'catlean', 'cat_loaf': 'loaf', 'cat_round': 'catround', 'cat_sit': 'catsit', 'cat_king': 'catking',
+    'cat_kita': 'kitten', 'cat_kitb': 'kitten', 'cat_walk': 'cat', 'cat_trot': 'cat', 'cat_stalk': 'cat', 'cat_sniff': 'cat', 'cat_arch': 'cat', 'cat_leap': 'catlean', 'cat_walkl': 'catlean', 'cat_lynx': 'catlean', 'cat_panther': 'catlean', 'cat_sphinx': 'loaf', 'cat_loaf': 'loaf', 'cat_supine': 'catround', 'cat_fluffy': 'catround', 'cat_sitfat': 'catround', 'cat_sitcurl': 'catsit', 'cat_sitback': 'catsit', 'cat_sitwrap': 'catsit', 'cat_beckon': 'catsit', 'cat_lynxfluff': 'catsit', 'cat_king': 'catking',
     # spirits
     'spr_feet': 'halobaby', 'spr_cloud': 'cloud', 'spr_bigcloud': 'cloud', 'spr_ember': 'emberimp', 'spr_emberb': 'emberimp', 'spr_bigember': 'emberimp',
     'spr_imp': 'imp', 'spr_chub': 'chubimp', 'spr_bigfeet': 'spirit', 'spr_big': 'spirit',
@@ -76,6 +89,7 @@ KIND_LINES = {
     'dino_ankylo': ['{n} thumps its tail club.', '{n} curls up, proud.', '{n} knocks on its own armor.'],
     'dino_stego': ['{n} flares its back plates.', '{n} wiggles its spikes.', '{n} plods over happily.'],
     'fox': ['{n} yips happily.', '{n} pounces on nothing.', '{n} swishes its big tail.'],
+    'foxfish': ['{n} proudly shows off a fish.', '{n} shakes off the water.', '{n} watches the ripples.'],
     'foxsit': ['{n} sits tall and watches.', '{n} licks a paw.', '{n} tilts its ears at you.'],
     'fennec': ['{n} swivels its huge ears.', '{n} zooms in a tight loop.', '{n} chirps like a fennec.'],
     'arctic': ['{n} fluffs up its coat.', '{n} nuzzles into the snow.', '{n} wags a fluffy tail.'],

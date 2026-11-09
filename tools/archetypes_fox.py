@@ -1,10 +1,18 @@
-"""Fox archetypes (16x16, facing right, ground on row 15), built from parts so ears, snout and tail can be tuned.
-Baked into plain row strings so they plug into the same pipeline as the hand-drawn dino templates.
-anchors: head=(x,y,r) head centre, eye=(x,y) hole, body=(x0,x1) span for back details."""
-import math
+"""Fox archetypes (16x16, facing right, feet on row 15), hand-drawn per species and built natively at their own stage size.
+
+Every fox keeps the three fox cues: two tall pointed ears, a pointed snout, and a big plume tail.  Bodies are told apart by plan:
+trotting hunters (long, level, brush tail), pouncers (front low, rump high), trackers (nose to the ground), heavy lowriders,
+foraging crouchers with a high S tail, riverside waders (long legs, head low, a fish in the jaws), fennecs (huge ears, thin legs,
+light build), arctic foxes (round, fluffy, small ears, fat tail), and upright kitsune (regal stance, a fan of separate tails).
+Each species has its own archetype 'fox_<id>' so no two share a body.  Heads, tails and bodies are ASCII parts stamped together.
+The eye is the only enclosed hole in the head (the renderer fills it in Technicolor); the blink frame closes only that pixel."""
+import math, os, sys
+sys.path.insert(0, os.path.dirname(__file__))
 
 W = 16
 
+
+# ---- shared drawing helpers: other families import _G, _T, SIZES and W from this module, keep them stable ----------------
 class _G:
     """Drawing surface with a size factor k: coordinates are given for the full-size fox and mapped so the
     animal stands on row 15 and is centred, scaled by k."""
@@ -46,67 +54,434 @@ class _G:
     def rows(self):
         return ["".join("X" if c else "." for c in r) for r in self.p]
 
-def _stand(k=1.0, ear=3, snout=3, tail=3.2, body_h=3.0, fluff=0):
-    g = _G(k)
-    # plume tail: a fat curve rising behind the rump
-    g.ell(2.5, 7.0, tail * 0.75, tail * 1.3)
-    g.ell(3.5, 5.0, tail * 0.55, tail * 0.9)
-    # body and haunch
-    g.ell(7.2, 9.6, 5.0 + fluff, body_h)
-    # neck and head
-    g.line(10, 8, 12, 5.5); g.line(10, 9, 12, 6.5)
-    g.ell(12.0, 5.0, 2.4, 2.1)
-    # pointed snout
-    g.tri(13, 4.3, 13, 6.4, 13 + snout, 5.8, min_h=0)
-    # tall pointed ears
-    g.tri(10.3, 3.4, 10.8, 0.2 + (3 - ear), 12.3, 3.2, min_h=2)
-    g.tri(12.3, 3.2, 13.6, 0.0 + (3 - ear), 14.3, 3.6, min_h=2)
-    # thin legs
-    for x in (5.0, 7.0, 10.0, 12.0):
-        for y in range(11, 15): g.set(x, y)
-        g.set(x - 0.6, 15); g.set(x + 0.4, 15)
-    return g
-
-def _sit(k=1.0, ear=3, snout=2, tail=3.0, fluff=0):
-    """Sitting in profile facing right: narrow upright body, tall ears, pointed snout, plume tail rising behind."""
-    g = _G(k)
-    # haunch, chest and neck as one narrow column
-    g.ell(6.4, 11.4, 3.3 + fluff * 0.5, 3.6)
-    g.ell(8.2, 8.4, 2.1, 3.0)
-    g.line(8.0, 7.0, 8.6, 5.5)
-    # plume tail rising behind the back
-    g.ell(2.6, 9.6, tail * 0.55, tail * 1.15)
-    g.ell(2.0, 6.4, tail * 0.42, tail * 0.8)
-    # head with pointed snout and tall ears
-    g.ell(9.0, 4.2, 2.3, 2.0)
-    g.tri(10.6, 3.6, 10.6, 5.4, 10.6 + snout + 1.5, 5.0)
-    g.tri(7.2, 3.0, 7.6, 0.0 + (3 - ear), 9.0, 2.6, min_h=2)
-    g.tri(9.0, 2.6, 10.4, 0.0 + (3 - ear), 10.9, 3.2, min_h=2)
-    # front paws and base
-    g.line(9.2, 10.5, 9.2, 14.5)
-    for x in range(4, 12): g.set(x, 15)
-    return g
-
 SIZES = {1: 0.58, 2: 0.7, 3: 0.86, 4: 1.0, 5: 1.0}
 
 def _T(k, x, y):
     return (W - 1) / 2 * (1 - k) + x * k, 15 - (15 - y) * k
 
-def _build(fn, head, eye, body, **kw):
-    """Build the archetype natively at every stage size (no averaging, so thin features survive)."""
-    by = {}
-    for stage, k in SIZES.items():
-        g = fn(k=k, **kw)
-        hx, hy = _T(k, head[0], head[1]); ex, ey = _T(k, eye[0], eye[1])
-        g._raw(ex, ey, 0)
-        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, head[2] * k)), eye=(round(ex), round(ey)),
-                         body=(_T(k, body[0], 0)[0], _T(k, body[1], 0)[0]))
-    return dict(by_stage=by)
 
-ARCH_FOX = {
- 'fox_stand':   _build(_stand, (12, 5, 2.4), (12, 4), (3, 11)),
- 'fox_fennec':  _build(_stand, (12, 5, 2.4), (12, 4), (3, 11), ear=3.0, snout=2, tail=2.6, body_h=2.4),
- 'fox_sit':     _build(_sit, (9, 4.2, 2.3), (9, 3), (3, 11)),
- 'fox_arctic':  _build(_sit, (9, 4.2, 2.3), (9, 3), (3, 12), ear=1.8, snout=1, tail=3.6, fluff=1.6),
- 'fox_kitsune': _build(_sit, (9, 4.2, 2.3), (9, 3), (3, 11), ear=3.2, snout=2, tail=2.6),
+def _P(s):
+    return s.strip('\n').split('\n')
+
+
+# ---- heads: 'e' is the eye hole; snout points right; ears are the two tips on top ----------------------------------------
+H_STD = _P("""
+..X..X..
+.XX..XX.
+.XXXXXX.
+.XXXeXX.
+.XXXXXXX
+..XXXXX.
+""")
+H_KIT = _P("""
+.X..X...
+.XX.XX..
+.XXXXX..
+.XXeXXX.
+.XXXXXXX
+..XXXX..
+""")
+H_DOWN = _P("""
+.X..X...
+.XX.XX..
+.XXXXX..
+.XXeXXX.
+..XXXXXX
+....XXX.
+""")
+H_FEN = _P("""
+.X....X.
+.XX..XX.
+.XX..XX.
+.XXXXXX.
+.XXXeXX.
+.XXXXXXX
+..XXXXX.
+""")
+H_FEN_TORN = _P("""
+.X.....X
+.XX...XX
+.XX...XX
+.XXXXXXX
+.XXXeXXX
+.XXXXXXX
+..XXXXX.
+""")
+H_ROUND = _P("""
+.X..X...
+.XXXXX..
+XXXXXXX.
+XXXeXXXX
+XXXXXXX.
+.XXXXX..
+""")
+H_ROYAL = _P("""
+..X..X..
+..XX.XX.
+.XXXXXX.
+.XXXeXX.
+.XXXXXXX
+..XXXXX.
+""")
+
+
+def _canvas(torso, top, stamps, carve=()):
+    """torso rows start at row `top`; stamps are (part, x, y); carve are (x, y) pixels cleared last"""
+    g = [['.'] * W for _ in range(W)]
+    for j, r in enumerate(torso):
+        for i, c in enumerate(r):
+            if c == 'X': g[top + j][i] = 'X'
+    eye = None
+    for part, x, y in stamps:
+        for j, r in enumerate(part):
+            for i, c in enumerate(r):
+                X, Y = x + i, y + j
+                if c == 'e': g[Y][X] = '.'; eye = (X, Y)
+                elif c == 'X' and 0 <= X < W and 0 <= Y < W: g[Y][X] = 'X'
+    for x, y in carve: g[y][x] = '.'
+    if eye: g[eye[1]][eye[0]] = '.'
+    return [''.join(r) for r in g], eye
+
+
+# ---- tails ---------------------------------------------------------------------------------------------------------------
+T_BACK = _P("""
+X......
+XX.....
+XXXX...
+XXXXXX.
+XXXXXXX
+.XXXXXX
+..XXXX.
+""")
+T_UP = _P("""
+..XX...
+.XXXX..
+.XXXX..
+XXXXXX.
+XXXXXXX
+.XXXXXX
+..XXXX.
+""")
+T_DROOP = _P("""
+XXXXXXX
+XXXXXXX
+.XXXXXX
+..XXXX.
+""")
+
+SPR = {}
+
+
+def _s(name, top, torso, stamps, carve=()):
+    SPR[name] = _canvas(_P(torso), top, stamps, carve)
+
+FISH = _P("""
+X.XX
+XXXX
+X.XX
+""")
+
+# ================================ stage 1: kits ================================================================================
+_s('dewkit', 9, """
+.X..............
+XX......XXXXX...
+XXX..XXXXXXXX...
+.XXXXXXXXXXXX...
+..XXXXXXXXXX....
+...X.X..X.X.....
+...X.X..X.X.....
+""", [(H_KIT, 7, 4)])
+_s('cinder', 9, """
+........XXXX....
+.......XXXXXX...
+...X..XXXXXXX...
+..XXX.XXXXXXX...
+..XXXXXXXXXXX...
+..XXXXXXXXXXXX..
+...XXXXXXXXXXX..
+""", [(H_KIT, 7, 3)])
+
+# ================================ standing foxes: compact body, deep chest, 2 px legs, BIG plume tail ============================
+_SZ = {  # stage: head y, head part, body top, body spans (x0, x1) per row, leg rows, tail length, tail width
+    2: dict(hy=5, top=10, rows=[(6, 12), (5, 12), (6, 11)], leg=3, L=5.5, w=3.8),
+    3: dict(hy=4, top=9, rows=[(6, 12), (5, 13), (5, 13), (6, 12)], leg=3, L=6.8, w=4.4),
+    4: dict(hy=1, top=7, rows=[(6, 12), (5, 13), (5, 13), (5, 13), (6, 12)], leg=4, L=8.2, w=5.0),
+    5: dict(hy=0, top=6, rows=[(6, 12), (5, 13), (5, 13), (5, 13), (5, 13), (6, 12)], leg=4, L=8.8, w=5.4),
 }
+
+
+def _fill_holes(g, eye):
+    """fill every enclosed gap except the eye so the eye is the only hole"""
+    seen = set(); st = [(x, y) for x in range(W) for y in (0, W - 1) if g[y][x] == '.'] + [(x, y) for y in range(W) for x in (0, W - 1) if g[y][x] == '.']
+    seen.update(st)
+    while st:
+        x, y = st.pop()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            u, v = x + dx, y + dy
+            if 0 <= u < W and 0 <= v < W and g[v][u] == '.' and (u, v) not in seen: seen.add((u, v)); st.append((u, v))
+    for y in range(W):
+        for x in range(W):
+            if g[y][x] == '.' and (x, y) not in seen and (x, y) != eye: g[y][x] = 'X'
+
+
+def _plume(g, bx, by, ang, L, w, peak=0.4, hook=False):
+    a = math.radians(ang)
+    ux, uy = -math.cos(a), -math.sin(a)
+    for y in range(W):
+        for x in range(W):
+            t = ((x - bx) * ux + (y - by) * uy) / L
+            if t < -0.05 or t > 1.0: continue
+            d = abs(-(x - bx) * uy + (y - by) * ux)
+            f = (0.7 + 0.3 * t / peak) if t < peak else max(0.0, (1.0 - t) / (1.0 - peak)) ** 0.7
+            if d <= w / 2 * f: g[y][x] = 'X'
+
+
+def _std(name, stage, tail='up', head='std', fat=0, dy=0, spikes=False, rag=False, flame=False, fish=False, paw=False,
+         leglen=0, tail2=None, ang=None, ruff=False, crest=False):
+    z = _SZ[stage]
+    g = [['.'] * W for _ in range(W)]
+    top, rows = z['top'] + dy, z['rows']
+    leg = z['leg'] + leglen - dy
+    for j, (x0, x1) in enumerate(rows):
+        for x in range(x0 - (fat if 0 < j < len(rows) - 1 else 0), x1 + 1 + (fat if 0 < j < len(rows) - 1 else 0)):
+            g[top + j][x] = 'X'
+    bot = top + len(rows) - 1
+    bx0, bx1 = rows[1][0] - fat, rows[1][1] + fat
+    for y in range(bot + 1, 16):
+        for x in (bx0, bx0 + 1, bx1 - 1, bx1): g[y][x] = 'X'
+    if paw:  # front leg folded up
+        for y in range(bot + 2, 16): g[y][bx1] = '.'; g[y][bx1 - 1] = '.' if y > bot + 1 else g[y][bx1 - 1]
+        g[bot + 1][bx1 + 1] = 'X'; g[bot + 1][bx1 + 2] = 'X'
+        for y in range(bot + 2, 16): g[y][bx1 - 1] = 'X'
+    # tail
+    by = top + len(rows) / 2 - 0.5
+    L, w = z['L'], z['w'] + fat * 0.6
+    base = {'up': 52, 'back': 18, 'droop': -8, 'high': 78, 'curl': 62, 'low': -22}[tail] if ang is None else ang
+    _plume(g, bx0 + 1.5, by, base, L, w)
+    if tail == 'curl':  # tip hooks forward over the back
+        tx = bx0 + 1.5 - L * math.cos(math.radians(base)) ; ty = by - L * math.sin(math.radians(base))
+        for dx, dyy in ((1, 0), (2, 0), (2, 1)):
+            xx, yy = int(round(tx)) + dx, int(round(ty)) + dyy
+            if 0 <= xx < W and 0 <= yy < W: g[yy][xx] = 'X'
+    if tail2 is not None:
+        _plume(g, bx0 + 2.5, by - 1, tail2, L * 0.85, w * 0.8)
+    if flame:
+        tx = bx0 + 1.5 - L * math.cos(math.radians(base)); ty = by - L * math.sin(math.radians(base))
+        xx, yy = int(round(tx)), int(round(ty))
+        for dx, dyy in ((0, -1), (2, -1), (1, -2)):
+            if 0 <= xx + dx < W and 0 <= yy + dyy < W: g[yy + dyy][xx + dx] = 'X'
+    if spikes:
+        for x in range(bx0 + 1, bx1 - 3, 2): g[top - 1][x] = 'X'
+    if rag:
+        for x in range(bx0, bx1, 3): g[bot][x] = '.'
+        g[top + 1][bx0 - 1 if bx0 > 0 else 0] = '.'
+    if ruff:
+        g[top + 1][bx1 + 1] = 'X'; g[top + 2][bx1 + 1] = 'X'
+    hp = {'std': H_STD if stage >= 4 else H_KIT, 'down': H_DOWN, 'torn': H_FEN_TORN}[head]
+    hyy = z['hy'] + dy + (2 if head == 'down' else 0)
+    fix = [r for r in range(len(hp))]
+    eye = None
+    for j, r in enumerate(hp):
+        for i, c in enumerate(r):
+            X, Y = 8 + i, hyy + j
+            if not (0 <= X < W and 0 <= Y < W): continue
+            if c == 'e': eye = (X, Y)
+            if c == 'X': g[Y][X] = 'X'
+    # neck: make sure the head joins the body
+    for y in range(hyy + len(hp) - 1, top + 1):
+        for x in range(9, 13): g[y][x] = 'X'
+    if fish:
+        for j, r in enumerate(FISH):
+            for i, c in enumerate(r):
+                if c == 'X' and hyy + len(hp) + j - 1 < W and 12 + i < W: g[hyy + len(hp) - 1 + j][12 + i] = 'X'
+    g[eye[1]][eye[0]] = '.'
+    _fill_holes(g, eye)
+    SPR[name] = ([''.join(r) for r in g], eye)
+
+
+# ================================ stage 2-4 ===================================================================================
+
+_std('scamp', 2, 'up')
+_std('bramble', 2, 'curl', head='down')
+_std('ripple', 2, 'droop', fish=True)
+_std('ashpaw', 2, 'back', rag=True)
+_std('tracker', 3, 'high', head='down')
+_std('prowler', 3, 'low', fat=1, leglen=-1, ang=32)
+_std('sneak', 3, 'back', dy=1, ang=22)
+_std('thicket', 3, 'curl', spikes=True, dy=1)
+_std('whisk', 3, 'up', paw=True)
+_std('bracken', 3, 'droop', head='down', ang=-42)
+_std('splash', 3, 'high', fat=1)
+_std('reed', 3, 'low', head='down', leglen=1, ang=30)
+_std('brook', 3, 'back', fish=True)
+_std('scrabble', 3, 'up', head='torn', rag=True, dy=1)
+_std('tatter', 3, 'back', rag=True, ang=14)
+_std('stalker', 4, 'back', ang=12, leglen=1)
+_std('trickster', 4, 'curl', paw=True)
+_std('brawler', 4, 'low', fat=1, spikes=True, leglen=-1, ang=34)
+_std('thornback', 4, 'up', spikes=True, dy=1)
+_std('hazelwood', 4, 'curl', head='down')
+_std('sagetail', 4, 'back', ang=16, tail2=66)
+_std('angler', 4, 'droop', head='down', fish=True, leglen=1, ang=-38)
+
+_s('swiftail', 7, """
+....XXXXXXXX....
+.XXXXXXXXXXXX...
+XXXXXXXXXXXXX...
+.XXXXXXXXXXX....
+....X.....X.....
+....X.....X.....
+...X.......X....
+...X.......X....
+..XX......XX....
+""", [(H_FEN, 8, 0), (T_DROOP, 0, 8)])
+_s('reedwalker', 6, """
+.....XXXXXXX....
+XXXX.XXXXXXXX...
+XXXXXXXXXXXX....
+.XXXXXXXXXX.....
+.....X...X......
+.....X...X......
+.....X...X......
+.....X...X......
+.....X...X......
+....XX...XX.....
+""", [(H_FEN, 8, 0)])
+_s('raggedy', 7, """
+.XX..XXXXXXXXX..
+X.XXXXXXXXXXXXX.
+XXXXXXXXXXXXXX..
+.XXXXXXXXXXXXX..
+X.XXXXXXXXXXX...
+..X.XX.XX.XX....
+..X.X..X..X.....
+..X.X..X..X.....
+..X.X..X..X.....
+""", [(H_STD, 8, 1)])
+_s('scrapfox', 6, """
+.....XXXXXXXX...
+XXXXXXXXXXXXX...
+.XXXXXXXXXXXX...
+..XXXXXXXXXX....
+....X.....X.....
+....X.....X.....
+....X.....X.....
+....X.....X.....
+...XX.....XX....
+...X.......X....
+""", [(H_FEN_TORN, 8, 0)])
+
+# ================================ stage 5: ultimates ===========================================================================
+def _lobes(g, n, base, d, a, b, a0, a1):
+    """n separate leaf-shaped tails radiating from the rump (tapered ellipses, tips alternately long and short)"""
+    for i in range(n):
+        th = math.radians(a0 + (a1 - a0) * (i / (n - 1) if n > 1 else 0.5))
+        aa = a * (1.0 if i % 2 == 0 else 0.85)
+        cx, cy = base[0] + aa * math.cos(th) * d / a, base[1] + aa * math.sin(th) * d / a
+        for y in range(W):
+            for x in range(W):
+                dx, dy = x - cx, y - cy
+                u, v = dx * math.cos(th) + dy * math.sin(th), -dx * math.sin(th) + dy * math.cos(th)
+                if (u / aa) ** 2 + (v / b) ** 2 <= 1: g[y][x] = 'X'
+
+
+K_BODY = """
+..........XXXXX.
+..........XXXXXX
+.........XXXXXX.
+.........XXXXXX.
+.........XX.X.XX
+"""
+
+
+def _kitsune(name, n, base, d, a, b, a0, a1, bodyhy=1):
+    """regal upright fox standing tall (long neck, deep chest, 2 px legs) in front of a fan of n separate leaf-shaped tails"""
+    g = [['.'] * W for _ in range(W)]
+    _lobes(g, n, base, d, a, b, a0, a1)
+    body = [(9, 13), (8, 14), (8, 14), (8, 14), (9, 13)]
+    top = 8
+    for j, (x0, x1) in enumerate(body):
+        for x in range(x0, x1 + 1): g[top + j][x] = 'X'
+    for y in range(top + len(body), 16):
+        for x in (8, 9, 13, 14): g[y][x] = 'X'
+    eye = None
+    for j, r in enumerate(H_ROYAL):
+        for i, c in enumerate(r):
+            X, Y = 8 + i, bodyhy + j
+            if c == 'e': eye = (X, Y)
+            if c == 'X': g[Y][X] = 'X'
+    for y in range(bodyhy + len(H_ROYAL) - 1, top + 1):
+        for x in (9, 10, 11, 12): g[y][x] = 'X'
+    g[eye[1]][eye[0]] = '.'
+    _fill_holes(g, eye)
+    SPR[name] = ([''.join(r) for r in g], eye)
+
+
+_kitsune('moonveil', 3, (8, 12), 5.5, 6.5, 1.35, -180, -112)
+_kitsune('starbrush', 5, (8, 12), 5.5, 6.5, 1.3, -184, -98)
+_kitsune('tidecaller', 3, (8, 12), 5.5, 6.8, 1.45, -186, -140)
+_std('emberlord', 5, 'up', flame=True, ruff=True, ang=40)
+_s('wildfire', 8, """
+....XXXXXXXX....
+..XXXXXXXXXXXXX.
+XXXXXXXXXXXXXXX.
+.XXXXXXXXXXXX.XX
+..XX.......XX.XX
+..X.........X.X.
+.X...........X..
+XX..........XX..
+""", [(H_STD, 8, 2), ("""
+X.X....
+XXXX...
+XXXXXX.
+.XXXXXX
+""".strip('\n').split('\n'), 0, 5)])
+def _frost(name='frostpelt', two=True, hy=3):
+    g = [['.'] * W for _ in range(W)]
+    def ell(cx, cy, rx, ry):
+        for y in range(W):
+            for x in range(W):
+                if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1: g[y][x] = 'X'
+    ell(2.6, 7.5, 3.0, 3.8) if two else ell(2.4, 5.5, 2.4, 4.4)      # big round tail
+    if two: ell(3.2, 4.5, 2.2, 2.6)      # second tail, raised
+    ell(7.5, 11.0, 5.3, 3.6)     # fluffy round body
+    for x in (4, 5, 7, 8, 10, 11): g[15][x] = 'X'
+    for x in (4, 5, 10, 11): g[14][x] = 'X'
+    eye = None
+    for j, r in enumerate(H_ROUND):
+        for i, c in enumerate(r):
+            X, Y = 8 + i, hy + j
+            if c == 'e': eye = (X, Y)
+            if c == 'X': g[Y][X] = 'X'
+    for y in range(hy + 5, hy + 7):
+        for x in range(9, 13): g[y][x] = 'X'
+    g[eye[1]][eye[0]] = '.'
+    _fill_holes(g, eye)
+    SPR[name] = ([''.join(r) for r in g], eye)
+
+
+_frost()
+_frost('plumptail', two=False, hy=4)
+_s('gloamfox', 4, """
+.....XXXXXXXX...
+..XX.XXXXXXXXXX.
+.XXXXXXXXXXXXXX.
+XXXXXXXXXXXXXX..
+.XXXXXXXXXXXX...
+X.XXXXXXXXXX....
+XXX.X.....X.....
+.XXXX.....X.....
+..XX......X.....
+...X.....XX.....
+...X.....X......
+...XX....XX.....
+""", [(H_FEN, 8, 0)])
+
+
+# ---- registry: every species has its own archetype 'fox_<id>' (same drawing at every stage; a species only ever has one) -------
+def _anchors(rows, eye):
+    xs = [x for r in rows for x, c in enumerate(r) if c == 'X']
+    return dict(rows=rows, head=(eye[0] - 0.5, eye[1] + 0.8, 2.2), eye=eye, body=(min(xs) + 1, max(xs) - 3))
+
+
+ARCH_FOX = {'fox_' + k: dict(by_stage={s: _anchors(rows, eye) for s in (1, 2, 3, 4, 5)}) for k, (rows, eye) in SPR.items()}
