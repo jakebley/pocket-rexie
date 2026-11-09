@@ -9,9 +9,16 @@ KIND_OF = {
     # fox
     'fox_stand': 'fox', 'fox_sit': 'foxsit', 'fox_fennec': 'fennec', 'fox_arctic': 'arctic', 'fox_kitsune': 'kitsune',
     # fish
-    'fish_fry': 'fry', 'fish_guppy': 'fishy', 'fish_slim': 'fishy', 'fish_fancy': 'fishy', 'fish_koi': 'koi', 'fish_koi2': 'koi', 'fish_puffer': 'puffer',
-    'fish_horse': 'seahorse', 'fish_angler': 'angler', 'fish_angler2': 'angler', 'fish_eel': 'eel', 'fish_jelly': 'jelly', 'fish_jelly3': 'jelly',
-    'fish_ray': 'ray', 'fish_whale': 'whale',
+    'fish_bubblet': 'fry', 'fish_pearlfry': 'fry',
+    'fish_nibble': 'fishy', 'fish_darter': 'fishy', 'fish_dabble': 'fishy', 'fish_silt': 'fishy', 'fish_glimmer': 'fishy', 'fish_dreg': 'fishy', 'fish_muddle': 'fishy', 'fish_parrotfin': 'fishy', 'fish_coralback': 'fishy', 'fish_rustfin': 'fishy', 'fish_wreckfish': 'fishy', 'fish_prismara': 'fishy', 'fish_hollowfin': 'fishy',
+    'fish_plumpkoi': 'koi', 'fish_ripplekoi': 'koi', 'fish_goldcarp': 'koi', 'fish_brocade': 'koi', 'fish_dragonkoi': 'koi',
+    'fish_pufflet': 'puffer', 'fish_spineball': 'puffer',
+    'fish_curlfin': 'seahorse', 'fish_seastallion': 'seahorse', 'fish_seamonarch': 'seahorse',
+    'fish_gulper': 'angler', 'fish_lanternet': 'angler', 'fish_gapjaw': 'angler', 'fish_beaconfish': 'angler', 'fish_lanternking': 'angler',
+    'fish_slinker': 'eel', 'fish_moray': 'eel', 'fish_tidewyrm': 'eel',
+    'fish_driftbell': 'jelly', 'fish_moonjelly': 'jelly', 'fish_aurorabell': 'jelly',
+    'fish_skimray': 'ray',
+    'fish_tidewhale': 'whale',
     # bird
     'bird_downy': 'chick', 'bird_pipkin': 'chick', 'bird_chirp': 'chick', 'bird_owlet': 'owl', 'bird_owl': 'owl', 'bird_hornowl': 'owl', 'bird_moonfeather': 'owl', 'bird_ducklet': 'duck', 'bird_mallard': 'duck', 'bird_teal': 'duck', 'bird_scruff': 'pigeon', 'bird_dustling': 'pigeon', 'bird_sootwing': 'pigeon', 'bird_ledgewing': 'pigeon', 'bird_tatterdove': 'pigeon', 'bird_duskdove': 'doveshow', 'bird_sparrow': 'songbird', 'bird_robin': 'songbird', 'bird_finch': 'songbird', 'bird_lark': 'songbird', 'bird_jay': 'songbird', 'bird_nightingale': 'songbird', 'bird_prismlark': 'songfan', 'bird_hawk': 'raptorbird', 'bird_falcon': 'raptorbird', 'bird_peregrine': 'raptorbird', 'bird_harrier': 'raptorbird', 'bird_kingfisher': 'raptorbird', 'bird_stormtalon': 'raptorbird', 'bird_emberwing': 'phoenix', 'bird_heron': 'heron', 'bird_egret': 'heron', 'bird_tidecrane': 'heron', 'bird_swan': 'swan', 'bird_goose': 'swan', 'bird_snowcrest': 'swan',
     # cat
