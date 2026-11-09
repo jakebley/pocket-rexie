@@ -1,162 +1,661 @@
-"""Bird archetypes (16x16, facing right, ground on row 15), built from parts like the fox ones.
-Beaks, crests and legs are drawn in raw pixel space relative to the mapped head so they keep a 2px minimum
-at every stage size. Also registers the bird_* decorations (EXTRA_HANDLERS)."""
-import os, sys
+"""Bird art (16x16, facing right, ground on row 15). Each species is drawn by hand from its own shapes (head circle,
+hooked or flat beak, neck, body, tail, wing line, legs) instead of one generic bird builder: raptors get a big head, brow
+ridge, hooked beak and talons; songbirds a clear tail and beak; waterfowl distinct necks. The six hatchlings and chicks
+are plain ASCII. Eyes are holes (the renderer fills them in Technicolor); the blink frame changes only the eye.
+Also registers the bird_* decorations (EXTRA_HANDLERS)."""
+import math, os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from archetypes_fox import _G, W
+from archetypes_fox import W
 import spritegen
 
-SIZES = {1: 0.58, 2: 0.7, 3: 0.86, 4: 1.0, 5: 1.0}
+def _seg_d(px, py, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    L = dx * dx + dy * dy
+    t = 0.0 if L == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
 
-def _T(k, x, y):
-    return (W - 1) / 2 * (1 - k) + x * k, 15 - (15 - y) * k
-
-class B(_G):
+class Cv:
+    """Pixel canvas. All shapes are given in full-size coordinates and mapped by the size factor s (about the ground row)."""
+    def __init__(self, s=1.0):
+        self.g = [[0] * W for _ in range(W)]; self.s = s; self.eye = None
+    def T(self, x, y): return 7.5 + (x - 7.5) * self.s, 15 - (15 - y) * self.s
+    def _each(self, fn, v):
+        for y in range(W):
+            for x in range(W):
+                if fn(x, y): self.g[y][x] = v
+    def ell(self, cx, cy, rx, ry, v=1):
+        cx, cy = self.T(cx, cy); rx = max(0.8, rx * self.s); ry = max(0.8, ry * self.s)
+        self._each(lambda x, y: ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0, v)
+    def poly(self, pts, v=1, fat=0.0):
+        P = [self.T(*p) for p in pts]; n = len(P)
+        def inside(x, y):
+            c = False
+            for i in range(n):
+                (x0, y0), (x1, y1) = P[i], P[(i + 1) % n]
+                if (y0 > y) != (y1 > y) and x < (x1 - x0) * (y - y0) / (y1 - y0) + x0: c = not c
+            return c
+        def near(x, y):
+            return fat > 0 and min(_seg_d(x, y, *P[i], *P[(i + 1) % n]) for i in range(n)) <= fat
+        self._each(lambda x, y: inside(x, y) or near(x, y), v)
+    def ln(self, x0, y0, x1, y1, w=0.55, v=1):
+        (x0, y0), (x1, y1) = self.T(x0, y0), self.T(x1, y1)
+        self._each(lambda x, y: _seg_d(x, y, x0, y0, x1, y1) <= w, v)
     def px(self, x, y, v=1):
-        """Set a pixel at the mapped position of full-size (x, y)."""
-        tx, ty = self.T(x, y); self._raw(tx, ty, v)
-    def run(self, x, y, n, dx=1, dy=0, v=1):
-        """A raw-pixel run of n pixels starting at the mapped (x, y); n does not shrink with k."""
-        tx, ty = self.T(x, y)
-        for i in range(n): self._raw(tx + dx * i, ty + dy * i, v)
-    def beak(self, x, y, n=2, hook=False, down=False):
-        self.run(x, y, n)
-        if hook or down:
-            tx, ty = self.T(x, y); self._raw(tx + n - 1, ty + 1)
-    def legs(self, xs, top=13.0, toe=True):
+        x, y = self.T(x, y); x, y = int(round(x)), int(round(y))
+        if 0 <= x < W and 0 <= y < W: self.g[y][x] = v
+    def raw(self, x, y, v=1):
+        if 0 <= x < W and 0 <= y < W: self.g[y][x] = v
+    def set(self, x, y, v='X'):
+        self.raw(int(round(x)), int(round(y)), 1 if v == 'X' else 0)
+    def line(self, x0, y0, x1, y1, v='X', thick=1):
+        n = int(max(abs(x1 - x0), abs(y1 - y0)) * 2) + 1
+        for i in range(n + 1):
+            t = i / n
+            for d in range(thick): self.set(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t + d, v)
+    def legs(self, xs, top, toe=2):
+        """One pixel wide legs from y=top to the ground, with a toe pixel forward (and back for talons)."""
         for x in xs:
-            tx, ty = self.T(x, top)
-            for y in range(int(round(ty)), 15): self._raw(tx, y)
-            self._raw(tx, 15)
-            if toe: self._raw(tx + 1, 15)
-    def wing(self, pts, big=True):
-        """Carve a folded wing as a line of empty pixels (skipped on the tiniest sizes where it is just noise)."""
-        if self.k < 0.8: return
-        for (a, b) in zip(pts, pts[1:]): self.line(a[0], a[1], b[0], b[1], 0)
+            tx, ty = self.T(x, top); tx = int(round(tx))
+            for y in range(int(round(ty)), 15): self.raw(tx, y)
+            self.raw(tx, 15)
+            for d in range(1, toe + 1): self.raw(tx + d, 15)
+    def eyehole(self, x, y):
+        x, y = self.T(x, y); self.eye = (int(round(x)), int(round(y)))
 
-def _chick(k=1.0, tuft=1, round_=0.0):
-    g = B(k)
-    g.ell(7.4, 10.4, 5.2 + round_, 4.3)
-    g.ell(9.4, 7.0, 3.5, 3.1)
-    g.beak(12.9, 7.4, 2)
-    for i in range(tuft + 1): g.px(8.8 - i * 0.0 + (0.8 if i else 0), 3.6 - i)
-    g.legs([6.2, 9.2], 14)
-    g.wing([(4.5, 9.8), (6.5, 11.8), (8.2, 11.6)])
-    return g
+def _entry(c):
+    g = c.g
+    ex, ey = c.eye; g[ey][ex] = 0
+    out = [''.join('X' if v else '.' for v in r) for r in g]
+    xs = [i for r in out for i, ch in enumerate(r) if ch == 'X']
+    return dict(rows=out, head=(ex - 1.0, ey + 0.5, 2.5), eye=(ex, ey), body=(min(xs), max(xs)))
 
-def _song(k=1.0, tail=3.4, belly=0.0, beak=2, hook=False, wing=True):
-    g = B(k)
-    g.ell(7.6, 9.8, 4.7 + belly, 3.7 + belly * 0.5)
-    g.ell(10.2, 6.3, 2.9, 2.6)
-    if tail:
-        g.line(3.8, 11.0, 3.8 - tail, 11.0 + tail * 0.8); g.line(4.3, 10.0, 4.3 - tail, 10.0 + tail * 0.8)
-    g.beak(12.9, 6.6, beak, hook)
-    g.legs([7.0, 9.2], 13)
-    if wing: g.wing([(5.4, 9.4), (7.4, 10.8)])
-    return g
+def _from_cv(c):
+    e = _entry(c)
+    return dict(by_stage={s: e for s in range(1, 6)})
 
-def _owl(k=1.0, tufts=1, belly=0.0):
-    g = B(k)
-    g.ell(8.0, 10.4, 4.2 + belly, 4.5 + belly * 0.4)
-    g.ell(8.4, 5.2, 4.5, 3.4)
-    if tufts:
-        g.tri(4.3, 3.6, 4.8, 0.2, 6.5, 2.6, min_h=2)
-        g.tri(10.4, 2.6, 12.2, 0.2, 12.7, 3.8, min_h=2)
-    g.beak(11.4, 6.0, 1); g.px(11.4, 7.0)
-    g.legs([6.4, 9.4], 14)
-    g.wing([(10.6, 8.6), (11.2, 10.6), (9.8, 12.4)])
-    g.px(6.6, 4.8, 0); g.px(6.6, 5.8, 0)  # second eye, large and round
-    return g
+def _art(rows, x=0, post=None):
+    """ASCII (X ink, . empty, e eye hole) bottom-aligned on the ground row, left offset x."""
+    rows = list(rows); assert len(rows) <= W
+    c = Cv(1.0)
+    top = W - len(rows)
+    for ry, r in enumerate(rows):
+        for cx, ch in enumerate(r.rstrip(".")):
+            assert x + cx < W, (r, x)
+            if ch == 'X': c.g[top + ry][x + cx] = 1
+            elif ch == 'e': c.eye = (x + cx, top + ry)
+    assert c.eye
+    if post: post(c)
+    return _from_cv(c)
 
-def _raptor(k=1.0, tail=3.4, beak=2, chest=0.0, wing=True):
-    g = B(k)
-    g.ell(7.6, 9.4, 3.8 + chest, 4.5)
-    g.ell(10.3, 4.8, 2.6, 2.4)
-    g.line(9, 6, 8.6, 8.5); g.line(10, 6.5, 9.6, 8.5)
-    if tail:
-        g.line(5.6, 12.0, 5.6 - tail, 12.0 + tail * 0.9); g.line(6.6, 12.4, 6.6 - tail, 12.4 + tail * 0.9)
-        g.line(4.6, 11.2, 4.6 - tail, 11.2 + tail * 0.8)
-    g.beak(12.7, 5.0, beak, hook=True)
-    g.legs([7.0, 9.0], 13)
-    if wing: g.wing([(8.2, 7.6), (6.0, 9.4), (4.8, 11.8)])
-    return g
+ART = {}
+def species(name, s=1.0):
+    def deco(fn):
+        c = Cv(s); fn(c); ART[name] = _from_cv(c); return fn
+    return deco
+# ---- stage 1 ----------------------------------------------------------------------------------------------
+ART['downy'] = _art([
+ "..XX......",
+ ".XXXXX....",
+ "XXXXXXXX..",
+ "XXXXXeXXXX",
+ "XXXXXXXXX.",
+ "XXXXXXXX..",
+ ".XXXXXX...",
+ "..X..X....",
+ ".XX.XX....",
+], x=3)
+ART['pipkin'] = _art([
+ ".....XX....",
+ "X.XXXXXX...",
+ "XXXXXXXXX..",
+ "XXXXXXeXXXX",
+ ".XXXXXXXXX.",
+ ".XXX.XXXXX.",
+ ".XXXXXXXX..",
+ "..XX..XX...",
+ ".XXX.XXX...",
+], x=2)
+# ---- stage 2 ----------------------------------------------------------------------------------------------
+ART['chirp'] = _art([
+ ".......X....",
+ "......XXX...",
+ ".....XXXXX..",
+ ".....XXXeXXX",
+ "X....XXXXX..",
+ "XX..XXXXXXX.",
+ ".XXXXXXXXXX.",
+ ".XXX...XXXX.",
+ "..XXXXXXXX..",
+ "...XX.XX....",
+], x=2)
+ART['owlet'] = _art([
+ ".XXXXXXXX.",
+ "XXXXXXXXXX",
+ "XXeXXXXeXX",
+ "XXXXXXXXXX",
+ "XXXXXXXXXX",
+ "XXX.XX.XXX",
+ "XXX.XX.XXX",
+ ".XXXXXXXX.",
+ "..XX..XX..",
+], x=3)
+ART['ducklet'] = _art([
+ ".......XXX..",
+ "......XXXXX.",
+ "......XeXXXXX",
+ "......XXXXX..",
+ "......XXXX...",
+ "X....XXXXXX..",
+ "XXXXXXXXXXXX",
+ ".XXXXXXXXXX.",
+ "..XXXXXXXX..",
+ "...XX..XX...",
+], x=1)
+ART['scruff'] = _art([
+ "..X.X.......",
+ ".XXXXX.XX...",
+ "XXXXXXXXXXX.",
+ "XXXXXXXXeXXX",
+ ".XXXXXXXXXX.",
+ ".XXXXXXXXX..",
+ "..XXXXXXXX..",
+ "...X..X.....",
+ "..XX.XX.....",
+], x=2)
+# ---- raptors -----------------------------------------------------------------------------------------------
+ART['hawk'] = _art([
+ "......XXXXX.....",
+ ".....XXXXXXXX...",
+ ".....XXXXXXXXX..",
+ ".....XXXeXXXXXX.",
+ ".....XXXXXX.XXX.",
+ "......XXXXX...X.",
+ "....XXXXXXXXX...",
+ "...XXXXXX..XXX..",
+ "...XXXXX..XXXX..",
+ "..XXXXX..XXXXX..",
+ "XXXXXX..XXXXX...",
+ "XXXXXXXXXXXXX...",
+ ".......X..X.....",
+ "......XXX.XXX...",
+])
+ART['falcon'] = _art([
+ "........XXXX....",
+ ".......XXXXXXX..",
+ ".......XXeXXXXX.",
+ ".......XXXXXX.X.",
+ "......XXXXXXX...",
+ ".....XXXXXXXXX..",
+ "....XXXXXXXXXX..",
+ "...XXXXXXXXXXX..",
+ "..XXXXXXXXXXX...",
+ ".XXXXXXXXXXX....",
+ "XXXXXXXXXXX.....",
+ "XXX.XXXXXX.X....",
+ "XX...XX..XX.....",
+ "......X.X.......",
+])
+ART['peregrine'] = _art([
+ ".......XXXXX....",
+ "......XXXXXXXX..",
+ "......XXXXXXXXX.",
+ "......XXeXXXXXX.",
+ "......XXeXXXXX.",
+ "......XXXXXXX.X.",
+ ".....XXXXXXXX...",
+ "....XXXXXXXXXX..",
+ "...XXXXXXXXXXXX.",
+ "..XXXXXXXXXXXXX.",
+ "..XXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "XXXXXXXXXXX.....",
+ "XXXXXX.XX.XX....",
+ ".....XXX.XXX....",
+])
+ART['harrier'] = _art([
+ "......XXXXX.....",
+ ".....XXXXXXX....",
+ "....XXXXXXXXX...",
+ "....XXXeXXXXXX..",
+ "....XXXXXXXX.X..",
+ ".....XXXXXXX....",
+ "....XXXXXXXX....",
+ "...XXXXXXXXX....",
+ "..XXXXXXXXXX....",
+ ".XXXXXXXXXX.....",
+ "XXXXXXXXX.......",
+ "XXXX.XXX........",
+ "XX...X.X........",
+ ".....X.X........",
+ "....XX.XX.......",
+])
+ART['kingfisher'] = _art([
+ "....XX..........",
+ "....XXXXXX......",
+ ".....XXXXXXXXXX.",
+ ".....XXeXXXXXXXX",
+ ".....XXXXXX.....",
+ ".....XXXXXX.....",
+ "....XXXXXXX.....",
+ "....XXXXXXXX....",
+ "....XXXXXXXX....",
+ "....XXXXXXX.....",
+ "...XXXXXX.......",
+ "...XXXX.........",
+ ".......X.X......",
+ "......XX.XX.....",
+])
+# ---- songbirds ---------------------------------------------------------------------------------------------
+ART['sparrow'] = _art([
+ "........XXXX....",
+ ".......XXXXXX...",
+ ".......XXXeXXXX.",
+ ".......XXXXXX...",
+ "....XXXXXXXXXX..",
+ "...XXXXXXXXXXX..",
+ "..XXXXXXXXXXXX..",
+ "XXXXX...XXXXX...",
+ "XXXXXXXXXXXXX...",
+ "XX..XXXXXXXXX...",
+ "......X..X......",
+ ".....XX.XX......",
+], x=1)
+ART['robin'] = _art([
+ "........XXXX....",
+ ".......XXXXXX...",
+ ".......XXXeXXXX.",
+ ".......XXXXXXX..",
+ "XX....XXXXXXXXX.",
+ "XXX..XXXXXXXXXX.",
+ ".XXXXXXXXXXXXXX.",
+ "..XXXXX...XXXXX.",
+ "..XXXXXXXXXXXXX.",
+ "...XXXXXXXXXXX..",
+ "....XXXXXXXXX...",
+ ".......X..X.....",
+ "......XX.XX.....",
+])
+ART['finch'] = _art([
+ "......XX........",
+ "......XXXXXX....",
+ ".......XXXXXX...",
+ ".......XXXeXXXX.",
+ ".......XXXXXXX..",
+ "......XXXXXXX...",
+ "....XXXXXXXXXX..",
+ "...XXXXXXXXXXX..",
+ "..XXXXX..XXXXX..",
+ ".XXXXXXXXXXXX...",
+ "XXXXXXXXXX......",
+ "XX.XX.XXX.......",
+ ".......X..X.....",
+ "......XX.XX.....",
+], x=0)
+ART['lark'] = _art([
+ ".............XX.",
+ ".............X..",
+ ".......XX...XX..",
+ ".......XXXXXX...",
+ "......XXXXXXXX..",
+ "......XXXXeXXXX.",
+ "......XXXXXXXX..",
+ ".....XXXXXXXXX..",
+ "....XXXXXXXXXX..",
+ "...XXXXXXXXXXX..",
+ "..XXXXXXXXXXX...",
+ ".XXXXXXXXXXX....",
+ "XXXXXXXXXX......",
+ "XXX.XXXXXX......",
+ ".......X..X.....",
+ "......XX.XX.....",
+])
+ART['jay'] = _art([
+ "..........X.....",
+ ".........XXX....",
+ "........XXXXX...",
+ ".......XXXXXXXX.",
+ "......XXXXXXXXX.",
+ "......XXXXeXXXXX",
+ "......XXXXXXXXX.",
+ "......XXXXXXXX..",
+ "....XXXXXXXXXXX.",
+ "...XXXXXXXXXXXX.",
+ "..XXXXXXX.XXXXX.",
+ ".XXXXXXXXXXXXX..",
+ "XXXXX.XXXXXXX...",
+ "XXXX..XXXXXX....",
+ ".XX....X..X.....",
+ "......XX.XX.....",
+])
+ART['nightingale'] = _art([
+ ".........XXXX...",
+ "........XXXXXX..",
+ "........XXeXXXX.",
+ "........XXXXXX..",
+ "......XXXXXXXXX.",
+ "....XXXXXXXXXX..",
+ "..XXXXXXXXXXX...",
+ "XXXXXXXXXXXX....",
+ "XXXXXXXXXXX.....",
+ "..XX.XXXXX......",
+ ".......X.X......",
+ ".......X.X......",
+ ".......X.X......",
+ "......XX.XX.....",
+])
+# ---- waterfowl ---------------------------------------------------------------------------------------------
+ART['mallard'] = _art([
+ "..........XXX...",
+ ".........XXXXX..",
+ ".........XXeXXXX",
+ ".........XXXXX..",
+ "..........XXX...",
+ "X.....XXXXXXXX..",
+ "XX.XXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXXX.",
+ ".XXXXXXXXXXXXXX.",
+ "..XXXXXXXXXXXX..",
+ "....X.X.........",
+ "...XX.XX........",
+])
+ART['teal'] = _art([
+ "..........XXX...",
+ ".........XXeXXX.",
+ ".........XXXXX..",
+ "..........XX....",
+ "......XXXXXXXX..",
+ "XX..XXXXXXXXXX..",
+ "XXXXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "..XXXXXXXXXX....",
+ ".....X..X.......",
+ "....XX.XX.......",
+])
+ART['heron'] = _art([
+ "........XXXX....",
+ "........XXeXXXXX",
+ "........XXXX....",
+ ".........XX.....",
+ "........XX......",
+ "........XX......",
+ ".......XXXX.....",
+ ".XXXXXXXXXXX....",
+ "XXXXXXXXXXXXX...",
+ ".XXXXXXXXXXX....",
+ "...XXXXXXXX.....",
+ ".......X..X.....",
+ ".......X..X.....",
+ ".......X..X.....",
+ "......XX.XX.....",
+])
+ART['egret'] = _art([
+ "........XXXX....",
+ "........XeXXXX..",
+ "........XXXX....",
+ ".......XXX......",
+ "......XXX.......",
+ ".......XXX......",
+ "........XXX.....",
+ "..XXXXXXXXXX....",
+ "XXXXXXXXXXXX....",
+ ".XXXXXXXXXXX....",
+ "..XXXXXXXXX.....",
+ ".......X..X.....",
+ ".......X..X.....",
+ ".......X..X.....",
+ "......XX.XX.....",
+], post=lambda c: (c.line(5, 7, 0, 12, 'X', 1), c.line(6, 8, 1, 14, 'X', 1)))
+ART['swan'] = _art([
+ "..........XXX...",
+ ".........XeXXXX.",
+ ".........XXXX...",
+ "........XXX.....",
+ ".......XXX......",
+ ".......XXX......",
+ "........XXX.....",
+ "....XXX..XXXX...",
+ "..XXXXXXXXXXXX..",
+ ".XXXXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "..XXXXXXXXXX....",
+ "......X..X......",
+ ".....XX.XX......",
+])
+ART['goose'] = _art([
+ "..........XXXX..",
+ ".........XXeXXX.",
+ ".........XXXXX..",
+ ".........XXXX...",
+ "........XXXX....",
+ "......XXXXXX....",
+ ".XXXXXXXXXXXXX..",
+ "XXXXXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "..XXXXXXXXXX....",
+ "......X..X......",
+ "......X..X......",
+ ".....XX.XX......",
+])
+# ---- strays ------------------------------------------------------------------------------------------------
+ART['dustling'] = _art([
+ "..........XXX...",
+ ".........XXXXX..",
+ "...X.X...XXeXXX.",
+ "..XXXXXX.XXXXX..",
+ "..XXXXXXXXXXXXX.",
+ ".XXXXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXX..",
+ "XXXXXXXXXXXXX...",
+ ".XXXXXXXXXXX....",
+ "......X..X......",
+ ".....XX.XX......",
+])
+ART['sootwing'] = _art([
+ "XX.X.X..........",
+ "XXXXXXXX........",
+ ".XXXXXXXXXX.....",
+ "..XXXXXXXXXXXX..",
+ "...XXXXXXXXXXXX.",
+ "...XXXXXXXXXeXXX",
+ "....XXXXXXXXXXXX",
+ ".....XXXXXX..XXX",
+ "......X..X....X.",
+ ".....XX.XX......",
+])
+ART['ledgewing'] = _art([
+ "..........XXX...",
+ ".........XXXXX..",
+ ".........XXeXXX.",
+ ".........XXXXX..",
+ "........XXXXXX..",
+ "...XXXXXXXXXXXX.",
+ "..XXXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXX..",
+ "XXXXXXXXXXXXX...",
+ ".XXXXXXXXXXX....",
+ "......X..X......",
+ ".....XX.XX......",
+])
+ART['tatterdove'] = _art([
+ "........XXX.....",
+ ".......XXXXX....",
+ ".......XXeXXXX..",
+ ".......XXXXX....",
+ "....X.XXXXXXX...",
+ "...XXXXXXXXXXX..",
+ "..XXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "XX.XXXXXXXXXX...",
+ "X..XXXXXXXXX....",
+ "...XXXXXXXX.....",
+ "......X..X......",
+ ".....XX.XX......",
+])
+# ---- owls --------------------------------------------------------------------------------------------------
+ART['owl'] = _art([
+ ".X........X.",
+ ".XXXXXXXXXX.",
+ "XXXXXXXXXXXX",
+ "XXXeXXXXeXXX",
+ "XXXXXXXXXXXX",
+ "XXXXXXXXXXXX",
+ "XXXXXXXXXXXX",
+ "XX.XXXXXX.XX",
+ "XX.XXXXXX.XX",
+ "XX.XXXXXX.XX",
+ ".XX.XXXX.XX.",
+ "..XXXXXXXX..",
+ "...XX..XX...",
+], x=2)
+ART['hornowl'] = _art([
+ "..X........X..",
+ "..XX......XX..",
+ ".XXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXX",
+ "XXXeXXXXXXeXXX",
+ "XXXXXXXXXXXXXX",
+ "XXXXXXXXXXXXXX",
+ "XXXXXXXXXXXXXX",
+ "XX.XXXXXXXX.XX",
+ "XX.XXXXXXXX.XX",
+ "XX.XXXXXXXX.XX",
+ ".XX.XXXXXX.XX.",
+ ".XX.XXXXXX.XX.",
+ "..XXXXXXXXXX..",
+ "...XXX..XXX...",
+], x=1)
+# ---- ultimates ---------------------------------------------------------------------------------------------
+def _ember(c):
+    c.line(8, 4, 4, 1, 'X', 2)                       # swept-back flame plume
+    c.line(4.5, 9, 0, 3, 'X', 2); c.line(4, 11, 0, 8, 'X', 2); c.line(4.5, 12, 0, 13, 'X', 2)   # three flame tail feathers
+ART['emberwing'] = _art([
+ ".........XXXX...",
+ "........XXXXXX..",
+ "........XXeXXXXX",
+ "........XXXXXX..",
+ ".....XXXXXXXXX..",
+ "....XXXXXXXXXXX.",
+ "...XXXXXXXXXXXX.",
+ "...XXXXXXXXXXX..",
+ "....XXXXXXXXX...",
+ "....XXXXXXX.....",
+ "......X..X......",
+ "......X..X......",
+ ".....XX.XX......",
+], post=_ember)
+def _fanp(c):
+    for (x, y) in ((0, 2), (0, 4), (0, 6), (0, 8), (0, 10), (0, 12), (1, 14)):
+        c.line(6, 10, x, y, 'X', 1)
+ART['prismlark'] = _art([
+ "..........X.....",
+ ".........XXX....",
+ "........XXXXX...",
+ ".......XXXXXXXX.",
+ "......XXXXeXXXX.",
+ "......XXXXXXXX..",
+ ".....XXXXXXXXX..",
+ "....XXXXXXXXXX..",
+ "....XXXXXXXXXX..",
+ "....XXXXXXXXX...",
+ ".....XXXXXXX....",
+ "......X..X......",
+ ".....XX.XX......",
+], post=_fanp)
+def _storm(c):
+    c.line(7, 9, 1, 2, 'X', 3)                      # one big raised wing, three finger feathers at the tip
+    c.line(0, 1, 2, 1, 'X', 1)
+    for (x, y) in ((0, 4), (1, 6)): c.set(x, y, '.')
+    c.set(0, 3, 'X'); c.set(0, 5, 'X')
+ART['stormtalon'] = _art([
+ ".......XXXXX....",
+ "......XXXXXXXX..",
+ "......XXXXXXXXX.",
+ "......XXXeXXXXXX",
+ "......XXXXXX.XXX",
+ ".......XXXXX...X",
+ ".....XXXXXXXXX..",
+ "....XXXXXXXXXX..",
+ "....XXXXXXXXXX..",
+ "....XXXXXXXXX...",
+ ".....XXXXXXXX...",
+ "....XXXXXXXX....",
+ ".....X.X.X......",
+ "....XXX.XXX.....",
+], post=_storm)
+ART['moonfeather'] = _art([
+ "...XXXXXXXXXX...",
+ "..X..........X..",
+ "..XX......XX....",
+ ".XXXXXXXXXXXX...",
+ "XXXXXXXXXXXXXX..",
+ "XXXeXXXXXXeXXX..",
+ "XXXXXXXXXXXXXX..",
+ "XXXXXXXXXXXXXX..",
+ "XXXXXXXXXXXXXX..",
+ "XX.XXXXXXXX.XX..",
+ "XX.XXXXXXXX.XX..",
+ "XXX.XXXXXX.XXX..",
+ ".XXX.XXXX.XXX...",
+ "..XXXXXXXXXX....",
+ "...XXX..XXX.....",
+], x=1)
+ART['duskdove'] = _art([
+ "........XXXX....",
+ ".......X....X...",
+ "................",
+ ".........XXX....",
+ "........XXXXX...",
+ "........XXeXXX..",
+ "........XXXXX...",
+ ".......XXXXXXX..",
+ "..XXXXXXXXXXXXX.",
+ ".XXXXXXXXXXXXXX.",
+ ".XXXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "..XXXXXXXXXX....",
+ "......X..X......",
+ ".....XX.XX......",
+], post=lambda c: (c.line(5, 9, 0, 3, 'X', 2), c.line(4, 10, 0, 7, 'X', 2), c.line(4, 11, 0, 11, 'X', 2), c.line(4, 12, 0, 14, 'X', 1), c.set(2, 9, '.'), c.set(1, 8, '.')))
+ART['snowcrest'] = _art([
+ "..........X.X.X.",
+ "..........XXXXX.",
+ ".........XeXXXXX",
+ ".........XXXXX..",
+ "........XXX.....",
+ ".......XXX......",
+ ".......XXX......",
+ "........XXX.....",
+ "..XX...XXXXX....",
+ ".XXXXXXXXXXXXX..",
+ "XXXXXXXXXXXXXXX.",
+ "XXXXXXXXXXXXXX..",
+ ".XXXXXXXXXXXX...",
+ "..XXXXXXXXXX....",
+ "......X..X......",
+ ".....XX.XX......",
+], post=lambda c: (c.line(7, 8, 3, 4, 'X', 3)))
+ART['tidecrane'] = _art([
+ "........XXX.....",
+ ".......XXeXXXXXX",
+ ".......XXXX.....",
+ "........XX......",
+ ".......XX.......",
+ ".......XX.......",
+ "........XXX.....",
+ ".XXXXXXXXXXX....",
+ "XXXXXXXXXXXXX...",
+ ".XXXXXXXXXXX....",
+ "...XXXXXXXX.....",
+ ".......X..X.....",
+ ".......X..X.....",
+ ".......X..X.....",
+ "......XX.XX.....",
+], post=lambda c: (c.line(3, 9, 0, 14, 'X', 2)))
 
-def _duck(k=1.0, bill=3, neck=1.0):
-    g = B(k)
-    g.ell(7.0, 10.6, 5.6, 3.1)
-    g.tri(0.8, 7.2, 3.8, 9.6, 2.0, 10.6, min_h=2)
-    g.line(11.0, 9.0, 12.0, 6.6); g.line(10.4, 8.4, 11.4, 6.0)
-    g.ell(12.0, 5.3, 2.3, 2.1)
-    g.run(13.8, 6.2, bill)
-    g.legs([6.4, 8.6], 13)
-    g.wing([(4.2, 10.2), (7.0, 11.2), (9.6, 10.4)])
-    return g
-
-def _swan(k=1.0, bill=3):
-    g = B(k)
-    g.ell(6.6, 11.8, 5.4, 2.9)
-    g.tri(0.8, 8.4, 3.6, 10.6, 1.8, 11.6, min_h=2)
-    for (a, b) in (((10.0, 10.6), (11.8, 7.6)), ((11.8, 7.6), (10.6, 4.8)), ((10.6, 4.8), (11.4, 3.2))):
-        g.line(a[0], a[1], b[0], b[1]); g.line(a[0] + 1, a[1], b[0] + 1, b[1])
-    g.ell(11.6, 2.6, 1.9, 1.6)
-    g.run(13.1, 3.0, bill)
-    g.legs([6.4, 8.4], 14)
-    g.wing([(3.6, 11.0), (6.8, 12.2), (9.6, 11.4)])
-    return g
-
-def _heron(k=1.0, bill=4):
-    g = B(k)
-    g.ell(7.0, 8.6, 4.2, 2.4)
-    g.tri(1.0, 6.8, 3.4, 8.2, 2.0, 9.8, min_h=2)
-    g.line(10.2, 7.6, 11.2, 3.8); g.line(11.2, 7.6, 12.0, 3.8)
-    g.ell(11.8, 2.6, 1.8, 1.5)
-    g.run(13.2, 2.9, bill)
-    g.legs([7.4, 9.2], 10.6)
-    g.wing([(4.8, 8.2), (7.0, 9.4), (9.4, 8.6)])
-    return g
-
-def _pigeon(k=1.0, tail=3.0, plump=0.0):
-    g = B(k)
-    g.ell(7.4, 10.2, 5.3 + plump, 4.0 + plump * 0.5)
-    g.ell(9.9, 7.6, 2.8, 2.5)
-    g.ell(11.3, 6.1, 2.1, 1.9)
-    if tail:
-        g.line(3.0, 10.8, 3.0 - tail, 10.8 + tail * 0.9); g.line(3.8, 11.8, 3.8 - tail, 11.8 + tail * 0.9)
-    g.beak(13.2, 6.3, 2)
-    g.legs([6.4, 8.8], 13.6)
-    g.wing([(4.4, 9.2), (7.0, 11.4), (9.4, 10.6)])
-    return g
-
-def _build(fn, head, eye, body, **kw):
-    by = {}
-    for stage, k in SIZES.items():
-        g = fn(k=k, **kw)
-        hx, hy = _T(k, head[0], head[1]); ex, ey = _T(k, eye[0], eye[1])
-        g._raw(ex, ey, 0)
-        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, head[2] * k)), eye=(round(ex), round(ey)),
-                         body=(_T(k, body[0], 0)[0], _T(k, body[1], 0)[0]))
-    return dict(by_stage=by)
-
-ARCH_BIRD = {
- 'bird_chick':   _build(_chick, (9.4, 7.0, 2.8), (10.6, 6.4), (3, 11)),
- 'bird_round':   _build(_chick, (9.4, 7.0, 2.8), (10.6, 6.4), (3, 11), tuft=2, round_=0.6),
- 'bird_song':    _build(_song, (10.2, 6.3, 2.5), (11.0, 5.7), (3, 12)),
- 'bird_finch':   _build(_song, (10.2, 6.3, 2.5), (11.0, 5.7), (3, 12), tail=2.6, belly=0.5, beak=2),
- 'bird_long':    _build(_song, (10.2, 6.3, 2.5), (11.0, 5.7), (3, 12), tail=4.2),
- 'bird_owl':     _build(_owl, (8.4, 5.2, 3.4), (10.0, 4.8), (4, 12)),
- 'bird_owl_fat': _build(_owl, (8.4, 5.2, 3.4), (10.0, 4.8), (3, 12), belly=0.8),
- 'bird_raptor':  _build(_raptor, (10.3, 4.8, 2.4), (11.1, 4.3), (3, 11)),
- 'bird_hawk':    _build(_raptor, (10.3, 4.8, 2.4), (11.1, 4.3), (2, 11), tail=4.2, chest=0.6),
- 'bird_phoenix': _build(_raptor, (10.3, 4.8, 2.4), (11.1, 4.3), (4, 11), tail=0, wing=False, chest=0.4),
- 'bird_eagle':   _build(_raptor, (10.3, 4.8, 2.4), (11.1, 4.3), (4, 11), tail=0, wing=False, chest=0.6),
- 'bird_songfan': _build(_song, (10.2, 6.3, 2.5), (11.0, 5.7), (4, 12), tail=0, wing=False),
- 'bird_doveshow': _build(_pigeon, (11.3, 6.1, 1.9), (12.0, 5.6), (4, 12), tail=0),
- 'bird_duck':    _build(_duck, (12.0, 5.3, 2.1), (12.8, 4.8), (1, 12)),
- 'bird_swan':    _build(_swan, (11.6, 2.6, 1.7), (12.2, 2.2), (1, 12)),
- 'bird_heron':   _build(_heron, (11.8, 2.6, 1.6), (12.4, 2.2), (2, 11)),
- 'bird_pigeon':  _build(_pigeon, (11.3, 6.1, 1.9), (12.0, 5.6), (3, 12)),
- 'bird_pigeon_fat': _build(_pigeon, (11.3, 6.1, 1.9), (12.0, 5.6), (3, 12), plump=0.8),
-}
+ARCH_BIRD = {'bird_' + k: v for k, v in ART.items()}
 spritegen.register_archetypes(ARCH_BIRD)
 
 # ---- decorations -------------------------------------------------------------------------------------------
