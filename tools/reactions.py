@@ -25,6 +25,9 @@ KIND_OF = {
     'bun_baby': 'bunbaby', 'bun_sit': 'bunny', 'bun_hare': 'hare', 'bun_hare2': 'hare', 'bun_lop': 'lop', 'bun_plump': 'lop', 'bun_pika': 'pika',
     'bun_ham': 'hamster', 'bun_hamfat': 'hamster', 'bun_pig': 'guineapig', 'bun_pigfl': 'guineapig', 'bun_chin': 'chinchilla', 'bun_chinfl': 'chinchilla',
     'bun_dor': 'dormouse', 'bun_dorfl': 'dormouse',
+    'bun_baby2': 'bunbaby', 'bun_scruffsit': 'bunny', 'bun_moonrab': 'bunny', 'bun_fluffy': 'lop', 'bun_mop': 'lop',
+    'bun_loploaf': 'lop', 'bun_loptall': 'lop', 'bun_lopelder': 'lop', 'bun_harestray': 'hare', 'bun_hareleap': 'hare', 'bun_harecrouch': 'hare', 'bun_harecrouchstray': 'hare', 'bun_haregaunt': 'hare', 'bun_haresoar': 'hare',
+    'bun_hamsit': 'hamster', 'bun_hamking': 'hamster', 'bun_pikaup': 'pika', 'bun_dorcurl': 'dormouse',
     # dragon
     'dr_hatch': 'wyrmling', 'dr_west': 'westdragon', 'dr_westwide': 'westdragon', 'dr_westlow': 'westdragon', 'dr_east': 'eastdragon', 'dr_eastlong': 'eastdragon',
     'dr_hoard': 'hoarder', 'dr_hoardfat': 'hoarder', 'dr_stray': 'lizard', 'dr_wyv': 'wyvern', 'dr_drake': 'drake', 'dr_wurm': 'wurm', 'dr_wurmup': 'wurm',
