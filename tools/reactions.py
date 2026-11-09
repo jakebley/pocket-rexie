@@ -13,9 +13,7 @@ KIND_OF = {
     'fish_horse': 'seahorse', 'fish_angler': 'angler', 'fish_angler2': 'angler', 'fish_eel': 'eel', 'fish_jelly': 'jelly', 'fish_jelly3': 'jelly',
     'fish_ray': 'ray', 'fish_whale': 'whale',
     # bird
-    'bird_chick': 'chick', 'bird_round': 'chick', 'bird_owl': 'owl', 'bird_owl_fat': 'owl', 'bird_duck': 'duck', 'bird_pigeon': 'pigeon', 'bird_pigeon_fat': 'pigeon',
-    'bird_song': 'songbird', 'bird_finch': 'songbird', 'bird_hawk': 'raptorbird', 'bird_raptor': 'raptorbird', 'bird_eagle': 'raptorbird',
-    'bird_heron': 'heron', 'bird_long': 'heron', 'bird_swan': 'swan', 'bird_phoenix': 'phoenix', 'bird_songfan': 'songfan', 'bird_doveshow': 'doveshow',
+    'bird_downy': 'chick', 'bird_pipkin': 'chick', 'bird_chirp': 'chick', 'bird_owlet': 'owl', 'bird_owl': 'owl', 'bird_hornowl': 'owl', 'bird_moonfeather': 'owl', 'bird_ducklet': 'duck', 'bird_mallard': 'duck', 'bird_teal': 'duck', 'bird_scruff': 'pigeon', 'bird_dustling': 'pigeon', 'bird_sootwing': 'pigeon', 'bird_ledgewing': 'pigeon', 'bird_tatterdove': 'pigeon', 'bird_duskdove': 'doveshow', 'bird_sparrow': 'songbird', 'bird_robin': 'songbird', 'bird_finch': 'songbird', 'bird_lark': 'songbird', 'bird_jay': 'songbird', 'bird_nightingale': 'songbird', 'bird_prismlark': 'songfan', 'bird_hawk': 'raptorbird', 'bird_falcon': 'raptorbird', 'bird_peregrine': 'raptorbird', 'bird_harrier': 'raptorbird', 'bird_kingfisher': 'raptorbird', 'bird_stormtalon': 'raptorbird', 'bird_emberwing': 'phoenix', 'bird_heron': 'heron', 'bird_egret': 'heron', 'bird_tidecrane': 'heron', 'bird_swan': 'swan', 'bird_goose': 'swan', 'bird_snowcrest': 'swan',
     # cat
     'cat_kitten': 'kitten', 'cat_stand': 'cat', 'cat_lean': 'catlean', 'cat_bob': 'catlean', 'cat_loaf': 'loaf', 'cat_round': 'catround', 'cat_sit': 'catsit', 'cat_king': 'catking',
     # spirits
