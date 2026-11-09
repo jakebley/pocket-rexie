@@ -394,14 +394,91 @@ function gardenLive(b: Buf, s: Scene) {
   });
 }
 
+// ---------- space (alien) ----------
+const SAUCER_X = 3, SAUCER_Y = 47;
+function crystal(b: Buf, x: number, top: number, w: number, h: number, l: number) {
+  cone(b, x + (w >> 1), top, top + 3, 0.75, l);
+  b.rect(x, top + 4, w, h - 4, l);
+  b.set(x + (w >> 1), top - 1, l);
+}
+const spaceBack: Painter = (b, phase) => {
+  // starfield: tiny dim stars, a few two-pixel dashes
+  for (let i = 0; i < 60; i++) {
+    const x = Math.floor(rnd(i + 7) * N), y = 2 + Math.floor(rnd(i + 91) * 50);
+    b.set(x, y, Layer.STARFIELD);
+    if (i % 9 === 0) b.set(x + 1, y, Layer.STARFIELD);
+  }
+  // a small far moon
+  disc(b, 11, 21, 3, Layer.HULL); b.set(10, 20, Layer.CRATER); b.set(12, 22, Layer.CRATER);
+  // the ringed planet: ring behind, disc with bands and a shadowed limb, ring in front
+  const cx = 49, cy = 28;
+  const ring = (front: boolean) => {
+    for (let k = 0; k < 120; k++) {
+      const a = (k / 120) * Math.PI * 2, sn = Math.sin(a);
+      if ((sn >= 0) !== front) continue;
+      const x = Math.round(cx + Math.cos(a) * 15), y = Math.round(cy + sn * 3.6 + Math.cos(a) * 2.6);
+      b.set(x, y, Layer.CRAG);
+    }
+  };
+  ring(false);
+  disc(b, cx, cy, 8, Layer.PLANET);
+  for (let y = cy - 8; y <= cy + 8; y++) for (let x = cx - 8; x <= cx + 8; x++) {
+    const dx = x - cx, dy = y - cy;
+    if (dx * dx + dy * dy > 8 * 8 + 0.5) continue;
+    if (dx * 0.62 + dy * 0.78 > 3.6 || dy === -3 || dy === 2) b.set(x, y, Layer.PLANET_SHADE);
+  }
+  ring(true);
+  // lunar horizon: low rolling hills of grey rock with pits
+  for (let x = 0; x < N; x++) {
+    const h = Math.round(5 + 2.4 * Math.sin(x / 9) + 1.4 * Math.sin(x / 4 + 1));
+    vline(b, x, 59 - h, 59, Layer.ROCK);
+  }
+  for (const [x, y, w] of [[24, 56, 4], [41, 54, 5], [57, 57, 3]] as [number, number, number][]) { hline(b, x - w, x + w, y, Layer.CRATER); hline(b, x - w + 1, x + w - 1, y + 1, Layer.CRATER); }
+  // a landed saucer, left: legs, rim, dome, windows
+  const sx = SAUCER_X, sy = SAUCER_Y;
+  vline(b, sx + 2, sy + 8, 58, Layer.HULL); vline(b, sx + 11, sy + 8, 58, Layer.HULL); hline(b, sx + 1, sx + 3, 59, Layer.HULL); hline(b, sx + 10, sx + 12, 59, Layer.HULL);
+  for (let y = 0; y < 5; y++) { const hw = Math.round(7 * Math.sqrt(1 - ((y - 2) / 2.6) ** 2)); hline(b, sx + 7 - hw, sx + 7 + hw, sy + 3 + y, Layer.HULL); }
+  hline(b, sx + 3, sx + 11, sy + 7, Layer.PLANET_SHADE);
+  for (let y = 0; y < 4; y++) { const hw = [1, 2, 3, 3][y]; hline(b, sx + 7 - hw, sx + 7 + hw, sy - 1 + y, Layer.HULL); }
+  hline(b, sx + 6, sx + 8, sy + 1, Layer.CRYSTAL);
+  // glowing crystals, right: tall and short prisms
+  const glow = phase !== 'day';
+  for (const [x, top, w, h] of [[55, 42, 3, 17], [59, 47, 3, 12], [51, 50, 2, 9]] as [number, number, number, number][]) {
+    crystal(b, x, top, w, h, Layer.CRYSTAL);
+    if (glow) for (let dy = -3; dy < h + 1; dy++) for (let dx = -3; dx < w + 3; dx++) if ((dx + dy) % 2 === 0 && (dx < 0 || dx >= w || dy < 0) && !(x + dx >= N)) b.set(x + dx, top + dy, Layer.CRYSTAL);
+  }
+};
+const spaceFore: Painter = (b) => {
+  for (const x of [8, 20, 34, 46]) { hline(b, x, x + 2, 58, Layer.ROCK); hline(b, x - 1, x + 3, 59, Layer.ROCK); }
+  spr(b, ['.C.', 'CCC', 'CCC'], 29, 56, { C: Layer.CRYSTAL }); spr(b, ['.C.', 'CCC'], 14, 57, { C: Layer.CRYSTAL });
+  for (let x = 2; x < N; x += 7) b.set(x, 62, Layer.CRATER);
+  for (let x = 5; x < N; x += 9) { b.set(x, 63, Layer.CRATER); b.set(x + 1, 63, Layer.CRATER); }
+};
+const SPACE_TW: [number, number][] = [[6, 8], [14, 30], [23, 18], [31, 34], [38, 10], [45, 44], [58, 14], [61, 36], [4, 40], [27, 46]];
+function spaceLive(b: Buf, s: Scene) {
+  const T = tickOf(s);
+  SPACE_TW.forEach(([x, y], i) => {
+    if (((T >> 2) + i * 3) % 5 === 0) return;
+    b.set(x, y, Layer.TWINKLE);
+    if (i % 3 === 0) { b.set(x - 1, y, Layer.TWINKLE); b.set(x + 1, y, Layer.TWINKLE); b.set(x, y - 1, Layer.TWINKLE); b.set(x, y + 1, Layer.TWINKLE); }
+  });
+  // a shooting star every few seconds
+  const u = (T >> 1) % 60;
+  if (u < 14) for (let k = 0; k < 4; k++) b.set(Math.round(10 + u * 3.6 - k * 1.5), Math.round(18 + u * 1.6 - k * 0.7), Layer.TWINKLE);
+  // the saucer's lights blink in turn; a crystal tip glints
+  const leds: [number, number][] = [[SAUCER_X + 2, SAUCER_Y + 6], [SAUCER_X + 7, SAUCER_Y + 7], [SAUCER_X + 12, SAUCER_Y + 6]];
+  leds.forEach(([x, y], i) => b.set(x, y, ((T >> 3) + i) % 3 === 0 ? Layer.LED_A : ((T >> 3) + i) % 3 === 1 ? Layer.LED_B : Layer.HULL));
+  if (((T >> 3) % 4) === 0) { b.set(56, 41, Layer.TWINKLE); b.set(56, 40, Layer.TWINKLE); }
+}
+
 // ---------- dispatch ----------
 const STATIC_BACK: Partial<Record<Biome, Painter>> = {
   woods: woodsBack, underwater: waterBack, sky: skyBack, yard: yardBack, clouds: cloudsBack, ember: emberBack,
-  warren: warrenBack, crags: cragsBack, workshop: workshopBackStatic, swamp: swampBack, garden: gardenBack,
+  warren: warrenBack, crags: cragsBack, workshop: workshopBackStatic, swamp: swampBack, garden: gardenBack, space: spaceBack,
 };
 const STATIC_FORE: Partial<Record<Biome, Painter>> = {
   woods: woodsFore, underwater: waterFore, sky: skyFore, yard: yardFore, clouds: cloudsFore, ember: emberFore,
-  warren: warrenFore, crags: cragsFore, workshop: workshopFore, swamp: swampFore, garden: gardenFore,
+  warren: warrenFore, crags: cragsFore, workshop: workshopFore, swamp: swampFore, garden: gardenFore, space: spaceFore,
 };
 
 /** Scenery behind the meadow layers (trees, hills, mountains, walls, water light...). Call on an empty buffer, before drawSky. */
@@ -420,6 +497,7 @@ export function drawBackdrop(b: Buf, s: Scene, biome: Biome) {
     case 'workshop': workshopLive(b, s); break;
     case 'swamp': swampLive(b, s); break;
     case 'garden': gardenLive(b, s); break;
+    case 'space': spaceLive(b, s); break;
   }
 }
 /** Floor props, painted only into pixels the meadow layers left unlit. Call after drawGround. */

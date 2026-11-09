@@ -28,9 +28,11 @@ export const Layer = {
   BURROW: 81, CLOVER: 82, CARROT: 83, DAISY: 84, DAISY_C: 85, LEAF_BIG: 86,
   // ---- pet eyes (Technicolor only, like scenery: Traditional leaves the unlit eye hole unlit). Opaque pupil and catch-light that fill the hole ----
   EYE_FILL: 87, EYE_SHINE: 88,
+  // ---- space biome (aliens): starfield, planet, moon pits, glowing crystals, saucer hull ----
+  STARFIELD: 89, PLANET: 90, PLANET_SHADE: 91, CRATER: 92, CRYSTAL: 93, HULL: 94,
 } as const;
 export type LayerCode = (typeof Layer)[keyof typeof Layer];
-export const LAYER_COUNT = 89;
+export const LAYER_COUNT = 95;
 /** First biome-scenery layer. Codes from here up are Technicolor-only (Traditional draws them unlit), except the cue layers. */
 export const SCENERY_FROM = Layer.BARK;
 /** Does Traditional mode draw this layer code? (Shared layers 1..30 and the three cues: yes. Scenery: no.) */

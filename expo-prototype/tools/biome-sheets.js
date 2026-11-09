@@ -46,12 +46,12 @@ async function main() {
     console.log('wrote', file);
   };
   const pick = (fam, mode, dark, ph) => data.find((d) => d.fam === fam && d.mode === mode && d.dark === dark && d.ph === ph);
-  const lightGroups = [['dino', 'fox', 'fish', 'bird'], ['cat', 'spirits', 'ember', 'bunny'], ['dragon', 'bot', 'slime', 'bug']];
+  const lightGroups = [['dino', 'fox', 'fish', 'bird'], ['cat', 'spirits', 'ember', 'bunny'], ['dragon', 'bot', 'slime', 'bug'], ['alien']];
   for (let i = 0; i < lightGroups.length; i++) {
     await sheet(`biomes-light-${i + 1}.png`, 'Technicolor, light appearance: day, dusk, night, rain (one adult per family)',
       lightGroups[i].map((f) => ({ label: f, cells: ['day', 'dusk', 'night', 'rain'].map((ph) => ({ c: pick(f, 'technicolor', false, ph), label: `${pick(f, 'technicolor', false, ph).id.replace(/^.*?_/, '')} ${ph}` })) })), 4, 192);
   }
-  const all = ['dino', 'fox', 'fish', 'bird', 'cat', 'spirits', 'ember', 'bunny', 'dragon', 'bot', 'slime', 'bug'];
+  const all = ['dino', 'fox', 'fish', 'bird', 'cat', 'spirits', 'ember', 'bunny', 'dragon', 'bot', 'slime', 'bug', 'alien'];
   await sheet('biomes-dark.png', 'Technicolor, dark appearance: day, night, rain', all.map((f) => ({ label: f, cells: ['day', 'night', 'rain'].map((ph) => ({ c: pick(f, 'technicolor', true, ph), label: ph })) })), 3, 128);
   await sheet('biomes-traditional.png', 'Traditional mode, day and night (fox, fish and dino: the background stays the plain scene)',
     ['dino', 'fox', 'fish', 'bunny', 'dragon'].map((f) => ({ label: f, cells: ['day', 'night'].map((ph) => ({ c: pick(f, 'traditional', false, ph), label: `traditional ${ph}` })) })), 2, 192);

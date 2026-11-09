@@ -4,7 +4,7 @@
 cd "$(dirname "$0")/.." || exit 1
 OUT=${1:-docs/screens}
 PICK=${PICK:-0}
-for fam in dino fox fish bird cat spirits bunny dragon bot slime bug; do
+for fam in dino fox fish bird cat spirits bunny dragon bot slime bug alien; do
   ids=$(npx tsx -e "
 import { SPECIES } from './src/core/speciesData';
 const pick = ${PICK};

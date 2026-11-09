@@ -177,7 +177,7 @@ const render = (p: Pet, sc: Scene, biome?: Biome) => { const b = new Buf(SCENE_N
   ok(lum(uw('day')) > lum(uw('dusk')) && lum(uw('dusk')) > lum(uw('night')) && lum(uw('day')) > lum(uw('day', true)), 'underwater: brighter by day, deep at night, darker in rain');
   ok(new Set(BIOMES.map((b) => skyFor({ mode: 'technicolor', dark: false }, 'day', false, b))).size >= 9, 'biomes have distinct day skies');
   // render every family in every phase and appearance
-  const fams = ['dino', 'fox', 'fish', 'bird', 'cat', 'spirits', 'bunny', 'dragon', 'bot', 'slime', 'bug'];
+  const fams = ['dino', 'fox', 'fish', 'bird', 'cat', 'spirits', 'bunny', 'dragon', 'bot', 'slime', 'bug', 'alien'];
   const ids = [...fams.map((f) => SPECIES.find((s) => s.family === f && s.stage === 'adult')!.id), 'spirits_emberhorn'];
   for (const id of ids) {
     const p = petOf(id, 8);

@@ -96,6 +96,7 @@ const T_LIGHT: Record<number, string> = {
   [Layer.TWINKLE]: '#F2C84E', [Layer.CLOUD_SHADE]: '#DCE6F2', [Layer.EMBER]: '#FF9A3C', [Layer.ASH]: '#8A8284', [Layer.ROCK]: '#6E6560', [Layer.CRAG]: '#8F8092', [Layer.CAVE]: '#3A3038', [Layer.LAVA]: '#F2663A',
   [Layer.GRIDLINE]: '#5CC8C4', [Layer.PANEL]: '#6A7794', [Layer.GEAR]: '#9AA4B8', [Layer.LED_A]: '#6CF08C', [Layer.LED_B]: '#F2605A', [Layer.SCREEN]: '#7CE4F0', [Layer.CABLE]: '#2E3446',
   [Layer.STALAC]: '#54665C', [Layer.GLOW_SHROOM]: '#5FF0C0', [Layer.PUDDLE]: '#3F8074', [Layer.DEW]: '#D4EEF6',
+  [Layer.STARFIELD]: '#C8D0F0', [Layer.PLANET]: '#C98A9E', [Layer.PLANET_SHADE]: '#8A5A86', [Layer.CRATER]: '#4A4C6A', [Layer.CRYSTAL]: '#7CF0E4', [Layer.HULL]: '#A8B0C8',
   [Layer.BURROW]: '#3A2C20', [Layer.CLOVER]: '#82B055', [Layer.CARROT]: '#E98A36', [Layer.DAISY]: '#F6F2E4', [Layer.DAISY_C]: '#F0C640', [Layer.LEAF_BIG]: '#5FA64C',
 };
 
@@ -132,17 +133,22 @@ const REMAP: Partial<Record<Biome, Remap>> = {
     [Layer.GRASS]: '#4F7A3E', [Layer.GROUND]: '#3C4A34', [Layer.DIRT]: '#2A3628', [Layer.FLOWER_A]: '#7CE0B0', [Layer.FLOWER_B]: '#B8E86C', [Layer.BUTTERFLY]: '#B8F070',
   },
   garden: { [Layer.GRASS]: '#5C9A44', [Layer.GROUND]: '#8E7048', [Layer.DIRT]: '#6E5636' },
+  space: {
+    [Layer.SUN]: '#FFE7A0', [Layer.MOON]: '#E8E4F6', [Layer.STAR]: '#FFFFFF', [Layer.CLOUD]: '#6D5CA6', [Layer.RAIN]: '#9CE8F0',
+    [Layer.GRASS]: '#8C8EAA', [Layer.GROUND]: '#6E7090', [Layer.DIRT]: '#52546E', [Layer.FLOWER_A]: '#6CF0D8', [Layer.FLOWER_B]: '#F08AD0', [Layer.BUTTERFLY]: '#FFD870',
+    [Layer.CRAG]: '#C8B2F0', [Layer.ROCK]: '#5A5C7C',
+  },
 };
 /** Layers that glow: they keep their colour at dusk and night instead of sinking into the shade. */
 const GLOWS = new Set<number>([
   Layer.SUN, Layer.MOON, Layer.STAR, Layer.SPARK, Layer.WATER_LIGHT, Layer.FIREFLY, Layer.WINDOW, Layer.LAVA, Layer.EMBER, Layer.LED_A, Layer.LED_B,
-  Layer.SCREEN, Layer.GLOW_SHROOM, Layer.TWINKLE, Layer.AIR_BUBBLE, Layer.WAVE, Layer.GRIDLINE,
+  Layer.SCREEN, Layer.GLOW_SHROOM, Layer.TWINKLE, Layer.AIR_BUBBLE, Layer.WAVE, Layer.GRIDLINE, Layer.STARFIELD, Layer.CRYSTAL,
 ]);
 const SCENERY_OLD = new Set<number>([Layer.GRASS, Layer.GROUND, Layer.DIRT, Layer.FLOWER_A, Layer.FLOWER_B, Layer.CLOUD, Layer.BUTTERFLY]);
 const isScenery = (l: number) => l >= Layer.WAVE || SCENERY_OLD.has(l);
 /** Phase shade of non-glowing scenery: [colour, amount]. Night also sinks per biome (underwater goes deep blue). */
 const SHADE_NIGHT = 0.42;
-const SHADE_NIGHT_TINT: Partial<Record<Biome, string>> = { underwater: '#0C2A52', swamp: '#0C1A18', workshop: '#141830', ember: '#1A0C10' };
+const SHADE_NIGHT_TINT: Partial<Record<Biome, string>> = { underwater: '#0C2A52', swamp: '#0C1A18', workshop: '#141830', ember: '#1A0C10', space: '#0A0C26' };
 function shadeFor(ctx: PaletteCtx): [string, number] | null {
   if (ctx.phase === 'night') return [SHADE_NIGHT_TINT[ctx.biome ?? 'meadow'] ?? '#101830', SHADE_NIGHT];
   if (ctx.rain && (ctx.phase === 'day' || ctx.phase === 'dusk')) return [ctx.biome === 'underwater' ? '#0E3A5E' : '#5A6A78', ctx.biome === 'underwater' ? 0.3 : 0.14];
@@ -164,10 +170,11 @@ const SKY_BIOME: Record<Exclude<Biome, 'meadow'>, Record<Phase | 'rain', string>
   workshop: { dawn: '#4F5B76', day: '#56627C', dusk: '#4E5872', night: '#262B40', rain: '#56627C' },
   swamp: { dawn: '#2E4A42', day: '#2F4C44', dusk: '#2A403C', night: '#16262A', rain: '#28403E' },
   garden: { dawn: '#E3D2A8', day: '#B5D8A0', dusk: '#D0A78F', night: '#26364A', rain: '#9DB0A0' },
+  space: { dawn: '#3A2E72', day: '#231E56', dusk: '#34226A', night: '#0A0C2A', rain: '#1E2150' },
 };
 const SOIL_BIOME: Record<Exclude<Biome, 'meadow'>, string> = {
   woods: '#7A6444', underwater: '#BCA874', sky: '#7C5E3C', yard: '#B9A27A', clouds: '#E4DEF2', ember: '#3A2E30',
-  warren: '#9A7B55', crags: '#625850', workshop: '#3C445A', swamp: '#2C3A2A', garden: '#6E5A3E',
+  warren: '#9A7B55', crags: '#625850', workshop: '#3C445A', swamp: '#2C3A2A', garden: '#6E5A3E', space: '#44466A',
 };
 /** Does the biome's backdrop read as dark in this phase (HUD glyphs and rim light use the night palette)? */
 export const darkSky = (biome: Biome, phase: Phase): boolean => phase === 'night' || ALWAYS_DARK.has(biome);

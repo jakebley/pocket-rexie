@@ -12,9 +12,9 @@ final class FamilyTests: XCTestCase {
     /// 09:00 UTC on a Monday.
     private let start = Date(timeIntervalSince1970: 1_767_603_600)
 
-    private let familyIDs = ["dino", "fox", "fish", "bird", "cat", "spirits", "bunny", "dragon", "bot", "slime", "bug"]
+    private let familyIDs = ["dino", "fox", "fish", "bird", "cat", "spirits", "bunny", "dragon", "bot", "slime", "bug", "alien"]
     private let dexSizes = ["dino": 39, "fox": 36, "fish": 38, "bird": 36, "cat": 36, "spirits": 36,
-                            "bunny": 35, "dragon": 35, "bot": 36, "slime": 36, "bug": 37]
+                            "bunny": 35, "dragon": 35, "bot": 36, "slime": 36, "bug": 37, "alien": 38]
 
     private func deadPet(family: String = "dino") -> Pet {
         var p = Pet(now: start)
