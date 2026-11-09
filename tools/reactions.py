@@ -33,6 +33,12 @@ KIND_OF = {
     'bot_orb': 'orb', 'bot_cube': 'orb', 'bot_tread': 'rover', 'bot_dozer': 'dozer', 'bot_handheld': 'handheld', 'bot_walkie': 'walkie', 'bot_junk': 'junkbot',
     'bot_boombox': 'boombox', 'bot_mech': 'mech', 'bot_mechw': 'mech', 'bot_crt': 'crt', 'bot_floppy': 'floppy', 'bot_drone': 'drone',
     'bot_toaster': 'toaster', 'bot_quad': 'quad', 'bot_modem': 'modem',
+    'bot_cogsy': 'rover', 'bot_pixel': 'handheld', 'bot_zapper': 'walkie', 'bot_boomlet': 'boombox', 'bot_clank': 'mech', 'bot_treadhead': 'dozer',
+    'bot_pixelkin': 'handheld', 'bot_cathode': 'crt', 'bot_floppet': 'floppy', 'bot_buzz': 'walkie', 'bot_whir': 'drone', 'bot_toastie': 'toaster',
+    'bot_rustbucket': 'quad', 'bot_bassline': 'boombox', 'bot_ironclad': 'mech', 'bot_bulldozer': 'dozer', 'bot_joypad': 'handheld',
+    'bot_phosphor': 'crt', 'bot_diskette': 'floppy', 'bot_rotor': 'drone', 'bot_chatter': 'walkie', 'bot_dialtone': 'modem', 'bot_crumb': 'toaster',
+    'bot_scrapper': 'quad', 'bot_titan': 'mech', 'bot_jukebox': 'boombox', 'bot_mainframe': 'crt', 'bot_oracle': 'floppy', 'bot_tempest': 'drone',
+    'bot_beacon': 'walkie', 'bot_gravelord': 'quad',
     # slime
     'slime_bead': 'jiggle', 'slime_dollop': 'jiggle', 'slime_drop': 'jiggle', 'slime_blob': 'jiggle', 'slime_gel': 'gel', 'slime_tall': 'gel',
     'slime_cap': 'shroom', 'slime_capfat': 'shroom', 'slime_morel': 'shroom', 'slime_puddle': 'puddle', 'slime_lump': 'lump', 'slime_lump2': 'lump',
