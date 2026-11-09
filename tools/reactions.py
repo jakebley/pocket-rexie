@@ -42,6 +42,8 @@ KIND_OF = {
     'bug_egg': 'bugegg', 'bug_nub': 'larva', 'bug_larva': 'larva', 'bug_fatgrub': 'larva', 'bug_pill': 'pill', 'bug_pupa': 'pupa', 'bug_flutter': 'butterfly',
     'bug_swallow': 'butterfly', 'bug_skimmer': 'dragonfly', 'bug_dragon': 'dragonfly', 'bug_fuzzmoth': 'moth', 'bug_moth': 'moth', 'bug_lady': 'ladybug',
     'bug_rhino': 'beetle', 'bug_stag': 'beetle', 'bug_firefly': 'firefly', 'bug_bumble': 'bee', 'bug_bee': 'bee', 'bug_ant': 'ant', 'bug_bigant': 'ant',
+    'bug_h_speck': 'bugegg', 'bug_h_nub': 'larva', 'bug_h_nibbler': 'larva', 'bug_h_pebble': 'pill', 'bug_h_buzzlet': 'larva', 'bug_h_husk': 'pupa', 'bug_h_flutterling': 'butterfly', 'bug_h_swallowtail': 'butterfly', 'bug_h_aurora': 'butterfly', 'bug_h_skimmer': 'dragonfly', 'bug_h_darner': 'dragonfly', 'bug_h_tempest': 'dragonfly', 'bug_h_fuzzmoth': 'moth', 'bug_h_dimwing': 'moth', 'bug_h_moonmoth': 'moth', 'bug_h_dunmoth': 'moth', 'bug_h_empress': 'moth', 'bug_h_ghostmoth': 'moth', 'bug_h_domeling': 'ladybug', 'bug_h_dotty': 'ladybug', 'bug_h_hornlet': 'beetle', 'bug_h_hornback': 'beetle', 'bug_h_pincher': 'beetle', 'bug_h_emperor': 'beetle', 'bug_h_bumble': 'bee', 'bug_h_bumbler': 'bee', 'bug_h_queen': 'bee',
+    'bug_h_glowbug': 'firefly', 'bug_h_lantern': 'firefly', 'bug_h_lanternglow': 'firefly', 'bug_h_mantlet': 'mantis', 'bug_h_leafblade': 'mantis', 'bug_h_jade': 'mantis',
     'bug_mantlet': 'mantis', 'bug_mantis': 'mantis', 'bug_roach': 'roach', 'bug_bigroach': 'roach',
     # alien
     'al_babe': 'alienbaby', 'al_orb': 'alienbaby', 'al_wobble': 'grey', 'al_wobblebig': 'grey', 'al_tall': 'grey', 'al_tallbig': 'grey', 'al_sage': 'grey',
