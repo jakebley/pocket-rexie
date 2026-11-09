@@ -1,196 +1,425 @@
-"""Dragon archetypes (16x16, facing right, ground on row 15), built from parts, natively at each stage size.
-A dragon is read from: a HORNED head with a snout, a LONG TAIL, and one of a few strong body plans:
- western (winged quadruped, long neck), wyvern (biped, wing-arms), eastern (S-curved serpent, no wings),
- lindwurm (low, two-legged, wingless), drake (small wingless quadruped with a frill), hoard (round and upright),
- hydra (several heads), coil (coiled around a hoard), stray (spindly lizard), hatch (wyrmling).
+"""Dragon archetypes (16x16, facing right, ground on row 15), built natively at each stage size from polygons, tapered paths and
+a few explicit pixels. Every body plan has its own silhouette:
+ west   four-legged western dragon: long neck, swept-back horns, snout with nostril, spined back, bat wing, spade tail
+ soar   the same dragon in flight: wings spread wide, legs tucked, tail streaming
+ rear   a big dragon reared up on its hind legs, wing open behind, jaws wide
+ wyv    biped wyvern: wing-arm with a wrist claw, head thrust forward, long barbed tail
+ east   serpentine eastern dragons: thick S-bodied ribbons with a mane, whiskers, antler horns and little claws
+ wurm   lindwurm: long low wingless body on two front legs, trailing tail
+ drake  small wingless quadruped with a frill; drakeheavy is the armoured, stocky one
+ hoard  round hoard-sitters; keeper stands upright; boulder / crystal are the jewelled lumps
+ hydra  three heads on fanned-out necks
+ coil   a serpent coiled round a hoard (gem) or a storm spiral
+ stray  spindly scruffy lizard
+ hatch  wyrmling in or out of the eggshell
 Also registers the dr_* decorations."""
 import os, sys, math
 sys.path.insert(0, os.path.dirname(__file__))
-from archetypes_fox import _G, W, _T
 import spritegen
 
-def _path(g, pts, r=1.1, n=10):
-    """stamp discs along a polyline: a thick, smooth curve (necks, serpent bodies, tails)"""
-    for a, b in zip(pts, pts[1:]):
-        for i in range(n + 1):
-            t = i / n
-            g.ell(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, r, r)
+W = 16
 
-def _head(g, hx, hy, r=1.9, snout=1.6, horn=1, down=0.0):
-    g.ell(hx, hy, r, r * 0.82)
-    g.ell(hx + r * 0.9, hy + 0.5 + down, snout, 0.85)
-    if horn:
-        g.line(hx - 0.6, hy - r * 0.6, hx - 2.4, hy - r - 1.6)
-        g.line(hx + 0.2, hy - r * 0.7, hx - 1.0, hy - r - 2.0)
+SS = 4  # supersampling: shapes are filled on a 64x64 grid and each pixel keeps a shape when it is covered enough
 
-def _legs(g, xs, top, foot=True):
-    for x in xs:
-        for y in range(int(top), 15): g.set(x, y)
-        if foot: g.set(x + 0.6, 15)
+class Cv:
+    """canvas with size factor k: design coordinates are for the full-size animal (pixel centres at integers, pixel i spans i-.5..i+.5)"""
+    def __init__(self, k=1.0, thr=0.42):
+        self.p = [[0] * W for _ in range(W)]      # final pixels (explicit set / erase)
+        self.f = [[0] * (W * SS) for _ in range(W * SS)]  # fine ink layer
+        self.k = k; self.thr = thr
+        self.ox = (W - 1) / 2 * (1 - k)
+    def T(self, x, y): return self.ox + x * self.k, 15 - (15 - y) * self.k
+    def get(self, x, y): return self.p[y][x] if 0 <= x < W and 0 <= y < W else 0
+    def _raw(self, x, y, v=1):
+        x, y = int(round(x)), int(round(y))
+        if 0 <= x < W and 0 <= y < W:
+            self.p[y][x] = v
+            for fy in range(SS):
+                for fx in range(SS): self.f[y * SS + fy][x * SS + fx] = v
+    def set(self, x, y, v=1):
+        x, y = self.T(x, y); self._raw(x, y, v)
+    def _fill(self, test, bb, v=1):
+        x0, y0, x1, y1 = bb
+        for fy in range(max(0, int((y0 + .5) * SS) - 1), min(W * SS, int((y1 + .5) * SS) + 2)):
+            for fx in range(max(0, int((x0 + .5) * SS) - 1), min(W * SS, int((x1 + .5) * SS) + 2)):
+                cx = (fx + 0.5) / SS - 0.5; cy = (fy + 0.5) / SS - 0.5
+                if test(cx, cy): self.f[fy][fx] = v
+    def ell(self, cx, cy, rx, ry, v=1):
+        cx, cy = self.T(cx, cy); rx = max(0.7, rx * self.k); ry = max(0.7, ry * self.k)
+        self._fill(lambda x, y: ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0, (cx - rx, cy - ry, cx + rx, cy + ry), v)
+    def poly(self, pts, v=1):
+        P = [self.T(x, y) for x, y in pts]; n = len(P)
+        def test(x, y):
+            inside = False; j = n - 1
+            for i in range(n):
+                xi, yi = P[i]; xj, yj = P[j]
+                if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi) + xi: inside = not inside
+                j = i
+            return inside
+        self._fill(test, (min(p[0] for p in P), min(p[1] for p in P), max(p[0] for p in P), max(p[1] for p in P)), v)
+    def path(self, pts, r0=1.0, r1=None, v=1, rmin=0.45):
+        r1 = r0 if r1 is None else r1
+        segs = list(zip(pts, pts[1:])); tot = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in segs) or 1
+        done = 0
+        for a, b in segs:
+            L = math.hypot(b[0] - a[0], b[1] - a[1]); n = max(2, int(L * 3))
+            for i in range(n + 1):
+                t = i / n; d = (done + L * t) / tot
+                cx, cy = self.T(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+                r = max(rmin, (r0 + (r1 - r0) * d) * self.k)
+                self._fill(lambda x, y: (x - cx) ** 2 + (y - cy) ** 2 <= r * r, (cx - r, cy - r, cx + r, cy + r), v)
+            done += L
+    def line(self, x0, y0, x1, y1, v=1, r=0.5): self.path([(x0, y0), (x1, y1)], r, r, v)
+    def rect(self, x0, y0, x1, y1, v=1):
+        (a, b), (c, d) = self.T(x0, y0), self.T(x1, y1)
+        x0_, x1_, y0_, y1_ = round(min(a, c)), round(max(a, c)), round(min(b, d)), round(max(b, d))
+        self._fill(lambda x, y: x0_ - .5 <= x <= x1_ + .5 and y0_ - .5 <= y <= y1_ + .5, (x0_, y0_, x1_, y1_), v)
+    def rows(self):
+        out = []
+        for y in range(W):
+            row = ""
+            for x in range(W):
+                cov = sum(self.f[y * SS + fy][x * SS + fx] for fy in range(SS) for fx in range(SS)) / (SS * SS)
+                row += "X" if (cov >= self.thr) else "."
+            out.append(row)
+        return out
 
-def _batwing(g, sx, sy, tipx, tipy, backx, backy, bite=True):
-    """bat wing: arm from the shoulder to the tip, then a scalloped membrane edge back to the body (a filled fan)"""
-    dx, dy = backx - tipx, backy - tipy
-    pts = [(tipx, tipy), (tipx - 1.4, tipy + dy * 0.62), (tipx + dx * 0.40, tipy + dy * 0.50),
-           (tipx + dx * 0.55, tipy + dy * 0.95), (tipx + dx * 0.80, tipy + dy * 0.80), (backx, backy)]
-    for a, b in zip(pts, pts[1:]):
-        g.tri(sx, sy, a[0], a[1], b[0], b[1], min_h=0)
-    g.line(sx, sy, tipx, tipy)
-    if bite:  # carve the finger gaps from the scalloped notches in toward the shoulder
-        for n in (pts[2], pts[4]):
-            g.line(n[0], n[1] - 0.2, n[0] + (sx - n[0]) * 0.45, n[1] + (sy - n[1]) * 0.45, 0)
+def wing(g, S, A, tips, notch_depth=0.4, carve=0.0, fingers=True):
+    """bat wing: shoulder S, wrist A, fingertip points `tips` (ordered from the wrist outward); the trailing edge scallops
+    back toward the wrist between the tips, and a thin gap is carved up each scallop so the fingers read"""
+    pts = [S, A]; notches = []
+    prev = A
+    for i, t in enumerate(tips):
+        if i > 0:
+            n = ((prev[0] + t[0]) / 2, (prev[1] + t[1]) / 2)
+            n = (n[0] + (A[0] - n[0]) * notch_depth, n[1] + (A[1] - n[1]) * notch_depth)
+            pts.append(n); notches.append(n)
+        pts.append(t); prev = t
+    pts.append((S[0] - 0.5, S[1] + 1.2))
+    g.poly(pts)
+    for n in (notches if carve else []):
+        g.path([n, (n[0] + (A[0] - n[0]) * carve, n[1] + (A[1] - n[1]) * carve)], 0.4, 0.3, v=0, rmin=0.3)
+    g.path([S, A], 0.6, 0.55)
+    if fingers:
+        for t in tips: g.path([A, t], 0.5, 0.45)
 
-# ---- bodies ------------------------------------------------------------------------------
-def _west(k=1.0, wing='up', fat=0.0, neck=1.0, horn=1, spade=True):
-    g = _G(k)
-    if wing == 'up': _batwing(g, 8.3, 8.4, 3.2, 0.2, 5.8, 8.0)
-    elif wing == 'wide': _batwing(g, 8.6, 8.2, 2.0, 1.4, 4.6, 8.0)
-    elif wing == 'fold': g.tri(8.0, 8.0, 3.6, 3.6, 5.4, 8.4, min_h=2)
-    g.ell(7.4, 10.6, 4.1 + fat, 2.5 + fat * 0.4)
-    _path(g, [(10.2, 9.0), (11.4, 6.8), (12.0, 5.4 + (1 - neck) * 2)], 1.0)
-    hy = 4.3 + (1 - neck) * 2.2
-    _head(g, 12.4, hy, 1.9, 1.7, horn)
-    _legs(g, (5.2, 6.4, 9.0, 10.2), 11.6 if not fat else 12.4)
-    _path(g, [(3.4, 11.0), (1.8, 11.9), (0.9, 13.2)], 0.9)
-    if spade: g.tri(0.0, 12.4, 0.2, 14.9, 2.6, 14.0, min_h=2)
-    return g
+def horn(g, a, b, r=0.8):
+    g.path([a, b], r, 0.45, rmin=0.5)
 
-def _wyv(k=1.0, lean=0.0, horn=1, sail=False):
-    g = _G(k)
-    _batwing(g, 9.0, 7.0, 3.6, 0.4, 6.2, 8.8)
-    g.ell(8.0, 9.4, 2.6, 3.4)
-    g.ell(7.6, 12.2, 1.9, 1.9)  # thigh
-    _legs(g, (7.4, 9.0), 13.2)
-    g.set(6.6, 15); g.set(10.0, 15)
-    _path(g, [(9.6, 7.0), (10.8, 5.2), (11.4, 4.0)], 0.95)
-    _head(g, 12.0, 3.4, 1.8, 1.6, horn)
-    _path(g, [(6.2, 11.6), (3.4, 12.8), (1.2, 12.6)], 0.9)
-    g.tri(-0.2, 11.4, 0.2, 13.8, 2.2, 12.6, min_h=2)  # barbed tail tip
-    g.set(9.8, 9.6); g.set(10.6, 10.6)  # tiny grasping forelimb
-    return g
-
-def _east(k=1.0, coils=1, mane=True):
-    g = _G(k)
-    pts = [(0.8, 12.6), (2.6, 10.4), (5.0, 10.6), (6.6, 13.0), (9.0, 13.4), (11.0, 11.4), (11.4, 8.6), (11.6, 6.0)]
-    if coils == 0: pts = [(1.0, 13.4), (4.0, 13.0), (7.0, 13.4), (10.0, 12.0), (11.4, 9.0), (11.8, 6.2)]
-    _path(g, pts, 1.1)
-    _path(g, [(11.6, 6.0), (12.2, 4.6)], 1.0)
-    g.ell(12.6, 3.9, 1.9, 1.5)
-    g.ell(14.2, 4.5, 1.2, 0.85)
-    g.line(12.0, 2.6, 10.4, 1.0); g.line(12.9, 2.4, 11.8, 0.4)
-    g.set(15, 6); g.line(14.6, 5.4, 15.2, 6.6)  # whisker
-    for (x, y) in ((6.0, 14.8), (9.5, 14.8)): g.set(x, y); g.set(x + 1, y)
-    if mane:
-        for (x, y) in ((11.0, 8.0), (10.2, 6.4), (10.4, 4.8)): g.set(x, y)
-    return g
-
-def _wurm(k=1.0, head_up=0.0, horn=1, hunch=0.0):
-    g = _G(k)
-    g.ell(6.6, 12.3, 5.0, 2.4 + hunch)
-    _path(g, [(10.4, 11.2), (11.8, 9.6 - head_up)], 1.0)
-    _head(g, 12.6, 8.6 - head_up, 1.9, 1.7, horn)
-    _legs(g, (8.8, 10.4), 13.0)
-    _path(g, [(2.4, 12.6), (0.8, 11.6), (0.6, 9.8)], 0.9)
-    g.set(3.4, 14.8); g.set(2.4, 14.8)  # rear belly drag
-    return g
-
-def _drake(k=1.0, horn=1, tail_up=True):
-    g = _G(k)
-    g.ell(7.0, 11.2, 3.6, 2.2)
-    _path(g, [(9.4, 10.0), (10.4, 8.4)], 1.1)
-    _head(g, 11.6, 7.4, 2.1, 1.6, horn)
-    g.line(9.6, 5.6, 8.4, 4.2); g.line(10.4, 5.2, 9.4, 3.6)  # frill spines
-    _legs(g, (5.0, 6.2, 8.6, 9.8), 12.0)
-    if tail_up: _path(g, [(3.8, 11.2), (1.8, 10.6), (1.0, 8.4), (2.0, 6.8)], 0.8)
-    else: _path(g, [(3.8, 11.8), (1.6, 13.0), (0.6, 14.0)], 0.8)
-    return g
-
-def _hoard(k=1.0, wing=True, big=0.0):
-    g = _G(k)
-    if wing: g.tri(5.6, 6.6, 2.4, 1.8, 4.6, 9.0, min_h=2)  # small wing sticking up behind
-    g.ell(7.4, 10.8, 4.0 + big, 3.7 + big * 0.5)
-    _path(g, [(9.4, 7.6), (10.0, 6.0)], 1.2)
-    _head(g, 10.6, 4.9, 2.4, 1.5, 1)
-    _path(g, [(4.0, 13.6), (1.8, 13.8), (0.8, 12.2), (1.4, 10.8)], 0.8)
-    _legs(g, (5.4, 6.4, 9.2, 10.2), 13.6)
-    g.set(11.2, 9.4)
-    return g
-
-def _hydra(k=1.0, heads=3):
-    g = _G(k)
-    g.ell(6.6, 11.6, 4.4, 2.6)
-    _legs(g, (4.8, 6.0, 8.8, 10.0), 12.6)
-    _path(g, [(3.0, 11.6), (1.4, 12.4), (0.6, 14.0)], 0.9)
-    _path(g, [(9.6, 10.0), (10.8, 6.6), (12.4, 3.4)], 0.85)   # high front neck (main head)
-    _head(g, 13.2, 2.4, 1.6, 1.3, 1)
-    _path(g, [(8.8, 9.6), (9.0, 6.0), (9.0, 3.4)], 0.8)       # tall middle neck
-    _head(g, 9.4, 2.0, 1.4, 1.1, 0)
-    if heads >= 3:
-        _path(g, [(6.4, 9.8), (5.4, 6.8), (4.6, 4.8)], 0.8)   # leaning rear neck
-        g.ell(4.8, 3.8, 1.3, 1.1); g.ell(6.0, 4.2, 0.9, 0.6)
-    return g
-
-def _coil(k=1.0, wing=True):
-    g = _G(k)
-    if wing: _batwing(g, 7.6, 8.0, 2.0, 1.2, 4.6, 8.4)
-    g.ell(7.0, 12.6, 6.0, 2.4)
-    g.ell(7.4, 12.8, 2.6, 0.9, 0)
-    _path(g, [(11.4, 11.4), (11.6, 8.0), (11.2, 5.8)], 1.1)
-    _head(g, 11.8, 4.4, 2.0, 1.6, 1)
-    _path(g, [(2.0, 12.2), (0.8, 10.8), (1.0, 9.2)], 0.8)
-    return g
-
-def _stray(k=1.0, horn=0):
-    g = _G(k)
-    g.ell(7.2, 11.4, 3.3, 1.5)
-    _path(g, [(9.6, 11.0), (10.8, 9.6)], 0.8)
-    g.ell(11.6, 9.2, 1.6, 1.3)
-    g.ell(13.0, 9.8, 1.3, 0.7)
-    g.line(10.8, 8.2, 10.0, 7.0)  # lone bent spine / ear
-    _legs(g, (5.0, 6.6, 8.6, 10.2), 12.4)
-    g.set(4.4, 15); g.set(8.0, 15)
-    _path(g, [(4.0, 11.4), (2.0, 12.0), (0.8, 11.0), (0.4, 13.4)], 0.65)
-    return g
-
-def _hatch(k=1.0, wing=True):
-    g = _G(k)
-    g.ell(6.2, 12.4, 3.4, 2.6)
-    g.ell(8.8, 8.2, 3.8, 3.4)
-    g.ell(11.9, 9.4, 1.5, 1.1)
-    g.line(7.6, 5.4, 6.8, 3.6); g.line(9.6, 5.0, 10.2, 3.2)  # horn nubs
-    if wing: g.line(4.6, 9.6, 2.8, 8.0); g.line(4.0, 10.6, 2.4, 9.6)
-    _path(g, [(3.2, 13.0), (1.4, 12.4), (1.0, 10.8)], 0.8)
-    for x in (5.0, 8.0): g.set(x, 15); g.set(x + 1, 15)
-    return g
+def head(g, hx, hy, r=1.9, snout=2.0, nostril=True, jaw=True, down=0.0, horns=1, hornlen=2.6):
+    """a dragon head facing right: skull, a boxy snout with a nostril notch, a heavier jaw, swept-back horns"""
+    g.ell(hx, hy, r, r * 0.85)
+    sx = hx + r * 0.6
+    g.poly([(sx, hy - 0.9 + down), (hx + r + snout, hy - 0.4 + down), (hx + r + snout, hy + 1.1 + down), (sx, hy + 1.3 + down)])
+    if jaw: g.path([(hx - 0.2, hy + r * 0.7), (hx + r + snout - 0.4, hy + 1.2 + down)], 0.5, 0.5, rmin=0.5)
+    if nostril: g.set(hx + r + snout - 0.9, hy - 0.4 + down, 0)
+    for i in range(horns):
+        sw = i * 1.2
+        horn(g, (hx - 0.2 + sw * 0.2, hy - r * 0.7), (hx - 0.2 - hornlen + sw * 0.1 - 0.4 * i, hy - r * 0.7 - hornlen * (0.55 - 0.1 * i)))
 
 SIZES = {1: 0.62, 2: 0.7, 3: 0.86, 4: 1.0, 5: 1.0}
 
-def _build(fn, hd, eye, body, **kw):
+def TT(k, x, y): return (W - 1) / 2 * (1 - k) + x * k, 15 - (15 - y) * k
+
+def build(fn, hd, eye, body, **kw):
     by = {}
     for stage, k in SIZES.items():
         g = fn(k=k, **kw)
-        hx, hy = _T(k, hd[0], hd[1]); ex, ey = _T(k, eye[0], eye[1])
+        hx, hy = TT(k, hd[0], hd[1]); ex, ey = TT(k, eye[0], eye[1])
         g._raw(ex, ey, 0)
         by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(round(ex), round(ey)),
-                         body=(_T(k, body[0], 0)[0], _T(k, body[1], 0)[0]))
+                         body=(TT(k, body[0], 0)[0], TT(k, body[1], 0)[0]))
     return dict(by_stage=by)
 
+def batwing(g, T, S, drop=2.2, n=3, tooth=1.6):
+    """a bat wing swept back from the shoulder S to the wing tip T: a straight arm along the top and a membrane hanging
+    below it with n pointed scallops (teeth) along the lower edge"""
+    ax, ay = T; sx, sy = S
+    # lower edge base runs parallel to the arm, `drop` below it
+    b0 = (ax + 0.6, ay + drop); b1 = (sx - 0.6, sy + 0.6)
+    pts = [T, S, b1]
+    base = [(b1[0] + (b0[0] - b1[0]) * i / n, b1[1] + (b0[1] - b1[1]) * i / n) for i in range(n + 1)]
+    for i in range(n):
+        a, b = base[i], base[i + 1]
+        tip = ((a[0] + b[0]) / 2 - 0.5, (a[1] + b[1]) / 2 + tooth)
+        pts.append(tip); pts.append(b)
+    pts.append((ax, ay + 1.0))
+    g.poly(pts)
+    g.path([T, S], 0.55, 0.6)
+
+
+def legs(g, xs, top=12, w=1):
+    for x in xs: g.rect(x, top, x + w - 1, 15)
+
+# ---------------- western dragons ----------------
+def west(k=1.0, wing_up=True):
+    g = Cv(k)
+    batwing(g, (0.4, 1.8), (7.8, 7.4), 2.4, 3, 1.5)
+    g.ell(6.8, 10.8, 4.4, 2.2); g.ell(9.6, 10.4, 1.9, 1.8)
+    g.path([(10.4, 9.8), (11.8, 8.2)], 1.5, 1.3)
+    head(g, 13.0, 7.6, 1.7, 1.2, horns=1, hornlen=2.4)
+    legs(g, (3, 6, 9))
+    g.path([(2.8, 11.0), (1.4, 12.0), (0.6, 13.2)], 1.1, 0.55)
+    g.poly([(-0.4, 12.4), (1.2, 12.8), (1.8, 14.8)])
+    return g
+
+def soar(k=1.0):
+    g = Cv(k)
+    batwing(g, (-0.2, 0.2), (7.4, 6.2), 2.8, 4, 1.7)
+    g.ell(7.0, 8.6, 4.0, 2.0); g.ell(9.4, 8.2, 1.9, 1.8)
+    g.path([(10.2, 7.8), (11.8, 6.4)], 1.4, 1.2)
+    head(g, 13.0, 5.6, 1.7, 1.2, horns=1, hornlen=2.2)
+    g.path([(3.4, 9.2), (1.6, 10.8), (1.4, 13.0), (3.0, 14.6)], 1.0, 0.5)   # streaming tail
+    g.poly([(2.2, 14.6), (4.6, 13.8), (4.0, 15.4)])
+    g.rect(6, 10, 6, 11); g.rect(9, 10, 9, 11)                              # tucked feet
+    return g
+
+def rear(k=1.0):
+    g = Cv(k)
+    batwing(g, (-0.2, 1.2), (6.8, 6.6), 2.6, 3, 1.5)
+    g.ell(8.4, 9.0, 2.7, 3.4)
+    g.path([(9.4, 6.4), (10.6, 4.6), (11.8, 3.6)], 1.5, 1.2)
+    head(g, 12.8, 3.0, 1.7, 1.3, horns=1, hornlen=2.2)
+    g.path([(10.4, 8.0), (12.4, 8.8)], 0.7, 0.55); g.set(13.2, 8.6); g.set(13.2, 9.6)   # clawed fore-arm
+    legs(g, (6, 9), 12, 2)
+    g.path([(6.0, 11.6), (3.2, 13.6), (1.0, 12.4), (0.6, 9.6)], 1.2, 0.55)
+    g.poly([(-0.4, 9.4), (1.6, 9.2), (0.8, 7.4)])
+    return g
+
+def wyv(k=1.0, droop=False):
+    g = Cv(k)
+    if not droop: batwing(g, (1.0, 2.0), (8.6, 6.8), 2.4, 3, 1.5); g.line(1.0, 2.0, 1.2, 0.6, 1, 0.5)
+    else:
+        g.poly([(8.6, 6.8), (7.0, 8.0), (0.2, 12.4), (2.0, 11.6), (2.4, 14.2), (4.2, 12.4), (5.4, 14.6), (6.2, 11.6)])
+    g.ell(8.2, 9.6, 2.7, 3.0)
+    g.path([(9.4, 7.4), (10.6, 5.6), (11.8, 5.0)], 1.3, 1.1)
+    head(g, 12.8, 4.6, 1.7, 1.3, horns=1, hornlen=2.2)
+    g.ell(7.6, 12.2, 1.9, 1.7); legs(g, (7,), 13, 2); g.rect(9, 15, 10, 15)
+    g.rect(9, 9.6, 10, 9.6); g.set(10.6, 10.4)
+    g.path([(5.8, 11.4), (3.0, 12.8), (0.8, 12.0)], 1.1, 0.5)
+    g.poly([(-0.4, 11.0), (0.4, 13.4), (2.0, 12.0)])
+    return g
+
+# ---------------- eastern dragons ----------------
+def east_head(g, hx, hy, tilt=0.0, big=1.0):
+    g.ell(hx, hy, 1.9 * big, 1.5 * big)
+    g.poly([(hx + 0.8, hy - 0.9), (hx + 3.0, hy - 0.8 + tilt), (hx + 3.0, hy + 0.5 + tilt), (hx + 0.8, hy + 1.3)])
+    g.set(hx + 2.4, hy - 0.8 + tilt, 0)                                    # nostril
+    g.path([(hx - 0.4, hy - 1.2), (hx - 2.6, hy - 1.6), (hx - 3.2, hy - 0.4)], 0.6, 0.4)   # horn sweeping back along the mane
+    g.path([(hx + 2.6, hy + 0.8), (hx + 2.2, hy + 2.2), (hx + 2.8, hy + 3.0)], 0.4, 0.4, rmin=0.4)   # whisker
+def mane(g, pts):
+    for (x, y) in pts: g.set(x, y)
+def claws(g, pts):
+    for (x, y) in pts: g.rect(x, y, x, y + 1)
+def east(k=1.0, legs=False):      # vertical S
+    g = Cv(k)
+    g.path([(12.6, 3.8), (11.8, 6.2), (8.6, 7.6), (5.0, 8.4), (3.2, 10.6), (4.8, 13.0), (8.4, 13.8), (12.6, 13.4)], 1.35, 0.6)
+    east_head(g, 12.8, 3.8)
+    mane(g, [(10.6, 4.4), (10.0, 6.4), (7.6, 6.0), (4.6, 7.0)])
+    claws(g, [(8, 14), (11, 14)]) if legs else None
+    return g
+def eelet(k=1.0):   # Ripple: comma, big head, tail curled up behind
+    g = Cv(k)
+    g.path([(12.2, 4.8), (11.0, 7.6), (8.4, 10.4), (5.4, 11.6), (2.8, 10.4), (2.2, 7.6)], 1.45, 0.6)
+    east_head(g, 12.4, 4.4, big=1.1)
+    mane(g, [(10.2, 5.6), (9.0, 8.0)])
+    return g
+def eastlong(k=1.0):  # flat wave, head mid height
+    g = Cv(k)
+    g.path([(0.4, 12.4), (2.0, 9.6), (3.8, 8.6), (5.2, 10.6), (6.4, 12.8), (8.2, 12.6), (9.6, 9.8), (11.2, 8.6)], 1.3, 0.5)
+    east_head(g, 12.8, 7.8, 0.2)
+    mane(g, [(9.2, 7.2)])
+    return g
+def eastloop(k=1.0):  # Skywhisker: serpent coiled in a ring
+    g = Cv(k)
+    g.path([(12.8, 4.2), (11.4, 7.0), (9.8, 10.6), (7.0, 12.4), (4.2, 11.0), (3.4, 8.2), (5.4, 6.4), (8.0, 7.4), (8.6, 9.6)], 1.2, 1.0)
+    g.path([(7.0, 12.4), (5.0, 14.0), (1.2, 14.2)], 1.0, 0.5)
+    east_head(g, 12.8, 4.2)
+    mane(g, [(10.4, 5.4), (9.6, 7.6), (6.4, 5.8), (3.2, 6.6)])
+    return g
+
+# ---------------- lindwurms ----------------
+def wurmdrag(k=1.0):
+    """scruffy low lindwurm: a thin undulating body hugging the ground, head down, ragged spikes"""
+    g = Cv(k)
+    g.path([(0.6, 12.0), (2.8, 13.6), (5.8, 12.4), (8.6, 13.4), (10.8, 12.2)], 1.3, 1.5)
+    g.path([(10.8, 12.2), (11.8, 11.0)], 1.5, 1.4)
+    head(g, 13.0, 10.8, 1.8, 1.3, horns=1, hornlen=2.0, down=0.3)
+    for x in (4.2, 7.0): g.poly([(x - 0.8, 12.0), (x, 10.2), (x + 0.8, 12.0)])
+    g.rect(10, 13, 10, 15); g.rect(12, 13, 12, 15)
+    return g
+def wurm(k=1.0, up=0.0, fat=0.0, drag=False):
+    g = Cv(k)
+    g.ell(6.6, 11.2, 4.7, 2.5 + fat)
+    g.path([(10.0, 10.6), (11.8, 8.8 - up)], 1.5, 1.3)
+    head(g, 13.0, 8.2 - up, 1.8, 1.3, horns=1, hornlen=2.2, down=0.2 if drag else 0)
+    for x in (5, 8, 11): g.set(x, 8.0 - fat)       # dorsal spines
+    legs(g, (9, 11), 12.4, 1)
+    g.path([(2.6, 12.0), (1.2, 11.4), (0.6, 8.6)], 1.3, 0.5)
+    g.rect(4, 13.6, 6, 15)  # rear belly foot
+    return g
+
+# ---------------- drakes ----------------
+def drake(k=1.0):
+    g = Cv(k)
+    g.ell(7.0, 11.2, 3.7, 2.0)
+    g.path([(9.4, 10.4), (10.6, 8.8)], 1.3, 1.2)
+    head(g, 12.2, 8.0, 1.9, 1.3, horns=1, hornlen=1.8)
+    g.poly([(10.4, 7.0), (8.2, 4.6), (9.4, 8.0)]); g.poly([(10.8, 6.4), (10.0, 3.8), (11.6, 7.2)])   # frill spines
+    legs(g, (4, 6, 9), 12.4)
+    g.path([(3.6, 11.4), (1.8, 11.0), (1.0, 8.8), (2.2, 7.2)], 0.9, 0.5)
+    return g
+def drakeheavy(k=1.0):
+    g = Cv(k)
+    g.ell(6.8, 11.0, 4.3, 2.6)
+    g.path([(10.2, 10.0), (11.4, 8.6)], 1.7, 1.5)
+    head(g, 12.4, 7.8, 2.1, 1.0, horns=1, hornlen=2.0)
+    g.poly([(14.2, 7.0), (14.8, 5.6), (15.4, 7.2)])           # nose horn
+    for x in (4.2, 6.2, 8.2): g.poly([(x - 1, 8.8), (x, 6.6), (x + 1, 8.8)])      # back plates
+    legs(g, (3, 6, 9), 12.6, 2)
+    g.path([(2.8, 11.0), (1.4, 12.0), (0.8, 12.6)], 1.3, 0.9); g.ell(0.8, 12.6, 1.0, 1.2)
+    return g
+
+# ---------------- hoarders ----------------
+def hoard(k=1.0):
+    g = Cv(k)
+    batwing(g, (2.4, 3.8), (6.2, 7.4), 1.8, 2, 1.2)
+    g.ell(7.6, 10.4, 4.0, 3.6)
+    g.path([(9.6, 8.0), (10.2, 6.4)], 1.5, 1.4)
+    head(g, 10.8, 5.4, 2.3, 1.2, horns=1, hornlen=2.0)
+    g.path([(4.0, 13.4), (1.8, 13.8), (0.8, 12.2), (1.6, 10.8)], 1.0, 0.5)
+    legs(g, (5, 9), 13, 2)
+    return g
+def keeper(k=1.0):
+    g = Cv(k)
+    batwing(g, (1.6, 3.6), (6.4, 6.8), 1.8, 2, 1.2)
+    g.ell(7.6, 9.4, 2.9, 3.9)
+    g.path([(8.6, 6.8), (9.4, 5.2)], 1.5, 1.4)
+    head(g, 10.4, 3.8, 2.2, 1.4, horns=1, hornlen=2.0)
+    g.path([(10.2, 8.4), (12.2, 9.4)], 0.8, 0.6); g.set(12.8, 9.4)      # short arm
+    legs(g, (6, 9), 12.8, 2)
+    g.path([(5.4, 12.4), (2.8, 13.6), (0.8, 12.6)], 1.2, 0.5)
+    return g
+def boulder(k=1.0, lumps=3):
+    g = Cv(k)
+    g.ell(7.0, 10.8, 5.2, 3.0)
+    for x in (4.4, 6.8, 9.2)[:lumps]: g.ell(x, 7.8, 1.2, 1.0)           # gem nodules on the back
+    g.path([(11.0, 10.6), (12.0, 10.2)], 1.6, 1.4)
+    head(g, 12.6, 9.2, 2.2, 0.9, horns=1, hornlen=2.0)
+    legs(g, (3, 5, 9, 11), 12.8, 1)
+    g.path([(2.0, 11.6), (0.8, 12.8)], 1.3, 0.8)
+    return g
+def crystal(k=1.0):
+    g = Cv(k)
+    for (x, ty, w) in ((3.4, 3.0, 1.0), (5.8, 0.8, 1.2), (8.4, 2.4, 1.1)):
+        g.poly([(x - w, 8.2), (x, ty), (x + w, 8.2)])
+    g.ell(6.8, 10.8, 4.8, 2.6)
+    g.path([(10.6, 10.4), (12.0, 9.6)], 1.6, 1.4)
+    head(g, 13.0, 9.2, 1.8, 1.0, horns=1, hornlen=1.8)
+    g.poly([(14.4, 7.8), (15.6, 5.6), (15.6, 8.2)])                 # long snout crystal
+    legs(g, (3, 5, 9, 11), 12.8, 1)
+    g.path([(2.2, 11.4), (0.8, 12.2)], 1.3, 0.8); g.poly([(-0.4, 10.6), (0.8, 12.2), (-0.2, 13.6)])
+    return g
+
+# ---------------- hydra ----------------
+def hydra(k=1.0):
+    g = Cv(k)
+    g.ell(6.4, 11.8, 4.2, 2.3); legs(g, (3, 5, 8, 10), 12.8, 1)
+    g.path([(2.8, 12.0), (1.4, 13.0), (0.6, 14.4)], 1.0, 0.5)
+    g.path([(9.2, 10.6), (11.0, 8.6), (12.6, 7.0)], 1.0, 0.9); head(g, 13.2, 6.2, 1.4, 1.1, horns=0, nostril=False)
+    g.path([(7.4, 10.2), (7.4, 6.4), (8.2, 4.0)], 1.0, 0.9); head(g, 8.8, 2.8, 1.4, 1.1, horns=0, nostril=False)
+    g.path([(5.0, 10.2), (3.6, 8.4), (2.4, 6.8)], 1.0, 0.9); head(g, 2.8, 5.8, 1.4, 1.1, horns=0, nostril=False)
+    return g
+
+# ---------------- coils ----------------
+def gemcoil(k=1.0):
+    g = Cv(k)
+    batwing(g, (0.2, 2.6), (7.0, 7.4), 2.0, 3, 1.4)
+    g.ell(7.6, 13.0, 7.0, 2.4)                                              # the heap
+    for x in (3.6, 6.2, 9.0, 11.6): g.poly([(x - 1, 11.2), (x, 9.6), (x + 1, 11.2)])
+    g.path([(10.6, 11.4), (11.6, 8.4), (11.4, 6.6)], 1.3, 1.1)
+    head(g, 12.2, 5.6, 1.8, 1.3, horns=1, hornlen=2.2)
+    g.path([(3.0, 11.0), (1.6, 9.6), (2.2, 8.2)], 1.0, 0.5)
+    return g
+def stormcoil(k=1.0):
+    g = Cv(k)
+    g.path([(12.6, 3.0), (10.4, 5.0), (6.6, 5.6), (4.2, 7.6), (5.4, 10.0), (9.4, 10.6), (11.6, 12.4), (9.6, 14.2), (4.6, 14.2), (2.2, 12.8)], 1.3, 0.6)
+    east_head(g, 12.8, 3.0)
+    mane(g, [(10.0, 3.6), (7.4, 4.2), (3.6, 6.4)])
+    return g
+
+# ---------------- strays and hatchlings ----------------
+def stray(k=1.0, wing=False):
+    g = Cv(k)
+    g.ell(7.2, 11.4, 3.2, 1.5)
+    g.path([(9.6, 11.0), (10.8, 9.6)], 0.9, 0.9)
+    g.ell(11.8, 9.2, 1.6, 1.3); g.poly([(12.4, 8.6), (15.0, 9.0), (15.0, 10.2), (12.4, 10.4)])
+    g.set(14.2, 8.8, 0)
+    g.path([(11.0, 8.2), (9.8, 6.6)], 0.5, 0.45)                          # one bent horn
+    for x in (5.6, 7.4): g.poly([(x - 0.8, 10.2), (x, 8.4), (x + 0.8, 10.2)])  # ragged back spikes
+    legs(g, (5, 8, 10), 11.6)
+    g.path([(4.4, 11.4), (2.0, 12.0), (1.0, 10.8), (0.4, 13.2)], 0.65, 0.4)
+    return g
+def hatch(k=1.0):
+    g = Cv(k)
+    g.ell(6.2, 12.4, 3.4, 2.6)
+    g.ell(8.8, 8.2, 3.6, 3.2); g.poly([(10.4, 7.2), (13.2, 8.4), (13.2, 9.8), (10.4, 10.6)])
+    g.set(12.4, 8.0, 0)
+    g.poly([(7.0, 6.0), (6.6, 3.2), (8.4, 5.6)]); g.poly([(9.6, 5.4), (10.4, 3.0), (11.2, 5.6)])  # horn buds
+    g.path([(4.0, 11.0), (2.4, 9.4)], 0.9, 0.6)                          # tiny wing bud
+    g.path([(3.2, 13.0), (1.4, 12.4), (1.0, 10.8)], 0.9, 0.5)
+    legs(g, (5, 8), 14, 2)
+    return g
+def egg(k=1.0):
+    """wyrmling in a cracked eggshell: the hatchling's head and horn buds above a bowl with a zigzag rim"""
+    g = Cv(k)
+    g.ell(8.4, 8.2, 3.6, 3.2); g.poly([(10.4, 7.2), (13.2, 8.4), (13.2, 9.8), (10.4, 10.6)])
+    g.poly([(7.0, 6.0), (6.6, 3.2), (8.4, 5.6)]); g.poly([(9.8, 5.4), (10.6, 3.0), (11.4, 5.6)])
+    rim = [(1.4, 11.4)]
+    for i in range(6): rim += [(2.6 + i * 2.1, 10.2), (3.6 + i * 2.1, 11.6)]
+    g.poly(rim + [(14.0, 13.6), (11.4, 15.2), (4.4, 15.2), (1.4, 13.6)])
+    g.set(12.4, 8.0, 0)
+    return g
+def ragwing(k=1.0):
+    g = Cv(k)
+    g.poly([(7.8, 7.8), (5.2, 5.6), (0.6, 5.0), (2.0, 7.2), (0.8, 9.2), (3.4, 8.4), (3.0, 10.4), (5.6, 9.0)])   # torn wing, drooping
+    g.ell(6.8, 10.8, 4.4, 2.3); g.ell(9.6, 10.4, 1.9, 1.8)
+    g.path([(10.4, 9.8), (11.8, 8.6)], 1.5, 1.3)
+    head(g, 13.0, 8.2, 1.7, 1.2, horns=1, hornlen=1.8)
+    legs(g, (3, 6, 9), 12.4)
+    g.path([(2.8, 11.2), (1.4, 12.4), (0.6, 14.0)], 1.0, 0.5)
+    return g
+
+# ---- registry -----------------------------------------------------------------------------
+def _eastking(k=1.0): return east(k, legs=True)
 ARCH_DRAGON = {
- 'dr_west':    _build(_west, (12.4, 4.3, 1.9), (13.0, 3.9), (4, 10)),
- 'dr_westlow': _build(_west, (12.4, 6.5, 1.9), (13.0, 6.1), (4, 10), wing='fold', neck=0.0, fat=0.5, horn=1),
- 'dr_westwide':_build(_west, (12.4, 4.3, 1.9), (13.0, 3.9), (4, 10), wing='wide', fat=0.6),
- 'dr_wyv':     _build(_wyv, (12.0, 3.4, 1.8), (12.7, 3.0), (6, 10)),
- 'dr_east':    _build(_east, (12.6, 3.9, 1.9), (13.2, 3.5), (3, 11)),
- 'dr_eastlong':_build(_east, (12.6, 3.9, 1.9), (13.2, 3.5), (2, 11), coils=0),
- 'dr_wurm':    _build(_wurm, (12.6, 8.6, 1.9), (13.2, 8.2), (3, 10)),
- 'dr_wurmup':  _build(_wurm, (12.6, 6.6, 1.9), (13.2, 6.2), (3, 10), head_up=2.0, hunch=0.4),
- 'dr_drake':   _build(_drake, (11.6, 7.4, 2.1), (12.4, 7.0), (4, 9)),
- 'dr_hoard':   _build(_hoard, (10.6, 4.9, 2.4), (11.5, 4.5), (4, 10)),
- 'dr_hoardfat':_build(_hoard, (10.6, 4.9, 2.4), (11.5, 4.5), (3, 11), big=0.7),
- 'dr_hydra':   _build(_hydra, (13.2, 2.4, 1.6), (13.9, 2.1), (3, 10)),
- 'dr_coil':    _build(_coil, (11.8, 4.4, 2.0), (12.6, 4.0), (2, 12)),
- 'dr_stray':   _build(_stray, (11.6, 9.2, 1.6), (12.2, 8.9), (4, 10)),
- 'dr_hatch':   _build(_hatch, (8.8, 8.2, 3.8), (10.4, 7.8), (3, 9)),
+ 'dr_hatch':    build(hatch, (8.8, 8.2, 3.6), (10.4, 7.8), (3, 9)),
+ 'dr_egg':      build(egg, (8.8, 8.2, 3.6), (10.4, 7.8), (3, 12)),
+ 'dr_west':     build(west, (13.0, 7.6, 1.9), (12.5, 7.1), (4, 10)),
+ 'dr_soar':     build(soar, (13.0, 5.6, 1.9), (12.5, 5.1), (4, 10)),
+ 'dr_rear':     build(rear, (12.8, 3.0, 1.9), (12.3, 2.5), (6, 10)),
+ 'dr_westlow':  build(ragwing, (13.0, 8.2, 1.9), (12.5, 7.7), (4, 10)),
+ 'dr_wyv':      build(wyv, (12.8, 4.6, 1.9), (12.3, 4.1), (6, 10)),
+ 'dr_wraith':   build(wyv, (12.8, 4.6, 1.9), (12.3, 4.1), (6, 10), droop=True),
+ 'dr_east':     build(east, (12.8, 3.8, 1.9), (12.4, 3.4), (3, 11)),
+ 'dr_eastking': build(_eastking, (12.8, 3.8, 1.9), (12.4, 3.4), (3, 11)),
+ 'dr_eelet':    build(eelet, (12.4, 4.4, 1.9), (12.0, 4.0), (3, 11)),
+ 'dr_eastlong': build(eastlong, (12.8, 7.8, 1.9), (12.4, 7.4), (3, 11)),
+ 'dr_eastloop': build(eastloop, (12.8, 4.2, 1.9), (12.4, 3.8), (3, 11)),
+ 'dr_wurm':     build(wurm, (13.0, 8.2, 1.9), (12.5, 7.7), (3, 10)),
+ 'dr_wurmfat':  build(wurm, (13.0, 8.2, 1.9), (12.5, 7.7), (3, 10), fat=0.8),
+ 'dr_wurmup':   build(wurm, (13.0, 6.0, 1.9), (12.5, 5.5), (3, 10), up=2.2),
+ 'dr_wurmdrag': build(wurmdrag, (13.0, 10.8, 1.9), (12.5, 10.3), (3, 10)),
+ 'dr_drake':    build(drake, (12.2, 8.0, 1.9), (11.7, 7.5), (4, 9)),
+ 'dr_drakeheavy': build(drakeheavy, (12.4, 7.8, 2.1), (11.9, 7.3), (4, 9)),
+ 'dr_hoard':    build(hoard, (10.8, 5.4, 2.4), (10.4, 4.9), (4, 10)),
+ 'dr_keeper':   build(keeper, (10.4, 3.8, 2.2), (10.0, 3.3), (5, 10)),
+ 'dr_boulder':  build(boulder, (12.6, 9.2, 2.1), (12.1, 8.7), (3, 10)),
+ 'dr_crystal':  build(crystal, (13.0, 9.2, 1.9), (12.5, 8.7), (3, 10)),
+ 'dr_hydra':    build(hydra, (13.2, 6.2, 1.6), (12.8, 5.7), (3, 10)),
+ 'dr_coil':     build(stormcoil, (12.8, 3.0, 1.9), (12.4, 2.6), (2, 12)),
+ 'dr_gemcoil':  build(gemcoil, (12.2, 5.6, 1.9), (11.8, 5.1), (2, 12)),
+ 'dr_stray':    build(stray, (11.8, 9.2, 1.6), (12.2, 8.8), (4, 10)),
 }
 spritegen.register_archetypes(ARCH_DRAGON)
 
@@ -212,10 +441,12 @@ def dr_flame(g, c):
     if x + 2 < 16: g.set(x + 2, y - 1); g.set(x + 2, y + 1)
 
 def dr_embers(g, c):
-    """sparks floating above the head"""
-    x, y = int(c['hx']), int(c['hy'] - c['hr'] - 2.5)
-    if y < 1: y = 1
-    g.set(x + 2, y); g.set(x - 1, y + 1)
+    """a thread of sparks drifting up from the top of the head (a connected diagonal, never a lone pixel)"""
+    x = int(round(c['hx'])) + 1
+    t = _top(g, x)
+    if t is None or t < 3: return
+    g.set(x, t - 1); g.set(x + 1, t - 2)
+    if t >= 5: g.set(x + 1, t - 3)
 
 def dr_whisk(g, c):
     """long eastern whiskers trailing from the snout"""
@@ -224,9 +455,13 @@ def dr_whisk(g, c):
     if x + 1 < 16: g.set(x, y + 1); g.set(x + 1, y + 2) if y + 2 < 16 else None
 
 def dr_pearl(g, c):
-    """a pearl held before the snout"""
-    x = min(14, int(c['hx'] + c['hr'] + 2.2)); y = int(c['hy'] - c['hr'] - 0.6)
-    g.ellipse(x, max(1.5, y), 1.1, 1.1); g.set(x, max(1.5, y), 0)
+    """a pearl floating above the snout on a thin wisp"""
+    x = min(14, int(c['hx'] + c['hr'] + 1.4)); y = int(c['hy'] - c['hr'] - 1.6)
+    y = max(2, y)
+    g.ellipse(x, y, 1.1, 1.1); g.set(x, y, 0)
+    t = _top(g, x)
+    if t is not None:
+        for yy in range(y + 2, t): g.set(x, yy)
 
 def dr_gems(g, c):
     """a little heap of gems by the feet"""
@@ -250,7 +485,7 @@ def dr_scars(g, c):
     """ragged: torn holes along the body"""
     for x in range(int(c['b0']) + 1, int(c['b1']), 3):
         t = _top(g, x)
-        if t is not None and t < 14: g.set(x, t + 2, 0)
+        if t is not None and t + 3 < 12 and g.get(x, t + 3): g.set(x, t + 2, 0)
 
 def dr_cloud(g, c):
     """a little storm cloud above the head"""

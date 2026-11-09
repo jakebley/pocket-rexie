@@ -29,6 +29,9 @@ KIND_OF = {
     'dr_hatch': 'wyrmling', 'dr_west': 'westdragon', 'dr_westwide': 'westdragon', 'dr_westlow': 'westdragon', 'dr_east': 'eastdragon', 'dr_eastlong': 'eastdragon',
     'dr_hoard': 'hoarder', 'dr_hoardfat': 'hoarder', 'dr_stray': 'lizard', 'dr_wyv': 'wyvern', 'dr_drake': 'drake', 'dr_wurm': 'wurm', 'dr_wurmup': 'wurm',
     'dr_hydra': 'hydra', 'dr_coil': 'coil',
+    'dr_egg': 'wyrmling', 'dr_soar': 'westdragon', 'dr_rear': 'westdragon', 'dr_eelet': 'eastdragon', 'dr_eastking': 'eastdragon', 'dr_eastloop': 'eastdragon',
+    'dr_wraith': 'wyvern', 'dr_wurmfat': 'wurm', 'dr_wurmdrag': 'wurm', 'dr_drakeheavy': 'drake', 'dr_keeper': 'hoarder', 'dr_boulder': 'hoarder', 'dr_crystal': 'hoarder',
+    'dr_gemcoil': 'coil',
     # bot
     'bot_orb': 'orb', 'bot_cube': 'orb', 'bot_tread': 'rover', 'bot_dozer': 'dozer', 'bot_handheld': 'handheld', 'bot_walkie': 'walkie', 'bot_junk': 'junkbot',
     'bot_boombox': 'boombox', 'bot_mech': 'mech', 'bot_mechw': 'mech', 'bot_crt': 'crt', 'bot_floppy': 'floppy', 'bot_drone': 'drone',
