@@ -227,7 +227,8 @@ final class LivingSceneTests: XCTestCase {
                 XCTAssertEqual(lims[n], expect, "\(sp.id) \(n)")
                 XCTAssertLessThanOrEqual(lims[n], lims[n - 1], "\(sp.id) shrinks")
             }
-            XCTAssertLessThan(lims[1], lims[0], sp.id)
+            // A very narrow sprite (a hatchling) can fit beside the first poop with room to spare: no shrink then.
+            XCTAssertLessThanOrEqual(lims[1], lims[0], sp.id)
         }
         XCTAssertEqual(SceneState.limit(species: "", poops: 3), 4)   // unknown sprite counts as a whole 32 columns
     }

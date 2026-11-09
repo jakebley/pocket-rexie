@@ -48,6 +48,8 @@ enum ColorModeStore {
 /// Lineage color family of a species (`Species.line`).
 enum PetLine: String, CaseIterable, Sendable {
     case baby, meat, veggie, pasta, neglect
+    /// Fox family lines (first pass from docs/FOX_FAMILY.md; colours to be tuned by eye).
+    case hunter, forager, riverside, stray
 
     init(name: String) { self = PetLine(rawValue: name) ?? .baby }
 }
@@ -153,6 +155,12 @@ enum ScenePalette {
         return RGB(hex: hex)
     }
 
+    /// Body color of a species: its family's own hex when it has one, else the dino line color.
+    static func bodyColor(line: PetLine, hex: String?) -> RGB {
+        if let hex { return RGB(hex: hex) }
+        return bodyColor(line)
+    }
+
     private static func bodyColor(_ line: PetLine) -> RGB {
         switch line {
         case .meat: return RGB(hex: "#C27358")
@@ -160,6 +168,10 @@ enum ScenePalette {
         case .pasta: return RGB(hex: "#D1A94A")
         case .neglect: return RGB(hex: "#8A8F96")
         case .baby: return RGB(hex: "#E7DCC0")
+        case .hunter: return RGB(hex: "#C2623A")
+        case .forager: return RGB(hex: "#D9A441")
+        case .riverside: return RGB(hex: "#8FA3B5")
+        case .stray: return RGB(hex: "#9A948C")
         }
     }
 
@@ -207,7 +219,7 @@ enum ScenePalette {
 
     /// Layer-indexed colors for one context. Traditional: every lit layer is the ink.
     /// `night` is whether the scene sky is the night sky (it flips ink-like layers light in the light appearance).
-    static func table(mode: ColorMode, appearance: Appearance, night: Bool, line: PetLine) -> [RGB] {
+    static func table(mode: ColorMode, appearance: Appearance, night: Bool, line: PetLine, bodyHex: String? = nil) -> [RGB] {
         let sc = screen(mode: mode, appearance: appearance)
         var t = [RGB](repeating: sc.ink, count: tableSize)
         t[0] = sc.ground
@@ -224,7 +236,7 @@ enum ScenePalette {
                 t[i] = dark ? base.mixed(with: sc.ground, darkBlend) : base
             }
         }
-        let body = bodyColor(line)
+        let body = bodyColor(line: line, hex: bodyHex)
         let bodyIndex = Int(SceneLayer.body.rawValue)
         t[bodyIndex] = dark
             ? body.mixed(with: sc.ground, line == .baby ? darkBodyBlendBaby : darkBodyBlend)
@@ -241,14 +253,14 @@ enum ScenePalette {
     /// Color of one lit layer. `.off` is the unlit pixel: the scene sky in Technicolor (for the hour and
     /// weather), the screen ground in Traditional. `weather` only matters for `.off`.
     static func color(layer: SceneLayer, mode: ColorMode, appearance: Appearance, hour: Int,
-                      weather: SceneAmbient.Weather, line: PetLine) -> RGB {
+                      weather: SceneAmbient.Weather, line: PetLine, bodyHex: String? = nil) -> RGB {
         if layer == .off {
             return mode == .technicolor
                 ? sky(mode: mode, appearance: appearance, hour: hour, weather: weather)
                 : screen(mode: mode, appearance: appearance).ground
         }
         let night = SceneAmbient.Period.of(hour: hour) == .night
-        let t = table(mode: mode, appearance: appearance, night: night, line: line)
+        let t = table(mode: mode, appearance: appearance, night: night, line: line, bodyHex: bodyHex)
         return t[Int(layer.rawValue)]
     }
 

@@ -83,6 +83,8 @@ struct SceneRaster: Equatable {
     var hour = 12
     var weather: SceneAmbient.Weather = .clear
     var line: PetLine = .baby
+    /// Family body color ("#RRGGBB") that overrides `line` in Technicolor; nil for dinos, eggs and ghosts.
+    var bodyHex: String?
     /// Lights off: the sky is darkened and `shade` marks the dither.
     var dim = false
 
@@ -285,6 +287,7 @@ enum SceneRenderer {
         r.hour = amb.hour
         r.weather = amb.weather
         r.line = lineOf(pet)
+        r.bodyHex = bodyHexOf(pet)
 
         let place = placement(pet: pet, state: state, frame: frame, motion: motion,
                               override: options.spriteOverride)
@@ -343,7 +346,20 @@ enum SceneRenderer {
         switch pet.stage {
         case .egg: return .baby
         case .ghost: return .neglect
-        default: return PetLine(name: Species.named(pet.species)?.line ?? "")
+        default:
+            guard let sp = Species.named(pet.species) else { return .baby }
+            if let known = PetLine(rawValue: sp.line) { return known }
+            // A line only its family knows (raptor, reef...): the family's `bodyHex` sets the color;
+            // this only picks the dark-appearance blend, which is stronger for hatchlings.
+            return sp.stage == .baby ? .baby : .meat
+        }
+    }
+
+    /// Family body color of the pet's species (nil for eggs, ghosts and families without their own palette).
+    static func bodyHexOf(_ pet: Pet) -> String? {
+        switch pet.stage {
+        case .egg, .ghost: return nil
+        default: return Species.named(pet.species)?.bodyHex
         }
     }
 

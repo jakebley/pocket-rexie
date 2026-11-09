@@ -58,6 +58,8 @@ final class GameModel: ObservableObject {
         case play(PlayState)
         case stats
         case dex
+        /// The Choose your egg screen (`menuIndex` highlights a family, the last row is cancel).
+        case chooseEgg
     }
 
     static let rounds = 5
@@ -73,6 +75,8 @@ final class GameModel: ObservableObject {
     @Published var selected: MenuIcon = .feed
     /// Highlighted row in the feed menu: 0 meat, 1 veggies, 2 pasta, 3 snack, 4 cancel.
     @Published var menuIndex = 0
+    /// Family shown in the Dex; nil follows the pet's own family.
+    @Published var dexFamily: String?
     /// Which stats page is showing: 0 is the status page, 1 the detail list.
     @Published var statsPage = 0
     /// Set for 3 seconds after the species changes (ids of the old and new species).
@@ -99,6 +103,8 @@ final class GameModel: ObservableObject {
     private let persistHandler: ((Pet) -> Void)?
     /// True when built with an injected pet: no timers, no store reloads, so the state stays put.
     private let isolated: Bool
+    /// Entitlements injected by tests and previews; nil reads the saved tester switches.
+    private let injectedEntitlements: Entitlements?
 
     private var messageUntil = Date.distantPast
     private var flashUntil = Date.distantPast
@@ -106,8 +112,9 @@ final class GameModel: ObservableObject {
 
     /// `pet` and `persist` are for tests and previews: with them the model neither ticks nor touches
     /// the shared store. The defaults keep the normal app behaviour.
-    init(pet injected: Pet? = nil, persist: ((Pet) -> Void)? = nil) {
+    init(pet injected: Pet? = nil, persist: ((Pet) -> Void)? = nil, entitlements: Entitlements? = nil) {
         pet = injected ?? PetStore.load()
+        injectedEntitlements = entitlements
         persistHandler = persist
         isolated = injected != nil
         if isolated { return }
@@ -131,6 +138,14 @@ final class GameModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+
+    // MARK: entitlements
+
+    /// What the player may hatch. Free unless Plus is previewed (or injected).
+    var entitlements: Entitlements { injectedEntitlements ?? EntitlementStore.current() }
+
+    /// True when NEW EGG should open the Choose your egg screen instead of hatching the default family.
+    var eggChooserAvailable: Bool { injectedEntitlements != nil || EntitlementStore.chooserEnabled() }
 
     // MARK: refresh and persistence
 
@@ -364,6 +379,7 @@ final class GameModel: ObservableObject {
         case .play: modeName = "play"
         case .stats: modeName = statsPage == 0 ? "stats" : "details"
         case .dex: modeName = "dex"
+        case .chooseEgg: modeName = "choose"
         }
         let p = pet
         return "hunger \(p.hunger) happy \(p.happy) poops \(p.poops) stage \(p.stage.rawValue) mode \(modeName) "
@@ -379,7 +395,7 @@ final class GameModel: ObservableObject {
         case .play:
             say("Maybe later")
             mode = .home
-        case .feedMenu, .stats, .dex:
+        case .feedMenu, .stats, .dex, .chooseEgg:
             mode = .home
         }
     }
@@ -405,6 +421,8 @@ final class GameModel: ObservableObject {
             }
         case .stats, .dex:
             break
+        case .chooseEgg:
+            menuIndex = (menuIndex + 1) % (Species.families.count + 1)
         }
     }
 
@@ -428,12 +446,51 @@ final class GameModel: ObservableObject {
             if statsPage == 0 { statsPage = 1 } else { openDex() }
         case .dex:
             cancel()
+        case .chooseEgg:
+            if menuIndex < Species.families.count {
+                chooseEgg(family: Species.families[menuIndex].id)
+            } else {
+                cancel()
+            }
         }
     }
 
-    func startNewEgg() {
+    /// The NEW EGG button: the chooser when families can be chosen, else straight to a new egg.
+    func requestNewEgg() {
         guard !pet.isAlive else { return }
-        pet.newEgg(now: AppClock.now())
+        if eggChooserAvailable {
+            menuIndex = 0
+            mode = .chooseEgg
+        } else {
+            startNewEgg()
+        }
+    }
+
+    /// A tap on a family in the chooser: hatches it if unlocked, else says it needs Plus.
+    func chooseEgg(family id: String) {
+        guard !pet.isAlive, let fam = Species.family(id) else { return }
+        guard entitlements.canHatch(family: id) else {
+            say("\(fam.name) need Plus")
+            return
+        }
+        startNewEgg(family: id)
+    }
+
+    /// Dex page: step to the next family.
+    func cycleDexFamily() {
+        let ids = Species.families.map { $0.id }
+        let current = dexFamily ?? pet.family
+        let i = ids.firstIndex(of: current) ?? 0
+        dexFamily = ids[(i + 1) % ids.count]
+    }
+
+    /// Starts a new egg. The family must be unlocked (the one gate for Plus); anything else falls back to dino.
+    /// nil keeps the family of the pet that just died.
+    func startNewEgg(family: String? = nil) {
+        guard !pet.isAlive else { return }
+        let wanted = family ?? pet.family
+        let allowed = Species.family(wanted) != nil && entitlements.canHatch(family: wanted)
+        pet.newEgg(now: AppClock.now(), family: allowed ? wanted : "dino")
         mode = .home
         selected = .feed
         say("A new egg!")
@@ -448,7 +505,7 @@ final class GameModel: ObservableObject {
         persist()
     }
 
-    func openDex() { mode = .dex }
+    func openDex() { dexFamily = nil; mode = .dex }
     func openStats() { mode = .stats }
     func setStatsPage(_ page: Int) { statsPage = page; mode = .stats }
 

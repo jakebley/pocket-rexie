@@ -1,5 +1,6 @@
 // TypeScript port of Shared/Pet.swift. Time is plain epoch milliseconds so the engine is easy to test.
 import { BABIES, SPECIES } from './speciesData';
+import { reactionFor } from './reactions';
 import type { Call, Food, Requirement, SpeciesDef, Stage } from './types';
 
 export const TICK = 5 * 60 * 1000;
@@ -12,7 +13,9 @@ export const LIGHT_MISTAKE_TICKS = 24;
 const STAGE_HOURS: Partial<Record<Stage, number>> = { baby: 11, child: 36, teen: 72, adult: 168 };
 
 export const SPECIES_BY_ID: Record<string, SpeciesDef> = Object.fromEntries(SPECIES.map((s) => [s.id, s]));
-export const DEX_SIZE = SPECIES.length;
+export const DEX_SIZE = SPECIES.filter((s) => s.family === 'dino').length;
+/** Species count of one family (the Dex is per family). */
+export const dexSizeOf = (family: string) => SPECIES.filter((s) => s.family === family).length;
 
 export interface PetEvent {
   kind: 'hatched' | 'evolved' | 'poop' | 'sick' | 'sleep' | 'wake' | 'call' | 'died';
@@ -381,7 +384,8 @@ export function petIt(p: Pet): string {
   p.petProgress++; p.smarts = Math.min(100, p.smarts + 1); p.stageSmarts += 1;
   if (p.petProgress >= 3) { p.petProgress = 0; if (p.happy < MAX_HEARTS) p.happy++; }
   touch(p);
-  return `${p.name} purrs. Dinos can purr.`;
+  const sp = SPECIES_BY_ID[p.species];
+  return reactionFor({ name: p.name, species: p.species, stage: p.stage, line: sp?.line ?? '', sick: p.sick, hunger: p.hunger, happy: p.happy, poops: p.poops, heavy: overweight(p) });
 }
 export function toggleLight(p: Pet): string {
   if (p.stage === 'egg' || p.stage === 'ghost') return '...';
@@ -435,6 +439,7 @@ export function newEgg(p: Pet, now: number, family?: string): Pet {
 export function forceSpecies(p: Pet, id: string): void {
   if (!SPECIES_BY_ID[id]) return;
   const wasEgg = p.stage === 'egg' || p.stage === 'ghost';
+  p.family = SPECIES_BY_ID[id].family; // a forced species brings its family (feed labels, Dex, colours)
   if (p.stage === 'ghost') { p.diedAt = null; p.causeOfDeath = null; p.sickTicks = 0; p.starveTicks = 0; }
   evolve(p, id, p.lastTick);
   if (wasEgg) { p.hunger = 4; p.happy = 4; }

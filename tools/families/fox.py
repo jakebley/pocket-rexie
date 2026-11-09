@@ -5,6 +5,7 @@ Lines (for Technicolor body colour): meat -> 'hunter', veggie -> 'forager', past
 """
 FAMILY = 'fox'
 NAME = 'Foxes'
+IS_FREE = False  # a Plus family (docs/PLUS.md)
 FOOD_LABELS = {'meat': 'Mice', 'veggie': 'Berries', 'pasta': 'Fish'}
 
 # id: (name, stage, blurb, recipe)
@@ -64,6 +65,7 @@ LINE = {
  'plumptail': 'riverside', 'angler': 'riverside', 'reedwalker': 'riverside', 'tidecaller': 'riverside', 'frostpelt': 'riverside',
  'ashpaw': 'stray', 'scrabble': 'stray', 'tatter': 'stray', 'raggedy': 'stray', 'scrapfox': 'stray', 'gloamfox': 'stray',
 }
+LINE_COLORS = {'hunter': '#C2623A', 'forager': '#D9A441', 'riverside': '#8FA3B5', 'stray': '#9A948C', 'baby': '#E7DCC0'}
 
 # parent -> ordered (child, requirements); first match wins; the last entry has no requirements.
 EVO = {

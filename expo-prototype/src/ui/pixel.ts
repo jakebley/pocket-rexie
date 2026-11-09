@@ -1,5 +1,5 @@
 // Pixel art tables + a tiny square bitmap buffer (64x64 scene and text mode) used by the LCD.
-import { DIM_FLAG, Layer } from './layers';
+import { DIM_FLAG, LAYER_MASK, Layer } from './layers';
 
 /** Home-scene framebuffer: 64x64 (species sprites are 32x32 hiFrames, drawn 1:1). */
 export const GRID = 64;
@@ -17,6 +17,7 @@ export const GLYPHS = {
   zzz: ['XXXXX', '...X.', '..X..', '.X...', 'XXXXX'],
   drop: ['..X..', '.XXX.', 'XXXXX', 'XXXXX', '.XXX.'],
   flake: ['X.X.X', '.XXX.', 'XXXXX', '.XXX.', 'X.X.X'],
+  lock: ['.XXX.', 'X...X', 'XXXXX', 'XXXXX', 'XXXXX'],
 };
 
 /** 7x7 HUD / bubble glyphs for the 64 grid (the 5x5 GLYPHS stay for the text screens). */
@@ -119,13 +120,14 @@ export const ICONS: Record<string, string[]> = {
   // drumstick: meat knob top-right, bone handle bottom-left
   feed: ['...XXXX.', '..XXXXXX', '..XXXXXX', '..XXXXXX', '...XXXX.', '..XXX...', '.XXX....', 'XX.XX...'],
   // light bulb
-  light: ['..XXXX..', '.XXXXXX.', '.XXXXXX.', '.XXXXXX.', '..XXXX..', '...XX...', '..XXXX..', '...XX...'],
-  play: ['..XXXX..', '.X.XX.X.', 'X..XX..X', 'XXXXXXXX', 'XXXXXXXX', 'X..XX..X', '.X.XX.X.', '..XXXX..'],
+  light: ['..XXXX..', '.X....X.', '.X....X.', '.X....X.', '..X..X..', '..XXXX..', '..X..X..', '...XX...'],
+  // game controller: d-pad and two buttons cut out of the body
+  play: ['........', '.XXXXXX.', 'XX.XXXXX', 'X...XX.X', 'XX.XX.XX', 'XXXXXXXX', 'XX....XX', '........'],
   train: ['........', 'X......X', 'XX....XX', 'XXXXXXXX', 'XXXXXXXX', 'XX....XX', 'X......X', '........'],
   // medical cross
   medicine: ['..XXXX..', '..XXXX..', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', '..XXXX..', '..XXXX..'],
   // broom (clean)
-  clean: ['......XX', '.....XX.', '....XX..', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X.X.X.'],
+  clean: ['...XX...', '...XX...', '...XX...', '...XX...', '..XXXX..', '.XXXXXX.', 'XXXXXXXX', 'X.X..X.X'],
   climate: ['..XXX...', '..X.X...', '..X.X...', '..X.X...', '.XX.XX..', '.X.X.X..', '.XX.XX..', '..XXX...'],
   scold: ['...XX...', '...XX...', '...XX...', '...XX...', '...XX...', '........', '...XX...', '...XX...'],
   // crossed swords with hilts
@@ -134,6 +136,19 @@ export const ICONS: Record<string, string[]> = {
 };
 export const ICON_ORDER = ['feed', 'light', 'play', 'train', 'medicine', 'clean', 'climate', 'scold', 'battle', 'stats'] as const;
 export const ICON_LABELS = ['FEED', 'LIGHT', 'PLAY', 'TRAIN', 'MEDICINE', 'CLEAN', 'CLIMATE', 'SCOLD', 'BATTLE', 'STATS'];
+/** What each icon does; shown when the icon is held down. */
+export const ICON_HELP = [
+  'FEED: meal or snack. Fills hunger.',
+  'LIGHT: turn the lights off so it can sleep.',
+  'PLAY: guess game. Makes it happy.',
+  'TRAIN: exercise. Gets stronger, burns weight.',
+  'MEDICINE: cures a sick pet.',
+  'CLEAN: wipe up the poop.',
+  'CLIMATE: fix hot or cold.',
+  'SCOLD: only when it is being naughty.',
+  'BATTLE: fight for wins.',
+  'STATS: hunger, mood and growth.',
+];
 
 /** Square framebuffer (n x n) of layer codes: 0 is unlit, any other value is a lit pixel tagged with its layer. */
 export class Buf {
@@ -173,7 +188,7 @@ export class Buf {
   /** Flip lit and unlit (lit pixels go dark, unlit pixels become ink). */
   invert(x0: number, y0: number, w: number, h: number) {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
-      if (x >= 0 && y >= 0 && x < this.n && y < this.n) this.px[y * this.n + x] = this.px[y * this.n + x] ? 0 : Layer.INK;
+      if (x >= 0 && y >= 0 && x < this.n && y < this.n) { const v = this.px[y * this.n + x]; this.px[y * this.n + x] = v && (v & LAYER_MASK) < Layer.EYE_FILL ? 0 : Layer.INK; } // eye fills are unlit in Traditional, so they flip to ink like any hole
     }
   }
   /** Mark a pixel as dimmed (lights-off dither): keeps its layer, adds the dim flag. */

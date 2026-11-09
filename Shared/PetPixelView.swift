@@ -112,7 +112,7 @@ enum LCDPainter {
         let cell = min(size.width, size.height) / CGFloat(grid)
         let appearance = palette.appearance
         let night = SceneAmbient.Period.of(hour: raster.hour) == .night
-        let table = ScenePalette.table(mode: palette.mode, appearance: appearance, night: night, line: raster.line)
+        let table = ScenePalette.table(mode: palette.mode, appearance: appearance, night: night, line: raster.line, bodyHex: raster.bodyHex)
         if raster.hasSky {
             let ground = CGFloat(SceneRaster.groundY) * cell
             let skyRect = CGRect(x: 0, y: 0, width: cell * CGFloat(grid), height: ground)

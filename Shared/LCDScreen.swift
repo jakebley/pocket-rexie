@@ -147,6 +147,8 @@ struct LCDScreen: View {
             if model.statsPage == 0 { statusPanel(m) } else { detailPanel(m) }
         case .dex:
             dexPanel(m)
+        case .chooseEgg:
+            chooserPanel(m)
         }
     }
 
@@ -168,13 +170,13 @@ struct LCDScreen: View {
                 .overlay(Rectangle().strokeBorder(palette.ink, lineWidth: 1))
                 .padding(.top, m.unit)
             Spacer(minLength: 0)
-            PixelButton("NEW EGG", pixel: m.unit, selected: true) { model.startNewEgg() }
+            PixelButton("NEW EGG", pixel: m.unit, selected: true) { model.requestNewEgg() }
         }
         .padding(m.pad)
     }
 
     private func feedPanel(_ m: Metrics) -> some View {
-        let titles = ["MEAT", "VEGGIES", "PASTA", "SNACK", "CANCEL"]
+        let titles = Species.foodLabels(family: model.pet.family).map { $0.uppercased() } + ["SNACK", "CANCEL"]
         return panel(m, spacing: m.unit) {
             PixelText("FEED", pixel: m.unit)
                 .padding(.bottom, m.unit)
@@ -185,6 +187,41 @@ struct LCDScreen: View {
                 }
             }
             Spacer(minLength: 0)
+        }
+    }
+
+    /// Choose your egg: one row per family (it scrolls: there are eleven); "+" marks a Plus family
+    /// that is still locked. Names are cut to one line of the pixel font.
+    private func chooserPanel(_ m: Metrics) -> some View {
+        let ents = model.entitlements
+        let cancelIndex = Species.families.count
+        return panel(m, spacing: m.unit) {
+            PixelText("CHOOSE EGG", pixel: m.unit)
+            ScrollViewReader { proxy in
+                MaybeScroll {
+                    VStack(spacing: m.unit) {
+                        ForEach(Array(Species.families.enumerated()), id: \.element.id) { i, fam in
+                            let locked = !ents.canHatch(family: fam.id)
+                            PixelButton(String((locked ? "+ " + fam.name : fam.name).prefix(m.cap)).uppercased(),
+                                        pixel: m.unit, selected: model.menuIndex == i, outlined: false) {
+                                model.menuIndex = i
+                                model.confirm()
+                            }
+                            .id(i)
+                        }
+                        PixelButton("CANCEL", pixel: m.unit, selected: model.menuIndex == cancelIndex,
+                                    outlined: false) {
+                            model.menuIndex = cancelIndex
+                            model.confirm()
+                        }
+                        .id(cancelIndex)
+                    }
+                }
+                .onChange(of: model.menuIndex) { _, index in
+                    withAnimation { proxy.scrollTo(index, anchor: .center) }
+                }
+            }
+            PixelText("+ NEEDS PLUS", pixel: m.unit)
         }
     }
 
@@ -300,22 +337,29 @@ struct LCDScreen: View {
 
     private func dexPanel(_ m: Metrics) -> some View {
         let u = m.unit
-        let found = Set(model.pet.dex)
+        let family = model.dexFamily ?? model.pet.family
+        let locked = !model.entitlements.canHatch(family: family)
+        let found = Set(model.pet.dex.filter { Species.named($0)?.family == family })
         let stages: [(String, Stage)] = [("BABY", .baby), ("CHILD", .child), ("TEEN", .teen),
                                          ("ADULT", .adult), ("ULTIMATE", .ultimate)]
         return panel(m) {
             HStack(spacing: u * 2) {
                 PixelButton("BACK", pixel: u, selected: true) { model.openStats() }
                     .frame(width: u * 20)
-                PixelText("DEX \(found.count)/\(Species.dexSize)", pixel: u)
+                PixelText("DEX \(found.count)/\(Species.dexSize(family: family))", pixel: u)
                 Spacer(minLength: 0)
+            }
+            if model.eggChooserAvailable {
+                // family switch; a locked family nobody has found anything in is marked "+"
+                PixelButton(String(((locked && found.isEmpty ? "+ " : "") + family).prefix(m.cap)).uppercased(),
+                            pixel: u) { model.cycleDexFamily() }
             }
             MaybeScroll {
                 VStack(alignment: .leading, spacing: u * 2) {
                     ForEach(stages, id: \.0) { title, stage in
                         PixelText("-\(title)-", pixel: u)
                             .padding(.top, u * 2)
-                        ForEach(Species.all.filter { $0.stage == stage }, id: \.id) { sp in
+                        ForEach(Species.all.filter { $0.stage == stage && $0.family == family }, id: \.id) { sp in
                             PixelParagraph(text: found.contains(sp.id) ? sp.name : "???",
                                            pixel: u, maxChars: m.cap)
                         }

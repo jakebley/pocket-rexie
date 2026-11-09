@@ -1,6 +1,7 @@
 // Deterministic drawing cases shared by the golden generator and test/color.ts.
 import { forceSpecies, newPet, type Pet } from '../src/core/pet';
 import { SPECIES } from '../src/core/speciesData';
+import { DIM_FLAG, LAYER_MASK, tradVisible } from '../src/ui/layers';
 import { Buf } from '../src/ui/pixel';
 import { SCENE_N, SCENE_STATES, TICK_MS, initScene, type Scene } from '../src/ui/scene';
 import { drawScene } from '../src/ui/sceneDraw';
@@ -26,7 +27,7 @@ const STATES = SCENE_STATES;
 
 export function sceneCases(): Case[] {
   const out: Case[] = [];
-  for (const sp of SPECIES) {
+  for (const sp of SPECIES.filter((s) => s.family === 'dino')) { // golden hashes cover the original dino sprites only
     for (const facing of [1, -1] as const) {
       for (let v = 0; v < 6; v++) {
         const state = STATES[(v * 5 + sp.id.length + (facing === 1 ? 0 : 3)) % STATES.length];
@@ -61,4 +62,5 @@ export function screenCases(): Case[] {
   return out;
 }
 
-export const lit = (b: Buf): number[] => Array.from(b.px, (v) => (v ? 1 : 0));
+/** What Traditional prints: every drawn layer except the Technicolor-only ones (biome scenery, eye fills). */
+export const lit = (b: Buf): number[] => Array.from(b.px, (v) => (v && (tradVisible(v & LAYER_MASK) || (v & DIM_FLAG)) ? 1 : 0));

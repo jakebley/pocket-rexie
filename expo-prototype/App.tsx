@@ -1,9 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StatusBar as StatusBar2, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { statusLine } from './src/core/pet';
 import { ColorModeProvider } from './src/ui/ColorModeContext';
+import { ChooseEgg } from './src/ui/ChooseEgg';
 import { DevPanel } from './src/ui/DevPanel';
 import { SettingsSheet } from './src/ui/SettingsSheet';
 import { fitLines, PixelButton, PixelText, touchStyle } from './src/ui/PixelText';
@@ -16,14 +18,14 @@ const GEAR_D = GEAR.map((r, y) => [...r].map((c, x) => (c === 'X' ? `M${x} ${y}h
 
 const HINTS: Record<string, string> = {
   feed: 'A: next | B: eat | C: back', play: 'A: higher/lower | B: choose | C: quit',
-  stats: 'B: next page | C: back', dex: 'B: next page | C: back',
+  stats: 'B: next page | C: back', dex: 'A: family | B: next page | C: back',
 };
 
 const GUT = 12; // side gutter of the LCD column
 const MAX_W = 640; // widest LCD square (desktop)
 const MAX_SCALE = 1.6; // how far icon rows, message and buttons grow on tall phones
 // design heights at scale 1 (all hit areas are at least 48 CSS px)
-const U = { head: 48, row: 48, msg: 42, btn: 64, gap: 8, bottom: 12 };
+const U = { head: 48, row: 62, msg: 42, btn: 64, gap: 8, bottom: 12 };
 const FIXED = U.head + 2 * U.row + U.msg + U.btn + 5 * U.gap + U.bottom;
 
 export interface Layout { landscape: boolean; W: number; s: number; panelW: number }
@@ -42,6 +44,7 @@ export function layoutFor(availW: number, availH: number): Layout {
 
 /** Safe-area insets: CSS env() probe on web, a guess on native. */
 function useInsets(vw: number, vh: number) {
+  const native = useSafeAreaInsets();
   const [ins, setIns] = useState({ top: 0, bottom: 0, left: 0, right: 0 });
   useEffect(() => {
     if (Platform.OS === 'web') {
@@ -52,9 +55,12 @@ function useInsets(vw: number, vh: number) {
       const c = getComputedStyle(p);
       setIns({ top: parseFloat(c.paddingTop) || 0, right: parseFloat(c.paddingRight) || 0, bottom: parseFloat(c.paddingBottom) || 0, left: parseFloat(c.paddingLeft) || 0 });
       document.body.removeChild(p);
-    } else setIns({ top: Platform.OS === 'ios' ? 50 : (StatusBar2.currentHeight ?? 24), bottom: Platform.OS === 'ios' ? 20 : 0, left: 0, right: 0 });
+    }
   }, [vw, vh]);
-  return ins;
+  if (Platform.OS === 'web') return ins;
+  // Native: real insets from the OS (Dynamic Island, notch, home indicator); Android falls back to the status bar height.
+  const top = native.top > 0 ? native.top : Platform.OS === 'android' ? (StatusBar2.currentHeight ?? 24) : 0;
+  return { top: top + 4, bottom: native.bottom, left: native.left, right: native.right };
 }
 
 /** Web only: no pinch/double-tap zoom, no tap flash, no selection, no scrolling. */
@@ -80,9 +86,9 @@ function NameModal({ onDone }: { onDone: (n: string) => void }) {
       <View style={[s.modal, { backgroundColor: t.ground, borderColor: t.ink }]}>
         <PixelText text="It hatched!" ps={4} color={t.ink} />
         <View style={{ height: 10 }} />
-        <PixelText text="Name your dino" ps={2} color={t.ink} />
+        <PixelText text="Name your pet" ps={2} color={t.ink} />
         <TextInput value={v} onChangeText={setV} maxLength={10} autoFocus selectTextOnFocus
-          onSubmitEditing={() => onDone(v)} autoCapitalize="words" accessibilityLabel="Dino name"
+          onSubmitEditing={() => onDone(v)} autoCapitalize="words" accessibilityLabel="Pet name"
           style={[s.input, { borderColor: t.ink, color: t.ink, fontFamily: mono }]} />
         <PixelButton label="OK" ps={3} onPress={() => onDone(v)} style={{ minWidth: 120, minHeight: 56 }} />
       </View>
@@ -91,7 +97,7 @@ function NameModal({ onDone }: { onDone: (n: string) => void }) {
 }
 
 export default function App() {
-  return <ColorModeProvider><AppBody /></ColorModeProvider>;
+  return <SafeAreaProvider><ColorModeProvider><AppBody /></ColorModeProvider></SafeAreaProvider>;
 }
 
 function AppBody() {
@@ -170,6 +176,7 @@ function AppBody() {
       <StatusBar style={t.dark ? 'light' : 'dark'} />
       {body}
       {game.needsName && <NameModal onDone={game.setName} />}
+      {game.choosingEgg && pet && <ChooseEgg game={game} />}
       {settingsOpen && <SettingsSheet game={game} onClose={() => setSettingsOpen(false)} onDev={() => { setSettingsOpen(false); game.setDevOpen(true); }} />}
       {game.devOpen && pet && <DevPanel game={game} onClose={() => game.setDevOpen(false)} />}
     </View>

@@ -9,6 +9,10 @@ struct SettingsView: View {
     @AppStorage(Beeper.enabledKey) private var soundOn = true
     @AppStorage(Notifier.enabledKey) private var notificationsOn = true
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var storedMode: ColorMode = .traditional
+    #if DEBUG
+    @AppStorage(EntitlementStore.previewKey, store: PetStore.defaults) private var plusPreview = false
+    @AppStorage(EntitlementStore.chooserKey, store: PetStore.defaults) private var eggChooser = false
+    #endif
 
     init(model: GameModel, colorModeOverride: ColorMode? = nil) {
         _model = ObservedObject(wrappedValue: model)
@@ -75,6 +79,20 @@ struct SettingsView: View {
                     Text("By default your dino never dies; neglect only costs care points. Classic mode brings back the 1997 rules, where a dino left hungry or sick for too long can die. Vacation mode freezes time while you are away.")
                 }
                 .listRowBackground(palette.ink.opacity(0.1))
+
+                #if DEBUG
+                Section {
+                    Toggle("Preview Plus (testing)", isOn: $plusPreview)
+                        .accessibilityIdentifier("toggle-plus-preview")
+                    Toggle("Show egg chooser (testing)", isOn: $eggChooser)
+                        .accessibilityIdentifier("toggle-egg-chooser")
+                } header: {
+                    Text("Testing")
+                } footer: {
+                    Text("Debug builds only. Preview Plus unlocks every animal family for new eggs without a purchase. Nothing is charged and this section is not in release builds.")
+                }
+                .listRowBackground(palette.ink.opacity(0.1))
+                #endif
 
                 Section("About") {
                     NavigationLink("About Pocket Rexie") { AboutView(version: version) }

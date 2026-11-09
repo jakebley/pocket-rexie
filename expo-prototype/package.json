@@ -7,9 +7,11 @@
     "@react-native-async-storage/async-storage": "^2.2.0",
     "expo": "~58.0.17",
     "expo-status-bar": "~58.0.4",
+    "expo-updates": "~58.0.21",
     "react": "19.3.0",
     "react-dom": "^19.3.0",
     "react-native": "0.88.0",
+    "react-native-safe-area-context": "~5.11.1",
     "react-native-svg": "^15.16.0",
     "react-native-web": "^0.21.4"
   },
@@ -28,7 +30,10 @@
     "test:sim": "tsx test/sim.ts",
     "test:scene": "tsx test/scene.ts",
     "test:color": "tsx test/color.ts",
-    "test": "npm run test:sim && npm run test:scene && npm run test:color",
+    "test:families": "tsx test/families.ts",
+    "test:biomes": "tsx test/biomes.ts",
+    "test:shading": "tsx test/shading.ts",
+    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading",
     "lint": "eslint .",
     "test:balance": "tsx test/balance.ts 20"
   },

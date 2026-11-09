@@ -34,3 +34,12 @@ Tap the small gear in the top-right corner. It shows the current species, stage,
 - force-evolve to any of the 39 species.
 
 Screenshots of the prototype are in `docs/screens/`.
+
+## On your phone with Expo Go (hosted update)
+The cloud session cannot reach your LAN, so the build is published to Expo's servers and opened in Expo Go.
+
+    npx eas-cli@latest login            # or set EXPO_TOKEN
+    npx eas-cli@latest init             # first time only: creates the project id in app.json
+    npx eas-cli@latest update --channel preview --message "build" --non-interactive
+
+Open Expo Go, sign in to the same Expo account, and the project appears under "Projects". Tap it. Plus families can be previewed with the Settings toggle "PREVIEW PLUS (TESTING)".

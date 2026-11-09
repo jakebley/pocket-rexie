@@ -3,11 +3,11 @@ import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-n
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER } from './pixel';
-import { buildFrame, lineOf, type Frame } from './render';
+import { bodyOf, buildFrame, lineOf, type Frame } from './render';
 import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
-import { touchStyle } from './PixelText';
+import { PixelText, touchStyle } from './PixelText';
 import { useTheme } from './theme';
 import type { useGame } from './useGame';
 
@@ -98,9 +98,9 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     sceneRef.current = sc;
     const rendered = renderScreen({
       pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel, play: g.play,
-      statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc,
+      statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc, dexFamily: g.dexFamily, ent: g.ent,
     });
-    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet) });
+    const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet), bodyHex: bodyOf(pet) });
     if (frame.key !== lastKey.current) { lastKey.current = frame.key; setFr(frame); }
   }, []);
 
@@ -109,7 +109,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     const id = setInterval(() => { if (isHidden() && n++ % 2 === 1) return; render(); }, 125); // 4 fps while hidden
     return () => clearInterval(id);
   }, [render]);
-  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.play, game.evo, game.pet, th.mode, th.dark]);
+  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.dexFamily, game.ent, game.play, game.evo, game.pet, th.mode, th.dark]);
 
   const n = fr.n;
   const c = size / n;
@@ -151,7 +151,9 @@ export function Toy({ game, width, rowH = ICON_ROW_H }: { game: Game; width: num
   const th = useTheme();
   const hasPet = !!game.pet;
   const tileW = width / 5;
-  const box = Math.floor(Math.min(rowH, tileW) - 6);
+  const labelPs = Math.max(1, Math.min(2, Math.floor((tileW - 2) / 32)));
+  const labelH = labelPs * 5;
+  const box = Math.max(20, Math.floor(Math.min(rowH - labelH - 6, tileW - 8)));
 
   const row = (from: number) => (
     <View style={{ width, height: rowH, flexDirection: 'row' }}>
@@ -159,11 +161,15 @@ export function Toy({ game, width, rowH = ICON_ROW_H }: { game: Game; width: num
         const i = from + k;
         const selected = game.sel === i && game.mode === 'home';
         return (
-          <Pressable key={name} accessibilityLabel={ICON_LABELS[i]} onPress={() => game.selectIcon(i)}
+          <Pressable key={name} accessibilityLabel={ICON_LABELS[i]} accessibilityHint="Hold to see what it does" onPress={() => game.selectIcon(i)}
+            onLongPress={() => game.describeIcon(i)} delayLongPress={300}
             style={[{ width: tileW, height: rowH, alignItems: 'center', justifyContent: 'center' }, touchStyle]}>
             {({ pressed }) => (
-              <View pointerEvents="none" style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center', backgroundColor: selected || pressed ? th.ink : 'transparent' }}>
-                <IconBitmap name={name} size={Math.round(box * 0.66)} color={selected || pressed ? th.ground : th.ink} />
+              <View pointerEvents="none" style={{ alignItems: 'center', gap: 2 }}>
+                <View style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center', backgroundColor: selected || pressed ? th.ink : 'transparent' }}>
+                  <IconBitmap name={name} size={Math.round(box * 0.74)} color={selected || pressed ? th.ground : th.ink} />
+                </View>
+                <PixelText text={ICON_LABELS[i]} ps={labelPs} color={th.ink} />
               </View>
             )}
           </Pressable>

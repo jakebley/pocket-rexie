@@ -67,7 +67,7 @@ struct ContentView: View {
             SettingsView(model: model, colorModeOverride: modeOverride)
                 .presentationDetents([.medium, .large])
         }
-        .alert("Your dino hatched!", isPresented: Binding(get: { needsName }, set: { _ in })) {
+        .alert(model.pet.family == "dino" ? "Your dino hatched!" : "Your pet hatched!", isPresented: Binding(get: { needsName }, set: { _ in })) {
             TextField("Name", text: $nameDraft)
             Button("Name it") { model.rename(nameDraft) }
             Button("Keep \(model.pet.name)") { model.rename(model.pet.name) }

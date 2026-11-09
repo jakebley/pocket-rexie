@@ -1,13 +1,13 @@
 # Free now, Plus later
 
-Plan: launch free with the complete dino family, then add a paid **Plus** plan that unlocks other animals. This document is the product and technical plan. Nothing here is charged or built yet, and nothing in the free app depends on it, except one small decision made now so Plus does not require a data migration later: every species and every pet belongs to a **family**.
+Plan: launch free with the complete dino family, then add a paid **Plus** plan that unlocks other animals. This document is the product and technical plan. Nothing here is charged yet and there is no StoreKit code. The free app does not depend on any of it, except the decision made early so Plus needs no data migration: every species and every pet belongs to a **family**. The families (fox, fish, bird, cat) and the egg-choosing flow are built; the purchase is not.
 
 ## What stays free, forever
 - The dino family: all 39 species across five stages, with every mechanic (care, Classic and Vacation modes, training, battles, Dex, living scene, widgets, Apple Watch).
 - No ads, no tracking, no energy gates, no timers that make you wait or pay. Free users are never degraded to sell Plus.
 
 ## What Plus adds (candidates, in priority order)
-1. **More animal families.** Each is a full evolution tree of its own (about 25 to 39 species), with its own diet-driven branching, its own look in the LCD pixel style and its own hatchling. First three to design: a fox-like family, a rabbit-like family and a bird-like family. Choosing a family when you start a new egg is the feature.
+1. **More animal families.** Each is a full evolution tree of its own (about 25 to 39 species), with its own diet-driven branching, its own look in the LCD pixel style and its own hatchling. Built so far: fox, fish, bird and cat; a rabbit-like family is a candidate. Choosing a family when you start a new egg is the feature.
 2. **A second pet slot** (two eggs at once, one on the Watch face, one on the phone).
 3. **Extra scenes**: night forest, beach, snow, with their own sky and ground (the scene renderer already separates ground, sky and weather).
 4. **Watch and widget extras**: alternate complication styles.
@@ -28,9 +28,19 @@ Recommendation: ship v1 free, watch which families people ask for, then launch *
 - `Family` metadata: id, display name, hatchling ids, `isFree`, sprite archetype set. Evolution trees stay per family in `tools/families/<id>.py`, merged into the generated data by `tools/gen_swift.py` and `tools/gen_ts.py`. The Dex counts per family (`DEX 12/39`).
 - A pet keeps living after a Plus lapse: its family is locked only for **new eggs**. Nobody loses a pet they already raised.
 
+## What is built now
+- Five families in `tools/families/*.py` (dino free; fox, fish, bird, cat marked `IS_FREE = False`), merged by `tools/familyset.py` and emitted by `tools/gen_swift.py` into `Shared/SpeciesData.swift` (species with `family`, `bodyHex`; `SpeciesData.families` with `isFree` and the three food labels).
+- **Technicolor body colour per family.** Each non-dino family module defines `LINE_COLORS` (lineage to hex); the generator writes it as `Species.bodyHex`. Dinos have none and keep the closed `PetLine` colours. Traditional ignores it, so the monochrome output is unchanged.
+- **Feed menu** uses the pet's family labels (Mice/Berries/Fish, Shrimp/Algae/Plankton, Worms/Seeds/Minnows, Tuna/Catnip/Milk; dinos still Meat/Veggies/Pasta, same accessibility ids).
+- **`Entitlements` protocol** (`isPlus`, `canHatch(family:)`) with `FreeEntitlements` (the default: dino only) and `PreviewEntitlements` (everything unlocked). `restore()` is not in the protocol yet; it arrives with StoreKit.
+- **Choose your egg** (`GameModel.Mode.chooseEgg`, opened by `requestNewEgg()`): lists every family; Plus families are marked "PLUS" and tapping one says it needs Plus. The one gate is `GameModel.startNewEgg(family:)`, which falls back to dino for any family the entitlement does not allow, so a lapsed Plus pet gives way to dino for the next egg.
+- **Dex per family.** The Dex lists the current pet's family; when the chooser is available a family button steps through all families (a locked, empty family reads PLUS with `???` rows).
+- **Tester switches** (Settings, "Testing" section, Debug builds only, absent from Release): "Preview Plus (testing)" unlocks every family and turns the chooser on; "Show egg chooser (testing)" shows the chooser with the free entitlement so the locked rows can be seen. Both are stored in the App Group defaults (`plusPreview`, `eggChooser`). With both off (every Release build) NEW EGG hatches a dino straight away, exactly as before, so the UI tests and the shipped app are unchanged.
+- Not built: StoreKit, the paywall, Restore Purchases, the cached `isPlus` flag for widget and Watch, the Plus StoreKit configuration file.
+
 ## App architecture (when Plus ships)
-- `Entitlements` protocol (`isPlus`, `canHatch(family:)`, `restore()`), with a `FreeEntitlements` (dino only) for development and tests, and a `StoreKitEntitlements` using StoreKit 2 (`Transaction.currentEntitlements`, `Product.products(for:)`, `AppStore.sync()` for Restore). The widget and Watch read a cached `isPlus` flag from the App Group so they never touch StoreKit.
-- Gating happens in exactly one place: the "choose your egg" screen shown by `GameModel.startNewEgg()`. Locked families show their pixel hatchling silhouette and a "Plus" tile; tapping opens the paywall.
+- Extend the `Entitlements` protocol with `restore()`, keep `FreeEntitlements` for development and tests, and add a `StoreKitEntitlements` using StoreKit 2 (`Transaction.currentEntitlements`, `Product.products(for:)`, `AppStore.sync()` for Restore). The widget and Watch read a cached `isPlus` flag from the App Group so they never touch StoreKit.
+- Gating happens in exactly one place: `GameModel.startNewEgg(family:)`, reached from the "choose your egg" screen. Locked families show their pixel hatchling silhouette and a "Plus" tile; tapping opens the paywall.
 - Paywall: pixel-LCD styled sheet, plain price and renewal terms, trial length, a visible Restore button and Terms and Privacy links; no dark patterns, no countdowns, closeable at once.
 - Local testing uses an Xcode StoreKit configuration file (`Plus.storekit`) so purchase flows can be tested in the simulator and in UI tests without Apple credentials.
 - Family Sharing on (a single Plus covers the household).
@@ -49,6 +59,6 @@ Recommendation: ship v1 free, watch which families people ask for, then launch *
 
 ## Milestones
 1. v1.0 free: ship with the family field in the data (cheap, no UI). **Done:** `Species.family`, `Pet.family`, family-aware hatching, tolerant decoding, unknown families fall back to dino, covered by tests.
-2. v1.1: the "choose your egg" screen with one family, plus Entitlements and the StoreKit configuration, behind a build flag and not shown to users yet.
+2. v1.1: the "choose your egg" screen and Entitlements (**done**, behind Debug-only tester switches, not shown to users); the StoreKit configuration is still to do.
 3. v1.2: first Plus launch with the fox family, trial and restore tested with TestFlight sandbox accounts.
 4. Later: more families, a second pet slot and scenes, guided by what people ask for.
