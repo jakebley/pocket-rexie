@@ -201,14 +201,21 @@ enum PetShading {
         // distance to the outside (holes count as body, so an eye does not carve its own bevel)
         var dist = [Float](repeating: 0, count: n)
         let rm = rMax
+        // the exterior map padded by rMax cells of "outside" on every side, so the window scan needs no bounds checks
+        let pw = w + 2 * rm
+        var padded = [Bool](repeating: true, count: pw * (h + 2 * rm))
+        for y in 0..<h {
+            for x in 0..<w { padded[(y + rm) * pw + x + rm] = ext[y * w + x] }
+        }
         for y in 0..<h {
             for x in 0..<w {
-                if isExt(x, y) { continue }
+                if ext[y * w + x] { continue }
                 var best = rm * rm
                 for dy in -rm...rm {
+                    let base = (y + dy + rm) * pw + x + rm
                     for dx in -rm...rm {
                         let d2 = dx * dx + dy * dy
-                        if d2 < best && isExt(x + dx, y + dy) { best = d2 }
+                        if d2 < best && padded[base + dx] { best = d2 }
                     }
                 }
                 dist[y * w + x] = Float(Double(best).squareRoot())

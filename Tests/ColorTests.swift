@@ -48,7 +48,7 @@ final class ColorTests: XCTestCase {
         XCTAssertEqual(SceneLayer.glint.rawValue, 39)
         XCTAssertEqual(SceneLayer.eyeFill.rawValue, 87)
         XCTAssertEqual(SceneLayer.eyeShine.rawValue, 88)
-        XCTAssertEqual(SceneLayer.allCases.count, 41)
+        XCTAssertEqual(SceneLayer.allCases.count, 42)
         XCTAssertEqual(SceneLayer.allCases.map { Int($0.rawValue) }.sorted(), Array(0...39) + [87, 88])
     }
 
