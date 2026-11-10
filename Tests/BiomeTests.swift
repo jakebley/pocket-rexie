@@ -433,7 +433,7 @@ final class BiomeTests: XCTestCase {
         for i in 0..<n { _ = render(p, hour: 12, offset: Double(i) * 0.125) }
         let ms = Date().timeIntervalSince(t0) * 1000 / Double(n)
         let t1 = Date()
-        for i in 0..<n { _ = render(p, hour: 12, offset: Double(i) * 0.125, biome: .meadow) }
+        for i in 0..<n { _ = render(p, hour: 12, biome: .meadow, offset: Double(i) * 0.125) }
         let meadowMs = Date().timeIntervalSince(t1) * 1000 / Double(n)
         print("BIOME-PERF workshop \(String(format: "%.3f", ms)) ms/frame, meadow \(String(format: "%.3f", meadowMs)) ms/frame")
         // generous: CI builds the tests unoptimised on a shared runner
