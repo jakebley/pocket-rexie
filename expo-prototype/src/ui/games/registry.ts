@@ -12,6 +12,7 @@ export const GAME_ENTRIES: GameEntry[] = [
   // ---- slot: DASH ----
 
   // ---- slot: ECHO ----
+  load(require('./echo')),
 
 ];
 
