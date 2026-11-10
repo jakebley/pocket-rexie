@@ -788,6 +788,163 @@ for a, b in (((5.4, 12.0), (2.4, 15)), ((9.6, 12.0), (12.6, 15))): g.line(a[0], 
 g.px(5, 15); g.px(10, 15)
 R('jade', 5, g, (9, 4), (7.5, 4.6, 2.2))
 
+# ---- third pass: moths with a fat fuzzy body, comb antennae and broad spread wings -------------------------
+def HS(name, stage, half, eye, head):
+    """a left half (8 columns, col 7 next to the centre line) mirrored to 16x16; the single eye is a hole at `eye`"""
+    assert len(half) == 16 and all(len(r) == 8 for r in half), (name, stage)
+    rows = [r + r[::-1] for r in half]
+    ex, ey = eye
+    assert rows[ey][ex] == '#', (name, stage, 'eye on ink')
+    rows[ey] = rows[ey][:ex] + 'e' + rows[ey][ex + 1:]
+    HAND.setdefault(name, {})[stage] = (rows, head, False)
+
+HS('fuzzmoth', 3, [
+ "........",
+ "........",
+ "..#.#...",
+ "...###.#",
+ ".....###",
+ "..##.###",
+ ".#######",
+ ".#######",
+ "########",
+ ".#######",
+ "..######",
+ "...#####",
+ ".....###",
+ "......##",
+ "........",
+ "........",
+], (8, 5), (7.5, 4.5, 2.0))
+HS('moonmoth', 4, [
+ "..#.#...",
+ "...###..",
+ ".....###",
+ ".##..###",
+ "####.###",
+ "########",
+ "#...####",
+ "#.#.####",
+ "#...####",
+ ".#######",
+ ".#######",
+ "..######",
+ "..######",
+ ".##...##",
+ ".#.....#",
+ "........",
+], (8, 3), (7.5, 3.0, 2.2))
+HS('empress', 5, [
+ "..#...#.",
+ "...##.##",
+ "....####",
+ ".##..###",
+ "####.###",
+ "########",
+ "#...####",
+ "#.#.####",
+ "#...####",
+ ".#######",
+ "########",
+ "########",
+ "#.#.####",
+ "#.#...##",
+ "........",
+ "........",
+], (8, 3), (7.5, 2.9, 2.2))
+HS('ghostmoth', 5, [
+ "..#.#...",
+ "...###..",
+ ".....###",
+ ".##..###",
+ "#..#.###",
+ "#...####",
+ "#...#.##",
+ "#...#.##",
+ "#...####",
+ ".#..####",
+ ".#.#####",
+ "..#.####",
+ "..#.####",
+ ".##...##",
+ ".#.....#",
+ "........",
+], (8, 3), (7.5, 3.0, 2.2))
+
+# ---- ladybugs seen from above: clean domes with a centre seam and 2 px spots well below the head -------------
+def lady_top(ht, widths, spots, legs, seam=7, head=(5, 10), eyex=8):
+    """ht = head top row (2 rows of head + antennae above); widths = [(x0, x1)] for each shell row below the head"""
+    g = [['.'] * 16 for _ in range(16)]
+    for y in (ht, ht + 1):
+        for x in range(head[0], head[1] + 1): g[y][x] = '#'
+    for x, y in ((head[0] - 1, ht - 2), (head[0], ht - 1), (head[1] + 1, ht - 2), (head[1], ht - 1)): g[y][x] = '#'
+    g[ht + 1][eyex] = 'e'
+    y0 = ht + 2
+    for i, (x0, x1) in enumerate(widths):
+        for x in range(x0, x1 + 1): g[y0 + i][x] = '#'
+        g[y0 + i][seam] = '.' if i > 0 else '#'
+    for x, y in spots: g[y][x] = '.'; g[y][15 - x + (seam - 7)] = '.'
+    for y in legs:
+        r = [x for x in range(16) if g[y][x] == '#']
+        g[y][min(r) - 1] = '#'; g[y][max(r) + 1] = '#'
+    return [''.join(r) for r in g]
+S('domeling', 3, lady_top(4, [(3, 12), (2, 13), (2, 13), (2, 13), (3, 12), (4, 11)], [(4, 8), (4, 9)], (7, 9, 11), head=(6, 9)), (7.5, 3.6, 2.0))
+S('dotty', 4, lady_top(2, [(3, 12), (2, 13), (1, 14), (1, 14), (1, 14), (1, 14), (1, 14), (2, 13), (3, 12), (4, 11)],
+    [(4, 7), (4, 8), (3, 10), (3, 11)], (7, 9, 11), head=(6, 9)), (7.5, 2.9, 2.2))
+
+def ringbox(g, x0, y0, x1, y1):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            edge = x in (x0, x1) or y in (y0, y1)
+            corner = x in (x0, x1) and y in (y0, y1)
+            if edge and not corner: g.px(x, y)
+def bumble_g():
+    g = N()
+    for (cx, cy, rx, ry, ix, iy) in ((4.4, 4.4, 3.9, 2.6, 2.6, 1.4), (8.6, 3.6, 3.0, 2.5, 1.7, 1.4)):
+        g.ell(cx, cy, rx, ry); g.ell(cx, cy, ix, iy, 0)     # clear (outlined) wings
+    g.ell(6.2, 10.4, 5.4, 4.4)       # round fuzzy body
+    g.ell(12.2, 8.6, 2.0, 2.0)       # head, a little higher than the body
+    g.px(10, 6); g.px(11, 6); g.px(10, 7); g.px(11, 7)
+    g.px(12, 6); g.px(12, 5); g.px(13, 4); g.px(14, 4)   # feeler
+    for y in range(10, 14): g.px(4, y, 0); g.px(8, y, 0)  # stripes: enclosed slits
+    for x in (3, 6, 9): g.px(x, 15)                      # tiny legs
+    g.px(0, 10)                                          # stinger
+    return g
+g = bumble_g(); R('bumble', 3, g, (12, 8), (12.2, 8.6, 2.0))
+
+# Lantern: a firefly in profile with a big glowing bulb (ring) on the rear segment
+g = N()
+g.ell(8.8, 10.4, 4.6, 3.0)                     # wing cases
+g.ell(12.6, 10.6, 1.9, 1.9)                    # head under a hood
+g.ell(11.0, 9.4, 2.0, 1.8)                     # pronotum
+ringbox(g, 0, 8, 5, 13)                        # the lamp
+g.rect(5, 9, 6, 12)                           # join
+g.px(12, 8); g.px(12, 7); g.px(13, 6); g.px(14, 9); g.px(15, 8)   # feelers
+legs(g, [7, 9, 11], 13, 15)
+R('lantern', 4, g, (13, 10), (12.6, 10.6, 1.9))
+
+# Buzzlet: a plump striped honey grub (segment notches along the back, tiny legs)
+g = N()
+g.ell(6.4, 11.0, 5.6, 3.5); g.ell(12.2, 10.8, 2.1, 2.1)
+for x in (3, 6, 9): g.px(x, 8, 0); g.px(x, 9, 0)
+g.px(11, 8); g.px(11, 9); g.px(10, 7); g.px(13, 8); g.px(14, 7)
+for x in (3, 6, 9): g.px(x, 15)
+g.px(0, 12); g.px(0, 13)
+R('buzzlet', 2, g, (12, 10), (12.2, 10.8, 2.1))
+# Jade Sage: a big mantis sitting upright in profile, leaf wings along its back and a ring halo round the head
+g = N()
+hx, hy = 10.0, 5.4
+g.ell(hx, hy, 4.6, 4.6); g.ell(hx, hy, 3.5, 3.5, 0)               # halo ring
+g.poly([(hx - 1.7, hy), (hx + 1.9, hy - 0.2), (hx + 0.6, hy + 2.3)]); g.ell(hx, hy + 0.2, 1.7, 1.7)   # triangular head
+g.line(hx - 0.6, hy + 2.0, hx - 2.2, hy + 5.4); g.line(hx + 0.4, hy + 2.0, hx - 1.4, hy + 5.4)     # thorax
+g.ell(5.0, 11.4, 4.8, 2.0)                                           # abdomen
+g.poly([(8.4, 10.0), (3.0, 8.6), (0.6, 9.4), (3.0, 10.4)])           # leaf wing
+g.line(hx + 0.6, hy + 3.2, 14.6, hy + 4.0); g.line(14.6, hy + 4.0, 13.4, hy + 6.6); g.line(13.4, hy + 6.6, hx - 0.4, hy + 5.4)   # folded arm
+for x in (2, 5, 8): 
+    for y in range(13, 16): g.px(x, y)
+g.px(10, 14); g.px(10, 15)
+R('jade', 5, g, (10, 6), (hx, hy + 0.2, 1.9))
+
 def _register_hand():
     table = {}
     for name, stages in HAND.items():
