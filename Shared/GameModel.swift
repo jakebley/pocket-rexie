@@ -502,6 +502,17 @@ final class GameModel: ObservableObject {
         persist()
     }
 
+    /// Tester tool (Settings, Testing): replaces the current pet, alive or not, with a fresh egg of
+    /// any family, ignoring the Plus gate. The Dex is kept. Does nothing outside Debug and TestFlight builds.
+    func testerNewEgg(family id: String, testerTools: Bool = TesterTools.isEnabled()) {
+        guard testerTools, Species.family(id) != nil else { return }
+        pet.newEgg(now: AppClock.now(), family: id)
+        mode = .home
+        selected = .feed
+        say("A new egg!")
+        persist()
+    }
+
     func rename(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         pet.advance(to: AppClock.now())

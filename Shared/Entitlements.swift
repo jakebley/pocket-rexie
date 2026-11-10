@@ -23,7 +23,8 @@ struct PreviewEntitlements: Entitlements {
 }
 
 /// Reads the tester switches from defaults and hands out the matching `Entitlements`.
-/// Both switches only work in Debug builds; Release always answers "free, no chooser".
+/// Both switches only work in Debug and TestFlight builds (`TesterTools`); App Store builds
+/// always answer "free, no chooser".
 enum EntitlementStore {
     /// Settings toggle "Preview Plus (testing)": unlock every family.
     static let previewKey = "plusPreview"
@@ -31,25 +32,18 @@ enum EntitlementStore {
     /// only the free family is unlocked (so the locked tiles can be seen).
     static let chooserKey = "eggChooser"
 
-    static func previewEnabled(defaults: UserDefaults? = nil) -> Bool {
-        #if DEBUG
-        return (defaults ?? PetStore.defaults).bool(forKey: previewKey)
-        #else
-        return false
-        #endif
+    static func previewEnabled(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled()) -> Bool {
+        testerTools && (defaults ?? PetStore.defaults).bool(forKey: previewKey)
     }
 
     /// The Choose your egg screen is shown when Plus is previewed or the chooser switch is on.
-    static func chooserEnabled(defaults: UserDefaults? = nil) -> Bool {
-        #if DEBUG
+    static func chooserEnabled(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled()) -> Bool {
+        guard testerTools else { return false }
         let store = defaults ?? PetStore.defaults
         return store.bool(forKey: previewKey) || store.bool(forKey: chooserKey)
-        #else
-        return false
-        #endif
     }
 
-    static func current(defaults: UserDefaults? = nil) -> Entitlements {
-        previewEnabled(defaults: defaults) ? PreviewEntitlements() : FreeEntitlements()
+    static func current(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled()) -> Entitlements {
+        previewEnabled(defaults: defaults, testerTools: testerTools) ? PreviewEntitlements() : FreeEntitlements()
     }
 }

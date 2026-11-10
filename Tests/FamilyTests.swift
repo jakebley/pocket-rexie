@@ -123,6 +123,44 @@ final class FamilyTests: XCTestCase {
         defaults.removePersistentDomain(forName: suite)
     }
 
+    func testTesterToolsGating() {
+        let sandbox = URL(fileURLWithPath: "/private/var/mobile/Containers/Data/Application/X/StoreKit/sandboxReceipt")
+        let store = URL(fileURLWithPath: "/private/var/mobile/Containers/Data/Application/X/StoreKit/receipt")
+        XCTAssertTrue(TesterTools.isTestFlight(receiptURL: sandbox))
+        XCTAssertFalse(TesterTools.isTestFlight(receiptURL: store), "App Store builds are not TestFlight")
+        XCTAssertFalse(TesterTools.isTestFlight(receiptURL: nil))
+        XCTAssertTrue(TesterTools.isEnabled(debug: true, receiptURL: nil))
+        XCTAssertTrue(TesterTools.isEnabled(debug: false, receiptURL: sandbox))
+        XCTAssertFalse(TesterTools.isEnabled(debug: false, receiptURL: store), "production never shows the tester tools")
+        XCTAssertFalse(TesterTools.isEnabled(debug: false, receiptURL: nil))
+    }
+
+    func testSwitchesIgnoredWhenToolsOff() {
+        let suite = "com.pocketrexie.testergating"
+        let defaults = UserDefaults(suiteName: suite) ?? .standard
+        defaults.removePersistentDomain(forName: suite)
+        defaults.set(true, forKey: EntitlementStore.previewKey)
+        defaults.set(true, forKey: EntitlementStore.chooserKey)
+        XCTAssertFalse(EntitlementStore.previewEnabled(defaults: defaults, testerTools: false))
+        XCTAssertFalse(EntitlementStore.chooserEnabled(defaults: defaults, testerTools: false))
+        XCTAssertFalse(EntitlementStore.current(defaults: defaults, testerTools: false).canHatch(family: "fox"))
+        XCTAssertTrue(EntitlementStore.previewEnabled(defaults: defaults, testerTools: true))
+        XCTAssertTrue(EntitlementStore.chooserEnabled(defaults: defaults, testerTools: true))
+        XCTAssertTrue(EntitlementStore.current(defaults: defaults, testerTools: true).canHatch(family: "fox"))
+        defaults.removePersistentDomain(forName: suite)
+    }
+
+    func testTesterNewEggAnyFamily() {
+        let model = GameModel(pet: Pet(now: Date()), persist: { _ in }, entitlements: FreeEntitlements())
+        model.testerNewEgg(family: "fox", testerTools: false)
+        XCTAssertEqual(model.pet.family, "dino", "no effect when tester tools are off")
+        model.testerNewEgg(family: "fox", testerTools: true)
+        XCTAssertEqual(model.pet.family, "fox")
+        XCTAssertEqual(model.pet.stage, .egg)
+        model.testerNewEgg(family: "no-such-family", testerTools: true)
+        XCTAssertEqual(model.pet.family, "fox", "unknown family is ignored")
+    }
+
     func testLockedFamilyCannotBeHatched() {
         let model = GameModel(pet: deadPet(), persist: { _ in }, entitlements: FreeEntitlements())
         model.chooseEgg(family: "fox")
