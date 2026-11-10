@@ -17,7 +17,7 @@ const GEAR = ['...XX...', '.X.XX.X.', '..XXXX..', 'XXX..XXX', 'XXX..XXX', '..XXX
 const GEAR_D = GEAR.map((r, y) => [...r].map((c, x) => (c === 'X' ? `M${x} ${y}h1v1h-1z` : '')).join('')).join('');
 
 const HINTS: Record<string, string> = {
-  feed: 'A: next | B: eat | C: back', play: 'A: higher/lower | B: choose | C: quit',
+  feed: 'A: next | B: eat | C: back',
   stats: 'B: next page | C: back', dex: 'A: family | B: next page | C: back',
 };
 
@@ -100,8 +100,31 @@ export default function App() {
   return <SafeAreaProvider><ColorModeProvider><AppBody /></ColorModeProvider></SafeAreaProvider>;
 }
 
+/** Web: the keyboard drives A / B / C (left, Enter / Space, right), so the games can be played without the on-screen buttons. */
+function useWebKeys(game: ReturnType<typeof useGame>) {
+  const ref = React.useRef(game); ref.current = game;
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const on = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      const g = ref.current;
+      if (!g.pet || g.needsName || g.choosingEgg || g.devOpen) return;
+      const k = e.key.toLowerCase();
+      if (k === 'arrowleft' || k === 'a') g.pressA();
+      else if (k === 'enter' || k === ' ' || k === 'arrowdown' || k === 'b') g.pressB();
+      else if (k === 'arrowright' || k === 'c') g.pressC();
+      else return;
+      e.preventDefault();
+    };
+    document.addEventListener('keydown', on);
+    return () => document.removeEventListener('keydown', on);
+  }, []);
+}
+
 function AppBody() {
   const game = useGame();
+  useWebKeys(game);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const t = useTheme();
   useWebTouchSetup();
@@ -112,7 +135,7 @@ function AppBody() {
   const L = layoutFor(availW, availH);
   const { W, s: k } = L;
   const pet = game.pet;
-  const hint = HINTS[game.mode];
+  const hint = game.hint ?? HINTS[game.mode];
   const msg = game.msg ?? hint ?? (pet ? statusLine(pet) : 'Loading...');
   const msgH = Math.round(U.msg * k);
   const fit = fitLines(msg, L.panelW - 8, 3 * k, 2 * k);

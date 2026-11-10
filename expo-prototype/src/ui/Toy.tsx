@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER } from './pixel';
 import { bodyOf, buildFrame, lineOf, type Frame } from './render';
-import { FEED_ROW_H, FEED_TOP, PLAY_ROWS, renderScreen } from './screens';
+import { FEED_ROW_H, FEED_TOP, MENU_ROW_H, MENU_TOP, MENU_VISIBLE, menuFirst, playMenuRows, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
 import { PixelText, touchStyle } from './PixelText';
@@ -97,19 +97,22 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     sc = step(sc, pet, { events: g.takeSceneEvents(), hour: env.hour ?? undefined, rain: env.rain }, now, { reducedMotion: stillRef.current });
     sceneRef.current = sc;
     const rendered = renderScreen({
-      pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel, play: g.play,
+      pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel,
       statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc, dexFamily: g.dexFamily, ent: g.ent,
+      playSel: g.playSel, session: g.sessionRef.current, scoresPage: g.scoresPage, scores: g.scores, ms: Date.now(),
     });
     const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet), bodyHex: bodyOf(pet) });
     if (frame.key !== lastKey.current) { lastKey.current = frame.key; setFr(frame); }
   }, []);
 
+  // a game screen paints at 20 fps (the games tick every 50 ms); everything else at 8 fps
+  const fast = game.mode === 'game';
   useEffect(() => {
     let n = 0;
-    const id = setInterval(() => { if (isHidden() && n++ % 2 === 1) return; render(); }, 125); // 4 fps while hidden
+    const id = setInterval(() => { if (isHidden() && n++ % 2 === 1) return; render(); }, fast ? 50 : 125); // 4 fps while hidden
     return () => clearInterval(id);
-  }, [render]);
-  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.dexFamily, game.ent, game.play, game.evo, game.pet, th.mode, th.dark]);
+  }, [render, fast]);
+  useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.dexFamily, game.ent, game.playSel, game.scoresPage, game.scores, game.phase, game.evo, game.pet, th.mode, th.dark]);
 
   const n = fr.n;
   const c = size / n;
@@ -134,10 +137,34 @@ function Lcd({ game, size }: { game: Game; size: number }) {
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (
         <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * c, height: FEED_ROW_H * c, ...touchStyle }} />
       ))}
-      {game.mode === 'play' && PLAY_ROWS.map((r, i) => (
-        <Pressable key={i} onPress={() => game.tapPlayOption(i as 0 | 1)} style={{ position: 'absolute', left: 0, width: size, top: (r.y - 1) * c, height: (r.h + 2) * c, ...touchStyle }} />
-      ))}
-      {(game.mode === 'home' || game.mode === 'stats' || game.mode === 'dex') && (
+      {game.mode === 'playmenu' && (() => {
+        const first = menuFirst(game.playSel);
+        return playMenuRows().slice(first, first + MENU_VISIBLE).map((_, k) => (
+          <Pressable key={k} accessibilityLabel={`Play menu row ${first + k + 1}`} onPress={() => game.tapMenuRow(first + k)}
+            style={{ position: 'absolute', left: 0, width: size, top: (MENU_TOP + k * MENU_ROW_H) * c, height: MENU_ROW_H * c, ...touchStyle }} />
+        ));
+      })()}
+      {game.mode === 'game' && (() => {
+        const s = game.sessionRef.current;
+        const rows = s && s.phase === 'play' && s.game ? s.def.tapRows?.(s.game.state) ?? [] : [];
+        // taps: rows the game declares (HI-LO's HIGHER / LOWER) pick directly; any other tap is the left / right half of the screen
+        return (
+          <>
+            <Pressable accessibilityLabel="Game screen" onPressIn={(e: GestureResponderEvent) => {
+              const ne: any = e.nativeEvent;
+              const r = (e.currentTarget as any)?.getBoundingClientRect?.();
+              let lx = ne.locationX;
+              if (Platform.OS === 'web' && r && ne.clientX !== undefined) lx = ne.clientX - r.left;
+              game.tapGameSide((lx ?? 0) < size / 2 ? -1 : 1);
+            }} style={[StyleSheet.absoluteFill, touchStyle]} />
+            {rows.map((r, i) => (
+              <Pressable key={i} accessibilityLabel={`Game option ${i + 1}`} onPress={() => game.tapGamePick(i)}
+                style={{ position: 'absolute', left: 0, width: size, top: (r.y - 1) * c, height: (r.h + 2) * c, ...touchStyle }} />
+            ))}
+          </>
+        );
+      })()}
+      {(game.mode === 'home' || game.mode === 'stats' || game.mode === 'dex' || game.mode === 'scores') && (
         <Pressable accessibilityLabel="Scene" onPress={onTap} style={[StyleSheet.absoluteFill, touchStyle]} />
       )}
     </View>

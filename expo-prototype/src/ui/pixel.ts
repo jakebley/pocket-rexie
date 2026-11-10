@@ -140,7 +140,7 @@ export const ICON_LABELS = ['FEED', 'LIGHT', 'PLAY', 'TRAIN', 'MEDICINE', 'CLEAN
 export const ICON_HELP = [
   'FEED: meal or snack. Fills hunger.',
   'LIGHT: turn the lights off so it can sleep.',
-  'PLAY: guess game. Makes it happy.',
+  'PLAY: mini-games. Makes it happy.',
   'TRAIN: exercise. Gets stronger, burns weight.',
   'MEDICINE: cures a sick pet.',
   'CLEAN: wipe up the poop.',
