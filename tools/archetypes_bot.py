@@ -96,6 +96,86 @@ def _asc(*rows):
             elif c == 'e': eye = (x, y)
     return g, eye
 
+def s_blip():
+    return _asc(
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "......XX........",
+        "......XX........",
+        ".......X........",
+        "....XXXXXX......",
+        "...XXXXXXXX.....",
+        "..XXXXeXXXXX....",
+        ".XXXXXXXXXXXX...",
+        "..XXXXXXXXXX....",
+        "...XXXXXXXX.....",
+        "....XXXXXX......",
+        "....XX..XX......",
+    )
+
+def s_nibble():
+    return _asc(
+        "................",
+        "................",
+        "................",
+        "................",
+        "....X......X....",
+        "....X......X....",
+        "....XXXXXXXX....",
+        "...XXXXXXXXXX...",
+        "...XXXXXXXXXX...",
+        "...XXXXeXXXXX...",
+        "..XXXXXXXXXXXX..",
+        "..XXXXXXXXXXXX..",
+        "...XXXXXXXXXX...",
+        "...XX.XX.XXXX...",
+        "...XXXXXXXXXX...",
+        "...XX......XX...",
+    )
+
+def s_heapling():
+    return _asc(
+        "................",
+        ".........X.X.X..",
+        ".........XXXXX..",
+        "........XXXXXXX.",
+        "...X....XXXeXXX.",
+        "...X....XXXXXXX.",
+        ".XXXXX...XXXXX..",
+        ".XXXXX...X.X.X..",
+        ".XXXXXX.XXXXXXX.",
+        "..XXXXXXXXXXXXXX",
+        ".XXXXXXXXXXXXXX.",
+        "XXXXXXXXXXXXXXXX",
+        ".XXXXXXXXXXXXXXX",
+        "XXX..XXXXXX..XXX",
+        "XXX..XXXXXX..XXX",
+        "XXXXXXXXXXXXXXXX",
+    )
+
+def s_junkyard():
+    return _asc(
+        ".X.X............",
+        "..X.........X...",
+        "XXXXX.....X.X.X.",
+        ".XX......XXXXXXX",
+        ".XX......XXXXXXX",
+        ".XXXXX..XXXXeXXX",
+        ".XXXXXX.XXXXXXXX",
+        "..XXXXXXXXXXXXX.",
+        ".XXXXXXXXXXXXXXX",
+        ".XXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXX",
+        "XXXX..XXXXX..XXX",
+        "XXXX..XXXXX..XXX",
+        "XXXXXXXXXXXXXXXX",
+        ".XXXXXXXXXXXXXX.",
+    )
+
 # ---- stage 2 ---------------------------------------------------------------------------------------------
 def s_cogsy():                                                # little tank with a claw
     g = _P()
@@ -132,17 +212,17 @@ def s_boomlet():
         "....XXXXXXXX....",
         "....X......X....",
         "....X......X....",
-        "..XXXXXXXXXXXX..",
         ".XXXXXXXXXXXXXX.",
-        ".XXXX.XXXX.XXXX.",
-        ".XXX.XXeXXX.XXX.",
-        ".XX.XXXXXXXX.XX.",
-        ".XX.XX.XX.XX.XX.",
-        ".XX.XXXXXXXX.XX.",
-        ".XXX.XXXXXX.XXX.",
-        ".XXXX.XXXX.XXXX.",
         ".XX..........XX.",
+        ".XX.XXXXXXXX.XX.",
+        ".XX.XXXeXXXX.XX.",
+        ".XX.XXXXXXXX.XX.",
         ".XX..........XX.",
+        ".XXXXXXXXXXXXXX.",
+        ".X...XXXXXX...X.",
+        ".X.X.XXXXXX.X.X.",
+        ".X...XXXXXX...X.",
+        ".XXXXXXXXXXXXXX.",
     )
 
 def s_clank():
@@ -224,15 +304,25 @@ def s_whir():                                                 # helicopter drone
     g.R(13, 7, 15, 8)
     return g, (7, 8)
 
-def s_toastie():
-    g = _P()
-    g.R(1, 8, 14, 14); g.R(2, 7, 13, 7)
-    g.R(3, 4, 6, 6); g.S(4, 3); g.S(5, 3); g.H(4, 5, 5, 5)
-    g.R(9, 4, 12, 6); g.S(10, 3); g.S(11, 3); g.H(10, 5, 11, 5)
-    g.R(15, 9, 15, 12)
-    g.H(3, 12, 12, 12)
-    g.R(2, 15, 3, 15); g.R(12, 15, 13, 15)
-    return g, (7, 9)
+def s_toastie():  # two slices popping out of the toaster
+    return _asc(
+        "................",
+        "..XXXX....XXXX..",
+        ".XXXXXX..XXXXXX.",
+        ".XXXXXX..XXXXXX.",
+        ".XXXXXX..XXXXXX.",
+        "..XXXXX..XXXXX..",
+        "..XXXXX..XXXXX..",
+        ".XXXXXXXXXXXXXX.",
+        "XXXXXXeXXXXXXX..",
+        "XXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXX..",
+        "XXX.......XXXX..",
+        "XXXXXXXXXXXXXX..",
+        "XXXXXXXXXXXXXX..",
+        ".XX..........XX.",
+    )
 
 # ---- stage 4 ---------------------------------------------------------------------------------------------
 def s_bassline():
@@ -241,7 +331,7 @@ def s_bassline():
     g.R(3, 1, 12, 1); g.R(3, 2, 3, 3); g.R(12, 2, 12, 3)
     g.R(14, 0, 14, 3)
     for cx in (3.5, 12.5):
-        _disc(g, cx, 11.5, 3.0, 0); _disc(g, cx, 11.5, 2.0, 1); _disc(g, cx, 11.5, 0.8, 0)
+        _disc(g, cx, 11.5, 3.0, 0); _disc(g, cx, 11.5, 2.0, 1)
     g.panel(5, 5, 10, 9, False)
     g.H(6, 12, 9, 12)
     g.R(1, 15, 2, 15); g.R(13, 15, 14, 15)
@@ -257,14 +347,14 @@ def s_ironclad():
         ".......XX.......",
         ".XXXXXXXXXXXXXX.",
         "XXXXXXXXXXXXXXXX",
-        "XXX.XXXXXXXX.XXX",
-        "XXX.XXX..XXX.XXX",
-        "XXX.XX....XX.XXX",
-        "XXX.XXX..XXX.XXX",
-        "XXXXXXXXXXXXXXXX",
-        "....XXXXXXXX....",
-        "....XXX..XXX....",
-        "...XXXX..XXXX...",
+        "XX.XXXXXXXXXX.XX",
+        "XXXXX......XXXXX",
+        "XXXX........XXXX",
+        "XXXX........XXXX",
+        "XXXXX......XXXXX",
+        "XX.XXXXXXXXXX.XX",
+        ".XXXXXXXXXXXXXX.",
+        "..XXX......XXX..",
     )
 
 def s_bulldozer():

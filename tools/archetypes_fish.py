@@ -246,11 +246,25 @@ def glimmer():
 @sp
 def gulper():
     c = C()
-    c.ell(7, 6, 5.4, 5.2)
-    c.poly([(7.6, 6.4), (17, 1.4), (17, 11.4)], 0)
-    for x, y in ((8.6, 5), (10.4, 4), (8.6, 8), (10.4, 9)): c.set(x, y)
-    c.path([(2.2, 8), (0.6, 10.4), (0.2, 12.4)], 1.2, 0.5)
-    c.eyeat(5.6, 3.2); return c
+    c.art("""
+.....XXXXXXXX...
+...XXXXXXXXXXXX.
+..XXXXXeXXXXXXXX
+..XXXXXXXXXXXXXX
+..XXXXXXX.X.X.X.
+..XXXXXXX.......
+..XXXXXXXX......
+..XXXXXXX.......
+..XXXXXXX.X.X.X.
+..XXXXXXXXXXXXXX
+..XXXXXXXXXXXXXX
+...XXXXXXXXXXXX.
+X..XXXXXXXXX....
+XX.XXXXXXX......
+.XXXXXXXX.......
+..XXXX..........
+""")
+    return c
 
 @sp
 def lanternet():
@@ -266,7 +280,7 @@ def lanternet():
 @sp
 def slinker():
     c = C()
-    c.path([(0.5, 10), (2.4, 8.4), (4.6, 9.2), (6.8, 11), (9, 10.2), (10.6, 8.2)], 1.5, 1.6)
+    c.path([(0.5, 10), (2.4, 8.4), (4.6, 9.2), (6.8, 11), (9, 10.2), (10.6, 8.2)], 2.0, 2.1)
     c.ell(11.6, 7, 2.2, 1.9); c.tri((12.8, 6.4), (14.6, 7.4), (12.8, 8.4)); c.set(13.2, 7.8, 0)
     for x, y in ((3, 6.8), (4.8, 7.6), (6.8, 9.2), (8.6, 8.8)): c.line(x, y, x + 1, y)
     c.tri((9.4, 9.6), (8.6, 12.4), (11, 10.6))
@@ -306,12 +320,19 @@ def ripplekoi():
 @sp
 def dreg():
     c = C()
-    c.rell(6, 6.2, 4.6, 2.9, 24)                            # nose down in the gravel
-    c.ell(9.6, 9, 2.4, 2.3)
-    c.poly([(2.4, 3.8), (-0.8, 2), (-0.2, 6), (2.8, 5.6)]); c.set(-0.2, 3.6, 0)
-    c.tri((4.6, 3.4), (5.8, 1.4), (8, 4.2))
-    c.line(11.8, 10.6, 12.6, 12.2); c.line(10.6, 11.4, 10.8, 12.6)
-    c.eyeat(10, 7.8); return c
+    c.art("""
+........XX......
+.......XXXX.....
+X.....XXXXXX....
+XX..XXXXXXXXXX..
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXeXXXX
+.XXXXXXXXXXXXXXX
+XX.XXXXXXXXXXXX.
+X...XX.XXXXXX.X.
+.......XX..XX..X
+""")
+    return c
 
 @sp
 def muddle():
@@ -382,16 +403,25 @@ def coralback():
 @sp
 def gapjaw():
     c = C()
-    c.ell(8, 8, 5.6, 4.4)
-    c.ell(11.4, 7.6, 3.6, 3.8)
-    c.rect(12, 8, 15, 9, 0)
-    for x in (12, 14): c.set(x, 7); c.set(x + 0.8, 10)
-    for x in (13, 15): c.set(x, 10.2)
-    fin_tail(c, 3, 8, 3, 3)
-    c.path([(6, 4.4), (7, 1.2), (4.6, 0.6)], 0.5)                       # long first dorsal spine
-    c.tri((5, 4.8), (9, 4.6), (7, 2.6))
-    c.tri((8, 11), (6.6, 14.6), (10.4, 12.2))
-    c.eyeat(11, 5.6); return c
+    c.art("""
+.....X..........
+....XXX.........
+...XXXXXXX......
+..XXXXXXXXXXX...
+.XXXXXXXXeXXXXX.
+.XXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+.XXXXXXXXXXXXXX.
+..XXXXX.X.X.X.X.
+..XXXXX.........
+.XXXXXXX.X.X.X.X
+XXXXXXXXXXXXXXXX
+.XXXXXXXXXXXXXX.
+..XXXXXXXXXXXX..
+....XXXXXXXX....
+......XXXX......
+""")
+    return c
 
 @sp
 def beaconfish():
@@ -409,7 +439,7 @@ def beaconfish():
 @sp
 def moray():
     c = C()
-    c.path([(1, 13), (2.6, 11.2), (4.4, 11.8), (6.4, 13.4), (8.6, 12.4), (10, 10.6)], 1.55, 1.7)
+    c.path([(1, 13), (2.6, 11.2), (4.4, 11.8), (6.4, 13.4), (8.6, 12.4), (10, 10.6)], 2.05, 2.2)
     c.ell(11.8, 9.4, 3.2, 2.7)
     jaws(c, 12, 14, 10, 10, upper=False)
     for x, y in ((2.6, 9.4), (4.4, 9.8), (6.2, 11.4), (8.2, 10.4)): c.set(x, y)
@@ -428,7 +458,7 @@ def skimray():
 ......XXXXXXX...
 ........XXXXXXX.
 XXXXXXXXXXXXXXXX
-.........XeXXXXX
+XXXXXXXXXXeXXXXX
 ........XXXXXXX.
 ......XXXXXXX...
 ....XXXXXXX.....
@@ -509,22 +539,22 @@ def prismara():
 def seamonarch():
     c = C()
     c.art("""
-....X.X.X.X.....
-....XXXXXXX.....
-....XXXXXXXX....
-....XXXeXXXXXXX.
-....XXXXXXXXXXX.
-.....XXXXXX.....
-......XXXX......
-......XXXXXX....
-....XXXXXXXXX...
-...XXXXXXXXXXX..
-....XXXXXXXXXX..
+..X.X.X.........
+..XXXXXXX.......
+.XXXeXXXXXXXXXX.
+.XXXXXXXXXXXXXX.
+..XXXXXXX.......
+...XXXXX........
+..XXXXXX........
+.XXXXXXXXX......
+.XXXXXXXXXXX....
+.XXXXXXXXXXXX...
+..XXXXXXXXXX....
+...XXXXXXXX.....
+....XXXXXX......
 .....XXXXXXXX...
-......XXXXXX....
-.......XXXXXX...
-......XXX.XXXXX.
-.....XXX...XXXX.
+......XXXXXXXXX.
+.....XXXXXX..XX.
 """)
     return c
 
@@ -590,7 +620,7 @@ def hollowfin():
     c = C()
     c.ell(12, 5.6, 3.6, 3.4)
     c.rect(14, 8.6, 15, 9)                                    # jaw
-    c.path([(2, 7), (11, 7)], 0.5)                            # spine
+    c.path([(2, 7.5), (11, 7.5)], 1.0)                        # spine
     for sx in (10, 7, 4):
         for k in (1, 2, 3): c.set(sx - k, 7 - k); c.set(sx - k, 7 + k)                 # ribs sweep back
     for k in (1, 2, 3): c.set(2 - k + 1, 7 - k); c.set(2 - k + 1, 7 + k)               # fork of the tail

@@ -20,7 +20,7 @@ SPECIES = {
  'cat_pounce':  ('Pounce', 2, 'Springs at every shadow and dust bunny.', dict(arch='cat_stalk', extra=['cat_whiskers', 'cat_tabby'])),
  'cat_scrap':   ('Scrap', 2, 'Street-smart kitten with a cheeky grin.', dict(arch='cat_walk', extra=['cat_whiskers', 'cat_notch'])),
  'cat_pudding': ('Pudding', 2, 'Round, warm and always sleepy.', dict(arch='cat_loaf', extra=['cat_whiskers'])),
- 'cat_smudge':  ('Smudge', 2, 'A scruffy kitten who hides under porches.', dict(arch='cat_sitback', back='fur', extra=['cat_notch'])),
+ 'cat_smudge':  ('Smudge', 2, 'A scruffy kitten who hides under porches.', dict(arch='cat_sitbackold', back='fur', extra=['cat_notch'])),
  # stage 3 teens
  'cat_stripling': ('Stripling', 3, 'Tabby stripes and boundless energy.', dict(arch='cat_walkl', extra=['cat_tabby', 'cat_whiskers'])),
  'cat_tuftkin':   ('Tuftkin', 3, 'Tufted ears, a keen eye and a short tail.', dict(arch='cat_lynx', extra=['cat_whiskers'])),

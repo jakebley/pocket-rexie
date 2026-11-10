@@ -31,7 +31,7 @@ KIND_OF = {
     # bird
     'bird_downy': 'chick', 'bird_pipkin': 'chick', 'bird_chirp': 'chick', 'bird_owlet': 'owl', 'bird_owl': 'owl', 'bird_hornowl': 'owl', 'bird_moonfeather': 'owl', 'bird_ducklet': 'duck', 'bird_mallard': 'duck', 'bird_teal': 'duck', 'bird_scruff': 'pigeon', 'bird_dustling': 'pigeon', 'bird_sootwing': 'pigeon', 'bird_ledgewing': 'pigeon', 'bird_tatterdove': 'pigeon', 'bird_duskdove': 'doveshow', 'bird_sparrow': 'songbird', 'bird_robin': 'songbird', 'bird_finch': 'songbird', 'bird_lark': 'songbird', 'bird_jay': 'songbird', 'bird_nightingale': 'songbird', 'bird_prismlark': 'songfan', 'bird_hawk': 'raptorbird', 'bird_falcon': 'raptorbird', 'bird_peregrine': 'raptorbird', 'bird_harrier': 'raptorbird', 'bird_kingfisher': 'raptorbird', 'bird_stormtalon': 'raptorbird', 'bird_emberwing': 'phoenix', 'bird_heron': 'heron', 'bird_egret': 'heron', 'bird_tidecrane': 'heron', 'bird_swan': 'swan', 'bird_goose': 'swan', 'bird_snowcrest': 'swan',
     # cat
-    'cat_kita': 'kitten', 'cat_kitb': 'kitten', 'cat_walk': 'cat', 'cat_trot': 'cat', 'cat_stalk': 'cat', 'cat_sniff': 'cat', 'cat_arch': 'cat', 'cat_leap': 'catlean', 'cat_walkl': 'catlean', 'cat_lynx': 'catlean', 'cat_panther': 'catlean', 'cat_sphinx': 'loaf', 'cat_loaf': 'loaf', 'cat_supine': 'catround', 'cat_fluffy': 'catround', 'cat_sitfat': 'catround', 'cat_sitcurl': 'catsit', 'cat_sitback': 'catsit', 'cat_sitwrap': 'catsit', 'cat_beckon': 'catsit', 'cat_lynxfluff': 'catsit', 'cat_king': 'catking',
+    'cat_kita': 'kitten', 'cat_kitb': 'kitten', 'cat_walk': 'cat', 'cat_trot': 'cat', 'cat_stalk': 'cat', 'cat_sniff': 'cat', 'cat_arch': 'cat', 'cat_leap': 'catlean', 'cat_walkl': 'catlean', 'cat_lynx': 'catlean', 'cat_panther': 'catlean', 'cat_sphinx': 'loaf', 'cat_loaf': 'loaf', 'cat_supine': 'catround', 'cat_fluffy': 'catround', 'cat_sitfat': 'catround', 'cat_sitcurl': 'catsit', 'cat_sitback': 'catsit', 'cat_sitbackold': 'catsit', 'cat_sitwrap': 'catsit', 'cat_beckon': 'catsit', 'cat_lynxfluff': 'catsit', 'cat_king': 'catking',
     # spirits
     'spr_feet': 'halobaby', 'spr_cloud': 'cloud', 'spr_bigcloud': 'cloud', 'spr_ember': 'emberimp', 'spr_emberb': 'emberimp', 'spr_bigember': 'emberimp',
     'spr_imp': 'imp', 'spr_chub': 'chubimp', 'spr_bigfeet': 'spirit', 'spr_big': 'spirit', 'spr_brute': 'emberimp', 'spr_chubember': 'chubimp', 'spr_imp2': 'imp', 'spr_robe': 'spirit', 'spr_champ': 'spirit', 'spr_tall': 'spirit', 'spr_tallimp': 'imp',
@@ -41,6 +41,7 @@ KIND_OF = {
     'bun_dor': 'dormouse', 'bun_dorfl': 'dormouse',
     'bun_baby2': 'bunbaby', 'bun_scruffsit': 'bunny', 'bun_moonrab': 'bunny', 'bun_fluffy': 'lop', 'bun_mop': 'lop',
     'bun_loploaf': 'lop', 'bun_loptall': 'lop', 'bun_lopelder': 'lop', 'bun_harestray': 'hare', 'bun_hareleap': 'hare', 'bun_harecrouch': 'hare', 'bun_harecrouchstray': 'hare', 'bun_haregaunt': 'hare', 'bun_haresoar': 'hare',
+    'bun_chin2': 'chinchilla', 'bun_ragtail2': 'hare', 'bun_burrbit2': 'hare', 'bun_gallop2': 'hare', 'bun_galewhisker2': 'hare', 'bun_chinfl2': 'chinchilla', 'bun_ham2': 'hamster', 'bun_dorcurl2': 'dormouse', 'bun_lop2': 'lop', 'bun_lopelder2': 'lop', 'bun_haregaunt2': 'hare',
     'bun_hamsit': 'hamster', 'bun_hamking': 'hamster', 'bun_pikaup': 'pika', 'bun_dorcurl': 'dormouse',
     # dragon
     'dr_hatch': 'wyrmling', 'dr_west': 'westdragon', 'dr_westwide': 'westdragon', 'dr_westlow': 'westdragon', 'dr_east': 'eastdragon', 'dr_eastlong': 'eastdragon',
@@ -49,8 +50,9 @@ KIND_OF = {
     'dr_egg': 'wyrmling', 'dr_soar': 'westdragon', 'dr_rear': 'westdragon', 'dr_eelet': 'eastdragon', 'dr_eastking': 'eastdragon', 'dr_eastloop': 'eastdragon',
     'dr_wraith': 'wyvern', 'dr_wurmfat': 'wurm', 'dr_wurmdrag': 'wurm', 'dr_drakeheavy': 'drake', 'dr_keeper': 'hoarder', 'dr_boulder': 'hoarder', 'dr_crystal': 'hoarder',
     'dr_gemcoil': 'coil',
+    'dr_crag': 'drake', 'dr_hatch2': 'wyrmling', 'dr_coil2': 'coil', 'dr_vault': 'drake', 'dr_gemh': 'hoarder', 'dr_pebbleh': 'hoarder', 'dr_lind': 'wurm', 'dr_lindfat': 'wurm', 'dr_lindup': 'wurm', 'dr_lindrag': 'wurm',
     # bot
-    'bot_orb': 'orb', 'bot_cube': 'orb', 'bot_tread': 'rover', 'bot_dozer': 'dozer', 'bot_handheld': 'handheld', 'bot_walkie': 'walkie', 'bot_junk': 'junkbot',
+    'bot_orb': 'orb', 'bot_blip': 'orb', 'bot_nibble': 'orb', 'bot_cube': 'orb', 'bot_tread': 'rover', 'bot_dozer': 'dozer', 'bot_handheld': 'handheld', 'bot_walkie': 'walkie', 'bot_junk': 'junkbot', 'bot_heapling': 'junkbot', 'bot_junkyard': 'junkbot',
     'bot_boombox': 'boombox', 'bot_mech': 'mech', 'bot_mechw': 'mech', 'bot_crt': 'crt', 'bot_floppy': 'floppy', 'bot_drone': 'drone',
     'bot_toaster': 'toaster', 'bot_quad': 'quad', 'bot_modem': 'modem',
     'bot_cogsy': 'rover', 'bot_pixel': 'handheld', 'bot_zapper': 'walkie', 'bot_boomlet': 'boombox', 'bot_clank': 'mech', 'bot_treadhead': 'dozer',
@@ -66,6 +68,7 @@ KIND_OF = {
     'slime_heart': 'twin', 'slime_twin2': 'twin', 'slime_stalk': 'stalk', 'slime_stalk3': 'stalk', 'slime_root': 'stalk', 'slime_shell': 'snail',
     'slime_shell2': 'snail', 'slime_jelly': 'sjelly', 'slime_bell': 'sjelly', 'slime_ribbon': 'sjelly', 'slime_ghost': 'sghost', 'slime_ghost2': 'sghost',
     'slime_ghost3': 'sghost', 'slime_wraith': 'sghost', 'slime_candle': 'melt', 'slime_slump': 'melt', 'slime_mimic': 'mimic', 'slime_mimic2': 'mimic',
+    'slime_h_custardine': 'gel', 'slime_h_aspic': 'gel', 'slime_h_mycelord': 'shroom', 'slime_h_wobble': 'jiggle', 'slime_h_ooze': 'melt', 'slime_h_hoardmaw': 'mimic', 'slime_h_gazeroot': 'stalk',
     # bug
     'bug_egg': 'bugegg', 'bug_nub': 'larva', 'bug_larva': 'larva', 'bug_fatgrub': 'larva', 'bug_pill': 'pill', 'bug_pupa': 'pupa', 'bug_flutter': 'butterfly',
     'bug_swallow': 'butterfly', 'bug_skimmer': 'dragonfly', 'bug_dragon': 'dragonfly', 'bug_fuzzmoth': 'moth', 'bug_moth': 'moth', 'bug_lady': 'ladybug',
@@ -77,7 +80,7 @@ KIND_OF = {
     'al_babe': 'alienbaby', 'al_orb': 'alienbaby', 'al_wobble': 'grey', 'al_wobblebig': 'grey', 'al_tall': 'grey', 'al_tallbig': 'grey', 'al_sage': 'grey',
     'al_antenna': 'antennae', 'al_antbig': 'antennae', 'al_ant3': 'antennae', 'al_antbroken': 'antennae', 'al_dropout': 'grey', 'al_tentacle': 'tentacle', 'al_tent6': 'tentacle',
     'al_three': 'threeeye', 'al_threefat': 'threeeye', 'al_brain': 'brainfloat', 'al_brainbig': 'brainfloat', 'al_brainking': 'brainfloat',
-    'al_cyclops': 'cyclops', 'al_cyclohorn': 'cyclops', 'al_cyclobig': 'cyclops', 'al_blob': 'alienblob', 'al_blobfat': 'alienblob',
+    'al_cyclops': 'cyclops', 'al_oggle': 'cyclops', 'al_cyclohorn': 'cyclops', 'al_cyclobig': 'cyclops', 'al_blob': 'alienblob', 'al_blobfat': 'alienblob',
     'al_insect': 'insectoid', 'al_insectbig': 'insectoid', 'al_moth': 'mothfolk', 'al_mothbig': 'mothfolk', 'al_luna': 'mothfolk',
     'al_saucer': 'pilot', 'al_saucerbig': 'pilot', 'al_crystal': 'crystalbeing', 'al_crystal2': 'crystalbeing', 'al_crystal3': 'crystalbeing',
     'al_ship': 'mothership', 'al_jelly': 'cosmojelly', 'al_nebula': 'nebula', 'al_maw': 'starmaw', 'al_ring': 'echoring',

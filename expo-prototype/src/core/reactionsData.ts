@@ -334,7 +334,7 @@ export const REACTIONS = {
   "slime_sporelet": "shroom",
   "slime_splash": "puddle",
   "slime_gunk": "lump",
-  "slime_wobble": "twin",
+  "slime_wobble": "jiggle",
   "slime_plumpkin": "jiggle",
   "slime_jiggle": "gel",
   "slime_capkin": "shroom",

@@ -13,8 +13,8 @@ FOOD_LABELS = {'meat': 'Oil', 'veggie': 'Chips', 'pasta': 'Batteries'}
 # id: (name, stage, blurb, recipe)
 SPECIES = {
  # stage 1 hatchlings (boot-ups)
- 'bot_blip': ('Blip', 1, 'A bulb-topped orb that beeps when happy.', dict(arch='bot_orb')),
- 'bot_nibble': ('Nibble', 1, 'A little cube with twin antennae and big ideas.', dict(arch='bot_cube')),
+ 'bot_blip': ('Blip', 1, 'A bulb-topped orb that beeps when happy.', dict(arch='bot_blip')),
+ 'bot_nibble': ('Nibble', 1, 'A little cube with twin antennae and big ideas.', dict(arch='bot_nibble')),
  # stage 2 children
  'bot_cogsy': ('Cogsy', 2, 'Rolls on tiny tracks and loves a good greasing.', dict(arch='bot_cogsy', extra=['bot_cog'])),
  'bot_pixel': ('Pixel', 2, 'A pocket pet with a tiny screen that hums game tunes.', dict(arch='bot_pixel')),
@@ -30,7 +30,7 @@ SPECIES = {
  'bot_buzz': ('Buzz', 3, 'Squelches and squawks across the airwaves.', dict(arch='bot_buzz', extra=['bot_dish'])),
  'bot_whir': ('Whir', 3, 'Hovers just above your shoulder.', dict(arch='bot_whir')),
  'bot_toastie': ('Toastie', 3, 'Pops up warm and ready at any hour.', dict(arch='bot_toastie')),
- 'bot_heapling': ('Heapling', 3, 'A lopsided stack that somehow still walks.', dict(arch='bot_junk')),
+ 'bot_heapling': ('Heapling', 3, 'A lopsided stack that somehow still walks.', dict(arch='bot_heapling')),
  'bot_rustbucket': ('Rustbucket', 3, 'Creaks on spider legs, tough as nails.', dict(arch='bot_rustbucket', extra=['bot_rust'])),
  # stage 4 adults
  'bot_bassline': ('Bassline', 4, 'A heavy boombox with a thumping heart.', dict(arch='bot_bassline')),
@@ -43,7 +43,7 @@ SPECIES = {
  'bot_chatter': ('Chatter', 4, 'Always on channel nine.', dict(arch='bot_chatter')),
  'bot_dialtone': ('Dialtone', 4, 'Screeches and whistles, then connects.', dict(arch='bot_dialtone')),
  'bot_crumb': ('Crumb', 4, 'Warm toast, warm heart.', dict(arch='bot_crumb')),
- 'bot_junkyard': ('Junkyard', 4, 'A walking heap of stuff nobody wanted.', dict(arch='bot_junk', extra=['bot_cable'])),
+ 'bot_junkyard': ('Junkyard', 4, 'A walking heap of stuff nobody wanted.', dict(arch='bot_junkyard', extra=['bot_cable'])),
  'bot_scrapper': ('Scrapper', 4, 'Patched together and proud of it.', dict(arch='bot_scrapper')),
  # stage 5 ultimates
  'bot_titan': ('Titan', 5, 'A colossal mech with a gleaming crown.', dict(arch='bot_titan')),
