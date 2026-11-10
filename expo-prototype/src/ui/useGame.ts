@@ -2,23 +2,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, Vibration } from 'react-native';
 import {
-  TICK, advance, battle, clean, climate, feed, feedSnack, finishPlay, forceSpecies, giveMedicine, needsAttention,
+  TICK, advance, battle, clean, climate, feed, feedSnack, forceSpecies, giveMedicine, needsAttention,
   newEgg, newPet, petIt, scold, speciesName, toggleLight, train, type Pet,
 } from '../core/pet';
+import { ScoreStore, type ScoreData } from '../core/minigames/scores';
+import { newSession, pressButton, settleSession, tapPick, tapSide, tickSession, type Exit, type Session, type SessionPhase } from '../core/minigames/session';
+import { paramsFor } from '../core/minigames/tuning';
+import { RANKS } from '../core/minigames/types';
+import { GAME_ENTRIES } from './games/registry';
+import type { GameEntry } from './games/types';
 import { loadPreviewPlus, resolveEggFamily, savePreviewPlus, familyById, type Entitlements } from '../core/entitlements';
 import { AWAY_MIN_MS, awaySummary } from './away';
 import { ICON_HELP } from './pixel';
 import { GROUND_TAP_Y, type SceneEvent } from './scene';
-import { dexPageCount, nextDexFamily, statsPageCount, type Evo, type Mode, type PlayState } from './screens';
+import { dexPageCount, nextDexFamily, playMenuRows, scoresPageCount, statsPageCount, type Evo, type Mode } from './screens';
 import * as sound from './sound';
 
 const KEY = 'pocket-rexie-v1';
 /** Per-device, deliberately not part of the (synced) pet. */
 const SEEN_KEY = 'pocket-rexie-lastseen-v1';
 const clone = (p: Pet): Pet => JSON.parse(JSON.stringify(p));
-const rnd9 = () => 1 + Math.floor(Math.random() * 9);
-/** Shown digits stay in 2..8 so both HIGHER and LOWER can win. */
-const rnd28 = () => 2 + Math.floor(Math.random() * 7);
+/** High scores belong to the player, not to a pet: one store for the whole app. */
+export const scoreStore = new ScoreStore();
+const GAME_STEP_MS = 50;
 export const DEV_HOUR = 3600000;
 
 /** useState that also keeps a ref current synchronously (handlers never see stale values). */
@@ -52,7 +58,13 @@ export function useGame() {
   /** the 'Choose your egg' screen is up (first launch, or after a pet passes on) */
   const [choosingEgg, setChoosingEgg] = useState(false);
   const firstRun = useRef(false);
-  const [play, setPlay, playRef] = useRS<PlayState | null>(null);
+  const [playSel, setPlaySel, playSelRef] = useRS(0);
+  const [scoresPage, setScoresPage, scoresPageRef] = useRS(0);
+  const [scores, setScores] = useState<ScoreData>({});
+  /** the running mini-game (mutated in place; `phase` mirrors session.phase so the screen re-renders when it changes) */
+  const sessionRef = useRef<Session | null>(null);
+  const [phase, setPhase] = useState<SessionPhase | null>(null);
+  const sessionTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [evo, setEvo] = useState<Evo | null>(null);
   const [muted, setMutedState] = useState(false);
@@ -62,7 +74,6 @@ export function useGame() {
   const [forcedRain, setForcedRain] = useState<boolean | null>(null);
   const lastSeen = useRef<number | null>(null);
   const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const playTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const now = () => Date.now() + offsetRef.current;
 
@@ -140,6 +151,7 @@ export function useGame() {
       if (dead) return;
       if (!p) { p = newPet(now()); firstRun.current = true; setChoosingEgg(true); }
       loadPreviewPlus(AsyncStorage).then((v) => { if (!dead) setPreviewPlusState(v); });
+      scoreStore.load().then(() => { if (!dead) setScores(scoreStore.snapshot()); });
       petRef.current = p;
       setPetState(p);
       save(p);
@@ -168,15 +180,17 @@ export function useGame() {
         if (p.lastTick !== cur.lastTick) commit(p);
       }
     }, 1000);
-    return () => { dead = true; clearInterval(id); sub.remove(); if (playTimer.current) clearTimeout(playTimer.current); };
+    return () => { dead = true; clearInterval(id); sub.remove(); if (sessionTimer.current) clearInterval(sessionTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---- navigation ----
-  const goHome = () => {
-    if (playTimer.current) { clearTimeout(playTimer.current); playTimer.current = null; }
-    setPlay(null); setMode('home');
+  const stopSession = () => {
+    if (sessionTimer.current) { clearInterval(sessionTimer.current); sessionTimer.current = null; }
+    sessionRef.current = null;
+    setPhase(null);
   };
+  const goHome = () => { stopSession(); setMode('home'); };
 
   const nextPage = () => {
     const p = petRef.current; if (!p) return;
@@ -186,33 +200,70 @@ export function useGame() {
     } else if (modeRef.current === 'dex') {
       if (dexPageRef.current + 1 < dexPageCount(p, dexFamilyRef.current, entRef.current)) setDexPage(dexPageRef.current + 1);
       else goHome();
+    } else if (modeRef.current === 'scores') {
+      setScoresPage((scoresPageRef.current + 1) % scoresPageCount());
     }
   };
 
-  const startPlay = () => {
-    setPlay({ round: 1, shown: rnd28(), won: 0, phase: 'guess', sel: 0, revealed: null, correct: null });
-    setMode('play');
+  // ---- Play: menu, mini-game sessions, high scores ----
+  const openPlayMenu = () => { stopSession(); setPlaySel(0); setMode('playmenu'); };
+  const toMenu = () => { stopSession(); setMode('playmenu'); };
+  const exitTo = (x: Exit) => { if (x === 'menu') toMenu(); else if (x === 'home') { goHome(); setSel(-1); } };
+
+  /** Move a finished game into the pet: high score, then the (day-capped) reward. */
+  const finishSession = (s: Session) => {
+    let rank = 0;
+    mutate((p) => {
+      const res = settleSession(s, p, scoreStore, now());
+      rank = RANKS.indexOf(res.rank);
+      if (res.reward.msg) { emit({ kind: 'played', wins: [0, 3, 4, 5][rank] }); }
+      if (res.recordOverall || res.recordSpecies) sound.evolveJingle(); else if (rank >= 2) sound.chirp();
+      return res.reward.msg || undefined;
+    });
+    setScores(scoreStore.snapshot());
+    setPhase('result');
   };
 
-  const playGuess = () => {
-    const pl = playRef.current;
-    if (!pl || pl.phase !== 'guess') return;
-    let rev = rnd9();
-    while (rev === pl.shown) rev = rnd9();
-    const correct = pl.sel === 0 ? rev > pl.shown : rev < pl.shown;
-    if (!correct) sound.bad();
-    setPlay({ ...pl, phase: 'reveal', revealed: rev, correct, won: pl.won + (correct ? 1 : 0) });
-    playTimer.current = setTimeout(() => {
-      const c = playRef.current;
-      if (!c) return;
-      if (c.round >= 5) {
-        const won = c.won;
-        goHome();
-        mutate((p) => { const m = finishPlay(p, won); if (m !== '...') emit({ kind: 'played', wins: won }); return m; });
-      } else {
-        setPlay({ round: c.round + 1, shown: rnd28(), won: c.won, phase: 'guess', sel: c.sel, revealed: null, correct: null });
+  const startSession = (entry: GameEntry) => {
+    const p = petRef.current; if (!p) return;
+    scoreStore.load().then(() => setScores(scoreStore.snapshot()));
+    const s = newSession(entry.def, paramsFor(p, entry.def.id), 1 + Math.floor(Math.random() * 0x7fffffff));
+    sessionRef.current = s;
+    setPhase(s.phase);
+    setMode('game');
+    if (sessionTimer.current) clearInterval(sessionTimer.current);
+    let last = Date.now(), lastScore = 0;
+    sessionTimer.current = setInterval(() => {
+      const cur = sessionRef.current;
+      if (!cur) return;
+      const t = Date.now();
+      const dt = Math.min(100, t - last); last = t;
+      if (cur.phase !== 'play' && cur.phase !== 'over') return;
+      const before = cur.phase;
+      const done = tickSession(cur, dt);
+      if (cur.game) {
+        if (cur.game.score > lastScore) sound.chirp(); else if (cur.game.score < lastScore) sound.bad();
+        lastScore = cur.game.score;
       }
-    }, 1400);
+      if (cur.phase !== before) setPhase(cur.phase);
+      if (done) finishSession(cur);
+    }, GAME_STEP_MS);
+  };
+
+  const confirmPlayMenu = (i: number) => {
+    const n = GAME_ENTRIES.length;
+    if (i < n) startSession(GAME_ENTRIES[i]);
+    else if (i === n) { setScoresPage(0); setMode('scores'); }
+    else goHome();
+  };
+
+  /** A, B, C inside a running game screen. */
+  const gameButton = (b: 'a' | 'b' | 'c') => {
+    const s = sessionRef.current; if (!s) return;
+    const before = s.phase;
+    const x = pressButton(s, b);
+    if (s.phase !== before) setPhase(s.phase);
+    exitTo(x);
   };
 
   const confirmFeed = (i: number) => {
@@ -235,7 +286,7 @@ export function useGame() {
         mutate((p) => {
           if (!canAct(p)) return '...';
           if (p.asleep) return `Shh, ${p.name} is asleep`;
-          if (i === 0) { setFeedSel(0); setMode('feed'); } else startPlay();
+          if (i === 0) { setFeedSel(0); setMode('feed'); } else openPlayMenu();
         });
         break;
       }
@@ -259,7 +310,8 @@ export function useGame() {
     const m = modeRef.current;
     if (m === 'home') setSel((selRef.current + 1) % 10);
     else if (m === 'feed') setFeedSel((feedSelRef.current + 1) % 5);
-    else if (m === 'play') { const pl = playRef.current; if (pl && pl.phase === 'guess') setPlay({ ...pl, sel: pl.sel === 0 ? 1 : 0 }); }
+    else if (m === 'playmenu') setPlaySel((playSelRef.current + 1) % playMenuRows().length);
+    else if (m === 'game') gameButton('a');
     else if (m === 'dex') { setDexFamily(nextDexFamily(dexFamilyRef.current)); setDexPage(0); }
     else nextPage();
   };
@@ -268,12 +320,17 @@ export function useGame() {
     const m = modeRef.current;
     if (m === 'home') { if (selRef.current >= 0) perform(selRef.current); else say('Press A to pick an icon'); }
     else if (m === 'feed') confirmFeed(feedSelRef.current);
-    else if (m === 'play') playGuess();
+    else if (m === 'playmenu') confirmPlayMenu(playSelRef.current);
+    else if (m === 'game') gameButton('b');
     else nextPage();
   };
   const pressC = () => {
     sound.beep();
-    if (modeRef.current === 'home') setSel(-1); else { goHome(); setSel(-1); }
+    const m = modeRef.current;
+    if (m === 'home') setSel(-1);
+    else if (m === 'game') gameButton('c');
+    else if (m === 'scores') toMenu();
+    else { goHome(); setSel(-1); }
   };
   const selectIcon = (i: number) => {
     sound.beep();
@@ -284,13 +341,19 @@ export function useGame() {
   /** Long-press on an icon: say what it does, without doing it. */
   const describeIcon = (i: number) => { sound.beep(); say(ICON_HELP[i] ?? '', 4500); };
   const tapFeedRow = (i: number) => { sound.beep(); setFeedSel(i); confirmFeed(i); };
-  const tapPlayOption = (i: 0 | 1) => {
-    const pl = playRef.current;
-    if (!pl || pl.phase !== 'guess') return;
-    sound.beep();
-    setPlay({ ...pl, sel: i });
-    playRef.current = { ...pl, sel: i };
-    playGuess();
+  const tapMenuRow = (i: number) => { sound.beep(); setPlaySel(i); confirmPlayMenu(i); };
+  /** A tap on a row of the running game (HI-LO's HIGHER / LOWER). */
+  const tapGamePick = (i: number) => {
+    const s = sessionRef.current; if (!s || s.phase !== 'play') return;
+    sound.beep(); tapPick(s, i);
+  };
+  /** A tap on the left (-1) or right (+1) half of a game screen. */
+  const tapGameSide = (side: -1 | 1) => {
+    const s = sessionRef.current; if (!s) return;
+    const before = s.phase;
+    const x = tapSide(s, side);
+    if (s.phase !== before) setPhase(s.phase);
+    exitTo(x);
   };
   /** Tap on the home scene (cell coordinates in the 64x64 grid). */
   const tapScene = (cx: number, cy: number, onPet: boolean) => {
@@ -309,7 +372,7 @@ export function useGame() {
   const tapScreen = () => {
     const m = modeRef.current;
     if (m === 'home') { sound.beep(); mutate(petIt); }
-    else if (m === 'stats' || m === 'dex') { sound.beep(); nextPage(); }
+    else if (m === 'stats' || m === 'dex' || m === 'scores') { sound.beep(); nextPage(); }
   };
 
   const setName = (n: string) => mutate((p) => { p.name = n.trim().slice(0, 10) || 'Rexie'; p.named = true; return `Hi, ${p.name}!`; });
@@ -379,12 +442,26 @@ export function useGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
 
+  /** the message-area hint for the screen the player is on (null = the pet's status line) */
+  const hint: string | null = (() => {
+    if (mode === 'playmenu') return 'A: next | B: play | C: back';
+    if (mode === 'scores') return 'A/B: next game | C: back';
+    if (mode === 'game') {
+      const s = sessionRef.current;
+      if (!s || phase === 'ready') return 'B: start | C: back';
+      if (phase === 'play') return s.def.hint;
+      if (phase === 'result') return 'A/B: play again | C: home';
+      return '';
+    }
+    return null;
+  })();
+
   const needsName = !!pet && pet.stage !== 'egg' && pet.stage !== 'ghost' && !pet.named;
 
   return {
-    ready: pet !== null, pet, mode, sel, feedSel, statsPage, dexPage, play, msg, evo, offset, muted, devOpen, setDevOpen,
+    ready: pet !== null, pet, mode, sel, feedSel, statsPage, dexPage, playSel, scoresPage, scores, sessionRef, phase, hint, msg, evo, offset, muted, devOpen, setDevOpen,
     needsName, setName, hatchNew, choosingEgg, chooseEgg, cancelChooseEgg, canCancelEgg: !firstRun.current, ent, setPreviewPlus, dexFamily,
-    pressA, pressB, pressC, selectIcon, describeIcon, tapFeedRow, tapPlayOption, tapScreen, tapScene, dismissMsg, dev,
+    pressA, pressB, pressC, selectIcon, describeIcon, tapFeedRow, tapMenuRow, tapGamePick, tapGameSide, tapScreen, tapScene, dismissMsg, dev,
     takeSceneEvents, sceneEnv, forcedHour, forcedRain,
     now,
   };

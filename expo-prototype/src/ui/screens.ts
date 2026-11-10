@@ -2,22 +2,34 @@
 import { dexSizeOf, SPECIES_BY_ID, ageDays, needsAttention, speciesName, type Pet } from '../core/pet';
 import { familyIdUnlocked, foodLabels, NO_ENTITLEMENTS, type Entitlements } from '../core/entitlements';
 import { FAMILIES, SPECIES } from '../core/speciesData';
+import { favouriteOf } from '../core/minigames/tuning';
+import type { Session } from '../core/minigames/session';
+import type { ScoreData } from '../core/minigames/scores';
+import { rankLabel, RANKS } from '../core/minigames/types';
+import type { HiLoState } from '../core/minigames/games/hilo';
+import { paintField, paintHud, STAR5 } from './games/common';
+import { paintHiLo } from './games/hilo';
+import { GAME_ENTRIES, entryById } from './games/registry';
 import { Layer } from './layers';
 import { biomeOf, type Biome } from './biomes';
 import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
 import { initScene, phaseOf, type Phase, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
 
-export type Mode = 'home' | 'feed' | 'play' | 'stats' | 'dex' | 'dev';
-export interface PlayState {
-  round: number; shown: number; won: number;
-  phase: 'guess' | 'reveal'; sel: 0 | 1;
-  revealed: number | null; correct: boolean | null;
-}
+/**
+ * 'playmenu': the Play menu; 'game': a mini-game session (ready, playing, result); 'scores': the HIGH SCORES screen.
+ * 'play' is the original HI-LO screen driven by `ctx.play`: the app no longer uses it (HI-LO is a mini-game now) but the golden test cases still do.
+ */
+export type Mode = 'home' | 'feed' | 'play' | 'playmenu' | 'game' | 'scores' | 'stats' | 'dex' | 'dev';
+export type PlayState = HiLoState;
 export interface Evo { from: string; to: string; until: number }
 export interface ScreenCtx {
-  pet: Pet; tick: number; mode: Mode; feedSel: number; play: PlayState | null;
+  pet: Pet; tick: number; mode: Mode; feedSel: number; play?: PlayState | null;
   statsPage: number; dexPage: number; evo: Evo | null; scene?: Scene | null;
+  /** Play menu selection, the running mini-game session, the HIGH SCORES page and the saved scores */
+  playSel?: number; session?: Session | null; scoresPage?: number; scores?: ScoreData;
+  /** wall-clock ms for ambient animation of the game screen (never for rules) */
+  ms?: number;
   /** the family the Dex is showing (default: the pet's own) */
   dexFamily?: string;
   /** what the player may use; gates the locked Dex families */
@@ -43,8 +55,16 @@ const rowY = (i: number) => 1 + i * LINE_H;
 /** Feed menu: title at top, five rows of 10px starting at FEED_TOP. */
 export const FEED_TOP = 11;
 export const FEED_ROW_H = 10;
-/** Play screen option rows (HIGHER / LOWER), in 64-grid cells. */
-export const PLAY_ROWS = [{ y: 30, h: 9 }, { y: 41, h: 9 }] as const;
+/** HI-LO option rows (HIGHER / LOWER), in 64-grid cells. */
+export { HILO_ROWS as PLAY_ROWS } from '../core/minigames/games/hilo';
+/** Play menu: the registered games, then HIGH SCORES, then CANCEL; at most MENU_VISIBLE rows show at once. */
+export const MENU_TOP = 11;
+export const MENU_ROW_H = 10;
+export const MENU_VISIBLE = 5;
+export const playMenuRows = (): string[] => [...GAME_ENTRIES.map((e) => e.def.name), 'HIGH SCORES', 'CANCEL'];
+/** First visible row of the Play menu for a selection (the window follows the cursor). */
+export const menuFirst = (sel: number, count = playMenuRows().length) => Math.max(0, Math.min(count - MENU_VISIBLE, sel - (MENU_VISIBLE - 1)));
+export const scoresPageCount = () => Math.max(1, GAME_ENTRIES.length);
 
 const center = (b: Buf, s: string, y: number, scale = 1) => b.text(s, (b.n - textWidth(s, scale)) >> 1, y, scale);
 
@@ -137,27 +157,102 @@ function paintStats(b: Buf, ctx: ScreenCtx) {
 }
 
 // ---- play ----
-function paintPlay(b: Buf, pl: PlayState) {
-  b.text(`ROUND ${pl.round}/5`, 2, 2);
-  const w = `WINS ${pl.won}`;
-  b.text(w, b.n - textWidth(w) - 2, 2);
-  b.rect(0, 9, b.n, 1);
-  if (pl.phase === 'guess') {
-    b.text(String(pl.shown), 16, 12, 3);
-    b.text('?', 39, 12, 3);
-  } else {
-    b.text(String(pl.shown), 16, 12, 3);
-    b.text(String(pl.revealed), 39, 12, 3);
-  }
-  ['HIGHER', 'LOWER'].forEach((label, i) => {
-    const { y, h } = PLAY_ROWS[i];
-    b.frame(1, y, b.n - 2, h);
-    b.text(label, 14, y + 2);
+function paintPlayMenu(b: Buf, ctx: ScreenCtx) {
+  center(b, 'PLAY', 2);
+  b.rect(0, 8, b.n, 1);
+  const rows = playMenuRows();
+  const sel = ctx.playSel ?? 0;
+  const first = menuFirst(sel, rows.length);
+  const fav = favouriteOf(ctx.pet);
+  rows.slice(first, first + MENU_VISIBLE).forEach((r, k) => {
+    const i = first + k;
+    const top = MENU_TOP + k * MENU_ROW_H;
+    b.text(r, 14, top + 2);
+    const e = GAME_ENTRIES[i];
+    if (e && fav === e.def.id) b.rows(STAR5, 54, top + 2);
+    if (i === sel) { b.text('>', 5, top + 2); b.invert(1, top, b.n - 2, MENU_ROW_H - 1); }
   });
-  const row = PLAY_ROWS[pl.sel];
-  b.text('>', 5, row.y + 2);
-  b.invert(1, row.y, b.n - 2, row.h);
-  if (pl.phase === 'reveal') center(b, pl.correct ? 'YOU WIN' : 'MISSED', 55);
+  if (first > 0) b.rows(['..X..', '.XXX.'], 29, 9);
+  if (first + MENU_VISIBLE < rows.length) b.rows(['.XXX.', '..X..'], 29, 62);
+}
+
+const CONDITION_TEXT = { fine: '', heavy: 'A BIT HEAVY', hungry: 'TUMMY GRUMBLES', sick: 'FEELING SICK' } as const;
+
+function paintReady(b: Buf, ctx: ScreenCtx, s: Session) {
+  const th = s.params.theme;
+  center(b, (th.titles as Record<string, string>)[s.def.id] ?? s.def.name, 2);
+  b.rect(0, 8, b.n, 1);
+  s.def.rules(th).slice(0, 3).forEach((l, i) => b.ticker(l.toUpperCase(), 11 + i * 7, ctx.tick, 1, b.n - 2));
+  let y = 34;
+  if (s.params.scoreMul > 1) { b.as(Layer.SUN, () => { b.rows(STAR5, 1, y); b.text(`FAVE X${s.params.scoreMul}`, 8, y); }); y += 7; }
+  const cond = CONDITION_TEXT[s.params.tuning.condition];
+  if (cond) { b.text(cond, 1, y); y += 7; }
+  const best = ctx.scores?.[s.def.id]?.species[ctx.pet.species];
+  b.text(best ? `BEST ${best.score}` : 'NO BEST YET', 1, 49);
+  center(b, 'B: START', 57);
+}
+
+function paintResult(b: Buf, ctx: ScreenCtx, s: Session) {
+  const r = s.result;
+  if (!r) return;
+  const th = s.params.theme;
+  center(b, (th.titles as Record<string, string>)[s.def.id] ?? s.def.name, 1);
+  b.rect(0, 7, b.n, 1);
+  const sc = String(r.score);
+  b.text(sc, (b.n - textWidth(sc, 3)) >> 1, 9, 3);
+  // stars: one per rank step, then the rank
+  const n = RANKS.indexOf(r.rank);
+  const stars = n * 6 - 1;
+  b.as(Layer.SUN, () => { for (let i = 0; i < n; i++) b.rows(STAR5, ((b.n - stars) >> 1) + i * 6, 25); });
+  center(b, rankLabel(r.rank), 31);
+  b.ticker(r.winLine.toUpperCase(), 38, ctx.tick, 1, b.n - 2);
+  const rec = r.recordOverall ? 'NEW RECORD!' : r.recordSpecies ? `${r.speciesName.toUpperCase().slice(0, 8)} BEST!` : '';
+  if (rec) { const w = textWidth(rec); const x = (b.n - w) >> 1; b.as(Layer.SUN, () => b.text(rec, x, 45)); if (ctx.tick % 2 === 0) b.invert(x - 1, 44, w + 2, 7); }
+  r.reward.lines.slice(0, 2).forEach((l, i) => { if (r.reward.capped) b.as(Layer.ALERT, () => b.text(l, 1, 52 + i * 6)); else b.text(l, 1, 52 + i * 6); });
+}
+
+function paintScores(b: Buf, ctx: ScreenCtx) {
+  const pages = scoresPageCount();
+  const pg = Math.min(ctx.scoresPage ?? 0, pages - 1);
+  b.text('HIGH SCORES', 1, 1);
+  const num = `${pg + 1}/${pages}`;
+  b.text(num, b.n - textWidth(num) - 1, 1);
+  b.rect(0, 7, b.n, 1);
+  const e = GAME_ENTRIES[pg];
+  if (!e) { b.text('NO GAMES', 1, 10); return; }
+  b.text(e.def.name, 1, 10);
+  b.text(e.def.unit, b.n - textWidth(e.def.unit) - 1, 10);
+  b.rect(0, 17, b.n, 1);
+  const gs = ctx.scores?.[e.def.id];
+  const all = gs?.overall, mine = gs?.species[ctx.pet.species];
+  b.text('ALL PETS', 1, 20);
+  if (all) { b.text(String(all.score), 1, 27, 2); b.ticker(`${all.name} ${all.speciesName}`.toUpperCase(), 38, ctx.tick, 1, b.n - 2); } else b.text('--', 1, 27, 2);
+  b.rect(0, 44, b.n, 1);
+  b.text(`THIS ${ctx.pet.stage === 'egg' ? 'PET' : 'SPECIES'}`, 1, 47);
+  if (mine) {
+    const sc = String(mine.score);
+    const x0 = textWidth(sc) + 5;
+    b.text(sc, 1, 54);
+    b.ticker(`${mine.name} ${mine.speciesName}`.toUpperCase(), 54, ctx.tick, x0, b.n - x0 - 1);
+  } else b.text('--', 1, 54);
+}
+
+function paintGame(b: Buf, ctx: ScreenCtx, s: Session, entryLayout: 'field' | 'text') {
+  const e = entryById(s.def.id);
+  if (!e || !s.game) return;
+  const c = { b, game: s.game, params: s.params, pet: ctx.pet, ms: ctx.ms ?? Date.now() };
+  if (entryLayout === 'field') {
+    paintField(b, ctx.pet, c.ms);
+    e.paint(c);
+    const h = s.game.hud;
+    paintHud(b, h.left, h.right, s.game.progress);
+    if (s.phase === 'over') {
+      const w = textWidth('TIME UP', 2);
+      const x = (b.n - w) >> 1;
+      b.rect(x - 3, 22, w + 6, 15, 0); b.frame(x - 3, 22, w + 6, 15);
+      b.text('TIME UP', x, 26, 2);
+    }
+  } else e.paint(c);
 }
 
 // ---- home ----
@@ -191,8 +286,15 @@ function paintFeed(b: Buf, ctx: ScreenCtx) {
 }
 
 /** Screens that are text lists use the 64x64 text-mode framebuffer. */
-export const isTextMode = (ctx: ScreenCtx) =>
-  !(ctx.evo && ctx.evo.until > Date.now()) && ((ctx.pet.stage === 'ghost' && ctx.mode === 'home') || (ctx.mode !== 'home' && ctx.mode !== 'dev'));
+export function isTextMode(ctx: ScreenCtx): boolean {
+  if (ctx.evo && ctx.evo.until > Date.now()) return false;
+  if (ctx.mode === 'game') {
+    const s = ctx.session;
+    if (!s) return true;
+    return s.phase === 'ready' || s.phase === 'result' || (entryById(s.def.id)?.layout ?? 'text') === 'text';
+  }
+  return (ctx.pet.stage === 'ghost' && ctx.mode === 'home') || (ctx.mode !== 'home' && ctx.mode !== 'dev');
+}
 
 /** What the Technicolor renderer needs to paint behind the scene. */
 export interface SkyInfo { phase: Phase; rain: boolean; dim: boolean; biome: Biome }
@@ -214,11 +316,26 @@ export function renderScreen(ctx: ScreenCtx): Rendered {
     if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') { paintGhost(b, ctx); return { buf: b, dark }; }
     switch (ctx.mode) {
       case 'feed': paintFeed(b, ctx); break;
-      case 'play': if (ctx.play) paintPlay(b, ctx.play); break;
+      case 'play': if (ctx.play) paintHiLo(b, ctx.play); break;
+      case 'playmenu': paintPlayMenu(b, ctx); break;
+      case 'scores': paintScores(b, ctx); break;
+      case 'game': {
+        const sn = ctx.session;
+        if (!sn) break;
+        if (sn.phase === 'ready') paintReady(b, ctx, sn);
+        else if (sn.phase === 'result') paintResult(b, ctx, sn);
+        else paintGame(b, ctx, sn, 'text');
+        break;
+      }
       case 'stats': paintStats(b, ctx); break;
       case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick, ctx.dexFamily ?? p.family, ctx.ent ?? NO_ENTITLEMENTS); break;
     }
     return { buf: b, dark };
+  }
+  if (ctx.mode === 'game' && ctx.session) {
+    const b = new Buf(GRID);
+    paintGame(b, ctx, ctx.session, 'field');
+    return { buf: b, dark, sky: { phase: 'day', rain: false, dim: false, biome: biomeOf(p) } };
   }
   const b = new Buf(GRID);
   const sc = ctx.scene ?? initScene(p, Date.now());

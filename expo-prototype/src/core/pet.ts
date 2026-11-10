@@ -81,6 +81,8 @@ export interface Pet {
   causeOfDeath: string | null;
   legacy: string[];
   events: PetEvent[];
+  /** game times of the plays that earned a reward in the last 24 h (the Play day cap, see minigames/rewards.ts); old saves lack it */
+  rewardedPlays: number[];
 }
 
 export function newPet(now: number, opts: { generation?: number; name?: string; legacy?: string[]; gentle?: boolean; dex?: string[]; seed?: number; family?: string } = {}): Pet {
@@ -97,7 +99,7 @@ export function newPet(now: number, opts: { generation?: number; name?: string; 
     call: null, callSince: null, callMistaken: false, callTicks: 0,
     hungerProgress: 0, happyProgress: 0, poopProgress: 0, tempProgress: 0, petProgress: 0,
     starveTicks: 0, sickTicks: 0, lightTicks: 0, napMistaken: false,
-    diedAt: null, causeOfDeath: null, legacy: opts.legacy ?? [], events: [],
+    diedAt: null, causeOfDeath: null, legacy: opts.legacy ?? [], events: [], rewardedPlays: [],
   };
 }
 
@@ -350,6 +352,15 @@ export function finishPlay(p: Pet, won: number): string {
   if (won >= 3) { p.happy = Math.min(MAX_HEARTS, p.happy + 1); p.smarts = Math.min(100, p.smarts + 3); p.stageSmarts += 3; msg = `You won ${won} of 5!`; }
   touch(p);
   return msg;
+}
+/** A mini-game result as an engine reward: BRONZE counts as a win (finishPlay's rule: smarts +3), SILVER or better adds a happy heart. Weight always burns a little. */
+export function finishRanked(p: Pet, rank: 'none' | 'bronze' | 'silver' | 'gold'): string {
+  if (!canAct(p)) return '...';
+  p.weight = Math.max(baseWeight(p) - 2, p.weight - 1);
+  if (rank !== 'none') { p.smarts = Math.min(100, p.smarts + 3); p.stageSmarts += 3; }
+  if (rank === 'silver' || rank === 'gold') p.happy = Math.min(MAX_HEARTS, p.happy + 1);
+  touch(p);
+  return rank === 'none' ? 'Good try. Play again!' : rank === 'bronze' ? 'Nice play!' : 'Great play!';
 }
 export function giveMedicine(p: Pet): string {
   if (!canAct(p)) return '...';

@@ -33,7 +33,8 @@
     "test:families": "tsx test/families.ts",
     "test:biomes": "tsx test/biomes.ts",
     "test:shading": "tsx test/shading.ts",
-    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading",
+    "test:minigames": "tsx test/minigames.ts",
+    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading && npm run test:minigames",
     "lint": "eslint .",
     "test:balance": "tsx test/balance.ts 20"
   },

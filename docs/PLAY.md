@@ -29,3 +29,20 @@ More games can plug into the same interface later.
 - src/ui: the Play menu, a generic game screen that paints a game state into the 64x64 layer buffer (pet sprite from the species hiFrames, family biome colours via existing layers; Technicolor gets extra detail, Traditional stays simple), input from the A/B/C buttons and screen taps, and the HIGH SCORES screen.
 - Tests: deterministic game simulations, tuning tables cover every species kind, scores store, reward cap, render of each game for every family without throwing.
 - The Swift port comes after the Expo version is stable and reuses the same constants (generated from one source where practical: tools/gen_*.py).
+
+## Status and how to add a game (Expo)
+Phase 1 (the foundation) is in: the `MiniGame`/`GameDef` contract (`src/core/minigames/types.ts`), `themes.ts` (all 12 families), `tuning.ts` (all 123 body kinds),
+`scores.ts`, `rewards.ts` (`Pet.rewardedPlays` holds the day-cap log), `session.ts` (ready, play, time up, result), HI-LO and CATCH, the Play menu, the generic game screen,
+the result screen and HIGH SCORES. Tests: `test/minigames.ts` (bots in `test/minigame-bots.ts`). Sheets: `node tools/play-sheets.js` (docs/screens/play-*.png).
+End-to-end on the web build: `tools/play-e2e.js`.
+
+To add a game (DASH, ECHO, ...), touch exactly:
+1. `src/core/minigames/games/<id>.ts`: export a `GameDef`. `init(seed, params)` returns a `MiniGame`; read `params.tuning` (speed, size, luck, memory, condition),
+   `params.theme` (items, obstacles, symbols, titles, win lines), `params.scoreMul` (the favourite x1.25) and `params.smarts`. Run on `makeTicker` so any step size plays the same game.
+   Keep the score a plain number; `rankOf(score, thresholds)` gives the rank.
+2. `src/ui/games/<id>.ts`: export `entry: GameEntry = { def, layout, paint }`. `layout: 'field'` gets the family biome backdrop and the HUD strip for free (draw the pet with
+   `drawPetFit`, glyphs with `drawGlyph`); `'text'` owns the whole screen. Layers below 43 print in Traditional; scenery layers and `'o'`/`'w'` glyph details are Technicolor-only.
+3. `src/ui/games/registry.ts`: one line `load(require('./<id>')),` inside your slot.
+Inputs are edges: A = `left`, B = `act`, C = `right` (when `usesRight` is false, C quits), a tap on the left or right half is `left` or `right`, and a tap on a row from `tapRows` is `pick`.
+The menu, scores, rewards, high scores and the tests (a monkey bot plays every registered game for every family and renders every screen) pick the new game up automatically.
+Tune thresholds with bots like the CATCH ones in the tests: a perfect player gold, a good one silver, a casual one bronze, standing still nothing.
