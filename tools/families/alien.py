@@ -18,7 +18,7 @@ SPECIES = {
  'alien_bloop':  ('Bloop', 1, 'A tiny grey-green wobbler with big dark eyes.', dict(arch='al_babe')),
  'alien_blink':  ('Blink', 1, 'A one-eyed orb that blinks like a faraway star.', dict(arch='al_orb')),
  # stage 2 children
- 'alien_oggle':   ('Oggle', 2, 'Chunky, one big eye and zero doubts.', dict(arch='al_cyclops')),
+ 'alien_oggle':   ('Oggle', 2, 'Chunky, one big eye and zero doubts.', dict(arch='al_oggle')),
  'alien_zibbit': ('Zibbit', 2, 'Its antennae twitch at every beep in the sky.', dict(arch='al_antenna')),
  'alien_tenti':  ('Tenti', 2, 'A little dome on little tentacles. Mostly wiggles.', dict(arch='al_tentacle')),
  'alien_fizz':   ('Fizz', 2, 'Flickers like a bad signal.', dict(arch='al_wobble', extra=['al_glitch'])),

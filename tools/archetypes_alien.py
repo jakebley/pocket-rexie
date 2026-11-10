@@ -407,7 +407,10 @@ def _mirror(half):
 
 # crystal clusters: Shardling (a core spike with two low shards), Prism (three tall spikes, a front pair), Heartstone (a five-spike giant)
 HALF = {
- 'static': ['........', '....XXXX', '..XXXXXX', '.XXXXXXX', '.XXXXXXX', '.XXXX..X', '.XX...XX', '..XXXXXX', '...XXXXX', '......XX', '......XX', '..XXXXXX', '..X.XXXX', '..X.XXXX', '.....XX.', '.....X..'],
+ 'oggle': ['................', '................', '................', '................', '.......X........', '.......X........', '.....XXXXXX.....', '...XXXXXXXXXX...', '..XXXXXXXXXXXX..', '..XXXXXX..XXXX..', '..XXXX....XXXX..', '..XXXX....XXXX..', '..XXXXX..XXXXX..', '...XXXXXXXXXX...', '...XX.XXXX.XX...', '....X..XX..X....'],
+ 'mantid': ['..X..........X..', '...X........X...', '...XXXXXXXXXX...', '..XXXXXXXXXXXX..', '..XX..XXXX..XX..', '..XX..XXXX..XX..', '...XXXXXXXXXX...', '....XXXXXXXX....', '.....XXXXXX.....', '.X..XXXXXXXX..X.', 'XX..XXXXXXXX..XX', 'XXX.XXXXXXXX.XXX', '.XXX.XXXXXX.XXX.', '...X.XX..XX.X...', '...X.X....X.X...', '..XX.X....X.XX..'],
+ 'carapace': ['................', '................', '................', '................', '...X........X...', '....X......X....', '....XXXXXXXX....', '...XXXXXXXXXX...', '...XX..XX..XX...', '...XX..XX..XX...', '...XXXXXXXXXX...', '.XX.XXXXXXXX.XX.', 'XX..XXXXXXXX..XX', 'XX.XXXXXXXXXX.XX', '...XXXXXXXXXX...', '..XX.XX..XX.XX..'],
+ 'static': ['................', '................', '....X.XX.X......', '..XXXXXXXXXXX...', '.XXXXXXXXXXXXX..', '.XXXXXXXXXXXXXX.', 'XXXX..XXXX..XXX.', 'XXXX..XXXX..XXXX', '.XXXXXXXXXXXXXX.', 'XXXXXXXXXXXXXXX.', '.XXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXX..', '.XXXXXXXXXXXXXX.', '..XXX.XXXX.XXX..', '..X.X..XX..X.X..', '.X...X.XX.X...X.'],
  'lostling': ['........', '........', '........', '........', '....XXXX', '...XXXXX', '...XX..X', '...X...X', '....XXXX', '.....XXX', '......XX', '...XXXXX', '...XXXXX', '....XXXX', '.....XX.', '.....X..'],
  'bloop': ['................', '................', '................', '................', '................', '.......XX.......', '.......XX.......', '....XXXXXXXX....', '...XXXXXXXXXX...', '...XXXXXXXXXX...', '...X..XXXX..X...', '...X..XXXX..X...', '...XXXXXXXXXX...', '....XXXXXXXX....', '.....XXXXXX.....', '.....X....X.....'],
  'nebula': ['................', '................', '.....XXXX.......', '...XXXXXXX.XXX..', '..XXXXXXXXXXXXX.', '.XXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXX', 'XXXX..XXXX..XXXX', 'XXXX..XXXX..XXXX', 'XXXXXXXXXXXXXXXX', '.XXXXXXXXXXXXXX.', '.XXXXXXXXXXXXXX.', '.XXXX.XXXX.XXXX.', '.XXX..XXXX..XXX.', '..XX..XXXX..XX..', '................'],
@@ -464,12 +467,13 @@ ARCH_ALIEN = {
  'al_brainking': _ascii('elder', (7.5, 6.0, 5.6), (2, 13)),
  'al_sage':    _build(_sage, (7.5, 4.6, 4.6), (4, 4.4), (3, 12)),
  'al_cyclops': _build(_cyclops, (7.5, 9.0, 5.0), (7, 8.5), (3, 12)),
+ 'al_oggle': _ascii('oggle', (7.5, 9.0, 4.0), (2, 13)),
  'al_cyclohorn': _build(_cyclops, (7.5, 9.0, 5.0), (7, 8.5), (3, 12), horns=1, wide=0.4),
  'al_cyclobig': _build(_cyclops, (7.5, 8.6, 5.6), (7, 8.5), (2, 13), horns=1, wide=1.0, tall=0.6),
  'al_blob':    _build(_blob, (7.5, 9.0, 5.6), (5.4, 8.4), (2, 13)),
  'al_blobfat': _build(_blob, (7.5, 9.0, 6.0), (5.4, 8.4), (1, 14), fat=0.9),
- 'al_insect':  _build(_insect, (11.4, 5.4, 2.8), (11.5, 5.0), (2, 12)),
- 'al_insectbig': _build(_insect, (11.4, 5.4, 2.8), (11.5, 5.0), (2, 12), big=True),
+ 'al_insect':  _ascii('carapace', (7.5, 8.0, 3.4), (2, 13)),
+ 'al_insectbig': _ascii('mantid', (7.5, 4.0, 3.8), (1, 14)),
  'al_moth': _build(_moth, (7.5, 5.0, 2.2), (6.4, 5.0), (4, 11), kind=0),
  'al_mothbig': _build(_moth, (7.5, 5.0, 2.4), (6.4, 5.0), (3, 12), kind=1),
  'al_luna': _build(_moth, (7.5, 5.0, 2.4), (6.4, 5.0), (3, 12), kind=2),
