@@ -1,6 +1,6 @@
 import Foundation
 
-// Procedural pet shading: turns a 1-bit silhouette (32x32 hi-res sprite) into layer codes with dimension:
+// Procedural pet shading (native): turns a 1-bit silhouette (32x32 hi-res sprite) into layer codes with dimension:
 // highlight, base, ordered-dithered shadow, deep underside, belly, accent tips on extremities, rim light and
 // eye rings, plus opaque eyes. Port of expo-prototype/src/ui/shading.ts (the spec and the tested
 // implementation); the arithmetic is kept identical (Float for distance maps, same traversal orders) so the
