@@ -41,6 +41,7 @@ KIND_OF = {
     'bun_dor': 'dormouse', 'bun_dorfl': 'dormouse',
     'bun_baby2': 'bunbaby', 'bun_scruffsit': 'bunny', 'bun_moonrab': 'bunny', 'bun_fluffy': 'lop', 'bun_mop': 'lop',
     'bun_loploaf': 'lop', 'bun_loptall': 'lop', 'bun_lopelder': 'lop', 'bun_harestray': 'hare', 'bun_hareleap': 'hare', 'bun_harecrouch': 'hare', 'bun_harecrouchstray': 'hare', 'bun_haregaunt': 'hare', 'bun_haresoar': 'hare',
+    'bun_chin2': 'chinchilla', 'bun_ragtail2': 'hare', 'bun_burrbit2': 'hare', 'bun_gallop2': 'hare', 'bun_galewhisker2': 'hare', 'bun_chinfl2': 'chinchilla', 'bun_ham2': 'hamster', 'bun_dorcurl2': 'dormouse', 'bun_lop2': 'lop', 'bun_lopelder2': 'lop', 'bun_haregaunt2': 'hare',
     'bun_hamsit': 'hamster', 'bun_hamking': 'hamster', 'bun_pikaup': 'pika', 'bun_dorcurl': 'dormouse',
     # dragon
     'dr_hatch': 'wyrmling', 'dr_west': 'westdragon', 'dr_westwide': 'westdragon', 'dr_westlow': 'westdragon', 'dr_east': 'eastdragon', 'dr_eastlong': 'eastdragon',
@@ -49,6 +50,7 @@ KIND_OF = {
     'dr_egg': 'wyrmling', 'dr_soar': 'westdragon', 'dr_rear': 'westdragon', 'dr_eelet': 'eastdragon', 'dr_eastking': 'eastdragon', 'dr_eastloop': 'eastdragon',
     'dr_wraith': 'wyvern', 'dr_wurmfat': 'wurm', 'dr_wurmdrag': 'wurm', 'dr_drakeheavy': 'drake', 'dr_keeper': 'hoarder', 'dr_boulder': 'hoarder', 'dr_crystal': 'hoarder',
     'dr_gemcoil': 'coil',
+    'dr_crag': 'drake', 'dr_hatch2': 'wyrmling', 'dr_coil2': 'coil', 'dr_vault': 'drake', 'dr_gemh': 'hoarder', 'dr_pebbleh': 'hoarder', 'dr_lind': 'wurm', 'dr_lindfat': 'wurm', 'dr_lindup': 'wurm', 'dr_lindrag': 'wurm',
     # bot
     'bot_orb': 'orb', 'bot_blip': 'orb', 'bot_nibble': 'orb', 'bot_cube': 'orb', 'bot_tread': 'rover', 'bot_dozer': 'dozer', 'bot_handheld': 'handheld', 'bot_walkie': 'walkie', 'bot_junk': 'junkbot', 'bot_heapling': 'junkbot', 'bot_junkyard': 'junkbot',
     'bot_boombox': 'boombox', 'bot_mech': 'mech', 'bot_mechw': 'mech', 'bot_crt': 'crt', 'bot_floppy': 'floppy', 'bot_drone': 'drone',

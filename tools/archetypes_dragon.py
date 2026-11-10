@@ -131,6 +131,32 @@ def build(fn, hd, eye, body, **kw):
                          body=(TT(k, body[0], 0)[0], TT(k, body[1], 0)[0]))
     return dict(by_stage=by)
 
+def seal_holes(g):
+    """fill every enclosed gap (a pixel hole the shapes left between a horn and the skull, say) so the only hole left is the eye"""
+    rows = g.rows(); n = len(rows)
+    ext = [[False] * n for _ in range(n)]; st = []
+    def push(x, y):
+        if 0 <= x < n and 0 <= y < n and rows[y][x] != 'X' and not ext[y][x]: ext[y][x] = True; st.append((x, y))
+    for i in range(n): push(i, 0); push(i, n - 1); push(0, i); push(n - 1, i)
+    while st:
+        x, y = st.pop()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)): push(x + dx, y + dy)
+    for y in range(n):
+        for x in range(n):
+            if rows[y][x] != 'X' and not ext[y][x]: g._raw(x, y, 1)
+
+def build2(fn, hd, eye, body, **kw):
+    """build() for the second-pass archetypes: enclosed gaps are sealed before the eye hole is punched"""
+    by = {}
+    for stage, k in SIZES.items():
+        g = fn(k=k, **kw)
+        hx, hy = TT(k, hd[0], hd[1]); ex, ey = TT(k, eye[0], eye[1])
+        seal_holes(g)
+        g._raw(ex, ey, 0)
+        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(round(ex), round(ey)),
+                         body=(TT(k, body[0], 0)[0], TT(k, body[1], 0)[0]))
+    return dict(by_stage=by)
+
 def batwing(g, T, S, drop=2.2, n=3, tooth=1.6):
     """a bat wing swept back from the shoulder S to the wing tip T: a straight arm along the top and a membrane hanging
     below it with n pointed scallops (teeth) along the lower edge"""
@@ -390,9 +416,129 @@ def ragwing(k=1.0):
     g.path([(2.8, 11.2), (1.4, 12.4), (0.6, 14.0)], 1.0, 0.5)
     return g
 
+
+# ---------------- second pass: unmistakable dragon cues (horned snout, spiked ridge, spade or flame tail, claws, folded wings) ----------------
+def head3(g, hx, hy, r=1.7, snout=1.2, down=0.0, long_horn=3.0, short_horn=2.2, jaw=True):
+    """dragon head facing right with a visible snout, a nostril notch on top of it and TWO horns: a long one swept back and a
+    shorter one standing up behind the brow (a V of horns)"""
+    g.ell(hx, hy, r, r * 0.85)
+    sx = hx + r * 0.6
+    g.poly([(sx, hy - 0.9 + down), (hx + r + snout, hy - 0.4 + down), (hx + r + snout, hy + 1.1 + down), (sx, hy + 1.3 + down)])
+    if jaw: g.path([(hx - 0.2, hy + r * 0.7), (hx + r + snout - 0.4, hy + 1.2 + down)], 0.5, 0.5, rmin=0.5)
+    horn(g, (hx - 0.5, hy - r * 0.6), (hx - 0.5 - long_horn, hy - r * 0.6 - long_horn * 0.35), 0.8)
+    horn(g, (hx + 0.4, hy - r * 0.7), (hx - 0.4 - short_horn * 0.3, hy - r * 0.7 - short_horn), 0.75)
+
+def spade(g, x, y, dx, dy, s=1.0):
+    """a spade tail tip at (x, y) pointing along (dx, dy)"""
+    n = math.hypot(dx, dy) or 1; dx, dy = dx / n, dy / n
+    px, py = -dy, dx
+    tip = (x + dx * 1.6 * s, y + dy * 1.6 * s)
+    g.poly([tip, (x + px * 1.0 * s, y + py * 1.0 * s), (x - dx * 0.5 * s, y - dy * 0.5 * s), (x - px * 1.0 * s, y - py * 1.0 * s)])
+
+def crest(g, xs, hts, drop=0):
+    """spines standing on the top surface of what is already drawn: column x (design coordinates) gets hts[i] pixels above the
+    topmost lit pixel in that column (so they always touch the body)"""
+    rows = g.rows()
+    for i, x in enumerate(xs):
+        xo = int(round(g.T(x, 0)[0])); h = hts[i % len(hts)]
+        t = next((y for y in range(W) if rows[y][xo] == 'X'), None)
+        if t is None: continue
+        for j in range(1, h + 1): g._raw(xo, t - j + drop, 1)
+
+def spikes(g, xs, base, tops):
+    """a comb of one-pixel spines standing on the back: spine i rises from `base` to tops[i] (cycled)"""
+    for i, x in enumerate(xs):
+        t = tops[i % len(tops)] if isinstance(tops, (list, tuple)) else tops
+        g.path([(x, base), (x, t)], 0.5, 0.5, rmin=0.5)
+
+def fold_wing(g, S, tip, back, w=0.7):
+    """a small folded wing on the back: a pointed triangle rising from the shoulder S to `tip`, trailing edge to `back`"""
+    g.poly([S, tip, back]); g.path([S, tip], w, w * 0.7)
+
+def crag(k=1.0, back='wing'):
+    """armoured drake: stocky western body, a V of horns, a short wing / a boulder hump / a fan of crystal shards on the back, a spine comb and a tail curling to a spade"""
+    g = Cv(k)
+    if back == 'wing': batwing(g, (3.2, 3.8), (8.4, 7.6), 1.8, 2, 1.3)
+    g.ell(7.6, 11.0, 4.2, 2.2); g.ell(10.2, 10.6, 1.8, 1.8)
+    g.path([(10.8, 10.0), (12.0, 8.4)], 1.6, 1.4)
+    head3(g, 13.2, 7.6, 1.7, 1.1)
+    if back == 'boulder':
+        g.ell(7.0, 8.6, 3.4, 2.4)
+        g.path([(5.6, 6.6), (5.6, 8.0)], 0.5, 0.5, v=0, rmin=0.5); g.path([(8.4, 6.4), (8.4, 7.8)], 0.5, 0.5, v=0, rmin=0.5)
+        crest(g, (4.6, 7.0, 9.4), (1,))
+    elif back == 'crystal':
+        for (bx, tx, ty, w) in ((4.8, 3.2, 4.4, 1.5), (7.0, 6.2, 2.4, 1.6), (9.2, 9.2, 4.2, 1.4)):
+            g.poly([(bx - w, 9.4), (tx, ty), (bx + w, 9.4)])
+    else: spikes(g, (4, 5), 9.8, 8.4)
+    legs(g, (4, 7, 10), 12.4)
+    g.path([(3.8, 11.8), (2.0, 12.8), (0.9, 11.6)], 1.3, 0.7)
+    spade(g, 0.8, 10.0, 0.0, -1.0, 0.9)
+    return g
+
+def vault(k=1.0):
+    """slim guard drake: crest of a V of horns, a long folded wing along the back, a long ground tail ending in a spade"""
+    g = Cv(k)
+    fold_wing(g, (8.6, 8.8), (4.4, 4.4), (2.6, 9.0), 0.6)
+    g.ell(8.0, 11.0, 3.6, 2.0)
+    g.path([(10.6, 10.2), (12.0, 8.0)], 1.5, 1.3)
+    head3(g, 13.2, 6.8, 1.7, 1.1)
+    legs(g, (6, 10), 12.4, 1); g.rect(7, 14, 7, 15); g.rect(11, 14, 11, 15)
+    g.path([(4.8, 11.6), (2.8, 13.0), (1.4, 13.6)], 1.3, 0.6)
+    spade(g, 0.4, 13.8, -1.0, 0.1, 0.9)
+    return g
+
+def lind(k=1.0, up=0.0, fat=0.0, wings=0, flame=False, chewed=False, tall=1):
+    """lindwurm: a long low body on two clawed forelegs, a neck raising a horned head, bat wings (wings=1), torn wings (2) or just a
+    tall comb of spines (0), and a spade (or flame) at the tail tip"""
+    g = Cv(k)
+    if wings == 1: batwing(g, (2.4, 3.6) if not up else (3.2, 4.6), (8.0, 8.8), 2.0 if not up else 2.4, 3, 1.4)
+    elif wings == 3: fold_wing(g, (8.2, 9.8), (6.0, 5.8), (4.0, 10.2), 0.6)
+    elif wings == 2:
+        g.poly([(8.0, 8.8), (5.0, 5.0), (4.4, 7.0), (3.4, 6.2), (3.0, 9.6)]); g.path([(8.0, 8.8), (5.0, 5.0)], 0.6, 0.5)
+    g.ell(6.8, 11.6, 4.2, 1.8 + fat)
+    g.path([(10.0, 11.0), (11.8, 8.8 - up)], 1.4, 1.2)
+    head3(g, 13.2, 7.4 - up, 1.7, 1.1, long_horn=0.8 if chewed else 3.0)
+    g.path([(3.0, 12.0), (1.6, 12.8), (0.8, 11.6)], 1.2, 0.7)
+    if flame: g.poly([(0.8, 11.2), (-0.2, 9.0), (1.4, 9.6), (1.4, 7.6), (2.4, 10.6)])
+    else: spade(g, 0.8, 10.2, 0.0, -1.0, 0.8)
+    legs(g, (8, 11), 12.8, 1); g.set(7, 15); g.set(12, 15)                      # forelegs with a claw each
+    g.rect(4, 13, 4, 15); g.set(3, 15)                                           # hind foot
+    if wings == 0: crest(g, (3, 5, 7, 9), (2, 3, 2, 3))
+    else: crest(g, (3, 4), (1, 2))
+    return g
+
+CINDER = ["................", "................", "................", "................", "................", ".......#...#....",
+          "........#..#....", "........####....", ".....#..##.####.", "....##..#######.", "....#########...", "....#########...",
+          ".....########...", "...#########....", "..###########...", ".......##..##..."]
+CINDER_ART = dict(rows=[r.replace('#', 'X') for r in CINDER], head=(10.0, 8.5, 2.2), eye=(10, 8), body=(4, 12))
+
+def stormcoil2(k=1.0):
+    """a serpent piled in three stacked coils (offset so they read as one spiral), neck and horned head rising from the top, tail tip flicking out of the bottom"""
+    g = Cv(k)
+    g.ell(7.2, 13.4, 5.8, 1.5)
+    g.ell(7.6, 10.2, 4.8, 1.4)
+    g.ell(7.2, 7.2, 3.6, 1.3)
+    g.path([(11.6, 12.6), (12.0, 11.2)], 1.4, 1.2)       # coil 1 -> 2 at the right
+    g.path([(4.0, 9.4), (3.6, 8.2)], 1.3, 1.2)          # coil 2 -> 3 at the left
+    g.path([(8.6, 6.2), (10.6, 4.0)], 1.4, 1.2)
+    head3(g, 12.8, 2.8, 1.6, 1.3, long_horn=2.6, short_horn=1.8)
+    g.path([(2.0, 13.8), (0.8, 12.4)], 1.0, 0.5)
+    return g
+
 # ---- registry -----------------------------------------------------------------------------
 def _eastking(k=1.0): return east(k, legs=True)
 ARCH_DRAGON = {
+ 'dr_vault':    build2(vault, (13.2, 6.8, 1.9), (12.7, 6.3), (4, 10)),
+ 'dr_pebbleh':  build2(crag, (13.2, 7.6, 1.9), (12.7, 7.1), (3, 11), back='boulder'),
+ 'dr_gemh':     build2(crag, (13.2, 7.6, 1.9), (12.7, 7.1), (3, 11), back='crystal'),
+ 'dr_lind':     build2(lind, (13.2, 7.4, 1.9), (12.7, 6.9), (3, 10), wings=3),
+ 'dr_lindfat':  build2(lind, (13.2, 7.4, 1.9), (12.7, 6.9), (3, 10), fat=0.6, wings=1),
+ 'dr_lindrag':  build2(lind, (13.2, 8.0, 1.9), (12.7, 7.5), (3, 10), wings=2, chewed=True),
+ 'dr_lindup':   build2(lind, (13.2, 5.2, 1.9), (12.7, 4.7), (3, 10), up=2.2, flame=True, wings=1),
+
+ 'dr_crag':     build2(crag, (13.2, 7.6, 1.9), (12.7, 7.1), (3, 11)),
+ 'dr_hatch2':   dict(by_stage={st: CINDER_ART for st in SIZES}),
+ 'dr_coil2':    build2(stormcoil2, (12.8, 2.8, 1.9), (12.3, 2.3), (2, 12)),
  'dr_hatch':    build(hatch, (8.8, 8.2, 3.6), (10.4, 7.8), (3, 9)),
  'dr_egg':      build(egg, (8.8, 8.2, 3.6), (10.4, 7.8), (3, 12)),
  'dr_west':     build(west, (13.0, 7.6, 1.9), (12.5, 7.1), (4, 10)),

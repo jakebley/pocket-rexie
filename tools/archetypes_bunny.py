@@ -99,21 +99,19 @@ def _lop(k=1.0, pose='sit', longear=False):
     return g
 
 # ---- hare (long lean body, long hind legs; ears lie back as ONE long wedge, not a pair of antlers) ----------
-def _hare(k=1.0, pose='stand', ear=4.4, scruff=False, ghost=False):
+def _hare(k=1.0, pose='stand', ear=4.4, scruff=False, ghost=False, tufts=True):
     g = _G(k)
-    if pose == 'leap':     # mid-bound: front paws reaching, hind legs stretched out behind
-        _tl(g, 4.4, 8.2, 9.6, 9.6, 2.0); g.ell(4.0, 8.4, 2.6, 2.6)
-        g.ell(12.4, 8.4, 2.2, 1.9); g.tri(13.6, 7.8, 13.6, 9.4, 15.4, 9.0)
-        _tl(g, 12.0, 6.8, 6.4, 5.2, 0.95); _tl(g, 12.0, 6.0, 7.0, 3.8, 0.85)
-        _tl(g, 3.6, 10.0, 0.6, 14.4, 1.0); g.set(0.2, 15); g.set(1.2, 15)
-        _tl(g, 10.4, 10.6, 13.6, 13.6, 0.9); g.set(14, 15); g.set(13, 15)
-        g.set(1.6, 6.2)
+    if pose == 'leap':     # mid-bound: front paws reaching, hind legs stretched out behind, ears swept up and back (clear sky between ears and back)
+        _tl(g, 4.6, 8.6, 10.0, 9.2, 2.0); g.ell(4.4, 8.6, 2.5, 2.5)
+        g.ell(12.2, 8.2, 2.2, 1.9); g.tri(13.6, 7.6, 13.6, 9.2, 15.4, 8.8)
+        _tl(g, 11.4, 6.6, 7.8, 4.0, 0.85); _tl(g, 12.6, 6.4, 12.4, 1.8, 0.85)
+        _tl(g, 3.6, 10.0, 1.0, 13.8, 1.0); g.set(0.2, 14.4); g.set(0.6, 14.8); g.set(1.4, 14.8)
+        _tl(g, 10.4, 10.6, 13.6, 13.4, 0.9); g.set(14.2, 14.2); g.set(13.4, 14.4)
         return g
-    if pose == 'soar':     # stretched flat out, nose to tail, ears streaming back
-        _tl(g, 3.4, 8.6, 10.4, 8.6, 1.9); g.ell(11.6, 8.0, 2.2, 1.9); g.tri(12.8, 7.4, 12.8, 9.0, 15.0, 8.6)
-        _tl(g, 11.2, 6.4, 4.6, 3.4, 0.95); _tl(g, 11.4, 5.8, 6.2, 2.2, 0.85)
-        _tl(g, 3.6, 9.6, 0.6, 12.8, 1.0); _tl(g, 9.4, 10.2, 12.4, 12.6, 0.9)
-        g.set(0.4, 7.6); g.set(0.2, 8.6)
+    if pose == 'soar':     # stretched flat out, nose to tail, ears laid back along the neck, feathered wing swept up from the shoulders (bun_wing)
+        _tl(g, 3.4, 9.4, 10.4, 9.2, 1.9); g.ell(11.6, 8.8, 2.2, 1.9); g.tri(12.8, 8.2, 12.8, 9.8, 15.0, 9.4)
+        _tl(g, 11.2, 7.2, 8.0, 5.8, 0.9); _tl(g, 11.8, 7.0, 9.2, 4.8, 0.8)
+        _tl(g, 3.6, 10.4, 0.8, 13.0, 1.0); _tl(g, 9.4, 11.0, 12.4, 13.4, 0.9)
         _feet(g, 11, 14)
         return g
     if pose == 'tall' and ghost:   # tall gaunt ghost hare: narrow, very long ragged ears, wisp of a tail
@@ -143,7 +141,7 @@ def _hare(k=1.0, pose='stand', ear=4.4, scruff=False, ghost=False):
         _tl(g, 10.0, 6.4, 5.0, 3.4, 0.95); _tl(g, 11.2, 6.2, 6.6, 2.4, 0.85)
         g.line(10.2, 11, 10.2, 14.4); g.ell(1.6, 11.6, 1.2, 1.2)
         if scruff:
-            for (x, y) in ((0.6, 13.0), (2.6, 8.4), (5.6, 7.0), (8.4, 7.6), (8.0, 15.0)): g.set(x, y)
+            for (x, y) in (((0.6, 13.0), (2.6, 8.4), (5.6, 7.0), (8.4, 7.6), (8.0, 15.0)) if tufts else ()): g.set(x, y)
         for x in range(2, 12): g.set(x, 15)
         return g
     # standing on all fours
@@ -154,7 +152,7 @@ def _hare(k=1.0, pose='stand', ear=4.4, scruff=False, ghost=False):
     if scruff:
         _tl(g, 10.8, 5.2, 8.4, 2.6 - e * 0.5, 0.95); _tl(g, 8.4, 2.6 - e * 0.5, 6.4, 3.8 - e * 0.5, 0.8)
         _tl(g, 12.0, 5.0, 12.0, 1.6 - e, 0.9)
-        for (x, y) in ((0.8, 8.0), (1.2, 12.4), (4.0, 6.8), (7.0, 6.6), (9.4, 6.6)): g.set(x, y)
+        for (x, y) in (((0.8, 8.0), (1.2, 12.4), (4.0, 6.8), (7.0, 6.6), (9.4, 6.6)) if tufts else ()): g.set(x, y)
     else:
         _tl(g, 10.6, 5.2, 7.0, 1.6 - e, 0.95); _tl(g, 11.8, 5.0, 8.6, 1.0 - e, 0.85)
     g.set(0.8, 9.4); g.set(0.8, 10.2)
@@ -276,6 +274,80 @@ def _baby(k=1.0, ear=3.6, mode='up'):
     for x in range(4, 12): g.set(x, 15)
     return g
 
+
+# ---- second pass: silhouettes that read at a glance --------------------------------------------------------------------------
+def _chin2(k=1.0, adult=False):
+    """chinchilla: a big round ball of a body, a small round face with a button nose, HUGE round ears, and a long fluffy tail that
+    sweeps up behind the back (a gap of sky between it and the body) and curls forward"""
+    g = _G(k)
+    a = 0.4 if adult else 0.0
+    g.ell(7.6, 11.4, 4.2 + a, 3.7 + a)
+    g.ell(11.4, 8.8, 2.3, 2.1); g.ell(13.4, 9.4, 0.8, 0.7)
+    r = 2.3 if adult else 2.1
+    g.ell(8.8, 5.2, r, r); g.ell(13.0, 5.6, r, r)
+    t = 1.1 if adult else 0.95
+    _tl(g, 3.6, 12.8, 1.4, 11.2, t); _tl(g, 1.4, 11.2, 0.9, 8.6, t + 0.2); _tl(g, 0.9, 8.6, 1.8, 6.4, t + 0.4)
+    g.ell(2.6, 5.6, t + 0.7, t + 1.0)
+    g.line(11.4, 12.4, 11.4, 14.6)
+    for x in range(5, 13): g.set(x, 15)
+    return g
+
+def _ham2(k=1.0):
+    """upright hamster: a small round head perched on cheek pouches that bulge out wider than the head, two tiny ears, a narrow body,
+    paws clutching a seed and tiny feet"""
+    g = _G(k)
+    g.ell(6.8, 12.0, 3.2, 3.0)
+    g.ell(9.2, 8.8, 3.7, 2.6)           # the cheek pouches: far wider than the head
+    g.ell(9.2, 6.0, 2.0, 1.9)
+    g.ell(7.6, 4.4, 0.9, 0.9); g.ell(10.8, 4.4, 0.9, 0.9)
+    g.set(11.8, 6.4)
+    for x in (5, 6, 9, 10): g.set(x, 15)
+    return g
+
+def _dor2(k=1.0):
+    """curled sleeping dormouse: a round ball with the face tucked in front and one big bushy tail wrapped round the back and over the top
+    (a clear gap of sky between the tail and the ball, open at the rump)"""
+    g = _G(k)
+    import math
+    g.ell(7.8, 12.6, 3.5, 2.7)
+    g.ell(12.2, 13.0, 1.7, 1.6); g.ell(11.9, 11.4, 0.8, 0.8)
+    cx, cy, rx, ry = 7.4, 12.8, 6.0, 5.8
+    pts = [(cx + rx * math.cos(math.radians(t)), cy + ry * math.sin(math.radians(t))) for t in range(190, 321, 10)]
+    for i, (a, b) in enumerate(zip(pts, pts[1:])): _tl(g, a[0], a[1], b[0], b[1], 1.15 + 0.3 * (i / len(pts)))
+    for x in range(5, 12): g.set(x, 15)
+    return g
+
+def _lop2(k=1.0, elder=False):
+    """lop: a round face between TWO fat ears that hang down the sides of the head to below the chin and splay slightly so a notch of sky
+    separates each ear from the cheek; the head sits right on a round body"""
+    g = _G(k)
+    hx, hy = (9.2, 5.6) if elder else (9.2, 6.2)
+    L = 7.0 if elder else 5.6
+    if elder: g.ell(8.4, 11.6, 3.6, 3.6)
+    else: g.ell(8.2, 12.2, 3.6, 3.0)
+    g.ell(hx, hy, 2.0, 2.0)
+    g.set(hx + 2.4, hy + 1.0)
+    for (sx, drift) in ((hx - 1.7, -2.4), (hx + 1.7, 2.4)):
+        n = 10
+        for i in range(n + 1):
+            t = i / n; r = 1.3 - 0.2 * t
+            g.ell(sx + drift * t, hy - 1.5 + L * t, r, r + 0.3)
+    g.ell(4.4, 13.6, 1.2, 1.2)
+    for x in range(5, 12): g.set(x, 15)
+    return g
+
+def _hare_ghost2(k=1.0):
+    """gaunt ghost hare: narrow body, long thin ears standing STRAIGHT up side by side (not antlers), a wisp of a tail"""
+    g = _G(k)
+    g.ell(6.0, 9.8, 2.2, 4.6); g.ell(7.8, 5.0, 2.0, 1.8); g.tri(9.2, 4.6, 9.2, 6.0, 11.4, 5.6)
+    _tl(g, 6.4, 3.8, 5.4, 0.0, 0.7); _tl(g, 9.2, 3.6, 9.6, 0.0, 0.7)
+    g.ell(3.6, 12.4, 1.8, 2.4)
+    g.line(8.2, 9.4, 9.6, 10.8)
+    g.ell(1.6, 10.8, 0.9, 0.9)
+    for x in range(2, 9): g.set(x, 15)
+    g.line(7.4, 12.4, 7.4, 14.4)
+    return g
+
 SIZES = {1: 0.58, 2: 0.7, 3: 0.86, 4: 1.0, 5: 1.0}
 
 def _eye_spot(g, ex, ey):
@@ -304,7 +376,45 @@ def _build(fn, hd, eye, body, **kw):
                          body=(_T(k, body[0], 0)[0], _T(k, body[1], 0)[0]))
     return dict(by_stage=by)
 
+def _seal(g):
+    """fill enclosed gaps left between shapes so the eye is the only hole"""
+    n = W
+    ext = [[False] * n for _ in range(n)]; st = []
+    def push(x, y):
+        if 0 <= x < n and 0 <= y < n and not g.p[y][x] and not ext[y][x]: ext[y][x] = True; st.append((x, y))
+    for i in range(n): push(i, 0); push(i, n - 1); push(0, i); push(n - 1, i)
+    while st:
+        x, y = st.pop()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)): push(x + dx, y + dy)
+    for y in range(n):
+        for x in range(n):
+            if not g.p[y][x] and not ext[y][x]: g.p[y][x] = 1
+
+def _build2(fn, hd, eye, body, **kw):
+    """_build() with enclosed gaps sealed before the eye is placed"""
+    by = {}
+    for stage, k in SIZES.items():
+        g = fn(k=k, **kw)
+        _seal(g)
+        hx, hy = _T(k, hd[0], hd[1]); ex, ey = _T(k, eye[0], eye[1])
+        ex, ey = _eye_spot(g, ex, ey)
+        g._raw(ex, ey, 0)
+        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(ex, ey),
+                         body=(_T(k, body[0], 0)[0], _T(k, body[1], 0)[0]))
+    return dict(by_stage=by)
+
 ARCH_BUN = {
+ 'bun_ragtail2': _build2(_hare, (11.6, 6.8, 2.2), (12.6, 6.6), (2, 10), scruff=True, tufts=False),
+ 'bun_burrbit2': _build2(_hare, (10.8, 8.2, 2.3), (11.9, 8.0), (2, 10), pose='crouch', scruff=True, tufts=False),
+ 'bun_gallop2': _build2(_hare, (12.2, 8.2, 2.2), (13.0, 8.0), (3, 10), pose='leap'),
+ 'bun_galewhisker2': _build2(_hare, (11.6, 8.8, 2.2), (12.6, 8.6), (3, 10), pose='soar'),
+ 'bun_chin2':  _build2(_chin2, (10.6, 7.6, 2.4), (11.4, 7.2), (3, 10)),
+ 'bun_chinfl2': _build2(_chin2, (10.6, 7.6, 2.5), (11.4, 7.2), (3, 10), adult=True),
+ 'bun_ham2':   _build2(_ham2, (9.0, 6.0, 2.6), (10.0, 5.8), (3, 9)),
+ 'bun_dorcurl2': _build2(_dor2, (11.8, 11.6, 2.0), (12.2, 11.2), (4, 11)),
+ 'bun_lop2':   _build2(_lop2, (9.2, 6.2, 2.4), (9.6, 5.9), (3, 10)),
+ 'bun_lopelder2': _build2(_lop2, (9.2, 5.4, 1.6), (9.6, 5.2), (3, 10), elder=True),
+ 'bun_haregaunt2': _build2(_hare_ghost2, (7.8, 5.0, 2.0), (8.6, 4.8), (2, 8)),
  'bun_sit':   _build(_rabbit, (10.0, 6.0, 2.4), (11.0, 5.8), (3, 10)),
  'bun_scruffsit': _build(_rabbit, (10.0, 6.0, 2.4), (11.0, 5.8), (3, 10), scruff=True),
  'bun_moonrab': _build(_rabbit, (10.0, 6.0, 2.5), (11.0, 5.8), (3, 10), ear=5.0, fluff=0.5, head=2.5, tall=0.6),
@@ -421,7 +531,17 @@ def bun_flower(g, c):
     x, y = int(round(c['hx'] - c['hr'] + 0.5)), int(round(c['hy'] - c['hr'] + 0.5))
     for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)): g.set(x + dx, y + dy)
 
+def bun_wing(g, c):
+    """a feathered wing swept up and back from the shoulders: a solid fan rising to a pointed tip, its trailing edge zigzagged into feather teeth open to the sky"""
+    bx = int(round((c['b0'] + c['b1']) / 2)) - 1
+    t = g.top(bx)
+    if t is None: return
+    rows = [(1, -3, 3), (2, -4, 2), (3, -4, 1), (4, -5, 1), (5, -4, 0), (6, -5, -1), (7, -4, -2), (8, -4, -3)]
+    for dy, x0, x1 in rows:
+        for dx in range(x0, x1 + 1): g.set(bx + dx, t - dy)
+
 spritegen.EXTRA_HANDLERS.update({
+ 'bun_wing': bun_wing,
  'bun_rock': bun_rock, 'bun_clover': bun_clover, 'bun_moon': bun_moon, 'bun_carrot': bun_carrot, 'bun_seed': bun_seed, 'bun_hay': bun_hay,
  'bun_notch': bun_notch, 'bun_dust': bun_dust, 'bun_spark': bun_spark, 'bun_coin': bun_coin, 'bun_whisk': bun_whisk,
  'bun_bow': bun_bow, 'bun_flower': bun_flower,
