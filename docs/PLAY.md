@@ -46,3 +46,6 @@ To add a game (DASH, ECHO, ...), touch exactly:
 Inputs are edges: A = `left`, B = `act`, C = `right` (when `usesRight` is false, C quits), a tap on the left or right half is `left` or `right`, and a tap on a row from `tapRows` is `pick`.
 The menu, scores, rewards, high scores and the tests (a monkey bot plays every registered game for every family and renders every screen) pick the new game up automatically.
 Tune thresholds with bots like the CATCH ones in the tests: a perfect player gold, a good one silver, a casual one bronze, standing still nothing.
+
+## Status
+Expo: HI-LO, CATCH, DASH and ECHO are built (src/core/minigames/games/, src/ui/games/), with themes for all 12 families, tuning for all 123 body types, high scores and the daily reward cap. Swift port: not started.
