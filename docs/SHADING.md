@@ -37,3 +37,5 @@ Swift port of the Expo shading (`expo-prototype/src/ui/shading.ts`, `layers.ts`,
 
 ## Verification
 `ShadingTests.testShadingMatchesTheExpoImplementation` compares an FNV-1a hash of the codes of every species frame (both facings) with the hashes produced by the Expo `shadedPetLayers`, so any drift from the tested implementation shows up as a failing frame list.
+
+Status: unit tests (ShadingTests, including the Expo hash comparison) pass on CI.
