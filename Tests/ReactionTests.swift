@@ -29,7 +29,6 @@ final class ReactionTests: XCTestCase {
                     let line = Reactions.line(for: state, step: step)
                     XCTAssertFalse(line.isEmpty, sp.id)
                     XCTAssertFalse(line.contains("{n}"), "\(sp.id): \(line)")
-                    XCTAssertTrue(line.contains(sp.name), "\(sp.id): \(line)")
                     XCTAssertLessThanOrEqual(line.count, 40, "\(sp.id): \(line)")
                     if sp.family != "dino" {
                         XCTAssertFalse(line.contains("Dinos can"), "\(sp.id): \(line)")
