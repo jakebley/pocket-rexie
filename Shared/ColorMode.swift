@@ -154,6 +154,10 @@ enum ScenePalette {
         // pet shading and eyes: derived from the body color in `table` (shadeRamp); these are placeholders
         case .shade, .deep, .belly, .accent, .accentDark, .accentLight, .rim, .eye, .glint,
              .eyeFill, .eyeShine: return nil
+        default:
+            // biome cues and scenery (BiomePalette.swift)
+            guard let biomeHex = biomeLightHex(l) else { return nil }
+            hex = biomeHex
         }
         return RGB(hex: hex)
     }
@@ -219,13 +223,18 @@ enum ScenePalette {
     static let tableSize = Int(SceneLayer.maxCode) + 1
 
     /// Layer-indexed colors for one context. Traditional: every lit layer is the ink.
-    /// `night` is whether the scene sky is the night sky (it flips ink-like layers light in the light appearance).
-    static func table(mode: ColorMode, appearance: Appearance, night: Bool, line: PetLine, bodyHex: String? = nil) -> [RGB] {
+    /// `night` is whether the scene sky is dark (the night sky, or an always-dark biome: it flips ink-like layers light in
+    /// the light appearance). `biome`, `period` and `rain` re-colour the shared layers and shade the scenery (docs/BIOMES.md);
+    /// the defaults give the dino meadow.
+    static func table(mode: ColorMode, appearance: Appearance, night: Bool, line: PetLine, bodyHex: String? = nil,
+                      biome: Biome = .meadow, period: SceneAmbient.Period? = nil, rain: Bool = false) -> [RGB] {
         let sc = screen(mode: mode, appearance: appearance)
         var t = [RGB](repeating: sc.ink, count: tableSize)
         t[0] = sc.ground
         guard mode == .technicolor else { return t }
         let dark = appearance == .dark
+        let remap = biomeRemap(biome)
+        let shade: (RGB, Double)? = biome == .meadow ? nil : biomeShade(biome: biome, period: period, rain: rain)
         for l in SceneLayer.allCases where l != .off {
             let i = Int(l.rawValue)
             if dark, let o = darkOverride(l) {
@@ -233,7 +242,9 @@ enum ScenePalette {
             } else if !dark, night, let o = nightOverride(l) {
                 t[i] = o
             } else {
-                let base = techLight(l) ?? techLight(.ink) ?? sc.ink
+                var base = techLight(l) ?? techLight(.ink) ?? sc.ink
+                if let hex = remap?[l] { base = RGB(hex: hex) }
+                if let sh = shade, biomeIsScenery(l), !biomeGlows.contains(l) { base = base.mixed(with: sh.0, sh.1) }
                 t[i] = dark ? base.mixed(with: sc.ground, darkBlend) : base
             }
         }
@@ -246,6 +257,14 @@ enum ScenePalette {
         // to stand apart from a light rim (the rest keep the dark outline and read against the sky).
         if night, !dark, RGB.contrast(t[bodyIndex], rimLight) >= 3 {
             t[Int(SceneLayer.outline.rawValue)] = rimLight
+        }
+        // A mid-tone body on a mid-dark backdrop (the workshop) can leave the dark outline too close to the sky: lift it to a dim cream.
+        if night, !dark, let period {
+            let outlineIndex = Int(SceneLayer.outline.rawValue)
+            let backdrop = sky(mode: mode, appearance: appearance, period: period, rain: rain, biome: biome)
+            if t[outlineIndex] == techLight(.outline), RGB.contrast(t[outlineIndex], backdrop) < 2.6 {
+                t[outlineIndex] = RGB(hex: "#CFC7AE")
+            }
         }
         // Pet shading ramp, all derived from the body color (shadeRamp), and the eyes (port of palette.ts).
         let ramp = shadeRamp(body: t[bodyIndex], dark: dark)
@@ -367,14 +386,16 @@ enum ScenePalette {
     /// Color of one lit layer. `.off` is the unlit pixel: the scene sky in Technicolor (for the hour and
     /// weather), the screen ground in Traditional. `weather` only matters for `.off`.
     static func color(layer: SceneLayer, mode: ColorMode, appearance: Appearance, hour: Int,
-                      weather: SceneAmbient.Weather, line: PetLine, bodyHex: String? = nil) -> RGB {
+                      weather: SceneAmbient.Weather, line: PetLine, bodyHex: String? = nil, biome: Biome = .meadow) -> RGB {
         if layer == .off {
             return mode == .technicolor
-                ? sky(mode: mode, appearance: appearance, hour: hour, weather: weather)
+                ? sky(mode: mode, appearance: appearance, hour: hour, weather: weather, biome: biome)
                 : screen(mode: mode, appearance: appearance).ground
         }
-        let night = SceneAmbient.Period.of(hour: hour) == .night
-        let t = table(mode: mode, appearance: appearance, night: night, line: line, bodyHex: bodyHex)
+        let period = SceneAmbient.Period.of(hour: hour)
+        let night = biome.isDark(period)
+        let t = table(mode: mode, appearance: appearance, night: night, line: line, bodyHex: bodyHex,
+                      biome: biome, period: period, rain: weather == .rain)
         return t[Int(layer.rawValue)]
     }
 
@@ -391,17 +412,30 @@ enum ScenePalette {
     }
 
     /// Sky behind the scene by local hour and weather (rain overrides day and dusk).
-    static func sky(mode: ColorMode, appearance: Appearance, hour: Int, weather: SceneAmbient.Weather) -> RGB {
-        let period = SceneAmbient.Period.of(hour: hour)
-        let light = skyLight(period, rain: weather == .rain)
+    static func sky(mode: ColorMode, appearance: Appearance, hour: Int, weather: SceneAmbient.Weather,
+                    biome: Biome = .meadow) -> RGB {
+        sky(mode: mode, appearance: appearance, period: SceneAmbient.Period.of(hour: hour), rain: weather == .rain,
+            biome: biome)
+    }
+
+    /// Same, from the period and whether it rains. A biome has its own sky for every period and for rain.
+    static func sky(mode: ColorMode, appearance: Appearance, period: SceneAmbient.Period, rain: Bool,
+                    biome: Biome = .meadow) -> RGB {
+        if biome != .meadow {
+            let c = RGB(hex: biomeSkyHex(biome: biome, period: period, rain: rain))
+            guard appearance == .dark else { return c }
+            let blend = Biome.alwaysDark.contains(biome) ? 0.3 : (period == .night ? 0.4 : 0.6)
+            return c.mixed(with: screen(mode: mode, appearance: .dark).ground, blend)
+        }
+        let light = skyLight(period, rain: rain)
         guard appearance == .dark else { return light }
         if period == .night { return RGB(hex: "#1B2240") }
         return light.mixed(with: screen(mode: mode, appearance: .dark).ground, darkSkyBlend)
     }
 
     /// Fill under the ground band.
-    static func soil(mode: ColorMode, appearance: Appearance) -> RGB {
-        let light = RGB(hex: "#CDBF9E")
+    static func soil(mode: ColorMode, appearance: Appearance, biome: Biome = .meadow) -> RGB {
+        let light = biome == .meadow ? RGB(hex: "#CDBF9E") : RGB(hex: biomeSoilHex(biome))
         guard appearance == .dark else { return light }
         return light.mixed(with: screen(mode: mode, appearance: .dark).ground, 0.55)
     }

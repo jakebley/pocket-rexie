@@ -151,6 +151,70 @@ final class UIRenderTests: XCTestCase {
         return list
     }
 
+    // MARK: biomes
+
+    /// One adult of every family (and an ember spirit) at `clock`, for the biome sheets.
+    private func biomePets(at clock: Date) -> [(String, Pet)] {
+        var list: [(String, Pet)] = []
+        for fam in Species.families {
+            guard let sp = Species.all.first(where: { $0.family == fam.id && $0.stage == .adult }) else { continue }
+            let id = fam.id
+            list.append((id, pet(.adult, sp.id, at: clock, ageHours: 200) { $0.family = id }))
+        }
+        list.append(("ember", pet(.adult, "spirits_emberhorn", at: clock, ageHours: 200) { $0.family = "spirits" }))
+        return list
+    }
+
+    private func biomeTile(_ pet: Pet, clock: Date, palette: LCDPalette, side: CGFloat) -> AnyView {
+        let model = GameModel(pet: pet, persist: { _ in })
+        let view = LCDScreen(model: model, framed: true)
+            .padding(6)
+            .background(palette.background)
+            .environment(\.lcdPalette, palette)
+            .environment(\.sceneDate, clock)
+            .environment(\.displayScale, 2)
+            .frame(width: side, height: side)
+        return AnyView(view)
+    }
+
+    /// Every family's background (docs/BIOMES.md) by day and by night: a contact sheet per look plus single tiles in
+    /// Technicolor, to compare with expo-prototype/docs/screens/biomes-*.png.
+    func testRenderBiomes() {
+        let side: CGFloat = 250
+        let cols = 4
+        for (label, clock) in [("day", day), ("night", night)] {
+            let pets = biomePets(at: clock)
+            let looks: [(ColorMode, ColorScheme)] = [(.technicolor, .light), (.technicolor, .dark), (.traditional, .light)]
+            for (mode, scheme) in looks {
+                let palette = LCDStyle.palette(for: scheme, mode: mode)
+                let tiles: [AnyView] = pets.map { biomeTile($0.1, clock: clock, palette: palette, side: side) }
+                let rows = (tiles.count + cols - 1) / cols
+                let sheet = VStack(spacing: 4) {
+                    ForEach(0..<rows, id: \.self) { row in
+                        HStack(spacing: 4) {
+                            ForEach(0..<cols, id: \.self) { col in
+                                if row * cols + col < tiles.count {
+                                    tiles[row * cols + col]
+                                } else {
+                                    Color.clear.frame(width: side, height: side)
+                                }
+                            }
+                        }
+                    }
+                }
+                .background(palette.background)
+                let name = "\(mode.rawValue)-\(scheme == .dark ? "dark" : "light")-\(label)"
+                write(sheet, to: "biomes/sheet-\(name)",
+                      size: CGSize(width: side * CGFloat(cols) + 4 * CGFloat(cols - 1), height: side * CGFloat(rows) + 4 * CGFloat(rows - 1)))
+            }
+            let palette = LCDStyle.palette(for: .light, mode: .technicolor)
+            for (family, p) in pets {
+                write(biomeTile(p, clock: clock, palette: palette, side: 358), to: "biomes/tile-\(family)-\(label)",
+                      size: CGSize(width: 358, height: 358))
+            }
+        }
+    }
+
     // MARK: output
 
     private func write<V: View>(_ view: V, to relative: String, size: CGSize, scale: CGFloat = 2,

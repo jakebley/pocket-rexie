@@ -111,16 +111,20 @@ enum LCDPainter {
         }
         let cell = min(size.width, size.height) / CGFloat(grid)
         let appearance = palette.appearance
-        let night = SceneAmbient.Period.of(hour: raster.hour) == .night
-        let table = ScenePalette.table(mode: palette.mode, appearance: appearance, night: night, line: raster.line, bodyHex: raster.bodyHex)
+        let period = SceneAmbient.Period.of(hour: raster.hour)
+        // a dark backdrop (the night sky, or an always-dark biome like the workshop) flips the ink-like layers light
+        let night = raster.biome.isDark(period)
+        let table = ScenePalette.table(mode: palette.mode, appearance: appearance, night: night, line: raster.line,
+                                       bodyHex: raster.bodyHex, biome: raster.biome, period: period,
+                                       rain: raster.weather == .rain)
         if raster.hasSky {
             let ground = CGFloat(SceneRaster.groundY) * cell
             let skyRect = CGRect(x: 0, y: 0, width: cell * CGFloat(grid), height: ground)
             let soilRect = CGRect(x: 0, y: ground, width: cell * CGFloat(grid), height: cell * CGFloat(grid) - ground)
             let sky = ScenePalette.sky(mode: palette.mode, appearance: appearance, hour: raster.hour,
-                                       weather: raster.weather)
+                                       weather: raster.weather, biome: raster.biome)
             ctx.fill(Path(skyRect), with: .color(sky.color))
-            ctx.fill(Path(soilRect), with: .color(ScenePalette.soil(mode: palette.mode, appearance: appearance).color))
+            ctx.fill(Path(soilRect), with: .color(ScenePalette.soil(mode: palette.mode, appearance: appearance, biome: raster.biome).color))
             if raster.dim {
                 var both = Path()
                 both.addRect(skyRect)
@@ -136,9 +140,15 @@ enum LCDPainter {
         var groups: [RGB: Path] = [:]
         for y in 0..<grid {
             for x in 0..<grid {
-                let code = Int(raster.cells[y * grid + x])
-                if code == 0 { continue }
-                let rgb = code < table.count ? table[code] : table[Int(SceneLayer.ink.rawValue)]
+                let i = y * grid + x
+                let raw = raster.cells[i]
+                if raw == 0 { continue }
+                let code = Int(raw)
+                var rgb = code < table.count ? table[code] : table[Int(SceneLayer.ink.rawValue)]
+                // lights off: the dither also darkens scenery (it is unlit in Traditional, so it was marked like the sky)
+                if raster.dim && raster.shade[i] && SceneLayer.isScenery(raw) {
+                    rgb = rgb.mixed(with: ScenePalette.dimInk, ScenePalette.dimDither)
+                }
                 groups[rgb, default: Path()].addRect(pixelRect(x, y, cell))
             }
         }

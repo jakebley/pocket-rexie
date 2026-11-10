@@ -64,8 +64,24 @@ enum SceneLayer: UInt8, CaseIterable {
     /// tiny specular glint / sheen
     case glint = 39
 
-    // Codes 40...86 are reserved for the biome cues and scenery (Expo `Layer.WAVE`...`LEAF_BIG`); a later
-    // change adds them here with the same numbers. Until then their table entries are plain ink.
+    // MARK: biome cues (Traditional prints these as ink: a few pixels each)
+
+    /// fish: surface wave line
+    case wave = 40
+    /// bunny: burrow mouth outline
+    case hole = 41
+    /// dragon: a small far peak outline
+    case peak = 42
+
+    // MARK: biome scenery (Technicolor only: Traditional draws these as unlit). Numbers match `Layer` in layers.ts.
+
+    case bark = 43, canopy = 44, litter = 45, moss = 46, shroom = 47, firefly = 48, fern = 49
+    case waterLight = 50, airBubble = 51, seaweed = 52, coralA = 53, coralB = 54, sand = 55
+    case hill = 56, wall = 57, roof = 58, window = 59, wood = 60, yarn = 61
+    case twinkle = 62, cloudShade = 63, ember = 64, ash = 65, rock = 66, crag = 67, cave = 68, lava = 69
+    case gridline = 70, panel = 71, gear = 72, ledA = 73, ledB = 74, screen = 75, cable = 76
+    case stalac = 77, glowShroom = 78, puddle = 79, dew = 80
+    case burrow = 81, clover = 82, carrot = 83, daisy = 84, daisyC = 85, leafBig = 86
 
     // MARK: pet eyes (Technicolor only, like scenery: Traditional leaves the unlit eye hole unlit)
 
@@ -74,16 +90,25 @@ enum SceneLayer: UInt8, CaseIterable {
     /// catch-light in the pupil
     case eyeShine = 88
 
+    // MARK: space biome (aliens): starfield, planet, moon pits, glowing crystals, saucer hull
+
+    case starfield = 89, planet = 90, planetShade = 91, crater = 92, crystal = 93, hull = 94
+
     /// First biome-scenery code. Codes from here up are Technicolor-only: Traditional draws them unlit
     /// (the biome cue codes 40...42 are below it and print as ink, like the Expo `SCENERY_FROM`).
     static let sceneryFrom: UInt8 = 43
 
     /// Highest code in use; color tables have `maxCode + 1` entries.
-    static let maxCode: UInt8 = 88
+    static let maxCode: UInt8 = 94
 
     /// Does Traditional mode draw this code? (Every shared layer, the pet shading layers and the cues: yes, as
     /// ink. Scenery and the eye fills: no, they print as unlit.) Mirrors `tradVisible` in layers.ts.
     static func isTraditionalLit(_ code: UInt8) -> Bool { code != 0 && code < sceneryFrom }
+
+    /// Biome scenery: the codes Traditional leaves unlit and the pet-ring clear removes (not the cues, not the pet's eye fills).
+    static func isScenery(_ code: UInt8) -> Bool {
+        code >= sceneryFrom && code != SceneLayer.eyeFill.rawValue && code != SceneLayer.eyeShine.rawValue
+    }
 
     /// Codes a pet sprite can carry (the scenery must never overwrite these).
     var isPetLayer: Bool {
@@ -138,6 +163,8 @@ struct SceneRaster: Equatable {
     var bodyHex: String?
     /// Lights off: the sky is darkened and `shade` marks the dither.
     var dim = false
+    /// The family's background (docs/BIOMES.md): re-colours the shared layers and picks the sky and soil in Technicolor.
+    var biome: Biome = .meadow
 
     /// Lit cells in Traditional (any layer it draws), the one-bit picture of old. Technicolor-only codes
     /// (eye fills, scenery) are unlit here.
@@ -194,6 +221,63 @@ struct SceneRaster: Equatable {
             }
         }
     }
+
+    /// Keeps biome scenery off the pet (Expo `drawPet`): clears scenery in a 1px ring around the silhouette, and the
+    /// scenery plus the sky glyphs (cloud, sun...) inside the silhouette's row spans, so nothing shows through an eye
+    /// hole. `rows` are the unmirrored sprite rows (`mirror` as for `drawPet`). Call before `drawPet`; not for the meadow.
+    mutating func clearAroundPet(_ rows: [String], x: Int, y: Int, mirror: Bool) {
+        let h = rows.count
+        guard h > 0 else { return }
+        let width = rows[0].utf8.count
+        let mark = UInt8(ascii: "X")
+        var lo = [Int](repeating: -1, count: h)
+        var hi = [Int](repeating: -1, count: h)
+        for j in 0..<h {
+            var first = -1, last = -1
+            var c = 0
+            for ch in rows[j].utf8 {
+                if ch == mark {
+                    if first < 0 { first = c }
+                    last = c
+                }
+                c += 1
+            }
+            if first >= 0 {
+                lo[j] = mirror ? width - 1 - last : first
+                hi[j] = mirror ? width - 1 - first : last
+            }
+        }
+        let side = SceneRaster.side
+        for j in -1...h {
+            var l = Int.max, hh = -1
+            for k in (j - 1)...(j + 1) where k >= 0 && k < h && hi[k] >= 0 {
+                l = min(l, lo[k]); hh = max(hh, hi[k])
+            }
+            if hh < 0 { continue }
+            let yy = y + j
+            if yy < 0 || yy >= side { continue }
+            let xa = max(0, x + l - 1), xb = min(side - 1, x + hh + 1)
+            if xa > xb { continue }
+            for xx in xa...xb where SceneLayer.isScenery(cells[yy * side + xx]) { cells[yy * side + xx] = 0 }
+        }
+        for j in 0..<h where hi[j] >= 0 {
+            let yy = y + j
+            if yy < 0 || yy >= side { continue }
+            let xa = max(0, x + lo[j]), xb = min(side - 1, x + hi[j])
+            if xa > xb { continue }
+            for xx in xa...xb {
+                let code = cells[yy * side + xx]
+                if SceneLayer.isScenery(code) || SceneRaster.skyCodes.contains(code) { cells[yy * side + xx] = 0 }
+            }
+        }
+    }
+
+    /// Sky glyphs and biome cues a pet's silhouette clears behind it (besides scenery).
+    private static let skyCodes: Set<UInt8> = [
+        SceneLayer.sun.rawValue, SceneLayer.moon.rawValue, SceneLayer.star.rawValue, SceneLayer.cloud.rawValue,
+        SceneLayer.rain.rawValue, SceneLayer.butterfly.rawValue,
+        SceneLayer.wave.rawValue, SceneLayer.hole.rawValue, SceneLayer.peak.rawValue,
+    ]
 
     /// Clears a rectangle (used to keep the HUD and bubbles legible over the scene).
     mutating func knockout(x: Int, y: Int, w: Int, h: Int) {
@@ -328,6 +412,8 @@ struct SceneRenderOptions {
     var calendar = Calendar.current
     /// Rows drawn in place of the pet sprite (the hatching crack frame).
     var spriteOverride: [String]?
+    /// Draw this background instead of the pet's family biome (tests and previews).
+    var biome: Biome?
 }
 
 enum SceneRenderer {
@@ -352,13 +438,25 @@ enum SceneRenderer {
         r.weather = amb.weather
         r.line = lineOf(pet)
         r.bodyHex = bodyHexOf(pet)
+        let biome = options.biome ?? Biome.of(pet)
+        r.biome = biome
 
         let place = placement(pet: pet, state: state, frame: frame, motion: motion,
                               override: options.spriteOverride)
         let bubble = bubbleLayout(pet: pet, place: place)
 
+        let rain = amb.weather == .rain
+        if biome != .meadow {
+            let live = BiomeLive(tick: motion ? Int((t * 8).rounded(.down)) : 0, seconds: motion ? t : 0,
+                                 seed: Int(pet.seed % 4096), rain: rain)
+            BiomeDraw.backdrop(into: &r, biome: biome, period: amb.period, live: live)
+        }
         drawSky(&r, amb: amb, seed: pet.seed, t: t, frame: frame, motion: motion, avoid: bubble?.avoidRect)
         drawGround(&r, seed: pet.seed, frame: frame, motion: motion)
+        if biome != .meadow {
+            BiomeDraw.fore(into: &r, biome: biome, period: amb.period, rain: rain)
+            r.clearAroundPet(place.rows, x: place.x, y: place.top, mirror: place.mirror)
+        }
 
         if pet.stage == .ghost || pet.stage == .egg {
             r.drawPet(place.rows, x: place.x, y: place.top, mirror: place.mirror, family: "")
