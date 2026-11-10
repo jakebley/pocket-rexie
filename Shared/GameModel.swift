@@ -280,6 +280,11 @@ final class GameModel: ObservableObject {
 
     // MARK: menu actions
 
+    /// Hold on an icon: say what it does without doing it.
+    func describe(_ icon: MenuIcon) {
+        say(icon.help, seconds: 4.5)
+    }
+
     func perform(_ icon: MenuIcon) {
         selected = icon
         switch icon {

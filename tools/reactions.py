@@ -145,7 +145,7 @@ KIND_LINES = {
     'dormouse': ['{n} yawns, half asleep.', '{n} curls into a ball.', '{n} blinks sleepily.'],
     'wyrmling': ['{n} sneezes a puff of smoke.', '{n} chirps and flaps.', '{n} nips your finger. Gently.'],
     'westdragon': ['{n} flaps and puffs smoke.', '{n} spreads its wings.', '{n} rumbles proudly.'],
-    'eastdragon': ['{n} coils around your finger.', '{n} drifts like a ribbon.', '{n} blows a little cloud.'],
+    'eastdragon': ['{n} coils around you.', '{n} drifts like a ribbon.', '{n} blows a little cloud.'],
     'hoarder': ['{n} guards you like treasure.', '{n} counts its shiny things.', '{n} hugs a gem.'],
     'lizard': ['{n} hisses, then leans in.', '{n} flicks its tongue.', '{n} basks in your attention.'],
     'wyvern': ['{n} screeches and flaps.', '{n} hangs from your finger.', '{n} swoops a little loop.'],
@@ -214,13 +214,13 @@ KIND_LINES = {
 
 # context lines apply to everyone (kind lines still mix in)
 CONTEXT = {
-    'sick': ['{n} looks unwell.', '{n} leans on you, weakly.'],
-    'hungry': ['{n} nuzzles you, then looks hungry.', "{n}'s tummy growls."],
-    'dirty': ['{n} sniffs. Time to clean up.', '{n} wrinkles its nose at the mess.'],
-    'heavy': ['{n} puffs a little. Play time?', '{n} is happy but a bit round.'],
-    'sad': ['{n} leans on your finger.', '{n} wants a little more company.'],
+    'sick': ['{n} looks unwell.', '{n} leans on you, weak.'],
+    'hungry': ["{n}'s tummy growls.", '{n} looks hungry.'],
+    'dirty': ['{n} sniffs. Clean up?', '{n} hates the mess.'],
+    'heavy': ['{n} puffs. Play time?', '{n} is a bit round.'],
+    'sad': ['{n} leans on you.', '{n} wants company.'],
     'stray': ['{n} flinches, then relaxes.', '{n} stays close to you.'],
-    'ultimate': ['{n} carries itself with pride.', '{n} remembers every meal.'],
+    'ultimate': ['{n} stands proud.', '{n} remembers it all.'],
 }
 
 # a few species with a line of their own (id -> lines)

@@ -503,13 +503,13 @@ struct Pet: Codable, Equatable {
         return "\(name) looks confused"
     }
 
-    mutating func pet() -> String {
+    mutating func pet(step: Int? = nil) -> String {
         guard canAct else { return "..." }
         modified = lastTick
         petProgress += 1
         smarts = min(100, smarts + 1); stageSmarts += 1
         if petProgress >= 3 { petProgress = 0; if happy < Pet.maxHearts { happy += 1 } }
-        return "\(name) purrs. Dinos can purr."
+        return Reactions.line(for: self, step: step)
     }
 
     mutating func toggleLight() -> String {

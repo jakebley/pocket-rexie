@@ -15,27 +15,27 @@ extension MenuIcon {
                 "..XXXX..",
                 "..X..X..",
             ]
-        case .light:  // bulb
+        case .light:  // bulb outline
             return [
                 "..XXXX..",
-                ".XXXXXX.",
-                ".XXXXXX.",
-                ".XXXXXX.",
+                ".X....X.",
+                ".X....X.",
+                ".X....X.",
+                "..X..X..",
                 "..XXXX..",
-                "...XX...",
-                "..XXXX..",
+                "..X..X..",
                 "...XX...",
             ]
-        case .play:  // ball
+        case .play:  // game controller
             return [
-                "..XXXX..",
-                ".X.XX.X.",
-                "X..XX..X",
+                "........",
+                ".XXXXXX.",
+                "XX.XXXXX",
+                "X...XX.X",
+                "XX.XX.XX",
                 "XXXXXXXX",
-                "XXXXXXXX",
-                "X..XX..X",
-                ".X.XX.X.",
-                "..XXXX..",
+                "XX....XX",
+                "........",
             ]
         case .train:  // dumbbell
             return [
@@ -61,14 +61,14 @@ extension MenuIcon {
             ]
         case .clean:  // broom
             return [
-                ".....XX.",
-                "....XX..",
                 "...XX...",
-                "..XXX...",
-                ".XXXXX..",
-                "XXXXXXX.",
-                "XXXXXXX.",
-                "X.X.X.X.",
+                "...XX...",
+                "...XX...",
+                "...XX...",
+                "..XXXX..",
+                ".XXXXXX.",
+                "XXXXXXXX",
+                "X.X..X.X",
             ]
         case .climate:  // thermometer
             return [
@@ -114,6 +114,27 @@ extension MenuIcon {
                 "XX.XX.XX",
                 "XXXXXXXX",
             ]
+        }
+    }
+}
+
+extension MenuIcon {
+    /// Short printed name under the icon (pixel font, uppercase).
+    var label: String { title.uppercased() }
+
+    /// What the icon does; shown in the message line when the icon is held down. Same texts as the Expo build.
+    var help: String {
+        switch self {
+        case .feed: return "FEED: meal or snack. Fills hunger."
+        case .light: return "LIGHT: turn the lights off so it can sleep."
+        case .play: return "PLAY: guess game. Makes it happy."
+        case .train: return "TRAIN: exercise. Gets stronger, burns weight."
+        case .medicine: return "MEDICINE: cures a sick pet."
+        case .clean: return "CLEAN: wipe up the poop."
+        case .climate: return "CLIMATE: fix hot or cold."
+        case .scold: return "SCOLD: only when it is being naughty."
+        case .battle: return "BATTLE: fight for wins."
+        case .stats: return "STATS: hunger, mood and growth."
         }
     }
 }
