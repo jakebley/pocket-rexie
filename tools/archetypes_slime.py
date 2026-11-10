@@ -487,6 +487,105 @@ ARCH_SLIME = {
 }
 spritegen.register_archetypes(ARCH_SLIME)
 
+
+# ======================================================================================================
+# Second pass: hand-built native 16x16 bodies for the weakest slimes. Faces are two eye holes on one row.
+# ======================================================================================================
+import math as _m
+class _H:
+    def __init__(self): self.p = [[0] * 16 for _ in range(16)]; self.eyes = []
+    def px(self, x, y, v=1):
+        x, y = int(round(x)), int(round(y))
+        if 0 <= x < 16 and 0 <= y < 16: self.p[y][x] = v
+    def ell(self, cx, cy, rx, ry, v=1):
+        for y in range(16):
+            for x in range(16):
+                if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0: self.p[y][x] = v
+    def rect(self, x0, y0, x1, y1, v=1):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1): self.px(x, y, v)
+    def line(self, x0, y0, x1, y1, v=1):
+        n = int(max(abs(x1 - x0), abs(y1 - y0)) * 2) + 1
+        for i in range(n + 1): self.px(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, v)
+    def half(self, rows):
+        """rows: 16 strings of 8 columns (the left half), mirrored"""
+        for y, r in enumerate(rows):
+            assert len(r) == 8, (y, r)
+            for x, c in enumerate(r):
+                if c == '#': self.px(x, y); self.px(15 - x, y)
+    def eye_pair(self, y, x0, x1):
+        self.eyes = [(x0, y), (x1, y)]
+        for x in (x0, x1): self.px(x, y, 0)
+    def rows(self):
+        return [''.join('X' if v else '.' for v in r) for r in self.p]
+
+_HSL = {}
+def _reg(name, stage, g, head):
+    """register a hand-built slime body as archetype slime_h_<name> for one stage"""
+    ex, ey = g.eyes[0]
+    _HSL.setdefault('slime_h_' + name, {'by_stage': {}})['by_stage'][stage] = dict(rows=g.rows(), head=head, eye=(ex, ey), body=(3, 12))
+
+# Custardine: a flan on a visible plate: a caramel cap that overhangs the pudding, a wide rim of plate
+g = _H()
+g.half(["........", "........", "........", "........", "........", "...#####", "...#####", "...#....",
+        "...#####", "...#####", "...###.#", "..######", "..######", "..######", "........", "........"])
+for x in range(3, 13): g.px(x, 14)
+g.rect(0, 14, 1, 14); g.rect(14, 14, 15, 14); g.rect(0, 15, 15, 15)
+g.eye_pair(10, 6, 9)
+_reg('custardine', 4, g, (7.5, 8.0, 3.0))
+
+# Aspic Regent: a tall fluted jelly mould with a crown
+g = _H()
+g.half(["........", "....#.#.", "....####", "....####", "...#####", "...#####", "...#.###", "...#.###",
+        "...#.###", "...#.###", "...#.###", "...#.###", "...#.###", "..######", "..######", ".#######"])
+g.eye_pair(8, 6, 9)
+_reg('aspic', 5, g, (7.5, 8.0, 2.6))
+
+# Mycelord: a big mushroom: round spotted cap, gills, thick stalk, small mushrooms at the sides
+g = _H()
+g.half(["........", ".....###", "...#####", "..######", ".#######", ".#######", ".###.###", ".###.###",
+        ".#######", "..#.#.##", "......##", ".###..##", "####..##", ".###..##", "..#...##", "..######"])
+g.eye_pair(4, 6, 9)
+_reg('mycelord', 5, g, (7.5, 4.0, 3.0))
+
+# Wobble: a round, plump jelly, a little squashed at the base so it looks mid-wobble
+g = _H()
+g.ell(7.5, 9.6, 5.8, 5.2)
+g.ell(7.5, 12.6, 6.2, 2.2)
+g.eye_pair(9, 6, 9)
+_reg('wobble', 3, g, (7.5, 8.0, 3.2))
+
+# Ooze: a slumped heap: the tip has flopped over to the right and hangs, dripping
+g = _H()
+g.ell(5.0, 11.2, 4.8, 3.8)
+g.ell(5.2, 8.0, 3.6, 3.4)
+g.ell(7.6, 5.4, 2.6, 2.2)
+g.ell(10.6, 5.6, 2.4, 2.0)
+g.ell(12.4, 7.8, 1.7, 2.4)
+g.rect(13, 10, 13, 12); g.rect(13, 13, 14, 13)           # the drip with a bulb
+g.ell(5.6, 14.2, 5.6, 1.1)
+g.eye_pair(10, 3, 6)
+_reg('ooze', 4, g, (5.4, 8.0, 3.2))
+
+# Hoardmaw: a chest mimic: a domed lid with the eyes, one big mouth with two fangs, a wider body with a keyhole
+g = _H()
+g.half(["........", "....####", "...#####", "..######", "..#####.", "..######", "..######", "..######",
+        ".#######", ".##.#...", ".##.#...", ".##.....", ".#######", ".#######", ".##.....", ".###...."])
+g.rect(6, 4, 9, 4); g.eye_pair(4, 6, 9)
+for x in (6, 9): g.px(x, 11)
+g.px(7, 13, 0); g.px(8, 13, 0)    # keyhole
+_reg('hoardmaw', 5, g, (7.5, 4.0, 4.0))
+
+# Gazeroot: an ancient mossy trunk with antlers, root feet and a thin solid halo ring
+g = _H()
+g.half(["....####", "...#....", "...#....", "....####", "#.#.....", ".##..###", "..######", "..######",
+        "..######", "..######", "..######", "..######", "..######", "..######", ".##.####", ".#..#..#"])
+g.eye_pair(8, 6, 9)
+for x in (6, 7, 8, 9): g.px(x, 11, 0)
+_reg('gazeroot', 5, g, (7.5, 8.0, 3.0))
+
+spritegen.register_archetypes(_HSL)
+
 # ---- decorations -------------------------------------------------------------------------
 def _bb(g):
     pts = [(x, y) for y in range(16) for x in range(16) if g.get(x, y)]

@@ -66,6 +66,7 @@ KIND_OF = {
     'slime_heart': 'twin', 'slime_twin2': 'twin', 'slime_stalk': 'stalk', 'slime_stalk3': 'stalk', 'slime_root': 'stalk', 'slime_shell': 'snail',
     'slime_shell2': 'snail', 'slime_jelly': 'sjelly', 'slime_bell': 'sjelly', 'slime_ribbon': 'sjelly', 'slime_ghost': 'sghost', 'slime_ghost2': 'sghost',
     'slime_ghost3': 'sghost', 'slime_wraith': 'sghost', 'slime_candle': 'melt', 'slime_slump': 'melt', 'slime_mimic': 'mimic', 'slime_mimic2': 'mimic',
+    'slime_h_custardine': 'gel', 'slime_h_aspic': 'gel', 'slime_h_mycelord': 'shroom', 'slime_h_wobble': 'jiggle', 'slime_h_ooze': 'melt', 'slime_h_hoardmaw': 'mimic', 'slime_h_gazeroot': 'stalk',
     # bug
     'bug_egg': 'bugegg', 'bug_nub': 'larva', 'bug_larva': 'larva', 'bug_fatgrub': 'larva', 'bug_pill': 'pill', 'bug_pupa': 'pupa', 'bug_flutter': 'butterfly',
     'bug_swallow': 'butterfly', 'bug_skimmer': 'dragonfly', 'bug_dragon': 'dragonfly', 'bug_fuzzmoth': 'moth', 'bug_moth': 'moth', 'bug_lady': 'ladybug',

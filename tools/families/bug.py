@@ -103,3 +103,6 @@ EVO = {
  'bug_scurry':    [('bug_ghostmoth', {})],
 }
 BABIES = ['bug_speck', 'bug_nub']
+
+# ladybugs are red
+COLOR_OVERRIDES = {'bug_domeling': '#C8463C', 'bug_dotty': '#C8463C'}
