@@ -6,6 +6,9 @@ Keep every line short (about 32 characters with a 10-letter name) and in the pet
 KIND_OF = {
     # dino
     'trex': 'dino_trex', 'bronto': 'dino_bronto', 'trike': 'dino_trike', 'raptor': 'dino_raptor', 'ankylo': 'dino_ankylo', 'stego': 'dino_stego',
+    'raptor_s': 'dino_raptor', 'hadro': 'dino_raptor', 'therizino': 'dino_raptor', 'gobbo': 'dino_raptor', 'flyer': 'dino_raptor', 'wizard': 'dino_raptor',
+    'bronto_l': 'dino_bronto', 'sitter': 'dino_bronto', 'ankylo_s': 'dino_ankylo', 'fortress': 'dino_ankylo', 'stego_p': 'dino_stego', 'brawler': 'dino_stego',
+    'frilled': 'dino_trex', 'pip': 'baby', 'nubb': 'baby',
     # fox
     'fox_scamp': 'fox', 'fox_bramble': 'fox', 'fox_ashpaw': 'fox', 'fox_tracker': 'fox', 'fox_prowler': 'fox', 'fox_sneak': 'fox',
     'fox_thicket': 'fox', 'fox_whisk': 'fox', 'fox_bracken': 'fox', 'fox_scrabble': 'fox', 'fox_tatter': 'fox', 'fox_stalker': 'fox',
