@@ -159,7 +159,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
             }} style={[StyleSheet.absoluteFill, touchStyle]} />
             {rows.map((r, i) => (
               <Pressable key={i} accessibilityLabel={`Game option ${i + 1}`} onPress={() => game.tapGamePick(i)}
-                style={{ position: 'absolute', left: 0, width: size, top: (r.y - 1) * c, height: (r.h + 2) * c, ...touchStyle }} />
+                style={{ position: 'absolute', left: (r.x ?? 0) * c, width: (r.w ?? 64) * c, top: (r.y - 1) * c, height: (r.h + 2) * c, ...touchStyle, ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}) }} />
             ))}
           </>
         );

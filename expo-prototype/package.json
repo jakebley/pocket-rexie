@@ -35,7 +35,8 @@
     "test:shading": "tsx test/shading.ts",
     "test:minigames": "tsx test/minigames.ts",
     "test:dash": "tsx test/dash.ts",
-    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading && npm run test:minigames && npm run test:dash",
+    "test:echo": "tsx test/echo.ts",
+    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading && npm run test:minigames && npm run test:dash && npm run test:echo",
     "lint": "eslint .",
     "test:balance": "tsx test/balance.ts 20"
   },
