@@ -151,6 +151,9 @@ enum ScenePalette {
         case .butterfly: hex = "#C98AA0"
         case .alert: hex = "#B8392E"
         case .off, .body, .bodyLight: return nil
+        // pet shading and eyes: derived from the body color in `table` (shadeRamp); these are placeholders
+        case .shade, .deep, .belly, .accent, .accentDark, .accentLight, .rim, .eye, .glint,
+             .eyeFill, .eyeShine: return nil
         }
         return RGB(hex: hex)
     }
@@ -203,9 +206,7 @@ enum ScenePalette {
     private static let darkSkyBlend = 0.68
     private static let darkBodyBlend = 0.44
     private static let darkBodyBlendBaby = 0.62
-    private static let bodyLightTint = 0.3
     private static let rimLight = RGB(hex: "#E4DCC4")
-    private static let white = RGB(hex: "FFFFFF")
 
     /// Lights-off darkening: the whole sky, and the extra dither, blend toward this near-black.
     static let dimInk = RGB(hex: "#0B0D18")
@@ -215,7 +216,7 @@ enum ScenePalette {
     // MARK: tables
 
     /// Number of entries in a color table: index = layer code, 0 is the screen ground.
-    static let tableSize = SceneLayer.allCases.count
+    static let tableSize = Int(SceneLayer.maxCode) + 1
 
     /// Layer-indexed colors for one context. Traditional: every lit layer is the ink.
     /// `night` is whether the scene sky is the night sky (it flips ink-like layers light in the light appearance).
@@ -246,8 +247,121 @@ enum ScenePalette {
         if night, !dark, RGB.contrast(t[bodyIndex], rimLight) >= 3 {
             t[Int(SceneLayer.outline.rawValue)] = rimLight
         }
-        t[Int(SceneLayer.bodyLight.rawValue)] = t[bodyIndex].mixed(with: white, dark ? 0.18 : bodyLightTint)
+        // Pet shading ramp, all derived from the body color (shadeRamp), and the eyes (port of palette.ts).
+        let ramp = shadeRamp(body: t[bodyIndex], dark: dark)
+        t[Int(SceneLayer.bodyLight.rawValue)] = ramp.hi
+        t[Int(SceneLayer.shade.rawValue)] = ramp.shade
+        t[Int(SceneLayer.deep.rawValue)] = ramp.deep
+        t[Int(SceneLayer.belly.rawValue)] = ramp.belly
+        t[Int(SceneLayer.accent.rawValue)] = ramp.accent
+        t[Int(SceneLayer.accentDark.rawValue)] = ramp.accentDark
+        t[Int(SceneLayer.accentLight.rawValue)] = ramp.accentLight
+        t[Int(SceneLayer.glint.rawValue)] = ramp.glint
+        // eyes: an opaque dark pupil with a bright catch-light; on a very dark body the ring around it turns cream
+        let pupil = dark ? RGB(hex: "#12141F") : RGB(hex: "#1E2030")
+        t[Int(SceneLayer.eyeFill.rawValue)] = pupil
+        t[Int(SceneLayer.eyeShine.rawValue)] = RGB(hex: "#FFFBEA")
+        t[Int(SceneLayer.eye.rawValue)] = t[bodyIndex].luminance < 0.09 ? rimLight : pupil
+        // rim light: the outline on the lit side. On a dark sky it glows; on a light sky it is the ink softened toward the body.
+        let outline = t[Int(SceneLayer.outline.rawValue)]
+        if dark || night {
+            t[Int(SceneLayer.rim.rawValue)] = outline.mixed(with: ramp.hi, 0.3).mixed(with: RGB(hex: "#FFF8E4"), 0.4)
+        } else {
+            t[Int(SceneLayer.rim.rawValue)] = outline.mixed(with: t[bodyIndex], 0.12)
+        }
         return t
+    }
+
+    // MARK: shading ramp (port of shadeRamp in palette.ts)
+
+    struct ShadeRamp {
+        let hi: RGB
+        let shade: RGB
+        let deep: RGB
+        let belly: RGB
+        let accent: RGB
+        let accentDark: RGB
+        let accentLight: RGB
+        let glint: RGB
+    }
+
+    private static func toHSL(_ c: RGB) -> (h: Double, s: Double, l: Double) {
+        let r = Double(c.r) / 255, g = Double(c.g) / 255, b = Double(c.b) / 255
+        let mx = max(r, g, b), mn = min(r, g, b)
+        let l = (mx + mn) / 2, d = mx - mn
+        if d == 0 { return (0, 0, l) }
+        let sat = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn)
+        var hue: Double
+        if mx == r {
+            hue = (g - b) / d + (g < b ? 6 : 0)
+        } else if mx == g {
+            hue = (b - r) / d + 2
+        } else {
+            hue = (r - g) / d + 4
+        }
+        hue *= 60
+        return (hue, sat, l)
+    }
+
+    private static func fromHSL(_ hue: Double, _ s: Double, _ l: Double) -> RGB {
+        var hn = (hue.truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) / 360
+        if hn < 0 { hn += 1 }
+        let q = l < 0.5 ? l * (1 + s) : l + s - l * s
+        let p = 2 * l - q
+        func f(_ t0: Double) -> Double {
+            let t = (t0 + 1).truncatingRemainder(dividingBy: 1)
+            if t < 1.0 / 6 { return p + (q - p) * 6 * t }
+            if t < 1.0 / 2 { return q }
+            if t < 2.0 / 3 { return p + (q - p) * (2.0 / 3 - t) * 6 }
+            return p
+        }
+        func byte(_ v: Double) -> Int { Int((v * 255).rounded()) }
+        return RGB(r: byte(f(hn + 1.0 / 3)), g: byte(f(hn)), b: byte(f(hn - 1.0 / 3)))
+    }
+
+    /// Move hue `a` toward `b` by at most `deg` along the short way.
+    private static func hueToward(_ a: Double, _ b: Double, _ deg: Double) -> Double {
+        let d = (b - a + 540).truncatingRemainder(dividingBy: 360) - 180
+        return a + max(-deg, min(deg, d))
+    }
+
+    private static func clamp01(_ v: Double) -> Double { max(0, min(1, v)) }
+
+    /// Push `c` toward `toward` (up to 8 steps) until it is at least `ratio` away from `ref` by contrast.
+    private static func step(_ c0: RGB, ref: RGB, ratio: Double, toward: RGB) -> RGB {
+        var c = c0
+        let lr = ref.luminance
+        let lighter = toward.luminance > lr
+        var i = 0
+        while i < 8 {
+            let lc = c.luminance
+            let short = lighter ? lc < (lr + 0.05) * ratio - 0.05 : lc > (lr + 0.05) / ratio - 0.05
+            if !short { break }
+            c = c.mixed(with: toward, 0.14)
+            i += 1
+        }
+        return c
+    }
+
+    /// Four-tone body ramp (highlight warm and light, base, shadow cool and darker, deep underside) plus belly
+    /// and accent tones, all derived from one body color. Hue shifts, not just darkening.
+    static func shadeRamp(body: RGB, dark: Bool) -> ShadeRamp {
+        let (h, s, l) = toHSL(body)
+        let gray = s < 0.12 // neutral bodies keep a neutral ramp but still lean warm / cool
+        let hiRaw = fromHSL(hueToward(h, 48, 12), clamp01(s * 0.92), clamp01(l + (dark ? 0.1 : 0.12)))
+        let hi = step(hiRaw, ref: body, ratio: 1.14, toward: RGB(hex: "#FFFAE6"))
+        let shadeRaw = fromHSL(hueToward(h, 252, 12), min(0.6, clamp01(s * 0.92 + (gray ? 0.04 : 0))), clamp01(l * 0.8))
+        let shade = step(shadeRaw, ref: body, ratio: 1.2, toward: RGB(hex: "#1C1830"))
+        let deepRaw = fromHSL(hueToward(h, 258, 22), min(0.46, clamp01(s * 0.8 + 0.03)), clamp01(l * 0.62))
+        let deep = step(deepRaw, ref: shade, ratio: 1.22, toward: RGB(hex: "#1C1830"))
+        let belly = body.mixed(with: RGB(hex: "#F6EBCB"), dark ? 0.42 : 0.55).mixed(with: hi, 0.15)
+        let ah = h < 200 ? h + 34 : h - 34
+        let accL = clamp01(min(0.58, max(0.36, l + (l > 0.5 ? -0.06 : 0.06))))
+        let accent = fromHSL(ah, clamp01(max(s * 0.95, 0.34)), accL)
+        let accentDark = deep.mixed(with: body, 0.3)
+        let accentLight = body.mixed(with: RGB(hex: dark ? "#E4DCC4" : "#F7EDD2"), dark ? 0.62 : 0.78)
+        return ShadeRamp(hi: hi, shade: shade, deep: deep, belly: belly, accent: accent, accentDark: accentDark,
+                         accentLight: accentLight, glint: RGB(hex: dark ? "#E8E0CC" : "#FFFBEA"))
     }
 
     /// Color of one lit layer. `.off` is the unlit pixel: the scene sky in Technicolor (for the hour and

@@ -91,7 +91,7 @@ enum LCDPainter {
         for y in 0..<grid {
             for x in 0..<grid {
                 let i = y * grid + x
-                if shade ? raster.shade[i] : raster.cells[i] != 0 {
+                if shade ? raster.shade[i] : SceneLayer.isTraditionalLit(raster.cells[i]) {
                     path.addRect(pixelRect(x, y, cell))
                 }
             }
