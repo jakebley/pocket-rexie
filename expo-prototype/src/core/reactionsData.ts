@@ -729,7 +729,7 @@ export const REACTIONS = {
    "{n} rumbles proudly."
   ],
   "eastdragon": [
-   "{n} coils around your finger.",
+   "{n} coils around you.",
    "{n} drifts like a ribbon.",
    "{n} blows a little cloud."
   ],
@@ -1057,31 +1057,31 @@ export const REACTIONS = {
  "context": {
   "sick": [
    "{n} looks unwell.",
-   "{n} leans on you, weakly."
+   "{n} leans on you, weak."
   ],
   "hungry": [
-   "{n} nuzzles you, then looks hungry.",
-   "{n}'s tummy growls."
+   "{n}'s tummy growls.",
+   "{n} looks hungry."
   ],
   "dirty": [
-   "{n} sniffs. Time to clean up.",
-   "{n} wrinkles its nose at the mess."
+   "{n} sniffs. Clean up?",
+   "{n} hates the mess."
   ],
   "heavy": [
-   "{n} puffs a little. Play time?",
-   "{n} is happy but a bit round."
+   "{n} puffs. Play time?",
+   "{n} is a bit round."
   ],
   "sad": [
-   "{n} leans on your finger.",
-   "{n} wants a little more company."
+   "{n} leans on you.",
+   "{n} wants company."
   ],
   "stray": [
    "{n} flinches, then relaxes.",
    "{n} stays close to you."
   ],
   "ultimate": [
-   "{n} carries itself with pride.",
-   "{n} remembers every meal."
+   "{n} stands proud.",
+   "{n} remembers it all."
   ]
  },
  "speciesLines": {

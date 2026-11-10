@@ -136,26 +136,8 @@ struct ContentView: View {
     private func iconRow(_ icons: [MenuIcon], layout: Layout) -> some View {
         HStack(spacing: 0) {
             ForEach(icons) { icon in
-                let isSelected = model.selected == icon
-                Button {
-                    Haptics.tap()
-                    Beeper.shared.blip()
-                    model.perform(icon)
-                } label: {
-                    PixelGlyphView(rows: icon.glyph, pixel: layout.glyphPixel,
-                                   color: isSelected ? palette.background : palette.ink)
-                        .frame(maxWidth: .infinity, minHeight: layout.rowHeight, maxHeight: layout.rowHeight)
-                        .background(
-                            Rectangle()
-                                .fill(isSelected ? palette.ink : Color.clear)
-                                .padding(2)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(icon.title)
-                .accessibilityIdentifier("menu-" + icon.title.lowercased())
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
+                IconTile(icon: icon, selected: model.selected == icon, layout: layout,
+                         palette: palette, model: model)
             }
         }
         .frame(width: layout.side)
@@ -197,6 +179,8 @@ private struct Layout {
     static let controlGap: CGFloat = 10
     static let bottomPad: CGFloat = 8
     static let baseRow: CGFloat = 48
+    /// Longest icon label (MEDICINE) in font pixels.
+    static let labelFontWidth: CGFloat = 31
     static let baseMessage: CGFloat = 40
     static let baseButton: CGFloat = 64
     static let maxGrow: CGFloat = 120
@@ -206,19 +190,82 @@ private struct Layout {
     let messageHeight: CGFloat
     let buttonHeight: CGFloat
     let glyphPixel: CGFloat
+    /// Pixel size of the icon labels, a half-pixel step so MEDICINE fits the tile.
+    let labelPixel: CGFloat
+    /// Height taken by a label and its gap.
+    let labelBlock: CGFloat
+
+    /// Label pixel size in half steps so the longest label (MEDICINE) fits a tile of this width.
+    static func fitLabel(tileWidth: CGFloat) -> CGFloat {
+        let fit: CGFloat = ((tileWidth - 8) / Layout.labelFontWidth * 2).rounded(.down) / 2
+        return min(3, max(1, fit))
+    }
 
     init(size: CGSize) {
         // top bar, two icon rows, message, controls, five gaps, bottom padding and a little slack
-        let fixed = Layout.topBar + Layout.baseRow * 2 + Layout.baseMessage
-            + Layout.baseButton + Layout.gap * 5 + Layout.bottomPad + 4
         var widthSide = size.width - Layout.gutter * 2
         if size.width >= 600 { widthSide = min(widthSide, Layout.padMaxSide) }
+        // Five tiles share the width; leave 8pt of slack inside each for the highlight.
+        let lp0: CGFloat = Layout.fitLabel(tileWidth: widthSide / 5)
+        let fixed = Layout.topBar + (Layout.baseRow + (5 * lp0 + 4).rounded(.up)) * 2 + Layout.baseMessage
+            + Layout.baseButton + Layout.gap * 5 + Layout.bottomPad + 4
         side = max(160, min(widthSide, size.height - fixed)).rounded(.down)
+        let lp: CGFloat = Layout.fitLabel(tileWidth: side / 5)
+        let lb: CGFloat = (5 * lp + 4).rounded(.up)
+        labelPixel = lp
+        labelBlock = lb
         let grow = min(max(0, size.height - fixed - side), Layout.maxGrow)
-        rowHeight = (Layout.baseRow + grow * 0.15).rounded()
+        rowHeight = (Layout.baseRow + lb + grow * 0.15).rounded()
         messageHeight = (Layout.baseMessage + grow * 0.2).rounded()
         buttonHeight = (Layout.baseButton + grow * 0.35).rounded()
-        glyphPixel = rowHeight >= 56 && side >= 340 ? 4 : 3
+        glyphPixel = rowHeight >= 62 && side >= 340 ? 4 : 3
+    }
+}
+
+/// One menu icon: glyph with its name under it. Tap does the action; holding for 0.3 s only says what it does.
+private struct IconTile: View {
+    let icon: MenuIcon
+    let selected: Bool
+    let layout: Layout
+    let palette: LCDPalette
+    @ObservedObject var model: GameModel
+    /// Set when a hold already described the icon, so the release does not also act.
+    @State private var described = false
+
+    var body: some View {
+        let ink: Color = selected ? palette.background : palette.ink
+        Button {
+            if described { described = false; return }
+            Haptics.tap()
+            Beeper.shared.blip()
+            model.perform(icon)
+        } label: {
+            VStack(spacing: 3) {
+                PixelGlyphView(rows: icon.glyph, pixel: layout.glyphPixel, color: ink)
+                PixelText(icon.label, pixel: layout.labelPixel, color: ink)
+                    .accessibilityHidden(true)
+            }
+            .frame(maxWidth: .infinity, minHeight: layout.rowHeight, maxHeight: layout.rowHeight)
+            .background(
+                Rectangle()
+                    .fill(selected ? palette.ink : Color.clear)
+                    .padding(2)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.3).onEnded { _ in
+                described = true
+                Haptics.tap()
+                Beeper.shared.blip()
+                model.describe(icon)
+            }
+        )
+        .accessibilityLabel(icon.title)
+        .accessibilityHint("Hold to see what it does")
+        .accessibilityIdentifier("menu-" + icon.title.lowercased())
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 

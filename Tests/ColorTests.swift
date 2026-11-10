@@ -43,8 +43,13 @@ final class ColorTests: XCTestCase {
         XCTAssertEqual(SceneLayer.alert.rawValue, 28)
         XCTAssertEqual(SceneLayer.bodyLight.rawValue, 29)
         XCTAssertEqual(SceneLayer.ball.rawValue, 30)
-        XCTAssertEqual(SceneLayer.allCases.count, 31)
-        XCTAssertEqual(SceneLayer.allCases.map { Int($0.rawValue) }.sorted(), Array(0...30))
+        // shading layers (Expo numbering; 40...86 are reserved for biomes, see docs/SHADING.md)
+        XCTAssertEqual(SceneLayer.shade.rawValue, 31)
+        XCTAssertEqual(SceneLayer.glint.rawValue, 39)
+        XCTAssertEqual(SceneLayer.eyeFill.rawValue, 87)
+        XCTAssertEqual(SceneLayer.eyeShine.rawValue, 88)
+        XCTAssertEqual(SceneLayer.allCases.count, 42)
+        XCTAssertEqual(SceneLayer.allCases.map { Int($0.rawValue) }.sorted(), Array(0...39) + [87, 88])
     }
 
     func testPetLayerRule() {
@@ -88,11 +93,11 @@ final class ColorTests: XCTestCase {
                             if lit { expected += 1 }
                             if layered.isSet(x, y) != lit { wrong += 1 }
                             let l = layered.layer(x, y)
-                            if lit && !(l == .outline || l == .body || l == .bodyLight) { notPetLayer += 1 }
+                            if lit && !l.isPetLayer { notPetLayer += 1 }
                         }
                     }
                     XCTAssertEqual(wrong, 0, "\(sp.id) mirror \(mirror): cells differ from the bitmap")
-                    XCTAssertEqual(notPetLayer, 0, "\(sp.id): lit sprite pixels are outline, body or highlight")
+                    XCTAssertEqual(notPetLayer, 0, "\(sp.id): lit sprite pixels are pet layers")
                     XCTAssertEqual(layered.inkCount, expected, sp.id)
                 }
             }
@@ -109,10 +114,10 @@ final class ColorTests: XCTestCase {
                 var s = SceneState.still(for: p)
                 s.facing = facing
                 let r = SceneRenderer.render(pet: p, state: s, date: base)
-                XCTAssertEqual(r.ink, r.cells.map { $0 != 0 }, sp.id)
+                XCTAssertEqual(r.ink, r.cells.map { SceneLayer.isTraditionalLit($0) }, sp.id)
                 XCTAssertEqual(r.inkCount, r.ink.filter { $0 }.count, sp.id)
                 XCTAssertGreaterThan(r.inkCount, 60, sp.id)
-                XCTAssertTrue(r.cells.contains(SceneLayer.outline.rawValue), "\(sp.id) has outline")
+                XCTAssertTrue(r.cells.contains(SceneLayer.outline.rawValue) || r.cells.contains(SceneLayer.rim.rawValue), "\(sp.id) has outline")
             }
         }
     }

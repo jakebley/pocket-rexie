@@ -43,6 +43,57 @@ enum SceneLayer: UInt8, CaseIterable {
     /// the play ball (its own tone; tools stay wooden)
     case ball = 30
 
+    // MARK: pet shading (Technicolor tones; Traditional prints all of them as ink, see PetShading.swift)
+
+    /// shadow side of the body (bottom-right, cool)
+    case shade = 31
+    /// deep underside shadow
+    case deep = 32
+    /// lighter belly / chest
+    case belly = 33
+    /// accent tip: analogous hue
+    case accent = 34
+    /// accent tip: dark (socks, ear tips)
+    case accentDark = 35
+    /// accent tip: cream (paws, tail tip, horns)
+    case accentLight = 36
+    /// outline on the lit (top-left) side: rim light
+    case rim = 37
+    /// dark ring of an eye hole
+    case eye = 38
+    /// tiny specular glint / sheen
+    case glint = 39
+
+    // Codes 40...86 are reserved for the biome cues and scenery (Expo `Layer.WAVE`...`LEAF_BIG`); a later
+    // change adds them here with the same numbers. Until then their table entries are plain ink.
+
+    // MARK: pet eyes (Technicolor only, like scenery: Traditional leaves the unlit eye hole unlit)
+
+    /// opaque pupil that fills a see-through eye hole
+    case eyeFill = 87
+    /// catch-light in the pupil
+    case eyeShine = 88
+
+    /// First biome-scenery code. Codes from here up are Technicolor-only: Traditional draws them unlit
+    /// (the biome cue codes 40...42 are below it and print as ink, like the Expo `SCENERY_FROM`).
+    static let sceneryFrom: UInt8 = 43
+
+    /// Highest code in use; color tables have `maxCode + 1` entries.
+    static let maxCode: UInt8 = 88
+
+    /// Does Traditional mode draw this code? (Every shared layer, the pet shading layers and the cues: yes, as
+    /// ink. Scenery and the eye fills: no, they print as unlit.) Mirrors `tradVisible` in layers.ts.
+    static func isTraditionalLit(_ code: UInt8) -> Bool { code != 0 && code < sceneryFrom }
+
+    /// Codes a pet sprite can carry (the scenery must never overwrite these).
+    var isPetLayer: Bool {
+        switch self {
+        case .outline, .body, .bodyLight, .shade, .deep, .belly, .accent, .accentDark, .accentLight,
+             .rim, .eye, .glint, .eyeFill, .eyeShine: return true
+        default: return false
+        }
+    }
+
     /// Splits a sprite into pet layers, one entry per cell: `outline` is a lit pixel with an unlit
     /// 4-neighbour (or on the grid edge), `bodyLight` an interior pixel whose upper or left neighbour
     /// is outline, otherwise `body`. Unlit cells stay `off`.
@@ -88,12 +139,13 @@ struct SceneRaster: Equatable {
     /// Lights off: the sky is darkened and `shade` marks the dither.
     var dim = false
 
-    /// Lit cells (any layer), the one-bit picture of old.
-    var ink: [Bool] { cells.map { $0 != 0 } }
+    /// Lit cells in Traditional (any layer it draws), the one-bit picture of old. Technicolor-only codes
+    /// (eye fills, scenery) are unlit here.
+    var ink: [Bool] { cells.map { SceneLayer.isTraditionalLit($0) } }
 
     func isSet(_ x: Int, _ y: Int) -> Bool {
         guard x >= 0, x < SceneRaster.side, y >= 0, y < SceneRaster.side else { return false }
-        return cells[y * SceneRaster.side + x] != 0
+        return SceneLayer.isTraditionalLit(cells[y * SceneRaster.side + x])
     }
 
     func layer(_ x: Int, _ y: Int) -> SceneLayer {
@@ -119,14 +171,26 @@ struct SceneRaster: Equatable {
         }
     }
 
-    /// Draws a pet sprite split into outline, body and highlight layers (after mirroring, so the
-    /// highlight stays on the upper-left of what is seen).
-    mutating func drawPet(_ rows: [String], x: Int, y: Int, mirror: Bool = false) {
+    /// Draws a pet sprite with procedural shading (PetShading: highlight, shade, belly, accents, rim, eyes),
+    /// after mirroring, so the light stays on the upper-left of what is seen. The lit pixel set is exactly the
+    /// sprite's. Eye fills (Technicolor-only codes) go only on cells that are not already lit in Traditional,
+    /// so Traditional output is unchanged. `family` picks the per-family rules.
+    mutating func drawPet(_ rows: [String], x: Int, y: Int, mirror: Bool = false, family: String = "") {
         let shown = mirror ? rows.map { String($0.reversed()) } : rows
-        let layers = SceneLayer.petLayers(shown)
-        for (r, row) in layers.enumerated() {
-            for (c, l) in row.enumerated() where l != .off {
-                set(x + c, y + r, l)
+        let shaded = PetShading.layers(rows: shown, family: family)
+        for r in 0..<shaded.height {
+            for c in 0..<shaded.width {
+                let code = shaded.codes[r * shaded.width + c]
+                if code == 0 { continue }
+                let px = x + c, py = y + r
+                if code == SceneLayer.eyeFill.rawValue || code == SceneLayer.eyeShine.rawValue {
+                    guard px >= 0, px < SceneRaster.side, py >= 0, py < SceneRaster.side else { continue }
+                    if SceneLayer.isTraditionalLit(cells[py * SceneRaster.side + px]) { continue }
+                    cells[py * SceneRaster.side + px] = code
+                } else {
+                    guard px >= 0, px < SceneRaster.side, py >= 0, py < SceneRaster.side else { continue }
+                    cells[py * SceneRaster.side + px] = code
+                }
             }
         }
     }
@@ -140,11 +204,11 @@ struct SceneRaster: Equatable {
     }
 
     mutating func invert() {
-        for i in 0..<cells.count { cells[i] = cells[i] == 0 ? SceneLayer.ink.rawValue : 0 }
+        for i in 0..<cells.count { cells[i] = SceneLayer.isTraditionalLit(cells[i]) ? 0 : SceneLayer.ink.rawValue }
         for i in 0..<shade.count { shade[i] = false }
     }
 
-    var inkCount: Int { cells.reduce(0) { $0 + ($1 != 0 ? 1 : 0) } }
+    var inkCount: Int { cells.reduce(0) { $0 + (SceneLayer.isTraditionalLit($1) ? 1 : 0) } }
 }
 
 /// Offsets that turn an action into a pose, derived from the two existing sprite frames.
@@ -297,7 +361,7 @@ enum SceneRenderer {
         drawGround(&r, seed: pet.seed, frame: frame, motion: motion)
 
         if pet.stage == .ghost || pet.stage == .egg {
-            r.drawPet(place.rows, x: place.x, y: place.top, mirror: place.mirror)
+            r.drawPet(place.rows, x: place.x, y: place.top, mirror: place.mirror, family: "")
             return r
         }
 
@@ -307,7 +371,8 @@ enum SceneRenderer {
         if let e = state.effect, e.kind == .food {
             drawFood(&r, e: e, state: state)
         }
-        r.drawPet(place.rows, x: place.x, y: place.top, mirror: place.mirror)
+        r.drawPet(place.rows, x: place.x, y: place.top, mirror: place.mirror,
+                  family: Species.named(pet.species)?.family ?? "")
         drawAccessories(&r, pet: pet, state: state, place: place, motion: motion)
         drawPoops(&r, pet: pet, state: state, frame: frame, motion: motion)
         if let e = state.effect {
