@@ -1,155 +1,278 @@
-"""Halo-and-horn spirit archetypes (16x16, facing right, ground on row 15), built from parts and natively at every
-stage size. Bodies are round chibi creatures; the angel/devil read comes from decorations (halo, horns, wings, tail,
-trident toy) and from the base on the ground line (feet, cloud puffs or ember flames).
-Registers EXTRA_HANDLERS with the `spirits_` prefix."""
+"""Halo-and-horn spirit archetypes (16x16, ground on row 15), drawn natively at every stage size.
+A round chibi head (three-quarter view, eye on the right) on one of four bases: feet, a bumpy cloud, a flame skirt or a
+flared bell robe. Alignment reads from the decorations: a halo ring, two curved horns, feathered angel wings spread to both
+sides versus pointed bat wings with webbing, a spade tail, a toy trident.
+Registers EXTRA_HANDLERS with the `spirits_` prefix. Decorations find the stage from `hr` (the archetype stores stage + 1 in
+its head radius) and find the head by scanning the drawn pixels."""
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from archetypes_fox import _G, SIZES, _T
+from archetypes_fox import _G
 import spritegen
 
-def _spirit(k=1.0, base='feet', tail=None, hw=3.4, hh=3.0, bw=2.6, bh=2.1, hy=8.0):
-    """Big round head over a small body, so the head, halo and horns carry the silhouette."""
-    u = k ** -0.7                      # small stages get proportionally chunkier (babies are mostly head)
-    hw, bw, hh, bh = hw * u, bw * u, hh * u ** 0.8, bh * u ** 0.8
-    g = _G(k); g.hh = hh
-    if base == 'cloud':
-        g.ell(7.8, 12.0, bw, bh)
-        g.ell(4.6, 13.6, 2.5, 1.8); g.ell(8.0, 13.2, 3.0, 2.2); g.ell(11.4, 13.6, 2.5, 1.8)
-    elif base == 'ember':
-        g.ell(7.8, 12.8, bw, bh)
-        g.ell(7.8, 14.6, 5.4, 0.9)
-        for x, h in ((2.6, 11.4), (4.4, 12.6), (11.2, 12.6), (13.0, 11.4)):  # flame tongues around the base
-            g.tri(x - 1.0, 14.8, x, h, x + 1.0, 14.8, min_h=2)
+# per stage head (cx, cy, rx, ry) and body (cx, cy, rx, ry); symmetric about x = 7.5
+GEO = {
+ 1: dict(h=(7.5, 10.6, 2.6, 2.3), b=(7.5, 13.6, 1.0, 1.0)),
+ 2: dict(h=(7.5, 9.6, 2.9, 2.5), b=(7.5, 13.2, 1.3, 1.3)),
+ 3: dict(h=(7.5, 8.8, 3.3, 2.8), b=(7.5, 12.9, 1.6, 1.5)),
+ 4: dict(h=(7.5, 8.2, 3.7, 3.1), b=(7.5, 12.8, 1.9, 1.6)),
+ 5: dict(h=(7.5, 8.2, 3.7, 3.1), b=(7.5, 12.8, 1.9, 1.6)),
+}
+# spade tail (x, y) from the left foot: out along the ground, up, and an arrow head; kept below the wings
+TAIL = {
+ 1: [(5, 14), (4, 14), (3, 13), (3, 12)],
+ 2: [(5, 14), (4, 14), (3, 13), (3, 12), (3, 11)],
+ 3: [(5, 14), (4, 14), (3, 14), (2, 13), (2, 12), (2, 11), (1, 11), (3, 11), (2, 10)],
+ 4: [(5, 14), (4, 14), (3, 14), (2, 13), (1, 12), (1, 11), (0, 11), (2, 11), (1, 10)],
+ 5: [(5, 14), (4, 14), (3, 14), (2, 13), (1, 12), (1, 11), (0, 11), (2, 11), (1, 10)],
+}
+
+def _spirit(stage=4, base='feet', tail=False, brx=0.0, hrx=0.0, hry=0.0, bry=0.0, tall=0):
+    hx, hy, rx, ry = GEO[stage]['h']; bx, by, bw, bh = GEO[stage]['b']
+    rx += hrx + 0.55; ry += hry + 0.45; bw += brx + 0.5; bh += bry + 0.4
+    if tall: by -= tall * 0.5; bh += tall * 0.5
+    g = _G(1.0); R = g._raw
+    top = int(hy + ry + 0.4)                    # first row under the head
+    if base in ('cloud', 'ember'):
+        W = ({1: 10, 2: 12, 3: 14, 4: 14, 5: 14} if base == 'cloud' else {1: 10, 2: 12, 3: 14, 4: 16, 5: 16})[stage]
+        x0 = 8 - W // 2; x1 = x0 + W - 1
+        if base == 'cloud':   # three puffs along the top with a notch between each, a flat full middle, a rounded bottom
+            bwd = 3 if stage >= 2 else 2
+            for x in list(range(x0 + 1, x0 + 1 + bwd)) + list(range(x1 - bwd, x1)) + list(range(6, 10)): R(x, top)
+            if stage >= 3:
+                for x in range(x0 + 2, x0 + bwd + 1): R(x, top - 1)
+                for x in range(x1 - bwd + 1, x1 - 1): R(x, top - 1)
+            for y in range(top + 1, 15):
+                for x in range(x0, x1 + 1): R(x, y)
+            for x in range(x0 + 1, x1): R(x, 15)
+        else:                 # a flame skirt: solid base and a comb of tongues of different heights, tall at the edges
+            for x in range(x0, x1 + 1): R(x, 15); R(x, 14)
+            n = (W - 1) // 3
+            hs = {1: [3, 2, 3], 2: [4, 2, 2, 4], 3: [5, 3, 2, 3, 5], 4: [6, 3, 2, 2, 3, 6]}.get(stage, [6, 3, 2, 2, 3, 6])
+            n = len(hs); sp = (W - 2) / max(1, n - 1) if n > 1 else 0
+            for i, h in enumerate(hs):
+                x = x0 + int(round(i * (W - 2) / (n - 1)))
+                for y in (13, 12): R(x, y); R(x + 1, y)                # a two-pixel base ...
+                for k, y in enumerate(range(11, 13 - h, -1)): R(x + (1 if (i + k) % 2 == 0 else 0), y)   # ... and a swaying one-pixel tip
+        g.ell(hx, hy, rx, ry)
+        return g
+    if base == 'robe':   # flared bell: narrow at the neck, wide at the hem, no feet
+        g.ell(bx, by - 0.8, bw - 0.3, bh)
+        for y in range(10, 16):
+            half = bw - 0.3 + (y - 10) * 0.45
+            for x in range(16):
+                if abs(x - bx) <= half: R(x, y)
+        bl = int(round(bx - bw - 1.0))
     else:
-        g.ell(7.8, 12.7, bw, bh)
-        for x in (6.0, 7.0, 9.0, 10.0): g.set(x, 15)
-        g.set(6, 14); g.set(9, 14)
-    g.ell(8.8, hy, hw, hh)
-    if tail:  # pointed devil tail running along the ground then curling up
-        g.line(5.2, 13.6, 2.5, 14.2); g.line(2.5, 14.2, 1.3, 12.4)
-        if tail == 'spade':
-            g.tri(0.0, 12.4, 1.2, 10.2, 2.4, 12.6, min_h=2)
-        else:
-            g.set(1.0, 11.4)
+        g.ell(bx, by, bw, bh)
+        fx = 1 if bw < 2.6 else 2
+        R(bx - fx - 0.5, 15); R(bx - fx - 0.5, 14); R(bx + fx + 0.5, 15); R(bx + fx + 0.5, 14)
+    g.ell(hx, hy, rx, ry)
+    if tail:
+        for x, y in TAIL[stage]: R(x, y)
     return g
 
-def _build(fn, head, eye, body, **kw):
+def _seal(g, keep=None):
+    """Fill enclosed gaps near the eye: the shader reads small holes up to ~2.5 rows below the topmost one as eyes."""
+    seen = set(); st = [(x, y) for x in range(16) for y in range(16) if (x in (0, 15) or y in (0, 15)) and not g.p[y][x]]
+    while st:
+        x, y = st.pop()
+        if (x, y) in seen or not (0 <= x < 16 and 0 <= y < 16) or g.p[y][x]: continue
+        seen.add((x, y)); st += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    if keep is None: return
+    lim = keep[1] + 3
+    todo = {(x, y) for y in range(16) for x in range(16) if not g.p[y][x] and (x, y) not in seen and (x, y) != keep}
+    while todo:
+        comp = []; st = [todo.pop()]
+        while st:
+            c = st.pop(); comp.append(c)
+            for d in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                n = (c[0] + d[0], c[1] + d[1])
+                if n in todo: todo.discard(n); st.append(n)
+        if min(y for _, y in comp) <= lim:
+            for x, y in comp: g.p[y][x] = 1
+
+def _build(base='feet', tail=False, **kw):
     by = {}
-    for stage, k in SIZES.items():
-        g = fn(k=k, **kw)
-        hx, hy = _T(k, head[0], head[1]); ex, ey = _T(k, eye[0], eye[1])
+    for stage in GEO:
+        g = _spirit(stage, base, tail, **kw)
+        hx, hy, rx, ry = GEO[stage]['h']
+        ex, ey = round(hx + rx * 0.5), round(hy - ry * 0.1)
         g._raw(ex, ey, 0)
-        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, g.hh * k)), eye=(round(ex), round(ey)),
-                         body=(_T(k, body[0], 0)[0], _T(k, body[1], 0)[0]))
+        _seal(g, (ex, ey))
+        bx, bw = GEO[stage]['b'][0], GEO[stage]['b'][2] + kw.get('brx', 0.0) + 0.5
+        by[stage] = dict(rows=g.rows(), head=(hx, hy, stage + 1.0), eye=(ex, ey), body=(bx - bw, bx + bw))
     return dict(by_stage=by)
 
-H = (8.8, 8.0, 3.0); E = (10.2, 7.8); B = (4.5, 11.5)
 ARCH = {
- 'spr_feet':   _build(_spirit, H, E, B),                                         # plain round cherub with feet
- 'spr_imp':    _build(_spirit, H, E, B, tail='spade'),                            # round imp with a spade tail
- 'spr_cloud':  _build(_spirit, H, E, B, base='cloud'),                            # sits on a cloud
- 'spr_ember':  _build(_spirit, H, E, B, base='ember', tail='spade'),              # stands in ember flames
- 'spr_emberb': _build(_spirit, H, E, B, base='ember'),                            # ember base, no tail (baby)
- 'spr_big':    _build(_spirit, H, E, B, tail='spade', hw=3.7, hh=3.2, bw=2.9, bh=2.3),   # broad adult imp
- 'spr_bigfeet':_build(_spirit, H, E, B, hw=3.7, hh=3.2, bw=2.9, bh=2.3),
- 'spr_bigcloud':_build(_spirit, H, E, B, base='cloud', hw=3.7, hh=3.2, bw=2.9, bh=2.3),
- 'spr_bigember':_build(_spirit, H, E, B, base='ember', tail='spade', hw=3.7, hh=3.2, bw=2.9, bh=2.3),
- 'spr_chub':   _build(_spirit, H, E, B, tail='spade', hw=3.7, hh=3.1, bw=4.5, bh=2.5),  # well-fed
- 'spr_chubfeet':_build(_spirit, H, E, B, hw=3.7, hh=3.1, bw=4.5, bh=2.5),
+ 'spr_feet':    _build(),                                    # round cherub on two feet
+ 'spr_imp':     _build(tail=True),                           # round imp with a spade tail
+ 'spr_cloud':   _build('cloud'),
+ 'spr_ember':   _build('ember'),
+ 'spr_emberb':  _build('ember'),
+ 'spr_big':     _build(tail=True),
+ 'spr_bigfeet': _build(),
+ 'spr_bigcloud':_build('cloud'),
+ 'spr_bigember':_build('ember'),
+ 'spr_chub':    _build(tail=True, brx=1.4, bry=0.3),         # well fed
+ 'spr_chubember': _build('ember'),
+ 'spr_imp2':    _build(tail=True, brx=0.8, hrx=0.4),
+ 'spr_tallimp': _build(tail=True, tall=1, hry=-0.2),
+ 'spr_champ':   _build(tall=1, hrx=0.5, brx=0.8),
+ 'spr_robe':    _build('robe'),                              # flared bell robe
+ 'spr_tall':    _build(tall=1, hry=-0.2),                    # lean and upright
+ 'spr_brute':   _build(tail=True, hrx=0.6, hry=-0.3, brx=0.9),  # broad flat head, thick shoulders
 }
 spritegen.register_archetypes(ARCH)
 
-# ---- decorations ----------------------------------------------------------------------------------
-def _hline(g, y, x0, x1):
-    for x in range(int(round(x0)), int(round(x1)) + 1): g.set(x, y)
+# ---- helpers -----------------------------------------------------------------------------------------
+def _stage(c): return int(round(c['hr'] - 1))
 
-def halo(g, c):
-    """Floating ring (5x3) with a one-row gap above the head."""
-    hx, top = round(c['hx']), round(c['hy'] - c['hr'] - 4)
-    _hline(g, top, hx - 1, hx + 1); _hline(g, top + 2, hx - 1, hx + 1)
-    g.set(hx - 2, top + 1); g.set(hx + 2, top + 1)
+def _crown(g, x, hy):
+    """Row of the topmost head pixel in column x (scanning up from just above the head centre)."""
+    y = int(round(hy)) - 1
+    if not g.get(x, y): return None
+    while y > 0 and g.get(x, y - 1): y -= 1
+    return y
+
+def _edges(g, c):
+    y = int(round(c['hy'])) + 1
+    xs = [x for x in range(16) if g.get(x, y)]
+    return min(xs), max(xs)
+
+def _stamp(g, rows, x, ybot, mirror=False, drop=()):
+    """Draw string rows (X = ink); the bottom row sits on ybot. In left-wing form the inner edge is the LAST column; mirror flips it."""
+    n = len(rows)
+    for j, r in enumerate(rows):
+        for i, ch in enumerate(r):
+            if ch != 'X' or (j, i) in drop: continue
+            col = (len(r) - 1 - i) if mirror else i
+            g.set(x + col, ybot - (n - 1 - j))
+
+# ---- halos ------------------------------------------------------------------------------------------
+# a closed ring whose hole has more than 6 cells (the shader only fills holes of up to 6 cells as eyes); hatchlings get an open arc
+R5 = ['.XXX.', 'X...X', '.XXX.']
+RING = {1: ['.XX.', 'X..X'], 2: ['.XX.', 'X..X', '.XX.'], 3: R5, 4: ['.XXXX.', 'X....X', '.XXXX.'], 5: ['.XXXXX.', 'X.....X', '.XXXXX.']}
+
+def _halo(g, c, dx=0):
+    s = _stage(c); rows = RING[s]; w = len(rows[0])
+    top = _crown(g, int(round(c['hx'])), c['hy'])
+    _stamp(g, rows, int(round(c['hx'] - w / 2 + 0.5)) + dx + (0 if w % 2 == 0 else 0), top - 2)
+
+def halo(g, c): _halo(g, c)
+def halo_side(g, c): _halo(g, c, 2)
 
 def halo_crook(g, c):
-    """Dim, bent halo for the neglect line: shifted, with a gap in the ring."""
-    hx, top = round(c['hx']) + 1, round(c['hy'] - c['hr'] - 3)
-    _hline(g, top, hx - 1, hx + 1); g.set(hx - 2, top + 1); g.set(hx + 2, top + 1); g.set(hx - 1, top + 2)
+    """Dim, tilted ring for the neglect line: one end hangs low and the rim is broken."""
+    s = _stage(c); top = _crown(g, int(round(c['hx'])), c['hy'])
+    rows = {1: ['.XX.', 'X...'], 2: ['.XX.', 'X...'], 3: ['..XX.', '.X..X', 'X....'], 4: ['..XXX.', '.X...X', 'X....X'], 5: ['..XXXX.', '.X....X', 'X.....X']}[s]
+    _stamp(g, rows, int(round(c['hx'])) - 2, top - 2)
 
-def halo_side(g, c):
-    """Halo pushed to the right, leaving room for one horn on the left."""
-    hx, top = round(c['hx']) + 2, round(c['hy'] - c['hr'] - 4)
-    _hline(g, top, hx - 1, hx + 1); _hline(g, top + 2, hx - 1, hx + 1)
-    g.set(hx - 2, top + 1); g.set(hx + 2, top + 1)
+# ---- horns ------------------------------------------------------------------------------------------
+# left horn, string rows from the tip down to the base; the LAST column is the inner edge. A thick curved "C" that sweeps up
+# and out, then hooks back in at the tip
+HORN = {1: ['.XX'], 2: ['.X.', 'XX.'],
+        3: ['.XX', 'XX.', '.XX'][::1], 4: ['.XX', 'XX.', 'XX.', '.XX'], 5: ['.XX', 'XX.', 'XX.', '.XX']}
+HORN[3] = ['.X.', 'XX.', '.XX']
+BIG = {3: ['.XX', 'XX.', '.XX'], 4: ['..X', '.XX', 'XX.', 'XX.', 'XX.', '.XX'], 5: ['..X', '.XX', 'XX.', 'XX.', 'XX.', '.XX']}
 
-def halo_small(g, c):
-    """Small 3x2 halo for babies and children."""
-    hx, top = round(c['hx']), round(c['hy'] - c['hr'] - 3)
-    _hline(g, top, hx - 1, hx + 1); g.set(hx - 2, top + 1); g.set(hx + 2, top + 1)
+def _horns(g, c, sides, rows):
+    xin = int(round(c['hx'] - 0.5))                     # inner column of the left horn base sits two columns from the middle
+    for s in sides:
+        col = xin - 1 if s < 0 else xin + 2
+        top = _crown(g, col, c['hy'])
+        if top is None: top = _crown(g, col + (1 if s < 0 else -1), c['hy']) + 1
+        n = len(rows)
+        _stamp(g, rows, (col - 2) if s < 0 else col, top, mirror=(s > 0))
+        # pillar the base down onto the head
+        for dx in range(3):
+            x = (col - 2 + dx) if s < 0 else (col + dx)
+            y = top
+            while y < 15 and not g.get(x, y + 1) and g.get(x, y): y += 1
 
-def _hornbase(c, dx):
-    """y of the head's top edge at horizontal offset dx (head is a little wider than tall)."""
-    t = min(0.95, abs(dx) / (c['hr'] * 1.25))
-    return c['hy'] - c['hr'] * (1 - t * t) ** 0.5
+def horns(g, c): _horns(g, c, (-1, 1), HORN[_stage(c)])
+def horn1(g, c): _horns(g, c, (-1,), HORN[_stage(c)])
+def bighorns(g, c): _horns(g, c, (-1, 1), BIG[_stage(c)])
+def ramhorns(g, c): _horns(g, c, (-1, 1), BIG[_stage(c)])
+def nubs(g, c): _horns(g, c, (-1, 1), ['.XX'] if _stage(c) <= 2 else HORN[2])
 
-def _horn(g, c, s, big=False):
-    """A connected horn slanting outward from the crown (a diagonal band, so it reads as a horn, not an ear)."""
-    x0 = c['hx'] + s * 1.0; b = _hornbase(c, 1.0) + 0.7
-    pts = [(0, 0), (1, 0), (1, -1), (2, -1), (2, -2)] + ([(3, -2), (3, -3)] if big else [])
-    for dx, dy in pts: g.set(x0 + s * dx, b + dy)
+# ---- wings ------------------------------------------------------------------------------------------
+# left-wing rows (top to bottom); the LAST column touches the body. Angel: rounded top, three feather teeth along the bottom.
+ANGEL = {3: ['X..', 'XX.', 'XX.', 'XXX', '.XX', '..X'],
+         4: ['X...', 'XX..', 'XX..', 'XXX.', 'XXX.', '.XXX', '.XXX', '..XX', '...X'],
+         5: ['X....', 'XX...', 'XX...', 'XXX..', 'XXX..', 'XXXX.', 'XXXX.', '.XXXX', '.XXXX', '..XXX', '...XX', '....X']}
+# Bat: a spike for the arm at the top, a straight diagonal leading edge, webbing with deep scallops along the lower edge
+BAT = {3: ['X..', 'XX.', 'XXX', 'X.X', '..X'],
+       4: ['X...', 'XX..', 'XXX.', 'XXXX', 'X.XX', '..XX', 'X..X'],
+       5: ['X....', 'XX...', 'XXX..', 'XXXX.', 'XXXXX', 'X.XXX', '..XXX', 'X..XX', '....X']}
 
-def horns(g, c):
-    for s in (-1, 1): _horn(g, c, s)
+def _wings(g, c, table, low, ragged=False):
+    s = max(3, _stage(c)); rows = table[s]; L, Rr = _edges(g, c)
+    ybot = int(round(c['hy'])) + low
+    w = len(rows[0]); n = len(rows)
+    drop = ()
+    if ragged: drop = tuple((j, 0) for j in range(1, n, 2)) + ((n - 1, w - 1),)
+    _stamp(g, rows, L - 1 - w, ybot, False, drop)                             # left wing: a one-pixel gap from the head
+    for x in range(L - 1, L + 5):                                              # a strut joins its foot to the body
+        if g.get(x, ybot): break
+        g.set(x, ybot)
+    if ragged:                                                                 # the right wing is half gone
+        _stamp(g, rows[-4:], Rr + 2, ybot, True)
+        for x in range(Rr + 1, Rr - 5, -1):
+            if g.get(x, ybot): break
+            g.set(x, ybot)
+    else:
+        _stamp(g, rows, Rr + 2, ybot, True)
+        for x in range(Rr + 1, Rr - 5, -1):
+            if g.get(x, ybot): break
+            g.set(x, ybot)
 
-def horn1(g, c): _horn(g, c, -1)
+def wings(g, c): _wings(g, c, ANGEL, 2)
+def wingfold(g, c): _wings(g, c, ANGEL, 2)
+def bigwings(g, c): _wings(g, c, ANGEL, 2)
+def tornwings(g, c): _wings(g, c, ANGEL, 2, True)
+def batwings(g, c): _wings(g, c, BAT, 1)
+def tornbat(g, c): _wings(g, c, BAT, 1, True)
 
-def bighorns(g, c):
-    for s in (-1, 1): _horn(g, c, s, True)
-
-def nubs(g, c):
-    for s in (-1, 1):
-        x0 = c['hx'] + s * 1.2; b = _hornbase(c, 1.2) + 0.6
-        for dx, dy in ((0, 0), (1, 0), (1, -1)): g.set(x0 + s * dx, b + dy)
-
-def _tri(g, tip, p0, p1):
-    for i in range(7):
-        t = i / 6; g.line(tip[0], tip[1], p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t)
-
-def _root(c):
-    return round(c['hx'] - c['hr'] * 1.3), round(c['hy'] + c['hr'] * 0.5)
-
-def wings(g, c, big=False):
-    """Feathered wing swept up behind the shoulder, two stacked wedges."""
-    rx, ry = _root(c); s = max(3, round(c['hr'] * (1.4 if big else 1.0)))
-    _tri(g, (rx - s, ry - round(s * 1.4)), (rx, ry - 1), (rx, ry + 2))
-    _tri(g, (rx - s - 1, ry - round(s * 0.5)), (rx, ry + 1), (rx, ry + 3))
-
-def wingfold(g, c):
-    """Small folded wing: a short wedge on the shoulder."""
-    rx, ry = _root(c)
-    _tri(g, (rx - 2, ry - 2), (rx, ry), (rx, ry + 2))
-
-def bigwings(g, c): wings(g, c, True)
-
-def batwings(g, c):
-    """Pointed wing with a scalloped lower edge."""
-    rx, ry = _root(c); s = max(3, round(c['hr'] * 1.1))
-    tip = (rx - s, ry - round(s * 1.5))
-    _tri(g, tip, (rx, ry), (rx, ry + 2))
-    g.line(rx, ry + 2, rx - s * 0.5, ry + 1); g.line(rx - s * 0.5, ry + 1, rx - s * 0.8, ry + 2.5)
-    g.line(rx - s * 0.8, ry + 2.5, rx - s - 1, ry)
-
+# ---- props ------------------------------------------------------------------------------------------
 def trident(g, c):
-    """A tiny toy trident held out in front."""
-    x = min(15, round(c['hx'] + c['hr'] + 1.6)); top = round(c['hy'] + c['hr'] * 0.9)
-    for y in range(top, 16): g.set(x, y)
-    g.set(x - 1, top - 1); g.set(x + 1, top - 1); g.set(x, top - 2)
+    """A toy trident held low in front, under the wings: three tines, a cross-bar and a shaft."""
+    st = _stage(c); x = 14 if st >= 4 else 13
+    top = {1: 11, 2: 10, 3: 10, 4: 10, 5: 10}[st]
     g.set(x - 1, top); g.set(x + 1, top)
+    g.set(x - 1, top + 1); g.set(x, top + 1); g.set(x + 1, top + 1)
+    for y in range(top + 2, 16): g.set(x, y)
 
 def sparkles(g, c):
-    """Stardust twinkles floating near the halo."""
-    x, y = round(c['hx'] + c['hr'] + 1), round(c['hy'] - c['hr'] - 1)
-    g.set(x, y); g.set(x - 1, y); g.set(x + 1, y); g.set(x, y - 1); g.set(x, y + 1)
+    """A twinkling star: a plus shape, kept connected so it never reads as stray dots."""
+    st = _stage(c); x = 14 if st >= 4 else 13; y = 2 if st >= 4 else 4
+    for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)): g.set(x + dx, y + dy)
+
+def crown(g, c):
+    top = _crown(g, int(round(c['hx'])), c['hy']); hx = int(round(c['hx']))
+    for dx in range(-1, 2): g.set(hx + dx, top - 1)
+    for dx in (-1, 1): g.set(hx + dx, top - 2)
+    g.set(hx, top - 2)
+
+def cap(g, c):
+    """Jester cap: a band with two floppy points that end in bells."""
+    hx = int(round(c['hx'])); top = _crown(g, hx, c['hy'])
+    for dx in range(-2, 3): g.set(hx + dx, top)
+    for dx in range(-2, 4): g.set(hx + dx, top - 1) if dx != 1 else None
+    for dx, dy in ((-3, 2), (-3, 3), (4, 2), (4, 3), (-3, 4), (4, 4)): g.set(hx + dx, top - dy + 1)
+
+def torn(g, c):
+    """Tatters: a few notches bitten out of the lower edge."""
+    for x in (4, 7, 10):
+        for y in range(15, 8, -1):
+            if g.get(x, y):
+                g.set(x, y, 0); break
+
+def _sealed(f):
+    def run(g, c):
+        f(g, c); _seal(g, (int(round(c['ex'])), int(round(c['ey']))))
+    return run
 
 for n, f in dict(halo=halo, halo_crook=halo_crook, halo_small=halo, halo_side=halo_side, nubs=nubs, horns=horns, horn1=horn1,
-                 bighorns=bighorns, wings=wings, wingfold=wingfold, bigwings=bigwings, batwings=batwings,
-                 trident=trident, sparkles=sparkles).items():
-    spritegen.EXTRA_HANDLERS['spirits_' + n] = f
+                 bighorns=bighorns, ramhorns=ramhorns, wings=wings, wingfold=wingfold, bigwings=bigwings, tornwings=tornwings,
+                 batwings=batwings, tornbat=tornbat, trident=trident, sparkles=sparkles, crown=crown, cap=cap, torn=torn).items():
+    spritegen.EXTRA_HANDLERS['spirits_' + n] = f if n.startswith('halo') else _sealed(f)

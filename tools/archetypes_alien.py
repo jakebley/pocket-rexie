@@ -21,6 +21,7 @@ class A(_G):
     def __init__(self, k=1.0):
         _G.__init__(self, k)
         self.anchor = None            # the first eye pixel carved: the blink fills it
+        self.eyes = set()             # every eye cell carved (cleanup keeps these holes and fills any other enclosed gap)
     def px(self, x, y, v=1):
         tx, ty = self.T(x, y); self._raw(tx, ty, v)
     def legs(self, xs, top, foot=True):
@@ -33,8 +34,8 @@ class A(_G):
         for (x, y) in pts: self.set(x, y, v)
     def hole(self, x, y):
         self.set(x, y, 0)
-        if self.anchor is None:
-            tx, ty = self.T(x, y); self.anchor = (int(round(tx)), int(round(ty)))
+        tx, ty = self.T(x, y); cell = (int(round(tx)), int(round(ty))); self.eyes.add(cell)
+        if self.anchor is None: self.anchor = cell
     def pair(self, x, y, w=2, h=2):
         """a mirrored pair of w x h eye holes: the left one starts at x, the right one is its mirror about the centre"""
         for dx in range(w):
@@ -48,10 +49,64 @@ class A(_G):
         """a mirrored pair of small slanted eyes (3 px each)"""
         for (dx, dy) in ((0, 0), (0, 1), (1, 1)):
             self.hole(x + dx, y + dy); self.hole(15 - x - dx, y + dy)
+    def mell(self, cx, cy, rx, ry, v=1):
+        self.ell(cx, cy, rx, ry, v); self.ell(15 - cx, cy, rx, ry, v)
+    def mline(self, x0, y0, x1, y1, v=1):
+        self.line(x0, y0, x1, y1, v); self.line(15 - x0, y0, 15 - x1, y1, v)
+    def mtri(self, x0, y0, x1, y1, x2, y2, v=1, min_h=0):
+        self.tri(x0, y0, x1, y1, x2, y2, v, min_h); self.tri(15 - x0, y0, 15 - x1, y1, 15 - x2, y2, v, min_h)
+    def mpx(self, x, y, v=1):
+        self.px(x, y, v); self.px(15 - x, y, v)
+    def tent(self, x, ytop, w=1, sway=1, curl=0):
+        """a tentacle: w px wide, from ytop down to the ground, swaying by +-sway px, its tip curling by curl px (+right/-left)"""
+        tx, ty = self.T(x, ytop); top = int(round(ty)); n = 15 - top
+        for y in range(top, 16):
+            i = y - top
+            off = 0
+            if sway: off = (1 if (i // 2) % 2 else 0) * sway
+            for d in range(w): self._raw(tx + off + d, y)
+        if curl: 
+            for d in range(abs(curl)): self._raw(tx + (w + d if curl > 0 else -1 - d) + (1 if sway else 0) * 0, 15)
     def bigeye(self, y):
         """one big round eye in the centre (12 px)"""
         for (dx, dy) in ((1, 0), (2, 0), (0, 1), (1, 1), (2, 1), (3, 1), (0, 2), (1, 2), (2, 2), (3, 2), (1, 3), (2, 3)):
             self.hole(6 + dx, y + dy)
+
+
+def _holes(p):
+    """enclosed unlit components of a 16x16 0/1 grid, as lists of cells"""
+    seen = set(); stack = [(x, y) for y in range(16) for x in range(16) if (x in (0, 15) or y in (0, 15)) and not p[y][x]]
+    while stack:
+        x, y = stack.pop()
+        if (x, y) in seen or not (0 <= x < 16 and 0 <= y < 16) or p[y][x]: continue
+        seen.add((x, y)); stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    todo = {(x, y) for y in range(16) for x in range(16) if not p[y][x] and (x, y) not in seen}
+    out = []
+    while todo:
+        comp = []; st = [todo.pop()]
+        while st:
+            x, y = st.pop(); comp.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in todo: todo.discard(q); st.append(q)
+        out.append(comp)
+    return out
+
+def _connect(p):
+    """a lit pixel with no 4-neighbour but a diagonal one gets the pixel that joins them (limbs stay continuous)"""
+    def lit(x, y): return 0 <= x < 16 and 0 <= y < 16 and p[y][x]
+    for y in range(16):
+        for x in range(16):
+            if p[y][x] and not any(lit(x + dx, y + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                for dx, dy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
+                    if lit(x + dx, y + dy):
+                        if dy > 0 or True: p[y + dy][x] = 1 if 0 <= y + dy < 16 else 0
+                        break
+
+def _clean(g):
+    _connect(g.p)
+    for comp in _holes(g.p):
+        if len(comp) <= 6 and not any(c in g.eyes for c in comp):
+            for (x, y) in comp: g.p[y][x] = 1
 
 # ---------------- babies ----------------
 def _babe(k=1.0):
@@ -106,18 +161,24 @@ def _antenna(k=1.0, wide=0.0, n=2, ball=1.2):
     g.pair(5, 9, 2, 2)
     return g
 
-def _tentacle(k=1.0, n=4, dome=4.6):
+def _tentacle(k=1.0, tn=3, tw=2, squid=False, tlen=0):
+    """tentacle tot: a round head resting right on a fringe of short wavy tentacles (an octopus, not a dome on stilts)"""
     g = A(k)
-    g.ell(7.5, 6.2, dome + 0.6, dome)
-    xs = (3.6, 6.2, 8.8, 11.4) if n == 4 else (2.6, 4.6, 6.6, 8.4, 10.4, 12.4)
-    for i, x in enumerate(xs):
-        tx, ty = g.T(x, 8.4)
-        tx = int(round(tx)); top = int(round(ty))
-        for y in range(top, 16):
-            w = 1 if (k >= 0.85 and (y // 2 + i) % 2) else 0
-            g._raw(tx + w, y)
-            if y < top + 2: g._raw(tx + w + 1, y)
-    g.pair(4, 5, 2, 2)
+    if squid:
+        g.ell(7.5, 5.6, 4.8, 4.6); g.tri(7.5, -0.4, 4.4, 3.2, 10.6, 3.2)       # tall squid head with a pointed cap
+        top = 9.0
+    else:
+        g.ell(7.5, 6.2, 5.9, 4.9); top = 9.6
+    total = tn * tw + (tn - 1)
+    x0 = 7.5 - total / 2.0 + 0.5
+    ty0 = int(round(g.T(7.5, top)[1]))
+    for i in range(tn):
+        x = int(round(x0)) + i * (tw + 1)
+        for y in range(ty0, 16):
+            off = 1 if (((min(y, 14) - ty0) // 2) % 2 and tw == 1) else 0
+            for d in range(tw): g._raw(x + off + d, y)
+    if squid: g.pair(4.2, 5.2, 2, 2)
+    else: g.pair(3.6, 5.0, 2, 2)
     return g
 
 def _three(k=1.0, fat=0.0):
@@ -132,19 +193,30 @@ def _three(k=1.0, fat=0.0):
     return g
 
 # ---------------- brain / cyclops / blob ----------------
-def _brain(k=1.0, big=0.0, tendrils=False):
-    """floating lobed brain over a small face; a fissure opens from the top"""
+def _brain(k=1.0, kind=0):
+    """floating brain: a lobed, scalloped dome (bumps and folds read in the silhouette: a deep fissure and lobe valleys) over a
+    small face. kind 0 = Noggin (short, two tendrils), 1 = Cortex (taller, spinal tail), 2 = Eldermind (huge, crowned, cape)"""
     g = A(k)
-    g.ell(7.5, 6.6, 5.2 + big, 3.0)
-    g.ell(4.2, 5.2, 2.8 + big * 0.5, 2.6); g.ell(10.8, 5.2, 2.8 + big * 0.5, 2.6); g.ell(7.5, 3.8, 3.2, 2.8 + big * 0.5)
-    g.ell(7.5, 10.0, 4.6 + big * 0.4, 3.0)
-    g.line(8.0, 0.4, 8.0, 3.4, 0)      # fissure open to the top
-    if tendrils:
-        for x in (5, 7, 8, 10): g.px(x, 13); g.px(x, 14) if x in (5, 10) else None
-        g.px(7, 14); g.px(8, 15) if False else None
+    if kind == 0:
+        g.ell(7.5, 6.2, 5.4, 3.6); g.mell(4.2, 3.8, 2.6, 2.4); g.ell(7.5, 3.0, 2.4, 2.2)
+        g.ell(7.5, 9.8, 3.8, 2.4)
+        g.line(7.5, 0.4, 7.5, 3.4, 0); g.line(4.6, 0.6, 4.6, 2.0, 0); g.line(10.4, 0.6, 10.4, 2.0, 0)
+        g.tent(5.4, 11.6, 1, 1); g.tent(9.6, 11.6, 1, 1)
+        g.pair(4.8, 8.2, 2, 2)
+    elif kind == 1:
+        g.ell(7.5, 5.8, 6.2, 4.2); g.mell(3.8, 3.6, 2.8, 2.6); g.mell(5.6, 1.8, 2.0, 1.8)
+        g.ell(7.5, 10.0, 4.2, 2.8)
+        g.line(7.5, 0.0, 7.5, 3.8, 0); g.mline(4.4, 0.0, 4.4, 2.2, 0)
+        g.mline(0.0, 5.0, 1.8, 5.0, 0)
+        g.tent(5.6, 12.0, 1, 1); g.tent(7.6, 12.4, 1, 1); g.tent(9.6, 12.0, 1, 1)
+        g.pair(4.6, 8.4, 2, 2)
     else:
-        g.pts([(7, 13), (8, 13)])
-    g.pair(5, 9, 2, 2)
+        g.ell(7.5, 5.2, 7.0, 4.6); g.mell(3.4, 3.4, 3.2, 3.0); g.mell(6.4, 1.2, 2.2, 1.6)
+        g.mtri(5.4, 1.6, 5.2, -0.6, 6.6, 1.2)
+        g.ell(7.5, 10.0, 3.8, 2.8)
+        g.tri(3.2, 14.8, 12.0, 14.8, 7.5, 10.4)
+        g.line(7.5, 0.4, 7.5, 3.6, 0); g.mline(4.2, 0.4, 4.2, 2.4, 0); g.mline(0.0, 5.2, 1.8, 5.2, 0)
+        g.pair(4.8, 8.2, 2, 2)
     return g
 
 def _cyclops(k=1.0, horns=0, wide=0.0, tall=0.0):
@@ -165,8 +237,7 @@ def _blob(k=1.0, fat=0.0):
     g.ell(7.5, 10.0, 6.3 + fat, 5.0 + fat * 0.4)
     g.line(1.4, 10.6, 0.8, 12.4); g.line(13.6, 10.6, 14.2, 12.4)
     g.legs([4.6, 10.4], 13.8)
-    g.pair(4, 7, 2, 2)
-    g.pts([(6.6, 5.0), (8.4, 5.0), (7.5, 4.4)])
+    g.pair(4, 8.4, 2, 2)
     return g
 
 def _sage(k=1.0):
@@ -199,17 +270,23 @@ def _insect(k=1.0, big=False):
         for dy in (0, 1): g.hole(11 + dx, 4.6 + dy)
     return g
 
-def _moth(k=1.0, span=1.0, tails=False):
-    """moth-folk, front view: fluffy body, swept wings, feathered antennae"""
+def _moth(k=1.0, kind=0):
+    """moth-folk, front view: fluffy body, big feathered antennae, swept wings with the pattern notched into their edges.
+    kind 0 = Flit (short rounded wings), 1 = Lumina (long pointed fore wings, notched hind wings), 2 = Lunamoth (round fore wings, long tails)"""
     g = A(k)
     g.ell(7.5, 9.8, 2.2, 3.6); g.ell(7.5, 5.0, 3.0, 2.7)
-    g.tri(5.8, 6.4, 0.2, 1.4, 0.4, 9.6)  ; g.tri(9.2, 6.4, 14.8, 1.4, 14.6, 9.6)
-    g.tri(5.6, 7.4, 0.4, 8.6, 2.6, 13.8); g.tri(9.4, 7.4, 14.6, 8.6, 12.4, 13.8)
-    g.tri(5.6, 6.0, 0.6, 4.0, 1.0, 11.0); g.tri(9.4, 6.0, 14.4, 4.0, 14.0, 11.0)
-    g.line(6.4, 3.0, 4.2, 0.2); g.line(8.6, 3.0, 10.8, 0.2); g.pts([(4.2, 1.2), (10.8, 1.2), (5.2, 1.6), (9.8, 1.6)])
-    if tails:
-        g.line(2.6, 13.4, 1.0, 15.0); g.line(12.4, 13.4, 14.0, 15.0); g.px(1.4, 13.8); g.px(13.6, 13.8)
-    g.legs([6.4, 8.6], 13.4, foot=False)
+    if kind == 0:
+        g.mtri(5.8, 5.8, 0.6, 3.2, 0.8, 9.2); g.mtri(5.6, 7.4, 1.0, 9.0, 3.2, 12.0)
+    elif kind == 1:
+        g.mtri(5.8, 6.4, 0.2, 1.4, 0.4, 9.6); g.mtri(5.6, 7.6, 0.4, 8.6, 2.6, 13.4)
+        g.mtri(5.6, 6.0, 0.6, 4.0, 1.0, 11.0)
+        g.mpx(0.0, 8.0, 0); g.mpx(1.0, 8.0, 0); g.mpx(1.0, 5.0, 0); g.mpx(0.0, 5.0, 0)   # pattern slits at the wing edge
+    else:
+        g.mell(3.4, 5.6, 3.4, 4.0); g.mtri(5.4, 8.0, 0.8, 9.6, 3.0, 11.2)
+        g.mtri(5.6, 8.6, 3.6, 8.2, 2.0, 15.0); g.mtri(4.6, 9.6, 0.6, 8.8, 0.6, 14.6)      # long trailing tails
+        g.mpx(0.0, 4.8, 0); g.mpx(1.0, 4.8, 0)
+    g.mline(6.4, 3.0, 3.6, 0.4); g.mline(3.6, 0.4, 2.2, 0.4); g.mline(5.4, 2.0, 3.6, 2.6)
+    if kind < 2: g.legs([6.4, 8.6], 13.4, foot=False)
     g.hole(6, 5); g.hole(9, 5); g.hole(6, 6); g.hole(9, 6)
     return g
 
@@ -225,64 +302,56 @@ def _saucer(k=1.0, dome=3.2, spire=False):
     g.pair(6, top - 4.4, 1, 2)
     return g
 
-def _crystal(k=1.0, sh=6.0, sats=0, spikes=0):
-    """faceted gem being: a cut diamond (flat table, wide shoulders, pointed base) with a face, floating shards beside it"""
+def _crystal(k=1.0, spikes=()):
+    """crystal cluster: several pointed hexagonal spikes fanning out from one base, the tallest upright with the face.
+    spikes = [(base x, tip x, tip y, half width)], tallest first"""
     g = A(k)
-    for y in range(1, 15):
-        if y <= 5: hw = 2.2 + (y - 1) * (sh - 2.2) / 4.0
-        else: hw = sh * (1 - (y - 5) / 10.0)
-        x = 7.5 - hw
-        while x <= 7.5 + hw + 0.01:
-            g.set(x, y); x += 0.5
-    if spikes:
-        g.tri(7.5 - sh - 0.6, 5.4, 7.5 - sh + 0.2, 0.2, 7.5 - sh + 2.2, 3.4, min_h=2)
-        g.tri(7.5 + sh - 2.2, 3.4, 7.5 + sh - 0.2, 0.2, 7.5 + sh + 0.6, 5.4, min_h=2)
-    if sats >= 1:
-        for (dx, dy) in ((0, 0), (0, -1), (0, 1), (-1, 0), (1, 0)):
-            g.px(1.0 + dx, 11.0 + dy)
-            if sats >= 2: g.px(14.0 + dx, 9.0 + dy)
-    g.pair(5, 4.0, 1, 3)
+    for (bx, tx, ty, hw) in spikes:
+        bxs, bys = g.T(bx, 14.8); txs, tys = g.T(tx, ty)
+        for y in range(int(round(tys)), 16):
+            t = (bys - y) / max(1.0, bys - tys)
+            c = bxs + (txs - bxs) * min(1.0, t)
+            w = min(hw, 0.3 + (y - tys) * 0.5)
+            x = c - w
+            while x <= c + w + 0.01: g._raw(x, y); x += 0.5
+    bx, tx, ty, hw = spikes[0]
+    g.pair(bx - 1.6, ty + 5.0, 1, 2)
     return g
 
 # ---------------- cosmic ultimates ----------------
 def _ship(k=1.0):
-    """friendly mothership: stacked saucer with a face, antenna array and a skirt of lights"""
+    """friendly mothership: stacked saucer with a face, antenna array and a row of landing legs"""
     g = A(k)
-    g.ell(7.5, 10.2, 7.7, 2.8); g.ell(7.5, 6.4, 4.4, 3.2); g.ell(7.5, 3.6, 2.2, 1.6)
-    g.line(7.5, 2.4, 7.5, 0.4); g.px(6.7, 0.4); g.px(8.3, 0.4)
+    g.ell(7.5, 10.2, 7.7, 2.8); g.ell(7.5, 6.4, 5.3, 3.4); g.ell(7.5, 3.4, 2.6, 1.8)
+    g.line(7.5, 2.4, 7.5, 0.0); g.px(6.7, 0.4); g.px(8.3, 0.4)
     g.line(3.0, 8.0, 1.4, 5.4); g.px(1.2, 4.6); g.line(12.0, 8.0, 13.6, 5.4); g.px(13.8, 4.6)
-    for x in (1, 4, 7, 10, 13):                       # lights: little feet under the rim
-        g.px(x, 13.4); g.px(x + 0.6, 14.6)
-    g.pair(4, 5.6, 2, 2)
+    for x in (1.2, 4.4, 10.6, 13.8): g.line(x, 11.6, x, 14.8); g.px(x + (0.8 if x < 7 else -0.8), 15)
+    g.line(7.0, 12.8, 7.0, 14.8); g.line(8.2, 12.8, 8.2, 14.8)
+    g.pair(5, 5.6, 2, 2)
     return g
 
 def _jelly(k=1.0):
-    """cosmic jellyfish: crowned bell, curling ribbon arms, short strands"""
+    """cosmic jellyfish: a crowned bell over a frill, long ribbon arms and a few straight strands (continuous lines)"""
     g = A(k)
-    g.ell(7.5, 5.2, 5.2, 3.8)
-    for x in (3.5, 5.5, 7.5, 9.5, 11.5): g.px(x, 1.0)
-    g.px(5.5, 0.2); g.px(9.5, 0.2)
-    g.ell(7.5, 8.6, 4.6, 1.2)
-    left = [(4.4, 9.4), (3.6, 10.6), (2.8, 12.0), (2.0, 13.4), (2.4, 14.6), (3.6, 14.6), (4.0, 13.6)]
-    for (x, y) in left:
-        g.px(x, y); g.px(15 - x, y)
-    for (x, y) in ((4.4, 10.4), (3.6, 11.6), (2.8, 13.0)): g.px(x + 1, y); g.px(14 - x, y)
-    for x in (6.5, 8.5):
-        for y in range(10, 14): g.px(x + (0 if y % 2 else 1) * (1 if x < 7 else -1), y)
+    g.ell(7.5, 5.2, 5.4, 4.0)
+    for x in (3.5, 5.5, 7.5, 9.5, 11.5): g.px(x, 0.8); g.px(x, 1.6)
+    g.ell(7.5, 8.8, 5.4, 1.2)
+    g.mline(3.4, 9.4, 1.6, 12.0); g.mline(1.6, 12.0, 2.4, 14.8)       # curling ribbon arms
+    g.mline(4.6, 9.4, 3.4, 12.6); g.mline(3.4, 12.6, 4.0, 15.0)
+    for x in (6.4, 8.6): g.line(x, 9.6, x, 14.8)
     g.pair(5, 4.6, 2, 2)
     return g
 
 def _nebula(k=1.0):
-    """pinwheel galaxy: bright core with two swirling arms, a face in the middle"""
+    """a kind cloud: a fluffy scalloped body (the galaxy) with one calm spiral arm trailing behind"""
     g = A(k)
-    g.ell(7.5, 8.2, 3.8, 3.6)
-    for arm in (0, math.pi):
-        for i in range(0, 22):
-            t = i / 21.0
-            a = arm + t * 3.4 - 0.4
-            r = 3.0 + t * 4.6
-            g.ell(7.5 + math.cos(a) * r * 1.05, 8.2 + math.sin(a) * r * 0.82, 1.0 + (1 - t) * 0.9, 1.0 + (1 - t) * 0.7)
-    g.pair(6, 7.6, 1, 2)
+    g.ell(7.5, 8.2, 5.4, 4.6)
+    g.mell(3.6, 5.6, 2.6, 2.6); g.ell(7.5, 3.8, 2.8, 2.6)
+    g.mell(3.0, 10.6, 2.6, 2.4)
+    g.ell(7.5, 12.0, 3.4, 2.6)
+    g.pts([(14.0, 11.5), (14.8, 12.5), (14.8, 14.0), (13.6, 14.8), (12.0, 14.8)])  # the spiral tail
+    g.pair(4.6, 6.8, 2, 2)
+    g.mpx(7.0, 11.2, 0) if False else None
     return g
 
 def _maw(k=1.0):
@@ -307,11 +376,68 @@ def _ring(k=1.0):
     g.pair(4, 3.6, 2, 2)
     return g
 
+def _antbroken(k=1.0):
+    """scruffy stray antenna blob: a lopsided body, one antenna standing and one bent over and drooping"""
+    g = A(k)
+    g.ell(7.5, 10.8, 5.0, 3.8); g.ell(6.5, 9.0, 3.6, 2.6)
+    g.line(4.4, 7.6, 3.2, 2.6); g.ell(3.0, 2.0, 1.2, 1.2)                      # the antenna that still stands
+    g.line(10.6, 7.8, 12.0, 4.6); g.line(12.0, 4.6, 14.2, 5.8); g.px(14.6, 6.8)   # the bent one
+    g.legs([5, 10], 13.8)
+    g.pair(4.6, 9.2, 2, 2)
+    return g
+
+def _dropout(k=1.0):
+    """crash-landed stray: a wide head tilted over a squat body, a cracked crown and one bent antenna"""
+    g = A(k)
+    g.ell(7.0, 7.2, 6.4, 4.4); g.ell(8.0, 12.2, 3.6, 2.4)
+    g.line(4.6, 3.6, 3.2, 1.2); g.line(3.2, 1.2, 1.4, 2.4); g.px(1.0, 3.4)
+    g.legs([6.2, 9.8], 13.2)
+    g.slants(2.6, 6.2)
+    return g
+
+
+# ---------------- hand-drawn sprites (left half, columns 0-7, mirrored to 16 columns; X = lit, . = unlit) ----------------
+def _mirror(half):
+    rows = []
+    for h in half:
+        assert len(h) == 8, h
+        rows.append(h + h[::-1])
+    assert len(rows) == 16
+    return rows
+
+# crystal clusters: Shardling (a core spike with two low shards), Prism (three tall spikes, a front pair), Heartstone (a five-spike giant)
+HALF = {
+ 'static': ['........', '....XXXX', '..XXXXXX', '.XXXXXXX', '.XXXXXXX', '.XXXX..X', '.XX...XX', '..XXXXXX', '...XXXXX', '......XX', '......XX', '..XXXXXX', '..X.XXXX', '..X.XXXX', '.....XX.', '.....X..'],
+ 'lostling': ['........', '........', '........', '........', '....XXXX', '...XXXXX', '...XX..X', '...X...X', '....XXXX', '.....XXX', '......XX', '...XXXXX', '...XXXXX', '....XXXX', '.....XX.', '.....X..'],
+ 'bloop': ['................', '................', '................', '................', '................', '.......XX.......', '.......XX.......', '....XXXXXXXX....', '...XXXXXXXXXX...', '...XXXXXXXXXX...', '...X..XXXX..X...', '...X..XXXX..X...', '...XXXXXXXXXX...', '....XXXXXXXX....', '.....XXXXXX.....', '.....X....X.....'],
+ 'nebula': ['................', '................', '.....XXXX.......', '...XXXXXXX.XXX..', '..XXXXXXXXXXXXX.', '.XXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXX', 'XXXX..XXXX..XXXX', 'XXXX..XXXX..XXXX', 'XXXXXXXXXXXXXXXX', '.XXXXXXXXXXXXXX.', '.XXXXXXXXXXXXXX.', '.XXXX.XXXX.XXXX.', '.XXX..XXXX..XXX.', '..XX..XXXX..XX..', '................'],
+ 'shard': ['................', '................', '................', '.......X........', '......XXX.......', '...X..XXX.......', '..XXX.XXX...X...', '..XXX.XXX..XXX..', '..XXX.XXX..XXX..', '.XXXXXXXXXXXXXX.', '.XXX..XXXX..XXX.', '.XXX..XXXX..XXX.', '..XXXXXXXXXXXX..', '...XXXXXXXXXX...', '....XXXXXXXX....', '.....XXXXXX.....'],
+ 'prism': ['................', '.....X..........', '....XXX...X.....', '....XXX..XXX....', '.X..XXX..XXX....', 'XXX.XXX..XXX..X.', 'XXX.XXX..XXX.XXX', 'XXX.XXX..XXX.XXX', 'XXX.XXX..XXX.XXX', '.XXXXXXXXXXXXXX.', '.XXX..XXXX..XXX.', '.XXX..XXXX..XXX.', '..XXXXXXXXXXXX..', '...XXXXXXXXXX...', '....XXXXXXXX....', '.....XXXXXX.....'],
+ 'heart': ['................', '.....X..........', '....XXX..X......', '.X..XXX.XXX..X..', 'XXX.XXX.XXX.XXX.', 'XXX.XXX.XXX.XXX.', 'XXX.XXX.XXX.XXX.', 'XXX.XXX.XXX.XXX.', 'XXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXX', 'XXXX..XXXX..XXXX', 'XXXX..XXXX..XXXX', 'XXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXX', '.XXXXXXXXXXXXXX.', '..XXXXXXXXXXXX..'],
+ # floating brains: a scalloped dome with a fissure open at the top, lobe valleys notched in from the sides, a small face and tendrils
+ 'noggin': ['........', '........', '.....XX.', '...XXXX.', '..XXXXX.', '.XXXXXXX', '..XXXXXX', '.XXXXXXX', '.XXX..XX', '.XXX..XX', '..XXXXXX', '....XXXX', '.....X..', '.....X.X', '......X.', '.....X..'],
+ 'cortex': ['....XX..', '..XXXXX.', '.XXXXXX.', '.XXXXXX.', 'XXXXXXXX', '.XXXXXXX', '..XXXXXX', 'XXXXXXXX', 'XXXX..XX', 'XXXX..XX', '.XXXXXXX', '..XXXXXX', '...XXXXX', '....X.XX', '....X.X.', '...X..X.'],
+ 'elder':  ['....X.X.', '..XXXXX.', '.XXXXXX.', 'XXXXXXX.', 'XXXXXXX.', '.XXXXXXX', '..XXXXXX', 'XXXXXXXX', 'XXXX..XX', 'XXXX..XX', '.XXXXXXX', '...XXXXX', '...XXXXX', '..XXXXXX', '.XXXXXXX', 'XXXXXXXX'],
+ # moth-folk: Flit (small single wings), Lumina (fore and hind wings), Lunamoth (long tailed hind wings)
+ 'flit':   ['X.......', '.X..X...', '..XXX...', '...XXXXX', 'X..XXXXX', 'XX.X.XXX', 'XXX.X.XX', 'XXXX.XXX', 'XXXX..XX', '.XXX..XX', '..XX..XX', '......XX', '......XX', '.......X', '.......X', '.......X'],
+ 'lumina': ['X.......', 'XX..X...', 'XXXXXX..', 'XXX.XXXX', 'XXX.XXXX', 'XXX.X.XX', 'XXXXX.XX', 'XXX.XXXX', '.XX..XXX', '.XXX.XXX', 'XXXXXXXX', 'XXXXXXXX', '.XXXXXXX', '..XXXXXX', '...XXXXX', '......XX'],
+ 'luna':   ['X.......', 'XX..X...', 'XXXXXX..', 'XXX.XXXX', 'XXX.XXXX', 'XXX.X.XX', 'XXXXX.XX', 'XXX.XXXX', '.XX..XXX', '.XXX.XXX', '..XXXXXX', '...XXXXX', '..XXXXXX', '.XXX..XX', '.XX...XX', 'XX....XX'],
+}
+
 # ---------------- registry ----------------
+def _ascii(name, hd, body):
+    rows = HALF[name] if len(HALF[name][0]) == 16 else _mirror(HALF[name])
+    hs = _holes([[1 if c == 'X' else 0 for c in r] for r in rows])
+    holes = sorted(min(h, key=lambda q: (q[1], q[0])) for h in hs)
+    holes = sorted(holes, key=lambda q: (q[1], q[0]))
+    by = {st: dict(rows=rows, head=hd, eye=(holes[0] if holes else (7, 6)), body=body) for st in SIZES}
+    return dict(by_stage=by)
+
 def _build(fn, hd, eye, body, **kw):
     by = {}
     for stage, k in SIZES.items():
         g = fn(k=k, **kw)
+        _clean(g)
         hx, hy = _T(k, hd[0], hd[1])
         ex, ey = g.anchor if g.anchor else tuple(round(v) for v in _T(k, eye[0], eye[1]))
         g._raw(ex, ey, 0)
@@ -320,22 +446,22 @@ def _build(fn, hd, eye, body, **kw):
     return dict(by_stage=by)
 
 ARCH_ALIEN = {
- 'al_babe':    _build(_babe, (7.5, 8.6, 4.2), (5, 8.5), (3, 12)),
+ 'al_babe':    _ascii('bloop', (7.5, 8.5, 4.2), (3, 12)),
  'al_orb':     _build(_orb, (7.5, 10.0, 4.6), (7, 9), (3, 12)),
  'al_wobble':  _build(_wobble, (7.5, 6.0, 4.4), (4.4, 5.6), (5, 10)),
  'al_wobblebig': _build(_wobble, (7.5, 6.0, 5.0), (3.8, 5.6), (5, 10), big=0.9),
- 'al_tall':    _build(_tall, (7.5, 3.8, 3.4), (5, 3.4), (6, 9)),
- 'al_tallbig': _build(_tall, (7.5, 3.8, 4.0), (5, 3.4), (6, 9), head=4.2),
+ 'al_tall':    _ascii('lostling', (7.5, 6.0, 3.4), (6, 9)),
+ 'al_tallbig': _ascii('static', (7.5, 4.0, 4.0), (6, 9)),
  'al_antenna': _build(_antenna, (7.5, 10.0, 4.4), (5, 9.2), (3, 12)),
  'al_antbig':  _build(_antenna, (7.5, 10.0, 5.0), (5, 9.2), (2, 13), wide=1.0, ball=1.5),
  'al_ant3':    _build(_antenna, (7.5, 10.0, 5.0), (5, 9.2), (2, 13), wide=0.6, n=3, ball=1.3),
- 'al_tentacle': _build(_tentacle, (7.5, 6.0, 4.6), (4.6, 5.6), (3, 12)),
- 'al_tent6':   _build(_tentacle, (7.5, 5.8, 5.0), (4.6, 5.4), (2, 13), n=6, dome=5.0),
+ 'al_tentacle': _build(_tentacle, (7.5, 6.0, 4.6), (4.6, 5.6), (2, 13), tn=4, tw=1),
+ 'al_tent6':   _build(_tentacle, (7.5, 6.0, 5.0), (4.6, 6.4), (1, 14), tn=5, tw=1, squid=True),
  'al_three':   _build(_three, (7.5, 7.0, 5.4), (3.4, 7.4), (3, 12)),
  'al_threefat': _build(_three, (7.5, 7.0, 6.0), (3.0, 7.4), (2, 13), fat=1.0),
- 'al_brain':   _build(_brain, (7.5, 6.0, 5.0), (5.4, 10.0), (3, 12)),
- 'al_brainbig': _build(_brain, (7.5, 6.0, 5.6), (5.4, 10.0), (2, 13), big=0.8),
- 'al_brainking': _build(_brain, (7.5, 6.0, 5.6), (5.4, 10.0), (2, 13), big=0.8, tendrils=True),
+ 'al_brain': _ascii('noggin', (7.5, 6.0, 5.0), (3, 12)),
+ 'al_brainbig': _ascii('cortex', (7.5, 6.0, 5.6), (2, 13)),
+ 'al_brainking': _ascii('elder', (7.5, 6.0, 5.6), (2, 13)),
  'al_sage':    _build(_sage, (7.5, 4.6, 4.6), (4, 4.4), (3, 12)),
  'al_cyclops': _build(_cyclops, (7.5, 9.0, 5.0), (7, 8.5), (3, 12)),
  'al_cyclohorn': _build(_cyclops, (7.5, 9.0, 5.0), (7, 8.5), (3, 12), horns=1, wide=0.4),
@@ -344,18 +470,20 @@ ARCH_ALIEN = {
  'al_blobfat': _build(_blob, (7.5, 9.0, 6.0), (5.4, 8.4), (1, 14), fat=0.9),
  'al_insect':  _build(_insect, (11.4, 5.4, 2.8), (11.5, 5.0), (2, 12)),
  'al_insectbig': _build(_insect, (11.4, 5.4, 2.8), (11.5, 5.0), (2, 12), big=True),
- 'al_moth':    _build(_moth, (7.5, 5.0, 2.2), (6.4, 5.0), (4, 11)),
- 'al_mothbig': _build(_moth, (7.5, 5.0, 2.4), (6.4, 5.0), (3, 12), span=1.15),
- 'al_luna':    _build(_moth, (7.5, 5.0, 2.4), (6.4, 5.0), (3, 12), span=1.15, tails=True),
+ 'al_moth': _build(_moth, (7.5, 5.0, 2.2), (6.4, 5.0), (4, 11), kind=0),
+ 'al_mothbig': _build(_moth, (7.5, 5.0, 2.4), (6.4, 5.0), (3, 12), kind=1),
+ 'al_luna': _build(_moth, (7.5, 5.0, 2.4), (6.4, 5.0), (3, 12), kind=2),
  'al_saucer':  _build(_saucer, (7.5, 6.0, 3.2), (6, 5.6), (1, 14)),
  'al_saucerbig': _build(_saucer, (7.5, 6.0, 3.6), (6, 5.6), (1, 14), dome=3.7, spire=True),
- 'al_crystal': _build(_crystal, (7.5, 5.0, 3.4), (4, 4), (2, 13), sh=5.2),
- 'al_crystal2': _build(_crystal, (7.5, 5.0, 3.6), (4, 4), (2, 13), sh=5.8, sats=1),
- 'al_crystal3': _build(_crystal, (7.5, 5.0, 3.8), (4, 4), (1, 14), sh=6.4, sats=2),
+ 'al_crystal': _ascii('shard', (7.5, 5.0, 3.4), (2, 13)),
+ 'al_crystal2': _ascii('prism', (7.5, 5.0, 3.6), (2, 13)),
+ 'al_crystal3': _ascii('heart', (7.5, 5.0, 3.8), (1, 14)),
  'al_ship':    _build(_ship, (7.5, 6.4, 4.2), (6, 6.6), (0, 15)),
  'al_jelly':   _build(_jelly, (8.6, 5.6, 4.6), (6.8, 5.6), (3, 13)),
- 'al_nebula':  _build(_nebula, (7.5, 8.2, 3.8), (6.2, 7.6), (1, 14)),
+ 'al_nebula':  _ascii('nebula', (7.5, 8.0, 4.0), (1, 14)),
  'al_maw':     _build(_maw, (6.8, 9.0, 5.2), (4.5, 6.0), (1, 12)),
+ 'al_antbroken': _build(_antbroken, (7.5, 10.0, 4.4), (5, 9.4), (3, 12)),
+ 'al_dropout': _build(_dropout, (7.0, 7.0, 5.0), (3.6, 6.8), (3, 12)),
  'al_ring':    _build(_ring, (7.5, 5.0, 3.0), (4.5, 4.3), (1, 14)),
 }
 spritegen.register_archetypes(ARCH_ALIEN)
@@ -371,21 +499,75 @@ def _top(g, x):
         if g.get(x, y): return y
     return None
 
+def _enclosed(g):
+    """number of enclosed unlit cells (eye holes); the glitch must not open or close them"""
+    seen = set(); stack = [(x, y) for y in range(16) for x in range(16) if (x in (0, 15) or y in (0, 15)) and not g.get(x, y)]
+    while stack:
+        x, y = stack.pop()
+        if (x, y) in seen or not (0 <= x < 16 and 0 <= y < 16) or g.get(x, y): continue
+        seen.add((x, y)); stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    return sum(1 for y in range(16) for x in range(16) if not g.get(x, y) and (x, y) not in seen)
+
+def _runs(row):
+    r = 0; prev = 0
+    for v in row:
+        if v and not prev: r += 1
+        prev = v
+    return r
+
 def al_glitch(g, c):
-    """stray line: two rows tear sideways by one pixel at their edges and two edge pixels drop out (no enclosed holes)"""
+    """stray line: a bad signal. Bands of solid rows slide sideways (two pixels right, two left, one right), the band edges stay
+    joined to the body, and a scanline notch is bitten from each side; eye holes are never opened or closed"""
     x0, y0, x1, y1 = _bb(g)
     h = y1 - y0
-    for frac, d in ((0.34, 1), (0.7, -1)):
+    if h < 5: return
+    holes = _enclosed(g)
+    for frac, d, n in ((0.28, 2, 2), (0.5, -2, 2), (0.72, 1, 1)):
         y = y0 + int(h * frac)
-        row = [g.get(x, y) for x in range(16)]
-        if sum(row) < 4: continue
-        for x in range(16):
-            if row[x] and (x <= x0 + 1 or x >= x1 - 1) and 0 <= x + d < 16:
-                g.p[y][x + d] = 1
-                if x - d >= 0 and not row[x - d]: g.p[y][x] = 0
-    for (left, fy) in ((True, 0.55), (False, 0.25)):
-        x = x0 if left else x1; y = y0 + int(h * fy) + 1
-        if g.get(x, y) and g.get(x + (1 if left else -1), y): g.set(x, y, 0)
+        saved = [r[:] for r in g.p]
+        ok = True
+        for yy in range(y, min(15, y + n)):
+            row = g.p[yy]
+            if sum(row) < 5 or _runs(row) != 1: ok = False; break
+            new = [0] * 16
+            for x in range(16):
+                if row[x]:
+                    if not 0 <= x + d < 16: ok = False; break
+                    new[x + d] = 1
+            if not ok: break
+            g.p[yy] = new
+        if not ok or _enclosed(g) != holes:
+            g.p = saved
+    for (left, fy) in ((True, 0.4), (False, 0.62)):
+        y = y0 + int(h * fy); row = g.p[y]
+        if _runs(row) != 1 or sum(row) < 7: continue
+        xs = [x for x in range(16) if row[x]]
+        x = xs[0] if left else xs[-1]; step = 1 if left else -1
+        saved = [r[:] for r in g.p]
+        row[x] = 0; row[x + step] = 0
+        if _enclosed(g) != holes: g.p = saved
+
+def al_blink(g, c):
+    """the blink closes EVERY eye (the renderer only closes the anchor one): on the blink frame all small enclosed holes fill in"""
+    try: blink = sys._getframe(1).f_locals.get('blink')
+    except Exception: blink = False
+    _connect(g.p)
+    if not blink: return
+    seen = set(); stack = [(x, y) for y in range(16) for x in range(16) if (x in (0, 15) or y in (0, 15)) and not g.get(x, y)]
+    while stack:
+        x, y = stack.pop()
+        if (x, y) in seen or not (0 <= x < 16 and 0 <= y < 16) or g.get(x, y): continue
+        seen.add((x, y)); stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    holes = [(x, y) for y in range(16) for x in range(16) if not g.get(x, y) and (x, y) not in seen]
+    todo = set(holes)
+    while todo:
+        comp = []; st = [todo.pop()]
+        while st:
+            x, y = st.pop(); comp.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in todo: todo.discard(q); st.append(q)
+        if len(comp) <= 14:
+            for (x, y) in comp: g.p[y][x] = 1
 
 def al_spark(g, c):
     """a four-point sparkle in a free top corner"""
@@ -395,11 +577,12 @@ def al_spark(g, c):
             return
 
 def al_stars(g, c):
-    """up to three single-pixel stars in empty corners"""
+    """up to two small plus-shaped stars in empty corners (never single stray pixels)"""
     n = 0
     for (x, y) in ((1, 1), (14, 2), (14, 9), (1, 5), (2, 11), (14, 5)):
-        if n < 3 and all(not g.get(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
-            g.set(x, y); n += 1
+        if n < 2 and all(not g.get(x + dx, y + dy) for dx in range(-2, 3) for dy in range(-2, 3)):
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)): g.set(x + dx, y + dy)
+            n += 1
 
 def al_moon(g, c):
     """crescent moon beside the head"""
@@ -415,5 +598,5 @@ def al_plates(g, c):
         if t is not None and t > 0: g.set(x, t - 1)
 
 spritegen.EXTRA_HANDLERS.update({
- 'al_glitch': al_glitch, 'al_spark': al_spark, 'al_stars': al_stars, 'al_moon': al_moon, 'al_plates': al_plates,
+ 'al_glitch': al_glitch, 'al_blink': al_blink, 'al_spark': al_spark, 'al_stars': al_stars, 'al_moon': al_moon, 'al_plates': al_plates,
 })
