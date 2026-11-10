@@ -129,3 +129,222 @@ ARCH = {
   "......XX..XX....",
  ], head=(13, 4, 2.0), eye=(13, 5), body=(5, 11)),
 }
+
+
+# ---- Narrow fixes (polish-dino2): species whose silhouette was a near copy of another, the hatchlings, and
+# eyes that touched an open pixel. Everything above is unchanged; these entries are used only by the species that name them.
+def _fill(name, pts):
+    rows = [list(r) for r in ARCH[name]['rows']]
+    for x, y in pts:
+        rows[y][x] = 'X'
+    return dict(ARCH[name], rows=["".join(r) for r in rows])
+
+# same bodies as before with the eye ringed by ink (the eye used to touch an open pixel)
+ARCH['raptor_s'] = _fill('raptor', [(11, 2)])
+ARCH['bronto_l'] = _fill('bronto', [(12, 2)])
+ARCH['ankylo_s'] = _fill('ankylo', [(14, 10)])
+ARCH['stego_p'] = _fill('stego', [(15, 8)])
+
+def _n(rows, head, eye, body, stage):
+    assert len(rows) == 16 and all(len(r) == 16 for r in rows), rows
+    return dict(by_stage={stage: dict(rows=rows, head=head, eye=eye, body=body)})
+
+ARCH['pip'] = _n([
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  ".....X.X.X......",
+  ".....XXXXX......",
+  "....XXXXXXXX....",
+  "....XXXX.XXX....",
+  "..X.XXXXXXXXX...",
+  "..XXXXXXXXXX....",
+  "...XXXXXXXX.....",
+  "....XX..XX......",
+ ], (8, 11, 2), (8, 11), (3, 11), 1)
+ARCH['nubb'] = _n([
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "........X.......",
+  ".......XX.X.....",
+  ".......XXXX.....",
+  ".....XXXXXX.....",
+  "....XXXXXXXX....",
+  "....XXXX.XXX....",
+  "..X.XXXXXXXXX...",
+  "..XXXXXXXXXX....",
+  "...XXXXXXXX.....",
+  "....XX..XX......",
+ ], (8, 11, 2), (8, 11), (3, 11), 1)
+
+ARCH['hadro'] = _n([  # professor: crested duck-billed hadrosaur
+  ".......XXX......",
+  "......XXXXX.....",
+  ".....XXXXXXXXX..",
+  ".....XXXXX.XXXXX",
+  "......XXXXXXXXXX",
+  ".......XXXXXXXX.",
+  ".......XXXXXX...",
+  "......XXXXXXX...",
+  "X....XXXXXXXXX..",
+  "XX..XXXXXXXXXXX.",
+  ".XXXXXXXXXXXXXX.",
+  "..XXXXXXXXXXXX..",
+  "...XXXXXXXXXX...",
+  "....XXXXXXXX....",
+  "....XX...XXX....",
+  "...XXX...XXXX...",
+ ], (10, 3, 2.5), (10, 3), (4, 12), 4)
+ARCH['therizino'] = _n([  # noodlord: pot-bellied, long-armed, curl-tailed
+  "................",
+  "................",
+  "..........XXXX..",
+  ".........XXXXXXX",
+  ".........XX.XXXX",
+  ".........XXXXXX.",
+  "..........XXXX..",
+  ".........XXXXXXX",
+  ".......XXXXXXXXX",
+  "..XX..XXXXXXXX.X",
+  ".X..XXXXXXXXXXX.",
+  ".X..XXXXXXXXXXX.",
+  "..XXXXXXXXXXXX..",
+  "...XXXXXXXXXX...",
+  "....XXX..XXX....",
+  "...XXXX..XXXX...",
+ ], (11, 4, 2), (11, 4), (3, 12), 4)
+ARCH['wizard'] = _n([  # noodlemancer: hatted, robed, staff-bearer
+  "......X......XX.",
+  ".....XXX.....XX.",
+  ".....XXX......X.",
+  "....XXXXX.....X.",
+  "..XXXXXXXXXX..X.",
+  ".....XXXXXXX..X.",
+  ".....XXX.XXXX.X.",
+  ".....XXXXXXX..X.",
+  "......XXXXX...X.",
+  ".....XXXXXXX..X.",
+  "....XXXXXXXXX.X.",
+  "...XXXXXXXXXX.X.",
+  "..XXXXXXXXXXX.X.",
+  "..XXXXXXXXXXX.X.",
+  ".XXXXXXXXXXXX.X.",
+  ".XXX..XXX..XXXXX",
+ ], (8, 6, 2), (8, 6), (3, 12), 5)
+ARCH['gobbo'] = _n([  # gremlin: hunched, horned, long-armed imp
+  "..........X..X..",
+  "..........X..X..",
+  "..........XXXXX.",
+  "..........XXXXX.",
+  ".........XXXXXXX",
+  ".........XX.XXXX",
+  "....X.X..XXXXXX.",
+  "..XXXXXXXXXXXXX.",
+  ".XXXXXXXXXXXXXX.",
+  ".XXXXXXXXXXXX.X.",
+  "XXXXXXXXXXXXX...",
+  "X.XXXXXXXXXX....",
+  "...XXXXXXXXX....",
+  "...XXXXXXXX.....",
+  "...XX..XXX......",
+  "..XXX.XXXX......",
+ ], (11, 4.5, 2), (11, 5), (3, 12), 4)
+ARCH['flyer'] = _n([  # skywing: winged raptor in flight
+  "..X.X.X.X.......",
+  "..XXXXXXXX......",
+  "...XXXXXXXXX..XX",
+  "....XXXXXXXXXXXX",
+  ".....XXXXXXXXXXX",
+  "......XXXXXXXXXX",
+  "......XXXXXXXXX.",
+  ".....XXXXXXXXX..",
+  "X...XXXXXXXXXX..",
+  "XX.XXXXXXXXXXX..",
+  ".XXXXXXXXXXX....",
+  "..XXXXXXXXX.....",
+  "....XXXXXX......",
+  ".....X..XX......",
+  "......X..X......",
+  "................",
+ ], (13, 4, 2), (13, 4), (4, 12), 5)
+ARCH['sitter'] = _n([  # sage: upright, seated sauropod
+  "................",
+  "................",
+  "................",
+  "................",
+  "........XXXXX...",
+  "........XX.XXXX.",
+  "........XXXXXXX.",
+  ".........XXXX...",
+  ".........XXX....",
+  "........XXXXX...",
+  ".......XXXXXXX..",
+  "......XXXXXXXXX.",
+  ".....XXXXXXXXXXX",
+  "..XX.XXXXXXXXXX.",
+  ".XXXXXXXXXXXXXX.",
+  "XXXX.XXXXX.XXXX.",
+ ], (10, 5.5, 2), (11, 5), (4, 13), 5)
+ARCH['fortress'] = _n([  # bulwark: spiked dome on pillar legs, club tail
+  ".....X..X..X....",
+  "....XXXXXXXXXX..",
+  "...XXXXXXXXXXXX.",
+  "..XXXXXXXXXXXXX.",
+  ".XXXXXXXXXXXXXX.",
+  ".XXXXXXXXXXXXXX.",
+  "XXXXXXXXXXXXXXX.",
+  "XXXXXXXXXXXXXXX.",
+  "XXXXXXXXXXXXX.X.",
+  "XXXXXXXXXXXXXXXX",
+  "XXXXXXXXXXXXXXXX",
+  ".XXXXXXXXXXXXXXX",
+  ".XXXXXXXXXXXX.X.",
+  "..XXX.XXXX.XXX..",
+  "..XXX.XXXX.XXX..",
+  ".XXXX.XXXX.XXXX.",
+ ], (14, 10, 2), (14, 10), (1, 12), 5)
+ARCH['brawler'] = _n([  # scrapper: upright, bone-domed, spiked brawler
+  "................",
+  "...........XXX..",
+  "..........XXXXX.",
+  "..........XX.XXX",
+  "..........XXXXXX",
+  "..........XXXXX.",
+  "..X.X.X...XXXX..",
+  "..XXXXXXXXXXXX..",
+  ".XXXXXXXXXXXXX..",
+  "XXXXXXXXXXXXXXX.",
+  "XXXXXXXXXXXXX.XX",
+  "XXXXXXXXXXXX.X..",
+  ".XXXXXXXXXX.....",
+  "...XXXXXXXX.....",
+  "...XXX..XXX.....",
+  "..XXXX..XXXX....",
+ ], (12, 3.5, 2), (12, 3), (2, 12), 4)
+ARCH['frilled'] = _n([  # petalrex: petal-ruffed dilophosaur
+  "...X.X.X.X......",
+  "..XXXXXXXXX.....",
+  ".XXXXXXXXXXXX...",
+  ".XXXXXXXXXXXXXXX",
+  "..XXXXXXXXXXXXXX",
+  ".XXXXXXXXXXXXXX.",
+  "..XXXXXXXXX.....",
+  "...X.XXXXX......",
+  ".....XXXXXX.....",
+  "X...XXXXXXXX....",
+  "XX.XXXXXXXXXX...",
+  ".XXXXXXXXXXXX...",
+  "..XXXXXXXXXX....",
+  "...XXXXXXXX.....",
+  "....XXX..XXX....",
+  "...XXXX..XXXX...",
+ ], (8, 3.5, 3), (12, 4), (3, 12), 4)
