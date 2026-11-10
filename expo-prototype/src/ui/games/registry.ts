@@ -10,6 +10,7 @@ export const GAME_ENTRIES: GameEntry[] = [
   load(require('./hilo')),
   load(require('./catch')),
   // ---- slot: DASH ----
+  load(require('./dash')),
 
   // ---- slot: ECHO ----
 
