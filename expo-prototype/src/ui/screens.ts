@@ -247,10 +247,11 @@ function paintGame(b: Buf, ctx: ScreenCtx, s: Session, entryLayout: 'field' | 't
     const h = s.game.hud;
     paintHud(b, h.left, h.right, s.game.progress);
     if (s.phase === 'over') {
-      const w = textWidth('TIME UP', 2);
+      const label = s.game.overLabel ?? 'TIME UP';
+      const w = textWidth(label, 2);
       const x = (b.n - w) >> 1;
       b.rect(x - 3, 22, w + 6, 15, 0); b.frame(x - 3, 22, w + 6, 15);
-      b.text('TIME UP', x, 26, 2);
+      b.text(label, x, 26, 2);
     }
   } else e.paint(c);
 }

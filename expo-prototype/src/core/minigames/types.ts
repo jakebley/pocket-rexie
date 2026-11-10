@@ -58,6 +58,10 @@ export interface MiniGame<S = unknown> {
   readonly hud: Hud;
   /** 0..1, how far through the game is (drives the bar under the HUD strip) */
   readonly progress: number;
+  /** optional: the word on the "game over" banner (default TIME UP), at most 7 characters */
+  readonly overLabel?: string;
+  /** optional: a sound for the UI to play when `seq` changes ('note' = a beep at `note` Hz, 'bad' = the wrong sound) */
+  readonly sfx?: { seq: number; kind: 'note' | 'bad'; note: number };
   /** advance by dtMs of game time (any chunking gives the same game: games run on a fixed internal tick) */
   step(input: GameInput, dtMs: number): void;
 }
@@ -79,7 +83,7 @@ export interface GameDef<S = any> {
   /** rules shown on the ready screen, at most 3 lines of 16 characters, may use the family theme nouns */
   rules(theme: FamilyTheme): string[];
   /** rows a tap can pick directly (cells of the 64 grid), if the game is menu-like; taps elsewhere act as left/right halves */
-  tapRows?: (state: S) => { y: number; h: number }[];
+  tapRows?: (state: S) => { y: number; h: number; x?: number; w?: number }[];
   /** the longest a game can run, for tests and bots (ms) */
   maxMs: number;
   init(seed: number, params: GameParams): MiniGame<S>;

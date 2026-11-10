@@ -232,7 +232,7 @@ export function useGame() {
     setPhase(s.phase);
     setMode('game');
     if (sessionTimer.current) clearInterval(sessionTimer.current);
-    let last = Date.now(), lastScore = 0;
+    let last = Date.now(), lastScore = 0, lastFx = 0;
     sessionTimer.current = setInterval(() => {
       const cur = sessionRef.current;
       if (!cur) return;
@@ -244,6 +244,8 @@ export function useGame() {
       if (cur.game) {
         if (cur.game.score > lastScore) sound.chirp(); else if (cur.game.score < lastScore) sound.bad();
         lastScore = cur.game.score;
+        const fx = cur.game.sfx;
+        if (fx && fx.seq !== lastFx) { lastFx = fx.seq; if (fx.kind === 'note') sound.note(fx.note); else sound.bad(); }
       }
       if (cur.phase !== before) setPhase(cur.phase);
       if (done) finishSession(cur);
