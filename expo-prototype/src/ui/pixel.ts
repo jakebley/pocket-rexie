@@ -110,7 +110,7 @@ const F: Record<string, string> = {
   ' ': '...|...|...|...|...', '.': '...|...|...|...|.X.', ',': '...|...|...|.X.|X..', '!': '.X.|.X.|.X.|...|.X.',
   '?': 'XX.|..X|.X.|...|.X.', ':': '...|.X.|...|.X.|...', '/': '..X|..X|.X.|X..|X..', '-': '...|...|XXX|...|...',
   '+': '...|.X.|XXX|.X.|...', "'": '.X.|.X.|...|...|...', '%': 'X.X|..X|.X.|X..|X.X',
-  '>': 'X..|.X.|..X|.X.|X..', '<': '..X|.X.|X..|.X.|..X', '(': '.XX|X..|X..|X..|.XX', ')': 'XX.|..X|..X|..X|XX.',
+  '|': '.X.|.X.|.X.|.X.|.X.', '>': 'X..|.X.|..X|.X.|X..', '<': '..X|.X.|X..|.X.|..X', '(': '.XX|X..|X..|X..|.XX', ')': 'XX.|..X|..X|..X|XX.',
 };
 export const FONT: Record<string, string[]> = Object.fromEntries(Object.entries(F).map(([k, v]) => [k, v.split('|')]));
 export const textWidth = (s: string, scale = 1) => (s.length === 0 ? 0 : (s.length * 4 - 1) * scale);

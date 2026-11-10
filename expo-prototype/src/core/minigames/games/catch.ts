@@ -243,7 +243,7 @@ class Catch implements MiniGame<CatchState> {
 export const catchGame: GameDef<CatchState> = {
   id: 'catch', name: 'CATCH', unit: 'POINTS', thresholds: CATCH_THRESHOLDS, usesRight: true,
   hint: 'A: left | B: stop | C: right',
-  rules: (t) => [`CATCH ${t.goodNoun}`, `DODGE ${t.badNoun}`, 'A LEFT  C RIGHT'],
+  rules: (t) => [`CATCH ${t.goodNoun}`, `DODGE ${t.badNoun}`, 'A/C SLIDE B STOP'],
   maxMs: CATCH_MS + 2000,
   init: (seed, params) => new Catch(seed, params),
 };

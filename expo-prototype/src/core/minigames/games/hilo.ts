@@ -62,7 +62,7 @@ class HiLo implements MiniGame<HiLoState> {
 export const hiloGame: GameDef<HiLoState> = {
   id: 'hilo', name: 'HI-LO', unit: 'WINS', thresholds: HILO_THRESHOLDS, usesRight: false,
   hint: 'A: higher/lower | B: choose | C: quit',
-  rules: () => ['GUESS IF THE NEXT', 'NUMBER IS HIGHER', 'OR LOWER. 5 ROUNDS'],
+  rules: () => ['NEXT NUMBER IS', 'HIGHER OR LOWER?', '5 ROUNDS'],
   tapRows: () => [...HILO_ROWS],
   maxMs: HILO_ROUNDS * HILO_REVEAL_MS + 2000,
   init: (seed, params) => new HiLo(seed, params),

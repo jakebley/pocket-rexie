@@ -80,7 +80,7 @@ export const THEMES: Record<string, FamilyTheme> = {
       g('PRINT', 'brown', '.#.#.#.|.#.#.#.|..###..|.#####.|.#####.|..###..|.......'),
       g('FANG', 'white', '#######|.#####.|.#####.|..###..|..###..|...#...|...#...'),
     ],
-    wins: { none: 'RAWR! TRY AGAIN', bronze: 'NICE CHOMPING', silver: 'ROARING GOOD', gold: 'KING OF DINOS' },
+    wins: { none: 'RAWR! TOO SLOW', bronze: 'NICE CHOMPING', silver: 'ROARING GOOD', gold: 'KING OF DINOS' },
   },
   // ---- foxes: the woods ----
   fox: {
@@ -104,7 +104,7 @@ export const THEMES: Record<string, FamilyTheme> = {
       g('SHROOM', 'red', '..###..|.#w###.|#######|.......|..aaa..|..aaa..|..aaa..', 'white'),
       g('MOON', 'yellow', '..###..|.##....|##.....|##.....|##.....|.##....|..###..'),
     ],
-    wins: { none: 'THE MICE ESCAPED', bronze: 'A FINE HUNT', silver: 'SHARP PAWS', gold: 'FOX OF THE WOODS' },
+    wins: { none: 'MICE GOT AWAY', bronze: 'A FINE HUNT', silver: 'SHARP PAWS', gold: 'FOX OF THE WOODS' },
   },
   // ---- fish: underwater ----
   fish: {
@@ -128,7 +128,7 @@ export const THEMES: Record<string, FamilyTheme> = {
       g('FISH', 'blue', '.......|..##..#|.#####.|##o####|.#####.|..##..#|.......'),
       g('WAVE', 'blue', '.......|.#...#.|#.#.#.#|.......|.#...#.|#.#.#.#|.......'),
     ],
-    wins: { none: 'POP... TRY AGAIN', bronze: 'SPLASH', silver: 'SMOOTH SWIMMER', gold: 'LORD OF THE REEF' },
+    wins: { none: 'POP, POP, POP...', bronze: 'SPLASH', silver: 'SMOOTH SWIMMER', gold: 'LORD OF THE REEF' },
   },
   // ---- birds: the sky ----
   bird: {
@@ -176,7 +176,7 @@ export const THEMES: Record<string, FamilyTheme> = {
       g('MOUSE', 'grey', '##...##|##.#.##|.#####.|.#o#o#.|.##a##.|..###..|...a...', 'pink'),
       g('BELL', 'gold', '..###..|.#####.|.#####.|#######|#######|..#o#..|...#...'),
     ],
-    wins: { none: 'CAT NAP INSTEAD', bronze: 'NOT BAD, PUSS', silver: 'PURRFECT', gold: 'YARD QUEEN' },
+    wins: { none: 'NAP TIME INSTEAD', bronze: 'NOT BAD, PUSS', silver: 'PURRFECT', gold: 'YARD QUEEN' },
   },
   // ---- spirits: clouds ----
   spirits: {

@@ -184,7 +184,7 @@ function paintReady(b: Buf, ctx: ScreenCtx, s: Session) {
   b.rect(0, 8, b.n, 1);
   s.def.rules(th).slice(0, 3).forEach((l, i) => b.ticker(l.toUpperCase(), 11 + i * 7, ctx.tick, 1, b.n - 2));
   let y = 34;
-  if (s.params.scoreMul > 1) { b.rows(STAR5, 1, y); b.as(Layer.SPARK, () => b.text(`FAVE X${s.params.scoreMul}`, 8, y)); y += 7; }
+  if (s.params.scoreMul > 1) { b.as(Layer.SUN, () => { b.rows(STAR5, 1, y); b.text(`FAVE X${s.params.scoreMul}`, 8, y); }); y += 7; }
   const cond = CONDITION_TEXT[s.params.tuning.condition];
   if (cond) { b.text(cond, 1, y); y += 7; }
   const best = ctx.scores?.[s.def.id]?.species[ctx.pet.species];
@@ -199,16 +199,16 @@ function paintResult(b: Buf, ctx: ScreenCtx, s: Session) {
   center(b, (th.titles as Record<string, string>)[s.def.id] ?? s.def.name, 1);
   b.rect(0, 7, b.n, 1);
   const sc = String(r.score);
-  b.text(sc, (b.n - textWidth(sc, 3)) >> 1, 10, 3);
+  b.text(sc, (b.n - textWidth(sc, 3)) >> 1, 9, 3);
   // stars: one per rank step, then the rank
   const n = RANKS.indexOf(r.rank);
   const stars = n * 6 - 1;
-  b.as(Layer.SPARK, () => { for (let i = 0; i < n; i++) b.rows(STAR5, ((b.n - stars) >> 1) + i * 6, 26); });
-  center(b, rankLabel(r.rank), 32);
-  b.ticker(r.winLine.toUpperCase(), 39, ctx.tick, 1, b.n - 2);
+  b.as(Layer.SUN, () => { for (let i = 0; i < n; i++) b.rows(STAR5, ((b.n - stars) >> 1) + i * 6, 25); });
+  center(b, rankLabel(r.rank), 31);
+  b.ticker(r.winLine.toUpperCase(), 38, ctx.tick, 1, b.n - 2);
   const rec = r.recordOverall ? 'NEW RECORD!' : r.recordSpecies ? `${r.speciesName.toUpperCase().slice(0, 8)} BEST!` : '';
-  if (rec) { const w = textWidth(rec); const x = (b.n - w) >> 1; b.as(Layer.SPARK, () => b.text(rec, x, 46)); if (ctx.tick % 2 === 0) b.invert(x - 1, 45, w + 2, 7); }
-  r.reward.lines.slice(0, 2).forEach((l, i) => { if (r.reward.capped) b.as(Layer.ALERT, () => b.text(l, 1, 53 + i * 6)); else b.text(l, 1, 53 + i * 6); });
+  if (rec) { const w = textWidth(rec); const x = (b.n - w) >> 1; b.as(Layer.SUN, () => b.text(rec, x, 45)); if (ctx.tick % 2 === 0) b.invert(x - 1, 44, w + 2, 7); }
+  r.reward.lines.slice(0, 2).forEach((l, i) => { if (r.reward.capped) b.as(Layer.ALERT, () => b.text(l, 1, 52 + i * 6)); else b.text(l, 1, 52 + i * 6); });
 }
 
 function paintScores(b: Buf, ctx: ScreenCtx) {
@@ -229,7 +229,12 @@ function paintScores(b: Buf, ctx: ScreenCtx) {
   if (all) { b.text(String(all.score), 1, 27, 2); b.ticker(`${all.name} ${all.speciesName}`.toUpperCase(), 38, ctx.tick, 1, b.n - 2); } else b.text('--', 1, 27, 2);
   b.rect(0, 44, b.n, 1);
   b.text(`THIS ${ctx.pet.stage === 'egg' ? 'PET' : 'SPECIES'}`, 1, 47);
-  if (mine) b.ticker(`${mine.score} ${mine.name} ${mine.speciesName}`.toUpperCase(), 54, ctx.tick, 1, b.n - 2); else b.text('--', 1, 54);
+  if (mine) {
+    const sc = String(mine.score);
+    const x0 = textWidth(sc) + 5;
+    b.text(sc, 1, 54);
+    b.ticker(`${mine.name} ${mine.speciesName}`.toUpperCase(), 54, ctx.tick, x0, b.n - x0 - 1);
+  } else b.text('--', 1, 54);
 }
 
 function paintGame(b: Buf, ctx: ScreenCtx, s: Session, entryLayout: 'field' | 'text') {

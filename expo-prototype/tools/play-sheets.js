@@ -65,6 +65,7 @@ async function main() {
   };
   await close('play-catch-technicolor.png', `CATCH mid-game, Technicolor (${STAGE})`, 'technicolor', 'game-b', 200);
   await close('play-catch-traditional.png', `CATCH mid-game, Traditional (${STAGE})`, 'traditional', 'game-b', 200);
+  await close('play-hilo-technicolor.png', `HI-LO with the family token (${STAGE})`, 'technicolor', 'hilo-reveal', 200);
   await close('play-result-technicolor.png', `CATCH result, Technicolor (${STAGE})`, 'technicolor', 'result', 200);
   await sheet('play-traditional.png', `Traditional (${STAGE})`, ['dino', 'fox', 'fish', 'bot'], 'traditional', 150);
   await b.close();

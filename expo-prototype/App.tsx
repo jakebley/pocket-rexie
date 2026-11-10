@@ -115,10 +115,11 @@ function useWebKeys(game: ReturnType<typeof useGame>) {
       else if (k === 'enter' || k === ' ' || k === 'arrowdown' || k === 'b') g.pressB();
       else if (k === 'arrowright' || k === 'c') g.pressC();
       else return;
-      e.preventDefault();
+      // handled here: a focused icon or button must not also act on Enter or Space
+      e.preventDefault(); e.stopPropagation();
     };
-    document.addEventListener('keydown', on);
-    return () => document.removeEventListener('keydown', on);
+    document.addEventListener('keydown', on, true);
+    return () => document.removeEventListener('keydown', on, true);
   }, []);
 }
 

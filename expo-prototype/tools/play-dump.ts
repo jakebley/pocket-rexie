@@ -3,6 +3,7 @@
 import { forceSpecies, newPet } from '../src/core/pet';
 import { SPECIES } from '../src/core/speciesData';
 import { catchDims, catchGame } from '../src/core/minigames/games/catch';
+import { hiloGame } from '../src/core/minigames/games/hilo';
 import { ScoreStore, type KV } from '../src/core/minigames/scores';
 import { newSession, pressButton, settleSession, tickSession } from '../src/core/minigames/session';
 import { paramsFor } from '../src/core/minigames/tuning';
@@ -57,6 +58,13 @@ const out: unknown[] = [];
       while (tickSession(s, 100) === false) { /* wait for result */ }
       settleSession(s, pet, store, T);
       shot('result', { ...base, mode: 'game', tick: 2 });
+      {
+        const h = newSession(hiloGame, paramsFor(pet, 'hilo'), 5);
+        pressButton(h, 'b'); tickSession(h, 50);
+        shot('hilo-guess', { ...base, mode: 'game', session: h });
+        pressButton(h, 'b'); tickSession(h, 50);
+        shot('hilo-reveal', { ...base, mode: 'game', session: h });
+      }
       shot('scores', { ...base, mode: 'scores', scoresPage: 1, session: null });
     }
   }
