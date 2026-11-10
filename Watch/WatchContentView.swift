@@ -8,6 +8,8 @@ struct WatchContentView: View {
     /// Explicit LCD palette (tests). Otherwise the light LCD, or the backlit one in Always-On.
     let palette: LCDPalette?
     @State private var crown: Double = 0
+    /// A hold already described the icon, so the release must not also act.
+    @State private var described = false
     @Environment(\.isLuminanceReduced) private var dimmed
     /// The look, synced from the phone (see PetSync); Traditional until the phone says otherwise.
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var mode: ColorMode = .traditional
@@ -111,13 +113,22 @@ struct WatchContentView: View {
         return HStack(spacing: tileGap) {
             ForEach(visible) { icon in
                 Button {
+                    if described { described = false; return }
                     tap(icon)
                 } label: {
                     EmptyView()
                 }
-                .buttonStyle(RetroTileStyle(icon: icon, selected: icon == model.selected, glyphPixel: 3,
-                                            width: tileWidth, height: tileHeight))
+                .buttonStyle(RetroTileStyle(icon: icon, title: icon.label, selected: icon == model.selected, glyphPixel: 3,
+                                            labelPixel: tileWidth >= 70 ? 2 : 1, width: tileWidth, height: tileHeight))
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.3).onEnded { _ in
+                        described = true
+                        click()
+                        model.describe(icon)
+                    }
+                )
                 .accessibilityLabel(icon.title)
+                .accessibilityHint("Hold to see what it does")
                 .accessibilityIdentifier("watch-" + icon.title.lowercased())
             }
         }
