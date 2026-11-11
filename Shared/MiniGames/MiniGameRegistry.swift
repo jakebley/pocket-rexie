@@ -8,6 +8,7 @@ enum MiniGames {
     static let all: [GameEntry] = [
         HiLoGame.entry,
         CatchGame.entry,
+        DashGame.entry,
         // ---- add new games here, one line each: DashGame.entry, EchoGame.entry ----
     ]
 

@@ -538,6 +538,115 @@ final class UIRenderTests: XCTestCase {
         }
     }
 
+    // MARK: DASH renders (compare with expo-prototype/docs/screens/play-dash-technicolor.png and play-dash-closeup.png)
+
+    private static let dashScenes = ["countdown", "run", "jump", "hit", "faster", "result"]
+
+    /// A model showing DASH at a moment: the countdown, a run, mid-jump, just after a hit, the FASTER banner or the result.
+    private func dashModel(_ scene: String, _ p: Pet) -> GameModel {
+        let model = GameModel(pet: p, persist: { _ in })
+        model.selected = .play
+        let params = MiniTuning.params(for: p, game: "dash")
+        let s = MiniSession(def: DashGame.def, params: params, seed: 5)
+        s.begin()
+        guard let g = s.game as? DashGame else { return model }
+        let bot = DashBot(tuning: params.tuning, skill: DashBot.good, seed: 2)
+        func tick(_ input: GameInput) { s.pending = input; _ = s.tick(50) }
+        var guardN = 0
+        switch scene {
+        case "countdown":
+            while g.state.cd > 900 { tick(GameInput()) }
+        case "run":
+            while g.state.t < 6000 && guardN < 2000 { tick(bot.decide(g)); guardN += 1 }
+        case "jump":
+            while !(g.state.t > 7000 && !g.state.grounded && g.state.hp > 6) && guardN < 2000 { tick(bot.decide(g)); guardN += 1 }
+        case "hit":
+            while g.state.cd > 0 { tick(GameInput()) }
+            while g.state.hits == 0 && guardN < 2000 { tick(GameInput()); guardN += 1 }
+            for _ in 0..<3 { tick(GameInput()) }
+        case "faster":
+            while g.state.t < 13500 && guardN < 2000 { tick(bot.decide(g)); guardN += 1 }
+        default:
+            while s.phase == .play && guardN < 4000 { tick(bot.decide(g)); guardN += 1 }
+            if scene == "result" {
+                while !s.tick(100) {}
+                var pp = model.pet
+                s.settle(pet: &pp, store: model.scoreStore, now: day.timeIntervalSince1970)
+                model.pet = pp
+            }
+        }
+        model.present(s)
+        return model
+    }
+
+    private func dashTile(_ scene: String, _ p: Pet, palette: LCDPalette, side: CGFloat) -> AnyView {
+        let model = dashModel(scene, p)
+        let view = LCDScreen(model: model, framed: true)
+            .padding(4)
+            .background(palette.background)
+            .environment(\.lcdPalette, palette)
+            .environment(\.sceneDate, day)
+            .environment(\.displayScale, 2)
+            .frame(width: side, height: side)
+        return AnyView(view)
+    }
+
+    /// DASH for every family in both looks: countdown, run, mid-jump, hit, FASTER banner, result.
+    func testRenderDashScreens() {
+        let side: CGFloat = 130
+        let scenes = Self.dashScenes
+        let families = Species.families.map { $0.id }
+        for mode in ColorMode.allCases {
+            let palette = LCDStyle.palette(for: .light, mode: mode)
+            var index = 0
+            var start = 0
+            while start < families.count {
+                let group = Array(families[start..<min(start + 4, families.count)])
+                index += 1
+                let sheet = VStack(spacing: 3) {
+                    ForEach(group, id: \.self) { fam in
+                        HStack(spacing: 3) {
+                            ForEach(scenes, id: \.self) { scene in
+                                self.dashTile(scene, self.playPet(fam), palette: palette, side: side)
+                            }
+                        }
+                    }
+                }
+                .background(palette.background)
+                write(sheet, to: "dash/sheet-\(mode.rawValue)-\(index)",
+                      size: CGSize(width: side * CGFloat(scenes.count) + 3 * CGFloat(scenes.count - 1),
+                                   height: side * CGFloat(group.count) + 3 * CGFloat(group.count - 1)))
+                start += 4
+            }
+            // a mid-run tile of every family, larger (the Expo play-dash-technicolor sheet)
+            let big: CGFloat = 200
+            let cols = 6
+            let rows = (families.count + cols - 1) / cols
+            let runSheet = VStack(spacing: 4) {
+                ForEach(0..<rows, id: \.self) { row in
+                    HStack(spacing: 4) {
+                        ForEach(0..<cols, id: \.self) { col in
+                            let i = row * cols + col
+                            if i < families.count {
+                                self.dashTile(i % 2 == 0 ? "jump" : "run", self.playPet(families[i]), palette: palette, side: big)
+                            } else {
+                                Color.clear.frame(width: big, height: big)
+                            }
+                        }
+                    }
+                }
+            }
+            .background(palette.background)
+            write(runSheet, to: "dash/run-\(mode.rawValue)",
+                  size: CGSize(width: big * CGFloat(cols) + 4 * CGFloat(cols - 1), height: big * CGFloat(rows) + 4 * CGFloat(rows - 1)))
+        }
+        let palette = LCDStyle.palette(for: .light, mode: .technicolor)
+        for scene in ["countdown", "jump", "hit", "result"] {
+            write(dashTile(scene, playPet("fox"), palette: palette, side: 358), to: "dash/fox-\(scene)-technicolor",
+                  size: CGSize(width: 358, height: 358))
+        }
+    }
+
     /// The Play flow inside the real phone layout (icons, message line, A/B/C), Technicolor and Traditional.
     func testRenderPlayOnThePhone() {
         let phone = phones[0]
