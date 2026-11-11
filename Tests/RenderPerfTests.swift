@@ -109,4 +109,28 @@ final class RenderPerfTests: XCTestCase {
         print("RENDER-PERF palette-table=\(String(format: "%.4f", perTable)) ms/table")
         XCTAssertLessThan(perTable, 50)
     }
+
+    /// The whole roster, phase by phase (diagnoses the whole-roster tests): building the pets, the first render of
+    /// each species (cold shading) and the second (warm).
+    func testRosterPhases() {
+        let dry = seed(for: .clear)
+        let all = Species.all
+        let t0 = now()
+        let pets = all.map { makePet($0, seed: dry) }
+        let makeMs = (now() - t0) * 1000
+        let t1 = now()
+        for p in pets { _ = render(p, hour: 12, facing: 1, offset: 0) }
+        let coldMs = (now() - t1) * 1000
+        let t2 = now()
+        for p in pets { _ = render(p, hour: 12, facing: 1, offset: 0.125) }
+        let warmMs = (now() - t2) * 1000
+        let t3 = now()
+        for p in pets { _ = render(p, hour: 19, facing: -1, offset: 0) }
+        let mirrorMs = (now() - t3) * 1000
+        let t4 = now()
+        for p in pets { _ = render(p, hour: 23, facing: 1, offset: 0) }
+        let nightMs = (now() - t4) * 1000
+        let n = Double(all.count)
+        print("RENDER-PERF roster n=\(all.count) makePet=\(String(format: "%.3f", makeMs / n)) first=\(String(format: "%.2f", coldMs / n)) warm=\(String(format: "%.2f", warmMs / n)) mirrored-dusk=\(String(format: "%.2f", mirrorMs / n)) night=\(String(format: "%.2f", nightMs / n)) (ms per species)")
+    }
 }
