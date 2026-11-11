@@ -96,6 +96,8 @@ struct Pet: Codable, Equatable {
     var causeOfDeath: String?
     var legacy: [String] = []
     var events: [PetEvent] = []
+    /// Seconds since 1970 of the mini-game plays that earned a reward in the last 24 h (the day cap, see MiniRewards).
+    var rewardedPlays: [Double] = []
 
     init(now: Date = Date(), generation: Int = 1, name: String = "Rexie", legacy: [String] = [],
          gentle: Bool = true, dex: [String] = []) {
@@ -171,6 +173,7 @@ struct Pet: Codable, Equatable {
         causeOfDeath = try c.decodeIfPresent(String.self, forKey: .causeOfDeath)
         if let v = try c.decodeIfPresent([String].self, forKey: .legacy) { legacy = v }
         if let v = try c.decodeIfPresent([PetEvent].self, forKey: .events) { events = v }
+        if let v = try c.decodeIfPresent([Double].self, forKey: .rewardedPlays) { rewardedPlays = v }
         if seed == 0 { seed = 1 }
     }
 
@@ -458,6 +461,21 @@ struct Pet: Codable, Equatable {
             return "You won \(played) of 5!"
         }
         return "You won \(played) of 5. Try again!"
+    }
+
+    /// A mini-game result as an engine reward: BRONZE counts as a win (finishPlay's rule: smarts +3), SILVER or better adds
+    /// a happy heart. Weight always burns a little. Mirrors `finishRanked` in expo-prototype/src/core/pet.ts.
+    mutating func finishRanked(_ rank: Rank) -> String {
+        guard canAct else { return "..." }
+        modified = lastTick
+        weight = max(baseWeight - 2, weight - 1)
+        if rank != .none { smarts = min(100, smarts + 3); stageSmarts += 3 }
+        if rank >= .silver { happy = min(Pet.maxHearts, happy + 1) }
+        switch rank {
+        case .none: return "Good try. Play again!"
+        case .bronze: return "Nice play!"
+        default: return "Great play!"
+        }
     }
 
     mutating func giveMedicine() -> String {

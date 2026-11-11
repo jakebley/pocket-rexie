@@ -155,12 +155,12 @@ enum BiomeDraw {
 
     /// Scenery behind the meadow layers (trees, hills, mountains, walls, water light...). Call on a raster with
     /// nothing drawn yet, before the sky.
-    static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
+    static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive, rows: [Int] = BiomeDraw.rowMap) {
         if biome == .meadow { return }
         var canvas = BiomeCanvas(copying: cached(biome, "back", period, live.rain))
         paintLive(biome, &canvas, period, live)
         for y in 0..<BiomeCanvas.n {
-            let dy = rowMap[y]
+            let dy = rows[y]
             for x in 0..<BiomeCanvas.n {
                 let v = canvas.px[y * BiomeCanvas.n + x]
                 if v != 0 { r.cells[dy * BiomeCanvas.n + x] = v }
@@ -169,11 +169,11 @@ enum BiomeDraw {
     }
 
     /// Floor props, painted only into pixels the meadow layers left unlit. Call after the ground.
-    static func fore(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool) {
+    static func fore(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool, rows: [Int] = BiomeDraw.rowMap) {
         if biome == .meadow { return }
         let src = cached(biome, "fore", period, rain)
         for y in 0..<BiomeCanvas.n {
-            let dy = rowMap[y]
+            let dy = rows[y]
             for x in 0..<BiomeCanvas.n {
                 let v = src[y * BiomeCanvas.n + x]
                 if v != 0 && r.cells[dy * BiomeCanvas.n + x] == 0 { r.cells[dy * BiomeCanvas.n + x] = v }

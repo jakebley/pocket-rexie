@@ -77,6 +77,7 @@ struct ContentView: View {
         .onAppear {
             guard !injected else { return }
             model.onSave = { Notifier.reschedule($0) }
+            model.onRecord = { Beeper.shared.jingle(); Haptics.success() }
             model.onSceneEvent = { event in
                 // Hatching and evolving already buzz from the stage/species changes below.
                 if event == .petted { Haptics.tap() }

@@ -152,30 +152,80 @@ final class RexieUITests: RexieUITestCase {
     func testPlayGameReachesResult() {
         launch("child-hungry")
         tap("menu-play")
-        waitForStat("mode", "play")
-        XCTAssertTrue(element("px-higher").exists)
+        // the Play icon opens the Play menu: the games, HIGH SCORES, CANCEL
+        waitForStat("mode", "playmenu")
+        for row in ["px-hi-lo", "px-catch", "px-high scores", "px-cancel"] {
+            XCTAssertTrue(element(row).exists, "\(row) missing from the Play menu")
+        }
+        shot(10, "play-menu")
+
+        tap("px-hi-lo")
+        waitForStat("mode", "game")
+        XCTAssertTrue(element("px-start").waitForExistence(timeout: 10), "the ready screen has a START button")
+        shot(11, "play-ready")
+        tap("px-start")
+        XCTAssertTrue(element("px-higher").waitForExistence(timeout: 10))
         XCTAssertTrue(element("px-lower").exists)
-        shot(10, "play-round-1")
+        shot(12, "play-round-1")
 
         for round in 1...5 {
             tap(round.isMultiple(of: 2) ? "px-lower" : "px-higher")
-            let next = element(round == 5 ? "px-done" : "px-next")
-            XCTAssertTrue(next.waitForExistence(timeout: 10), "round \(round) should reveal a result")
-            if round == 1 { shot(11, "play-revealed") }
-            next.tap()
+            if round == 1 { Thread.sleep(forTimeInterval: 0.5); shot(13, "play-revealed") }
+            // the reveal lasts 1.4 s of game time, then the next round (or the end of the game)
+            Thread.sleep(forTimeInterval: 1.7)
         }
+        XCTAssertTrue(element("px-done").waitForExistence(timeout: 15), "the result screen appears")
+        shot(14, "play-result")
+        tap("px-done")
         waitForStat("mode", "home")
-        waitForMessage(containing: "You won")
-        shot(12, "play-result")
+        waitForMessage(containing: "lay")
     }
 
-    func testQuitPlayGame() {
+    func testPlayCatchRunsAndCanBeAbandoned() {
         launch("child-hungry")
         tap("menu-play")
-        waitForStat("mode", "play")
-        tap("px-quit")
+        waitForStat("mode", "playmenu")
+        tap("px-catch")
+        waitForStat("mode", "game")
+        XCTAssertTrue(element("px-start").waitForExistence(timeout: 10))
+        tap("px-start")
+        Thread.sleep(forTimeInterval: 2)
+        tap("btn-A")
+        Thread.sleep(forTimeInterval: 1.5)
+        lcd.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)).tap()
+        Thread.sleep(forTimeInterval: 1.5)
+        XCTAssertEqual(stat("mode"), "game", "the game is still running")
+        shot(15, "play-catch")
+        // another icon leaves the game: nothing is scored and nobody is punished
+        tap("menu-play")
+        waitForStat("mode", "playmenu")
+    }
+
+    func testPlayHighScoresScreenAndCancel() {
+        launch("child-hungry")
+        tap("menu-play")
+        waitForStat("mode", "playmenu")
+        tap("px-high scores")
+        waitForStat("mode", "scores")
+        shot(16, "play-scores")
+        tap("px-back")
+        waitForStat("mode", "playmenu")
+        tap("px-cancel")
         waitForStat("mode", "home")
         waitForMessage(containing: "Maybe later")
+    }
+
+    func testPlayMenuWorksWithTheButtons() {
+        launch("child-hungry")
+        tap("menu-play")
+        waitForStat("mode", "playmenu")
+        tap("btn-A")        // CATCH
+        tap("btn-B")
+        waitForStat("mode", "game")
+        tap("btn-C")        // C on the ready screen goes back to the menu
+        waitForStat("mode", "playmenu")
+        tap("btn-C")        // C in the menu cancels
+        waitForStat("mode", "home")
     }
 
     // MARK: stats and dex

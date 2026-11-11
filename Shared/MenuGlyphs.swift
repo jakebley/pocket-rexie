@@ -127,7 +127,7 @@ extension MenuIcon {
         switch self {
         case .feed: return "FEED: meal or snack. Fills hunger."
         case .light: return "LIGHT: turn the lights off so it can sleep."
-        case .play: return "PLAY: guess game. Makes it happy."
+        case .play: return "PLAY: mini-games. Makes it happy."
         case .train: return "TRAIN: exercise. Gets stronger, burns weight."
         case .medicine: return "MEDICINE: cures a sick pet."
         case .clean: return "CLEAN: wipe up the poop."

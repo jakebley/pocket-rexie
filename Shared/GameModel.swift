@@ -56,6 +56,12 @@ final class GameModel: ObservableObject {
         case home
         case feedMenu
         case play(PlayState)
+        /// The Play menu: the mini-games, HIGH SCORES, CANCEL (docs/PLAY.md).
+        case playMenu
+        /// A mini-game session (ready, playing, result); the session itself is `GameModel.session`.
+        case game
+        /// The HIGH SCORES screen (`scoresPage` picks the game).
+        case scores
         case stats
         case dex
         /// The Choose your egg screen (`menuIndex` highlights a family, the last row is cancel).
@@ -71,12 +77,29 @@ final class GameModel: ObservableObject {
         didSet { noteSpeciesChange(from: oldValue, to: pet) }
     }
     @Published var message = ""
-    @Published var mode: Mode = .home
+    @Published var mode: Mode = .home {
+        didSet { if mode != .game { stopGame() } }
+    }
     @Published var selected: MenuIcon = .feed
     /// Highlighted row in the feed menu: 0 meat, 1 veggies, 2 pasta, 3 snack, 4 cancel.
     @Published var menuIndex = 0
     /// Family shown in the Dex; nil follows the pet's own family.
     @Published var dexFamily: String?
+    /// Highlighted row of the Play menu (the registered games, then HIGH SCORES, then CANCEL).
+    @Published var playSel = 0
+    /// Which game the HIGH SCORES screen shows.
+    @Published var scoresPage = 0
+    /// The running mini-game session (a class: it steps 20 times a second; `gameTick` tells views to repaint).
+    @Published private(set) var session: MiniSession?
+    @Published private(set) var gameTick = 0
+    /// High scores (UserDefaults in the shared app group, so the watch and widgets can read them).
+    let scoreStore: MiniScoreStore
+    /// Seeds for new games; tests inject a fixed one.
+    var gameSeed: () -> Int = { Int.random(in: 1...Int(Int32.max)) }
+    /// Called when a game ends with a new overall record (the iOS app plays its win beeps).
+    var onRecord: (@MainActor () -> Void)?
+    private var gameLoop: AnyCancellable?
+    private var lastGameStep = Date()
     /// Which stats page is showing: 0 is the status page, 1 the detail list.
     @Published var statsPage = 0
     /// Set for 3 seconds after the species changes (ids of the old and new species).
@@ -112,8 +135,20 @@ final class GameModel: ObservableObject {
 
     /// `pet` and `persist` are for tests and previews: with them the model neither ticks nor touches
     /// the shared store. The defaults keep the normal app behaviour.
-    init(pet injected: Pet? = nil, persist: ((Pet) -> Void)? = nil, entitlements: Entitlements? = nil) {
+    init(pet injected: Pet? = nil, persist: ((Pet) -> Void)? = nil, entitlements: Entitlements? = nil,
+         scores: MiniScoreStore? = nil) {
         pet = injected ?? PetStore.load()
+        if let scores {
+            scoreStore = scores
+        } else if injected != nil {
+            // tests and previews never touch the real high scores
+            let suite = "com.pocketrexie.scores-\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suite) ?? .standard
+            defaults.removePersistentDomain(forName: suite)
+            scoreStore = MiniScoreStore(defaults: defaults)
+        } else {
+            scoreStore = MiniScoreStore(defaults: PetStore.defaults)
+        }
         injectedEntitlements = entitlements
         persistHandler = persist
         isolated = injected != nil
@@ -296,7 +331,9 @@ final class GameModel: ObservableObject {
         case .play:
             pet.advance(to: AppClock.now())
             if let why = blockedReason { say(why); return }
-            mode = .play(PlayState())
+            playSel = 0
+            scoreStore.reload()
+            mode = .playMenu
         case .stats:
             pet.advance(to: AppClock.now())
             statsPage = 0
@@ -373,7 +410,133 @@ final class GameModel: ObservableObject {
         }
     }
 
+    // MARK: mini-games (docs/PLAY.md)
+
+    /// A row of the Play menu: a game, HIGH SCORES, or CANCEL.
+    func chooseMenuRow(_ i: Int) {
+        playSel = i
+        let games = MiniGames.all
+        if i < games.count {
+            openGame(games[i].def.id)
+        } else if i == games.count {
+            scoresPage = 0
+            scoreStore.reload()
+            mode = .scores
+        } else {
+            say("Maybe later")
+            mode = .home
+        }
+    }
+
+    /// Open a game on its ready screen.
+    func openGame(_ id: String) {
+        pet.advance(to: AppClock.now())
+        if let why = blockedReason { say(why); mode = .home; return }
+        guard let entry = MiniGames.entry(id) else { return }
+        let params = MiniTuning.params(for: pet, game: id)
+        mode = .game
+        session = MiniSession(def: entry.def, params: params, seed: gameSeed())
+        gameTick &+= 1
+    }
+
+    /// B on the ready screen, or a tap there: the game starts.
+    func startGame() {
+        guard let s = session, s.phase == .ready else { return }
+        _ = s.press(.b)
+        beginLoop()
+    }
+
+    /// Put a prepared session on screen (render scenes and tests); no timer runs.
+    func present(_ s: MiniSession) {
+        mode = .game
+        session = s
+        gameTick &+= 1
+    }
+
+    func backToPlayMenu() { mode = .playMenu }
+    func goHome() { mode = .home }
+
+    /// Play the same game again from its ready screen.
+    func playAgain() {
+        guard let id = session?.def.id else { return }
+        openGame(id)
+    }
+
+    private func gameButton(_ b: PadButton) {
+        guard let s = session else { return }
+        let before = s.phase
+        let exit = s.press(b)
+        if before == .ready && s.phase == .play { beginLoop() }
+        gameTick &+= 1
+        switch exit {
+        case .menu: mode = .playMenu
+        case .home: mode = .home
+        case .none: break
+        }
+    }
+
+    /// A tap on the screen during a game: the left or right half.
+    func tapGame(side: Int) {
+        guard let s = session else { return }
+        let before = s.phase
+        let exit = s.tapSide(side)
+        if before == .ready && s.phase == .play { beginLoop() }
+        gameTick &+= 1
+        if exit == .menu { mode = .playMenu }
+    }
+
+    /// A tap on a row the game declared (HI-LO's HIGHER and LOWER).
+    func pickRow(_ i: Int) {
+        session?.tapPick(i)
+    }
+
+    private func beginLoop() {
+        lastGameStep = Date()
+        gameLoop = Timer.publish(every: 0.05, on: .main, in: .common)
+            .autoconnect()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated {
+                    if let self { self.stepGame() }
+                }
+            }
+    }
+
+    private func stopGame() {
+        gameLoop = nil
+        if session != nil { session = nil }
+    }
+
+    private func stepGame() {
+        guard let s = session else { gameLoop = nil; return }
+        let now = Date()
+        let dt = min(250, max(0, now.timeIntervalSince(lastGameStep) * 1000))
+        lastGameStep = now
+        let finished = s.tick(dt)
+        if finished {
+            gameLoop = nil
+            settleGame(s)
+        }
+        gameTick &+= 1
+    }
+
+    /// The game is over: high scores, then the capped reward on the pet.
+    private func settleGame(_ s: MiniSession) {
+        pet.advance(to: AppClock.now())
+        let now = AppClock.now().timeIntervalSince1970
+        var outcome: SessionResult?
+        mutate(event: { [self] b, _ in
+            canAct(b) ? SceneEvent.played(wins: (outcome?.rank ?? Rank.none) == .none ? 0 : 3) : nil
+        }) { p in
+            outcome = s.settle(pet: &p, store: scoreStore, now: now)
+            guard let r = outcome else { return "" }
+            return (r.recordOverall ? "New record! " : "") + r.reward.msg
+        }
+        if outcome?.recordOverall == true { onRecord?() }
+    }
+
     // MARK: other
+
 
     /// Accessibility value of the LCD in UI tests, e.g. "hunger 1 happy 3 poops 0 stage child ... name Rexie" (name last, it may hold spaces).
     var uiTestSummary: String {
@@ -382,6 +545,9 @@ final class GameModel: ObservableObject {
         case .home: modeName = "home"
         case .feedMenu: modeName = "feed"
         case .play: modeName = "play"
+        case .playMenu: modeName = "playmenu"
+        case .game: modeName = "game"
+        case .scores: modeName = "scores"
         case .stats: modeName = statsPage == 0 ? "stats" : "details"
         case .dex: modeName = "dex"
         case .chooseEgg: modeName = "choose"
@@ -400,6 +566,13 @@ final class GameModel: ObservableObject {
         case .play:
             say("Maybe later")
             mode = .home
+        case .playMenu:
+            say("Maybe later")
+            mode = .home
+        case .scores:
+            mode = .playMenu
+        case .game:
+            gameButton(.c)
         case .feedMenu, .stats, .dex, .chooseEgg:
             mode = .home
         }
@@ -424,6 +597,12 @@ final class GameModel: ObservableObject {
                 s.pickHigher.toggle()
                 mode = .play(s)
             }
+        case .playMenu:
+            playSel = (playSel + 1) % MiniGames.menuRows.count
+        case .scores:
+            scoresPage = (scoresPage + 1) % max(1, MiniGames.all.count)
+        case .game:
+            gameButton(.a)
         case .stats, .dex:
             break
         case .chooseEgg:
@@ -446,6 +625,12 @@ final class GameModel: ObservableObject {
             }
         case .play(let s):
             if s.revealed == nil { guess(higher: s.pickHigher) } else { continuePlay() }
+        case .playMenu:
+            chooseMenuRow(playSel)
+        case .scores:
+            mode = .playMenu
+        case .game:
+            gameButton(.b)
         case .stats:
             // B pages through the status screens: status, details, dex, then back home.
             if statsPage == 0 { statsPage = 1 } else { openDex() }
