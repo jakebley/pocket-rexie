@@ -82,8 +82,8 @@ struct LCDScreen: View {
             let flash = model.evolutionFlash
             let hatchedAt = model.hatchedAt
             let date = sceneDate ?? timeline.date
-            _ = model.gameTick
-            let raster = frameRaster(playing: playing, hasFlash: flash != nil, pet: pet, date: date, hatchedAt: hatchedAt)
+            let tick = model.gameTick
+            let raster = frameRaster(playing: playing, hasFlash: flash != nil, pet: pet, date: date, hatchedAt: hatchedAt, tick: tick)
             Canvas { ctx, size in
                 LCDScene.render(&ctx, size: size, raster: raster, flash: flash, date: date,
                                 palette: palette)
@@ -103,7 +103,8 @@ struct LCDScreen: View {
     }
 
     /// The picture for this frame: the running mini-game, the living scene, or nothing while the evolution flash plays.
-    private func frameRaster(playing: Bool, hasFlash: Bool, pet: Pet, date: Date, hatchedAt: Date?) -> SceneRaster? {
+    private func frameRaster(playing: Bool, hasFlash: Bool, pet: Pet, date: Date, hatchedAt: Date?, tick: Int) -> SceneRaster? {
+        _ = tick  // read in the timeline so a game step repaints even when the timeline is paused
         if playing, let session = model.session {
             return MiniPaint.frame(session: session, pet: pet, ms: date.timeIntervalSinceReferenceDate * 1000)
         }
