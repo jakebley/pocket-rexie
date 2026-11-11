@@ -69,6 +69,17 @@ enum PetShading {
     private static func eyeRowMax(_ family: String) -> Int { family == "alien" ? 3 : 2 }
 
     private static let rMax = 7
+    /// Window offsets with squared distance below rMax^2, nearest first (see the distance map in `shade`).
+    private static let reach: (dx: [Int], dy: [Int], d2: [Int]) = {
+        var list: [(dx: Int, dy: Int, d2: Int)] = []
+        for dy in -rMax...rMax {
+            for dx in -rMax...rMax where dx * dx + dy * dy < rMax * rMax {
+                list.append((dx: dx, dy: dy, d2: dx * dx + dy * dy))
+            }
+        }
+        list.sort { $0.d2 < $1.d2 }
+        return (dx: list.map { $0.dx }, dy: list.map { $0.dy }, d2: list.map { $0.d2 })
+    }()
     private static let tHi = 0.42
     private static let tSh = 0.5
     private static let tDither = 0.28
@@ -109,15 +120,11 @@ enum PetShading {
             while let i = stack.popLast() {
                 cells.append(i)
                 let x = i % w, y = i / w
-                var nb: [Int] = []
-                nb.append(x > 0 ? i - 1 : -1)
-                nb.append(x < w - 1 ? i + 1 : -1)
-                nb.append(y > 0 ? i - w : -1)
-                nb.append(y < h - 1 ? i + w : -1)
-                for j in nb where j >= 0 && mask[j] && !seen[j] {
-                    seen[j] = true
-                    stack.append(j)
-                }
+                // left, right, up, down: the same order the Expo code pushes them
+                if x > 0 && mask[i - 1] && !seen[i - 1] { seen[i - 1] = true; stack.append(i - 1) }
+                if x < w - 1 && mask[i + 1] && !seen[i + 1] { seen[i + 1] = true; stack.append(i + 1) }
+                if y > 0 && mask[i - w] && !seen[i - w] { seen[i - w] = true; stack.append(i - w) }
+                if y < h - 1 && mask[i + w] && !seen[i + w] { seen[i + w] = true; stack.append(i + w) }
             }
             list.append(cells)
         }
@@ -207,18 +214,22 @@ enum PetShading {
         for y in 0..<h {
             for x in 0..<w { padded[(y + rm) * pw + x + rm] = ext[y * w + x] }
         }
-        for y in 0..<h {
-            for x in 0..<w {
-                if ext[y * w + x] { continue }
-                var best = rm * rm
-                for dy in -rm...rm {
-                    let base = (y + dy + rm) * pw + x + rm
-                    for dx in -rm...rm {
-                        let d2 = dx * dx + dy * dy
-                        if d2 < best && padded[base + dx] { best = d2 }
+        // Nearest outside cell within the window: the offsets are tried nearest first (squared distance below
+        // rMax^2), so the first hit is the minimum; no hit keeps the cap.
+        let reachDX = PetShading.reach.dx, reachDY = PetShading.reach.dy, reachD2 = PetShading.reach.d2
+        let reachCount = reachD2.count
+        padded.withUnsafeBufferPointer { pad in
+            for y in 0..<h {
+                for x in 0..<w {
+                    if ext[y * w + x] { continue }
+                    var best = rm * rm
+                    let origin = (y + rm) * pw + x + rm
+                    for k in 0..<reachCount where pad[origin + reachDY[k] * pw + reachDX[k]] {
+                        best = reachD2[k]
+                        break
                     }
+                    dist[y * w + x] = Float(Double(best).squareRoot())
                 }
-                dist[y * w + x] = Float(Double(best).squareRoot())
             }
         }
         let cap: Double = area > 520 ? 3.6 : (area > 280 ? 3.1 : 2.6)
@@ -351,15 +362,10 @@ enum PetShading {
                 var next: [Int] = []
                 for i in frontier {
                     let x = i % w, y = i / w
-                    var nb: [Int] = []
-                    nb.append(x > 0 ? i - 1 : -1)
-                    nb.append(x < w - 1 ? i + 1 : -1)
-                    nb.append(y > 0 ? i - w : -1)
-                    nb.append(y < h - 1 ? i + w : -1)
-                    for j in nb where j >= 0 && prot[j] && gd[j] == 0 {
-                        gd[j] = gd[i] + 1
-                        next.append(j)
-                    }
+                    if x > 0 && prot[i - 1] && gd[i - 1] == 0 { gd[i - 1] = gd[i] + 1; next.append(i - 1) }
+                    if x < w - 1 && prot[i + 1] && gd[i + 1] == 0 { gd[i + 1] = gd[i] + 1; next.append(i + 1) }
+                    if y > 0 && prot[i - w] && gd[i - w] == 0 { gd[i - w] = gd[i] + 1; next.append(i - w) }
+                    if y < h - 1 && prot[i + w] && gd[i + w] == 0 { gd[i + w] = gd[i] + 1; next.append(i + w) }
                 }
                 frontier = next
             }
@@ -473,6 +479,37 @@ enum PetShading {
         lock.lock()
         cache[key] = made
         lock.unlock()
+        return made
+    }
+
+    // The scene asks for the same few sprites (the species' frames, mirrored or not) on every render. Hashing 32 row
+    // Strings per lookup is costly, so the hot path is keyed by the address of the row buffer instead. The entry
+    // holds the rows (the buffer stays alive, so the address is not reused while cached) and a hit is confirmed
+    // with `==`, which is O(1) for the same buffer. A miss falls back to the content cache above.
+    private struct FastKey: Hashable {
+        let base: Int
+        let count: Int
+        let mirror: Bool
+        let family: String
+    }
+    private static let fastLock = NSLock()
+    private static var fastCache: [FastKey: (rows: [String], shaded: ShadedPet)] = [:]
+
+    /// `layers(rows:family:)` of the sprite as drawn: `rows` reversed left to right when `mirror` is set.
+    static func layers(rows: [String], mirror: Bool, family: String) -> ShadedPet {
+        guard !rows.isEmpty else { return layers(rows: rows, family: family) }
+        let base = rows.withUnsafeBufferPointer { Int(bitPattern: $0.baseAddress) }
+        let key = FastKey(base: base, count: rows.count, mirror: mirror, family: family)
+        fastLock.lock()
+        let hit = fastCache[key]
+        fastLock.unlock()
+        if let hit, hit.rows == rows { return hit.shaded }
+        let shown = mirror ? rows.map { String($0.reversed()) } : rows
+        let made = layers(rows: shown, family: family)
+        fastLock.lock()
+        if fastCache.count >= 4096 { fastCache.removeAll() }
+        fastCache[key] = (rows: rows, shaded: made)
+        fastLock.unlock()
         return made
     }
 

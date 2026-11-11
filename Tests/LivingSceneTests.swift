@@ -234,7 +234,7 @@ final class LivingSceneTests: XCTestCase {
     }
 
     func testInkNeverOverlapsPoopsWhileWandering() {
-        for sp in Species.all.sampled(every: 4) {
+        for sp in Species.all {
             for n in 1...3 {
                 var p = makePet(seed: UInt64(sp.id.count * 31 + n), stage: sp.stage, species: sp.id)
                 p.poops = n
@@ -245,7 +245,7 @@ final class LivingSceneTests: XCTestCase {
                 let limit = SceneState.limit(species: sp.id, poops: n)
                 var walked = false
                 var worst = -1
-                run(&s, pet: p, ticks: 1500) { st in
+                run(&s, pet: p, ticks: 3000) { st in
                     if st.action == .walk { walked = true }
                     XCTAssertLessThanOrEqual(st.x, limit + 0.0001, "\(sp.id) x with \(n) poops")
                     let place = SceneRenderer.placement(pet: p, state: st, frame: 0, motion: true, override: nil)
