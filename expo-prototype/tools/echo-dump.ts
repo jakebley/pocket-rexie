@@ -30,7 +30,7 @@ const out: unknown[] = [];
       const s = newSession(echoGame, params, 21);
       const base: Omit<ScreenCtx, 'mode'> = { pet, tick: 3, feedSel: 0, statsPage: 0, dexPage: 0, evo: null, scene: null, playSel: 2, scores: store.snapshot(), session: s, ms: T + 4000 };
       const shot = (name: string, ms = 4000) => {
-        const r = renderScreen({ ...base, mode: 'game', ms: T + ms });
+        const r = renderScreen({ ...base, look: mode, mode: 'game', ms: T + ms });
         const frame = buildFrame(r, { mode, dark: false, line: lineOf(pet), bodyHex: bodyOf(pet) });
         const sc = screenColors(mode, false);
         out.push({ fam, id: sp.id, mode, name, frame, ground: sc.ground, ink: sc.ink });

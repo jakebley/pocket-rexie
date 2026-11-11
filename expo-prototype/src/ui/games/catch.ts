@@ -2,6 +2,7 @@
 import { CATCH_GROUND, catchGame, type CatchState } from '../../core/minigames/games/catch';
 import { Layer } from '../layers';
 import { drawGlyphMark, drawPetFit } from './common';
+import { paintCatch96 } from './catch96';
 import type { GameEntry, PaintCtx } from './types';
 
 export function paintCatch(c: PaintCtx) {
@@ -28,4 +29,7 @@ export function paintCatch(c: PaintCtx) {
   }
 }
 
-export const entry: GameEntry = { def: catchGame, layout: 'field', paint: paintCatch };
+export const entry: GameEntry = {
+  def: catchGame, layout: 'field', paint: paintCatch, paint96: paintCatch96,
+  hud96: (c) => ({ urgent: (c.game.state as CatchState).duration - (c.game.state as CatchState).t <= 5000, ms: c.ms }),
+};

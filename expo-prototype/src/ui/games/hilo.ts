@@ -3,6 +3,7 @@ import { HILO_ROWS, hiloGame, type HiLoState } from '../../core/minigames/games/
 import type { FamilyTheme } from '../../core/minigames/themes';
 import { textWidth, type Buf } from '../pixel';
 import { drawGlyph } from './common';
+import { paintHiLo96 } from './hilo96';
 import type { GameEntry, PaintCtx } from './types';
 
 /** The original HI-LO screen; pass a theme to add the family token (the old tests pass none and get the exact original). */
@@ -38,4 +39,5 @@ export const entry: GameEntry = {
   def: hiloGame,
   layout: 'text',
   paint: (c: PaintCtx) => paintHiLo(c.b, c.game.state as HiLoState, c.params.theme),
+  paint96: paintHiLo96,
 };

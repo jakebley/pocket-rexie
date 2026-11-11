@@ -7,6 +7,7 @@ import { biomeOf } from '../biomes';
 import { Layer, SCENERY_FROM } from '../layers';
 import { textWidth, type Buf } from '../pixel';
 import { drawGlyph, drawGlyphMark, drawPetFit } from './common';
+import { paintDash96 } from './dash96';
 import type { GameEntry, PaintCtx } from './types';
 
 const rnd = (i: number) => { const v = Math.sin(i * 12.9898 + 4.1414) * 43758.5453; return v - Math.floor(v); };
@@ -279,4 +280,7 @@ export function paintDash(c: PaintCtx) {
   }
 }
 
-export const entry: GameEntry = { def: dashGame, layout: 'field', paint: paintDash };
+export const entry: GameEntry = {
+  def: dashGame, layout: 'field', paint: paintDash, paint96: paintDash96,
+  hud96: (c) => { const s = c.game.state as DashState; return { urgent: s.cd <= 0 && s.duration - s.t <= 5000, ms: c.ms, mid: s.streak >= 2 ? `x${s.streak}` : undefined }; },
+};

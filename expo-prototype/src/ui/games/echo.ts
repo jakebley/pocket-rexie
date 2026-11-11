@@ -7,6 +7,7 @@ import { Layer } from '../layers';
 import type { Buf } from '../pixel';
 import { textWidth } from '../pixel';
 import { TONE_LAYER, drawGlyphScaled, drawPetFit } from './common';
+import { paintEcho96 } from './echo96';
 import type { GameEntry, PaintCtx } from './types';
 
 const LEDGE = 36;
@@ -121,4 +122,7 @@ export function paintEcho(c: PaintCtx) {
   }
 }
 
-export const entry: GameEntry = { def: echoGame, layout: 'field', paint: paintEcho };
+export const entry: GameEntry = {
+  def: echoGame, layout: 'field', paint: paintEcho, paint96: paintEcho96,
+  hud96: (c) => { const s = c.game.state as EchoState; return { mid: s.streak >= 2 ? `x${s.streak}` : undefined }; },
+};

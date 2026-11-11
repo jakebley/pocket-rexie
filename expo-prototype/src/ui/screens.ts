@@ -8,11 +8,12 @@ import type { ScoreData } from '../core/minigames/scores';
 import { rankLabel, RANKS } from '../core/minigames/types';
 import type { HiLoState } from '../core/minigames/games/hilo';
 import { paintField, paintHud, STAR5 } from './games/common';
+import { paintField96, paintHud96, panel } from './games/common96';
 import { paintHiLo } from './games/hilo';
 import { GAME_ENTRIES, entryById } from './games/registry';
 import { Layer } from './layers';
 import { biomeOf, type Biome } from './biomes';
-import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, gridFor, scale3xCached, textWidth, type Look } from './pixel';
+import { Buf, EGG_SPRITE, GLYPHS, GRID, GRID_TECH, TEXT_GRID, TOMB_SPRITE, epx, gridFor, scale3xCached, textWidth, type Look } from './pixel';
 import { LAYOUT96, scaledLayout, type ScreenKey } from './layout96';
 import { initScene, phaseOf, type Phase, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
@@ -265,6 +266,29 @@ function paintGame(b: Buf, ctx: ScreenCtx, s: Session, entryLayout: 'field' | 't
   } else e.paint(c);
 }
 
+
+/** Technicolor 96x96 mini-game screen: the entry's native painter inside the shared field and HUD (null when the game has no 96 painter yet). */
+function paintGame96(ctx: ScreenCtx, s: Session): Buf | null {
+  const e = entryById(s.def.id);
+  if (!e || !s.game || !e.paint96) return null;
+  const b = new Buf(GRID_TECH);
+  const c = { b, game: s.game, params: s.params, pet: ctx.pet, ms: ctx.ms ?? Date.now() };
+  if (e.layout === 'field') {
+    paintField96(b, ctx.pet, c.ms);
+    e.paint96(c);
+    const h = s.game.hud;
+    paintHud96(b, h.left, h.right, s.game.progress, e.hud96?.(c) ?? {});
+    if (s.phase === 'over') {
+      const label = s.game.overLabel ?? 'TIME UP';
+      const w = textWidth(label, 2) - 2;
+      const x = (b.n - w) >> 1;
+      panel(b, x - 5, 33, w + 10, 21, Layer.CABLE, Layer.DAISY);
+      b.as(Layer.CABLE, () => b.text(label, x, 38, 2));
+    }
+  } else e.paint96(c);
+  return b;
+}
+
 // ---- home ----
 function paintHome(b: Buf, ctx: ScreenCtx, sc: Scene) {
   const { pet: p, tick } = ctx;
@@ -367,6 +391,7 @@ export function renderScreen(ctx: ScreenCtx): Rendered {
   if (isTextMode(ctx)) {
     const key = textScreenKey(ctx);
     if (tech) {
+      if (key === 'textgame' && ctx.session) { const nat = paintGame96(ctx, ctx.session); if (nat) return { buf: nat, dark, look }; }
       const own = LAYOUT96[key]?.(ctx);
       return { buf: own ?? scaledLayout((t) => paintTextScreen(t, ctx)), dark, look };
     }
@@ -377,7 +402,10 @@ export function renderScreen(ctx: ScreenCtx): Rendered {
   if (ctx.mode === 'game' && ctx.session) {
     const sky = { phase: 'day' as Phase, rain: false, dim: false, biome: biomeOf(p) };
     // mini-game fields are painted at 64 and enlarged for Technicolor in phase 1 (the games agent redesigns them at 96)
-    if (tech) return { buf: scaledLayout((t) => paintGame(t, ctx, ctx.session!, 'field')), dark, sky, look };
+    if (tech) {
+      const nat = paintGame96(ctx, ctx.session);
+      return { buf: nat ?? scaledLayout((t) => paintGame(t, ctx, ctx.session!, 'field')), dark, sky, look };
+    }
     const b = new Buf(GRID);
     paintGame(b, ctx, ctx.session, 'field');
     return { buf: b, dark, sky, look };

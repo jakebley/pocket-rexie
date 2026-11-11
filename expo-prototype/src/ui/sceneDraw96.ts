@@ -331,6 +331,18 @@ function drawButterfly96(b: Buf, s: Scene) {
   stamp(b, ART96[Math.floor(dt / 250) % 2 ? 'butterfly1' : 'butterfly0'], g96(x), g96(y), true, Layer.BUTTERFLY);
 }
 
+/**
+ * The home scene's sky, scenery and ground with no pet, HUD or props: the backdrop of the 96 mini-game fields (a clear day at the scene's hour).
+ * `scenery: false` skips the biome's own scenery and keeps the sky and the generic ground (a calmer field).
+ */
+export function drawBackdrop96(b: Buf, s: Scene, biome: Biome, scenery = true) {
+  const c = { b, s, phase: phaseOf(s.hour), rain: false, biome, g: g96 };
+  if (scenery) drawBiome96(c, 'backdrop');
+  drawSky96(b, s);
+  if (!scenery || !ownGround96(biome)) drawGround96(b, s);
+  if (scenery) drawBiome96(c, 'fore');
+}
+
 /** Paint the whole home scene at 96x96. Same inputs as drawScene (64); positions come from the same logic-unit scene. */
 export function drawScene96(b: Buf, s: Scene, pet: Pet, biomeOverride?: Biome) {
   if (b.n !== N96) throw new Error(`drawScene96 needs a ${N96} buffer, got ${b.n}`);
