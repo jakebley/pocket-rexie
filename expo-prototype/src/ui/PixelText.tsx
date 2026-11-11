@@ -1,24 +1,27 @@
 import React, { useMemo, useRef } from 'react';
 import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { FONT, textWidth } from './pixel';
+import { textWidth } from './pixel';
+import { density, textWidthD } from './density';
 import { useTheme } from './theme';
 
-/** Text drawn with the 3x5 LCD font. `ps` = size of one font pixel in points. */
+/** Text drawn with the look's pixel font (density.ts; 3x5 today). `ps` = size of one font pixel in points. */
 export function PixelText({ text, ps = 2, color }: { text: string; ps?: number; color: string }) {
+  const { mode } = useTheme();
+  const font = density(mode).font;
   const d = useMemo(() => {
     let out = '';
     let x = 0;
     for (const ch of text.toUpperCase()) {
-      const g = FONT[ch] ?? FONT['?'];
-      for (let y = 0; y < 5; y++) for (let gx = 0; gx < 3; gx++) if (g[y][gx] === 'X') out += `M${x + gx} ${y}h1v1h-1z`;
-      x += 4;
+      const g = font.glyphs[ch] ?? font.glyphs['?'];
+      for (let y = 0; y < font.h; y++) for (let gx = 0; gx < font.w; gx++) if (g[y][gx] === 'X') out += `M${x + gx} ${y}h1v1h-1z`;
+      x += font.adv;
     }
     return out;
-  }, [text]);
-  const w = Math.max(1, text.length * 4 - 1);
+  }, [text, font]);
+  const w = Math.max(1, textWidthD(density(mode), text));
   return (
-    <Svg width={w * ps} height={5 * ps} viewBox={`0 0 ${w} 5`}>
+    <Svg width={w * ps} height={font.h * ps} viewBox={`0 0 ${w} ${font.h}`}>
       <Path d={d} fill={color} />
     </Svg>
   );
@@ -59,6 +62,7 @@ export function PixelButton({ label, onPress, on, ps = 2, style, accessibilityLa
   label: string; onPress: () => void; on?: boolean; ps?: number; style?: StyleProp<ViewStyle>; accessibilityLabel?: string; instant?: boolean;
 }) {
   const t = useTheme();
+  const dn = density(t.mode);
   const fired = useRef(false);
   // instant buttons act on finger-down; onPress is only a fallback for taps so quick (or synthetic) that press-in never reported
   const down = () => { fired.current = true; onPress(); };
@@ -66,8 +70,8 @@ export function PixelButton({ label, onPress, on, ps = 2, style, accessibilityLa
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} hitSlop={6}
       onPressIn={instant ? down : undefined} onPress={instant ? up : onPress}
-      style={({ pressed }) => [{ borderWidth: 2, borderColor: t.ink, backgroundColor: pressed || on ? t.ink : 'transparent',
-        alignItems: 'center', justifyContent: 'center', minHeight: 48, paddingHorizontal: 12, paddingVertical: 8 }, touchStyle, style]}>
+      style={({ pressed }) => [{ borderWidth: dn.border, borderColor: t.ink, backgroundColor: pressed || on ? t.ink : 'transparent',
+        alignItems: 'center', justifyContent: 'center', minHeight: dn.btnMinH, paddingHorizontal: 12, paddingVertical: 8 }, touchStyle, style]}>
       {({ pressed }) => (
         <View pointerEvents="none" style={StyleSheet.flatten({ alignItems: 'center' })}>
           <PixelText text={label} ps={ps} color={pressed || on ? t.ground : t.ink} />

@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { allCellsPath, ICONS, ICON_LABELS, ICON_ORDER } from './pixel';
+import { allCellsPath, ICON_LABELS, ICON_ORDER, LOGIC_N, toLogic } from './pixel';
+import { density } from './density';
 import { bodyOf, buildFrame, lineOf, type Frame } from './render';
 import { FEED_ROW_H, FEED_TOP, MENU_ROW_H, MENU_TOP, MENU_VISIBLE, menuFirst, playMenuRows, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
@@ -45,13 +46,16 @@ export function useTick(ms = 300) {
 }
 
 function IconBitmap({ name, size, color }: { name: string; size: number; color: string }) {
+  const { mode } = useTheme();
+  const dn = density(mode);
+  const rows = dn.icons[name];
   const d = useMemo(() => {
     let s = '';
-    ICONS[name].forEach((r, y) => { for (let x = 0; x < r.length; x++) if (r[x] === 'X') s += `M${x} ${y}h1v1h-1z`; });
+    rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) if (r[x] === 'X') s += `M${x} ${y}h1v1h-1z`; });
     return s;
-  }, [name]);
+  }, [rows]);
   return (
-    <Svg width={size} height={size} viewBox="0 0 8 8"><Path d={d} fill={color} /></Svg>
+    <Svg width={size} height={size} viewBox={`0 0 ${dn.iconSize} ${dn.iconSize}`}><Path d={d} fill={color} /></Svg>
   );
 }
 export { IconBitmap };
@@ -99,7 +103,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     const rendered = renderScreen({
       pet, tick: stillRef.current ? 0 : Math.floor(Date.now() / 300), mode: g.mode, feedSel: g.feedSel,
       statsPage: g.statsPage, dexPage: g.dexPage, evo: g.evo, scene: sc, dexFamily: g.dexFamily, ent: g.ent,
-      playSel: g.playSel, session: g.sessionRef.current, scoresPage: g.scoresPage, scores: g.scores, ms: Date.now(),
+      playSel: g.playSel, session: g.sessionRef.current, scoresPage: g.scoresPage, scores: g.scores, ms: Date.now(), look: styleRef.current.mode,
     });
     const frame = buildFrame(rendered, { ...styleRef.current, line: lineOf(pet), bodyHex: bodyOf(pet) });
     if (frame.key !== lastKey.current) { lastKey.current = frame.key; setFr(frame); }
@@ -114,8 +118,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
   }, [render, fast]);
   useEffect(() => { render(); }, [render, still, game.mode, game.feedSel, game.statsPage, game.dexPage, game.dexFamily, game.ent, game.playSel, game.scoresPage, game.scores, game.phase, game.evo, game.pet, th.mode, th.dark]);
 
-  const n = fr.n;
-  const c = size / n;
+  const u = size / LOGIC_N; // points per logic unit: taps, feed rows and game rows are in 64-space whatever the LCD grid is
 
   const onTap = (e: GestureResponderEvent) => {
     if (game.mode !== 'home') { game.tapScreen(); return; }
@@ -123,8 +126,8 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     let lx = ne.locationX, ly = ne.locationY;
     const r = (e.currentTarget as any)?.getBoundingClientRect?.();
     if (Platform.OS === 'web' && r && ne.clientX !== undefined) { lx = ne.clientX - r.left; ly = ne.clientY - r.top; }
-    const cx = Math.max(0, Math.min(n - 1, Math.floor((lx ?? 0) / c)));
-    const cy = Math.max(0, Math.min(n - 1, Math.floor((ly ?? 0) / c)));
+    const cx = toLogic(lx ?? 0, size);
+    const cy = toLogic(ly ?? 0, size);
     const sc = sceneRef.current;
     const px = sc ? Math.round(sc.x) : 8;
     const onPet = !!sc && cx >= px && cx <= px + 31 && cy >= HEAD_Y - 4 && cy <= GROUND_Y;
@@ -135,13 +138,13 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     <View style={{ width: size, height: size, overflow: 'hidden', backgroundColor: th.ground }}>
       <FrameSvg frame={fr} size={size} ground={th.ground} ink={th.ink} />
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (
-        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * c, height: FEED_ROW_H * c, ...touchStyle }} />
+        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * u, height: FEED_ROW_H * u, ...touchStyle }} />
       ))}
       {game.mode === 'playmenu' && (() => {
         const first = menuFirst(game.playSel);
         return playMenuRows().slice(first, first + MENU_VISIBLE).map((_, k) => (
           <Pressable key={k} accessibilityLabel={`Play menu row ${first + k + 1}`} onPress={() => game.tapMenuRow(first + k)}
-            style={{ position: 'absolute', left: 0, width: size, top: (MENU_TOP + k * MENU_ROW_H) * c, height: MENU_ROW_H * c, ...touchStyle }} />
+            style={{ position: 'absolute', left: 0, width: size, top: (MENU_TOP + k * MENU_ROW_H) * u, height: MENU_ROW_H * u, ...touchStyle }} />
         ));
       })()}
       {game.mode === 'game' && (() => {
@@ -159,7 +162,7 @@ function Lcd({ game, size }: { game: Game; size: number }) {
             }} style={[StyleSheet.absoluteFill, touchStyle]} />
             {rows.map((r, i) => (
               <Pressable key={i} accessibilityLabel={`Game option ${i + 1}`} onPress={() => game.tapGamePick(i)}
-                style={{ position: 'absolute', left: (r.x ?? 0) * c, width: (r.w ?? 64) * c, top: (r.y - 1) * c, height: (r.h + 2) * c, ...touchStyle, ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}) }} />
+                style={{ position: 'absolute', left: (r.x ?? 0) * u, width: (r.w ?? 64) * u, top: (r.y - 1) * u, height: (r.h + 2) * u, ...touchStyle, ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}) }} />
             ))}
           </>
         );
@@ -172,14 +175,16 @@ function Lcd({ game, size }: { game: Game; size: number }) {
 }
 
 
-export const ICON_ROW_H = 48; // minimum touch height of an icon tile
+export const ICON_ROW_H = 48; // Traditional minimum touch height of an icon tile (density(mode).iconRowMin is the per-look value)
 
-export function Toy({ game, width, rowH = ICON_ROW_H }: { game: Game; width: number; rowH?: number }) {
+export function Toy({ game, width, rowH: rowHProp }: { game: Game; width: number; rowH?: number }) {
   const th = useTheme();
+  const dn = density(th.mode);
+  const rowH = Math.max(dn.iconRowMin, rowHProp ?? dn.iconRowMin);
   const hasPet = !!game.pet;
   const tileW = width / 5;
-  const labelPs = Math.max(1, Math.min(2, Math.floor((tileW - 2) / 32)));
-  const labelH = labelPs * 5;
+  const labelPs = Math.max(1, Math.min(dn.labelPsMax, Math.floor((tileW - 2) / 32)));
+  const labelH = labelPs * dn.font.h;
   const box = Math.max(20, Math.floor(Math.min(rowH - labelH - 6, tileW - 8)));
 
   const row = (from: number) => (
@@ -194,7 +199,7 @@ export function Toy({ game, width, rowH = ICON_ROW_H }: { game: Game; width: num
             {({ pressed }) => (
               <View pointerEvents="none" style={{ alignItems: 'center', gap: 2 }}>
                 <View style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center', backgroundColor: selected || pressed ? th.ink : 'transparent' }}>
-                  <IconBitmap name={name} size={Math.round(box * 0.74)} color={selected || pressed ? th.ground : th.ink} />
+                  <IconBitmap name={name} size={Math.round(box * dn.iconFill)} color={selected || pressed ? th.ground : th.ink} />
                 </View>
                 <PixelText text={ICON_LABELS[i]} ps={labelPs} color={th.ink} />
               </View>

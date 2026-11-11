@@ -12,7 +12,8 @@ import { paintHiLo } from './games/hilo';
 import { GAME_ENTRIES, entryById } from './games/registry';
 import { Layer } from './layers';
 import { biomeOf, type Biome } from './biomes';
-import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
+import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, gridFor, scale3xCached, textWidth, type Look } from './pixel';
+import { LAYOUT96, scaledLayout, type ScreenKey } from './layout96';
 import { initScene, phaseOf, type Phase, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
 
@@ -34,6 +35,8 @@ export interface ScreenCtx {
   dexFamily?: string;
   /** what the player may use; gates the locked Dex families */
   ent?: Entitlements;
+  /** the look decides the LCD grid (gridFor): 'technicolor' paints the 96x96 screen. Omitted = the classic 64 grid (what the golden tests use). */
+  look?: Look;
 }
 /** Feed menu rows: the three foods are named for the pet's family (Mice / Berries / Fish ...). */
 export const feedRows = (family: string) => [...foodLabels(family), 'SNACK', 'CANCEL'];
@@ -44,6 +47,7 @@ const spriteOf = (id: string, blink: boolean): string[] | null => {
 };
 const EGG_HI = epx(EGG_SPRITE);
 const TOMB_HI = epx(TOMB_SPRITE);
+const EGG_96 = scale3xCached(EGG_SPRITE);
 
 function hearts(b: Buf, n: number, full: string[], empty: string[], x: number, y: number, step = 6, layer: number = Layer.INK) {
   for (let i = 0; i < 4; i++) b.rows(i < n ? full : empty, x + i * step, y, 'X', layer);
@@ -261,7 +265,8 @@ function paintHome(b: Buf, ctx: ScreenCtx, sc: Scene) {
   const { pet: p, tick } = ctx;
   if (p.stage === 'egg') {
     const wob = [0, 0, -2, 0, 0, 0, 2, 0][tick % 8];
-    b.rows(EGG_HI, 16 + wob, 26);
+    if (b.n === GRID) b.rows(EGG_HI, 16 + wob, 26);
+    else b.rows(EGG_96, 24 + b.g(wob), 39);
     return;
   }
   drawScene(b, sc, p);
@@ -299,48 +304,80 @@ export function isTextMode(ctx: ScreenCtx): boolean {
 
 /** What the Technicolor renderer needs to paint behind the scene. */
 export interface SkyInfo { phase: Phase; rain: boolean; dim: boolean; biome: Biome }
-export interface Rendered { buf: Buf; dark: boolean; sky?: SkyInfo }
+export interface Rendered { buf: Buf; dark: boolean; sky?: SkyInfo; /** the look the buffer was painted for (buildFrame refuses to colour it as the other look) */ look?: Look }
+
+/** Which text-mode screen a context shows (key of LAYOUT96). */
+export function textScreenKey(ctx: ScreenCtx): ScreenKey {
+  if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') return 'ghost';
+  if (ctx.mode === 'game') {
+    const sn = ctx.session;
+    return sn?.phase === 'ready' ? 'ready' : sn?.phase === 'result' ? 'result' : 'textgame';
+  }
+  return ctx.mode as ScreenKey;
+}
+
+function paintTextScreen(b: Buf, ctx: ScreenCtx) {
+  const p = ctx.pet;
+  if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') { paintGhost(b, ctx); return; }
+  switch (ctx.mode) {
+    case 'feed': paintFeed(b, ctx); break;
+    case 'play': if (ctx.play) paintHiLo(b, ctx.play); break;
+    case 'playmenu': paintPlayMenu(b, ctx); break;
+    case 'scores': paintScores(b, ctx); break;
+    case 'game': {
+      const sn = ctx.session;
+      if (!sn) break;
+      if (sn.phase === 'ready') paintReady(b, ctx, sn);
+      else if (sn.phase === 'result') paintResult(b, ctx, sn);
+      else paintGame(b, ctx, sn, 'text');
+      break;
+    }
+    case 'stats': paintStats(b, ctx); break;
+    case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick, ctx.dexFamily ?? p.family, ctx.ent ?? NO_ENTITLEMENTS); break;
+  }
+}
 
 export function renderScreen(ctx: ScreenCtx): Rendered {
   const { pet: p } = ctx;
+  const look = ctx.look;
+  const tech = look === 'technicolor';
+  const N = gridFor(look);
   let dark = false;
   if (ctx.evo && ctx.evo.until > Date.now()) {
-    const b = new Buf(GRID);
+    const b = new Buf(N);
     const showNew = ctx.tick % 2 === 1;
-    const sprite = spriteOf(showNew ? ctx.evo.to : ctx.evo.from, false);
-    if (sprite) b.rows(sprite, 16, 16);
-    if (!showNew) b.invert(0, 0, GRID, GRID);
-    return { buf: b, dark };
+    const id = showNew ? ctx.evo.to : ctx.evo.from;
+    if (tech) {
+      const sp = SPECIES_BY_ID[id];
+      if (sp) b.rows(scale3xCached(sp.frames[0]), 24, 24);
+    } else {
+      const sprite = spriteOf(id, false);
+      if (sprite) b.rows(sprite, 16, 16);
+    }
+    if (!showNew) b.invert(0, 0, N, N);
+    return { buf: b, dark, look };
   }
   if (isTextMode(ctx)) {
-    const b = new Buf(TEXT_GRID);
-    if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') { paintGhost(b, ctx); return { buf: b, dark }; }
-    switch (ctx.mode) {
-      case 'feed': paintFeed(b, ctx); break;
-      case 'play': if (ctx.play) paintHiLo(b, ctx.play); break;
-      case 'playmenu': paintPlayMenu(b, ctx); break;
-      case 'scores': paintScores(b, ctx); break;
-      case 'game': {
-        const sn = ctx.session;
-        if (!sn) break;
-        if (sn.phase === 'ready') paintReady(b, ctx, sn);
-        else if (sn.phase === 'result') paintResult(b, ctx, sn);
-        else paintGame(b, ctx, sn, 'text');
-        break;
-      }
-      case 'stats': paintStats(b, ctx); break;
-      case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick, ctx.dexFamily ?? p.family, ctx.ent ?? NO_ENTITLEMENTS); break;
+    const key = textScreenKey(ctx);
+    if (tech) {
+      const own = LAYOUT96[key]?.(ctx);
+      return { buf: own ?? scaledLayout((t) => paintTextScreen(t, ctx)), dark, look };
     }
-    return { buf: b, dark };
+    const b = new Buf(TEXT_GRID);
+    paintTextScreen(b, ctx);
+    return { buf: b, dark, look };
   }
   if (ctx.mode === 'game' && ctx.session) {
+    const sky = { phase: 'day' as Phase, rain: false, dim: false, biome: biomeOf(p) };
+    // mini-game fields are painted at 64 and enlarged for Technicolor in phase 1 (the games agent redesigns them at 96)
+    if (tech) return { buf: scaledLayout((t) => paintGame(t, ctx, ctx.session!, 'field')), dark, sky, look };
     const b = new Buf(GRID);
     paintGame(b, ctx, ctx.session, 'field');
-    return { buf: b, dark, sky: { phase: 'day', rain: false, dim: false, biome: biomeOf(p) } };
+    return { buf: b, dark, sky, look };
   }
-  const b = new Buf(GRID);
+  const b = new Buf(N);
   const sc = ctx.scene ?? initScene(p, Date.now());
   paintHome(b, ctx, sc);
-  if (p.stage === 'egg') return { buf: b, dark };
-  return { buf: b, dark, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim, biome: biomeOf(p) } };
+  if (p.stage === 'egg') return { buf: b, dark, look };
+  return { buf: b, dark, look, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim, biome: biomeOf(p) } };
 }
