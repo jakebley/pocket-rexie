@@ -31,6 +31,8 @@ targets:
         embed: true
     entitlements:
       path: config/iOS.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.pocketrexie.shared]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app
@@ -63,6 +65,8 @@ targets:
         buildPhase: resources
     entitlements:
       path: config/Widget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.pocketrexie.shared]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.widget
@@ -90,6 +94,8 @@ targets:
         embed: true
     entitlements:
       path: config/Watch.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.pocketrexie.shared]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.watchkitapp
@@ -120,6 +126,8 @@ targets:
         buildPhase: resources
     entitlements:
       path: config/WatchWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.pocketrexie.shared]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.watchkitapp.widget
