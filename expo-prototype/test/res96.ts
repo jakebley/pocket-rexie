@@ -196,6 +196,8 @@ const bbox = (b: Buf, pred: (c: number) => boolean) => {
 // 5. the biome hook: generic fallback now, a registered painter is honoured and cannot overwrite the pet
 {
   ok(BIOMES.every((bm) => bm in BIOME96), 'a registry entry for every biome');
+  const registered = { ...BIOME96 }; // the real painters (biomes A and B): switched off here to test the generic fallback, restored below
+  for (const bm of BIOMES) BIOME96[bm] = null;
   ok(biomes96Done().length === 0, 'phase 1: no biome has a 96 painter yet (generic fallback)');
   const fams = [...new Set(SPECIES.map((s) => s.family))];
   for (const fam of fams) {
@@ -209,6 +211,7 @@ const bbox = (b: Buf, pred: (c: number) => boolean) => {
     }
   }
   // install stub painters: floods of scenery code must stay out of the pet's 1px ring
+  for (const bm of BIOMES) BIOME96[bm] = registered[bm];
   const saved = { ...BIOME96 };
   try {
     for (const bm of BIOMES) BIOME96[bm] = { backdrop: (c) => c.b.rect(0, 0, 96, GROUND_Y96, Layer.BARK), fore: (c) => c.b.rect(0, 0, 96, 96, Layer.MOSS) };
