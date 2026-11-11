@@ -18,6 +18,13 @@ import { sky96 } from './biome96/sky';
 import { yard96 } from './biome96/yard';
 import { clouds96 } from './biome96/clouds';
 import { ember96 } from './biome96/ember';
+// ---- biomes B imports ----
+import { warren96 } from './biome96/warren';
+import { crags96 } from './biome96/crags';
+import { workshop96 } from './biome96/workshop';
+import { swamp96 } from './biome96/swamp';
+import { garden96 } from './biome96/garden';
+import { space96 } from './biome96/space';
 
 export interface Ctx96 {
   b: Buf; s: Scene; phase: Phase; rain: boolean; biome: Biome;
@@ -58,3 +65,11 @@ export function drawBiome96(c: Ctx96, part: 'backdrop' | 'fore'): boolean {
 }
 /** Does this biome paint its own ground band? */
 export const ownGround96 = (biome: Biome): boolean => BIOME96[biome]?.ground === 'own';
+
+// ---- biomes B ----
+BIOME96.warren = warren96;
+BIOME96.crags = crags96;
+BIOME96.workshop = workshop96;
+BIOME96.swamp = swamp96;
+BIOME96.garden = garden96;
+BIOME96.space = space96;
