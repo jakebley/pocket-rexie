@@ -588,8 +588,9 @@ final class MiniGameTests: XCTestCase {
         var perfectRuns: [Int] = []
         var hits = 0, missed = 0, runs = 0
         var idleMax = 0, mashRuns = 0, mashBronze = 0, mashSilver = 0
-        // every body kind, at a stage that rotates through the five (the whole 123 x 5 grid runs in the Expo test)
-        for (ki, kind) in MiniTuning.allKinds.enumerated() {
+        // every body kind, at a stage that rotates through the five
+        // (every second kind: half the games keep the simulator test fast; the Expo test runs all 123 x 5)
+        for (ki, kind) in MiniTuning.allKinds.enumerated() where ki % 2 == 0 {
             let stage = stages[ki % 5]
             let params = catchParams(speciesOfKind(kind).id, stage, mul: 1)
             let d = CatchGame.dims(params)
