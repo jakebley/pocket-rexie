@@ -9,10 +9,10 @@ struct SettingsView: View {
     @AppStorage(Beeper.enabledKey) private var soundOn = true
     @AppStorage(Notifier.enabledKey) private var notificationsOn = true
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var storedMode: ColorMode = .traditional
-    #if DEBUG
-    @AppStorage(EntitlementStore.previewKey, store: PetStore.defaults) private var plusPreview = false
+    @AppStorage(EntitlementStore.previewKey, store: PetStore.defaults) private var plusPreview: Bool = TesterTools.isTestFlight()
     @AppStorage(EntitlementStore.chooserKey, store: PetStore.defaults) private var eggChooser = false
-    #endif
+    @State private var confirmFamily: Family?
+    private let testerTools = TesterTools.isEnabled()
 
     init(model: GameModel, colorModeOverride: ColorMode? = nil) {
         _model = ObservedObject(wrappedValue: model)
@@ -80,19 +80,29 @@ struct SettingsView: View {
                 }
                 .listRowBackground(palette.ink.opacity(0.1))
 
-                #if DEBUG
-                Section {
-                    Toggle("Preview Plus (testing)", isOn: $plusPreview)
-                        .accessibilityIdentifier("toggle-plus-preview")
-                    Toggle("Show egg chooser (testing)", isOn: $eggChooser)
-                        .accessibilityIdentifier("toggle-egg-chooser")
-                } header: {
-                    Text("Testing")
-                } footer: {
-                    Text("Debug builds only. Preview Plus unlocks every animal family for new eggs without a purchase. Nothing is charged and this section is not in release builds.")
+                if testerTools {
+                    Section {
+                        Toggle("Preview Plus", isOn: $plusPreview)
+                            .accessibilityIdentifier("toggle-plus-preview")
+                        Toggle("Show egg chooser", isOn: $eggChooser)
+                            .accessibilityIdentifier("toggle-egg-chooser")
+                        Menu {
+                            ForEach(Species.families, id: \.id) { fam in
+                                Button(fam.name) { confirmFamily = fam }
+                            }
+                        } label: {
+                            Text("New egg of any family")
+                        }
+                        .accessibilityIdentifier("tester-new-egg")
+                        LabeledContent("Version", value: version)
+                            .accessibilityIdentifier("tester-version")
+                    } header: {
+                        Text("Testing")
+                    } footer: {
+                        Text("Only in test builds (TestFlight and Debug), never in the App Store version. Preview Plus unlocks every animal family for new eggs without a purchase. New egg replaces your current pet with a fresh egg of the family you pick and keeps your Dex. Nothing is charged.")
+                    }
+                    .listRowBackground(palette.ink.opacity(0.1))
                 }
-                .listRowBackground(palette.ink.opacity(0.1))
-                #endif
 
                 Section("About") {
                     NavigationLink("About Pocket Rexie") { AboutView(version: version) }
@@ -101,6 +111,16 @@ struct SettingsView: View {
                 .listRowBackground(palette.ink.opacity(0.1))
             }
             .lcdFormStyle(palette)
+            .confirmationDialog("Replace your pet with a new \(confirmFamily?.name ?? "") egg?",
+                                isPresented: Binding(get: { confirmFamily != nil },
+                                                     set: { if !$0 { confirmFamily = nil } }),
+                                titleVisibility: .visible) {
+                Button("Replace pet", role: .destructive) {
+                    if let fam = confirmFamily { model.testerNewEgg(family: fam.id) }
+                    confirmFamily = nil
+                }
+                Button("Cancel", role: .cancel) { confirmFamily = nil }
+            }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

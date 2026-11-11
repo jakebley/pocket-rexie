@@ -73,6 +73,10 @@ jobs:
         run: |
           summary=$(grep -E "Executed [0-9]+ tests" test-ios.log | tail -1)
           echo "::notice title=XCTest::${summary}"
+          # slowest test cases (the unit tests once took over an hour; this names the culprits)
+          slow=$(grep -E "Test Case '.*' (passed|failed) \(" test-ios.log | sed -E "s/.*Test Case '-\[(.*)\]' (passed|failed) \(([0-9.]+) seconds\)\./\3 \1/" | sort -rn | head -12 | tr '\n' ';')
+          echo "::notice title=SlowestTests::${slow}"
+          echo "Slowest tests: ${slow}"
           n=$(echo "$summary" | sed -E 's/.*Executed ([0-9]+) tests.*/\1/')
           test "${n:-0}" -ge 10
       - name: Build watch app
