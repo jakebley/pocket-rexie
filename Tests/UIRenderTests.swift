@@ -497,7 +497,7 @@ final class UIRenderTests: XCTestCase {
                     ForEach(group, id: \.self) { fam in
                         HStack(spacing: 3) {
                             ForEach(scenes, id: \.self) { scene in
-                                playTile(scene, playPet(fam), palette: palette, side: side)
+                                self.playTile(scene, self.playPet(fam), palette: palette, side: side)
                             }
                         }
                     }
@@ -518,7 +518,7 @@ final class UIRenderTests: XCTestCase {
                         ForEach(0..<cols, id: \.self) { col in
                             let i = row * cols + col
                             if i < families.count {
-                                playTile("game-b", playPet(families[i]), palette: palette, side: big)
+                                self.playTile("game-b", self.playPet(families[i]), palette: palette, side: big)
                             } else {
                                 Color.clear.frame(width: big, height: big)
                             }
