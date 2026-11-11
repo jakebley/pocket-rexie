@@ -6,7 +6,7 @@ import { allCellsPath, ICON_LABELS, ICON_ORDER, LOGIC_N, toLogic } from './pixel
 import { density, widestD } from './density';
 import { CRISP, PixelPanel, snapPx } from './PixelBox';
 import { bodyOf, buildFrame, lineOf, type Frame } from './render';
-import { FEED_ROW_H, FEED_TOP, MENU_ROW_H, MENU_TOP, MENU_VISIBLE, menuFirst, playMenuRows, renderScreen } from './screens';
+import { FEED_ROW_H, MENU_ROW_H, MENU_VISIBLE, feedTop, menuFirst, menuTop, playMenuRows, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
 import { GROUND_Y, HEAD_Y } from './sceneDraw';
 import { PixelText, touchStyle } from './PixelText';
@@ -139,13 +139,13 @@ function Lcd({ game, size }: { game: Game; size: number }) {
     <View style={{ width: size, height: size, overflow: 'hidden', backgroundColor: th.ground }}>
       <FrameSvg frame={fr} size={size} ground={th.ground} ink={th.ink} />
       {game.mode === 'feed' && [0, 1, 2, 3, 4].map((i) => (
-        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (FEED_TOP + i * FEED_ROW_H) * u, height: FEED_ROW_H * u, ...touchStyle }} />
+        <Pressable key={i} onPress={() => game.tapFeedRow(i)} style={{ position: 'absolute', left: 0, width: size, top: (feedTop(th.mode) + i * FEED_ROW_H) * u, height: FEED_ROW_H * u, ...touchStyle }} />
       ))}
       {game.mode === 'playmenu' && (() => {
         const first = menuFirst(game.playSel);
         return playMenuRows().slice(first, first + MENU_VISIBLE).map((_, k) => (
           <Pressable key={k} accessibilityLabel={`Play menu row ${first + k + 1}`} onPress={() => game.tapMenuRow(first + k)}
-            style={{ position: 'absolute', left: 0, width: size, top: (MENU_TOP + k * MENU_ROW_H) * u, height: MENU_ROW_H * u, ...touchStyle }} />
+            style={{ position: 'absolute', left: 0, width: size, top: (menuTop(th.mode) + k * MENU_ROW_H) * u, height: MENU_ROW_H * u, ...touchStyle }} />
         ));
       })()}
       {game.mode === 'game' && (() => {

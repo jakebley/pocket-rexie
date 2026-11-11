@@ -64,6 +64,12 @@ export { HILO_ROWS as PLAY_ROWS } from '../core/minigames/games/hilo';
 /** Play menu: the registered games, then HIGH SCORES, then CANCEL; at most MENU_VISIBLE rows show at once. */
 export const MENU_TOP = 11;
 export const MENU_ROW_H = 10;
+/** Technicolor 96 lists start at logic row 12 (= cell 18) so every 10-unit row band is a whole 15 cells; the taps stay in logic units. */
+export const FEED_TOP96 = 12;
+export const MENU_TOP96 = 12;
+/** Top of the feed / play-menu tap rows (logic units) for a look. */
+export const feedTop = (look?: Look) => (look === 'technicolor' ? FEED_TOP96 : FEED_TOP);
+export const menuTop = (look?: Look) => (look === 'technicolor' ? MENU_TOP96 : MENU_TOP);
 export const MENU_VISIBLE = 5;
 export const playMenuRows = (): string[] => [...GAME_ENTRIES.map((e) => e.def.name), 'HIGH SCORES', 'CANCEL'];
 /** First visible row of the Play menu for a selection (the window follows the cursor). */
@@ -74,7 +80,6 @@ const center = (b: Buf, s: string, y: number, scale = 1) => b.text(s, (b.n - tex
 
 // ---- stats ----
 export const lineStr = (s: string) => s.toUpperCase();
-const DETAIL_LINES = 8;
 export function detailLines(p: Pet): string[] {
   return [
     lineStr(p.named ? p.name : 'NO NAME'),
@@ -93,7 +98,7 @@ export function legacyLines(p: Pet): string[] {
   p.legacy.forEach((l, i) => out.push(`#${i + 1} ${l}`));
   return out.map(lineStr);
 }
-const LEGACY_PER_PAGE = 8;
+export const LEGACY_PER_PAGE = 8;
 export const statsPageCount = (p: Pet) => 2 + Math.max(1, Math.ceil(legacyLines(p).length / LEGACY_PER_PAGE));
 
 /** Is this family's Dex open? A pet's own family always is; the rest follow the entitlement. */
@@ -111,7 +116,7 @@ export function dexLines(p: Pet, family: string = p.family): string[] {
   }
   return lines.map(lineStr);
 }
-const DEX_PER_PAGE = 8;
+export const DEX_PER_PAGE = 8;
 export const dexPageCount = (p: Pet, family: string = p.family, ent: Entitlements = NO_ENTITLEMENTS) =>
   dexUnlocked(p, family, ent) ? Math.ceil(dexLines(p, family).length / DEX_PER_PAGE) : 1;
 
@@ -180,7 +185,7 @@ function paintPlayMenu(b: Buf, ctx: ScreenCtx) {
   if (first + MENU_VISIBLE < rows.length) b.rows(['.XXX.', '..X..'], 29, 62);
 }
 
-const CONDITION_TEXT = { fine: '', heavy: 'A BIT HEAVY', hungry: 'TUMMY GRUMBLES', sick: 'FEELING SICK' } as const;
+export const CONDITION_TEXT = { fine: '', heavy: 'A BIT HEAVY', hungry: 'TUMMY GRUMBLES', sick: 'FEELING SICK' } as const;
 
 function paintReady(b: Buf, ctx: ScreenCtx, s: Session) {
   const th = s.params.theme;
@@ -348,6 +353,8 @@ export function renderScreen(ctx: ScreenCtx): Rendered {
     const showNew = ctx.tick % 2 === 1;
     const id = showNew ? ctx.evo.to : ctx.evo.from;
     if (tech) {
+      const own = LAYOUT96.evo?.(ctx);
+      if (own) return { buf: own, dark, look };
       const sp = SPECIES_BY_ID[id];
       if (sp) b.rows(scale3xCached(sp.frames[0]), 24, 24);
     } else {

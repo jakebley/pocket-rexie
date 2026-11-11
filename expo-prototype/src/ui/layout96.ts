@@ -7,12 +7,23 @@
 // and Toy.tsx converts them, so a real layout keeps the same row bands unless it also changes those constants for Technicolor.
 import { Buf, GRID_TRAD } from './pixel';
 import type { ScreenCtx } from './screens';
+import * as S96 from './screens96';
 
 /** The screens that use the text-mode framebuffer. */
-export type ScreenKey = 'feed' | 'stats' | 'dex' | 'playmenu' | 'scores' | 'ready' | 'result' | 'textgame' | 'ghost' | 'play';
+export type ScreenKey = 'feed' | 'stats' | 'dex' | 'playmenu' | 'scores' | 'ready' | 'result' | 'textgame' | 'ghost' | 'play' | 'evo';
 
-/** Per-screen 96 layouts. Empty in phase 1: every screen uses the scaled 64 layout. */
-export const LAYOUT96: Partial<Record<ScreenKey, (ctx: ScreenCtx) => Buf | null>> = {};
+/** Per-screen 96 layouts (screens96.ts). Screens without an entry ('play' = HI-LO, 'textgame') use the scaled 64 layout. The wrappers look the painter up at call time, so the import cycle with screens.ts is harmless. */
+export const LAYOUT96: Partial<Record<ScreenKey, (ctx: ScreenCtx) => Buf | null>> = {
+  feed: (c) => S96.paintFeed96(c),
+  stats: (c) => S96.paintStats96(c),
+  dex: (c) => S96.paintDex96(c),
+  playmenu: (c) => S96.paintPlayMenu96(c),
+  scores: (c) => S96.paintScores96(c),
+  ready: (c) => (c.session ? S96.paintReady96(c, c.session) : null),
+  result: (c) => (c.session?.result ? S96.paintResult96(c, c.session) : null),
+  ghost: (c) => S96.paintGhost96(c),
+  evo: (c) => S96.paintEvo96(c),
+};
 
 /** Paint with a 64 painter and enlarge it to the 96 grid (3/2 nearest neighbour). */
 export function scaledLayout(paint64: (b: Buf) => void): Buf {

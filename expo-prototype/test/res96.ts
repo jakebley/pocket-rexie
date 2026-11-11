@@ -280,7 +280,11 @@ const bbox = (b: Buf, pred: (c: number) => boolean) => {
   // the default layout is the scaled 64 screen, and the override point works
   const p = mk('rawr');
   const ctx: ScreenCtx = { pet: p, tick: 0, mode: 'feed', feedSel: 1, play: null, statsPage: 0, dexPage: 0, evo: null, look: 'technicolor' };
+  // (the registered native layouts, test/screens96.ts, are lifted for this check: without an entry a screen is the 64 layout enlarged 3/2)
+  const reg = { ...LAYOUT96 };
+  for (const k of Object.keys(LAYOUT96)) delete (LAYOUT96 as Record<string, unknown>)[k];
   const def = renderScreen(ctx).buf, trad = renderScreen({ ...ctx, look: 'traditional' }).buf;
+  Object.assign(LAYOUT96, reg);
   ok(def.px.every((v, i) => v === trad.upscale96().px[i]), 'the default 96 text layout is the 64 layout enlarged 3/2');
   LAYOUT96.feed = () => { const b = Buf.forLook('technicolor'); b.text('HI', 2, 2); return b; };
   try { ok(renderScreen(ctx).buf.px.filter((v) => v).length < 40, 'LAYOUT96 overrides a screen'); } finally { delete LAYOUT96.feed; }
