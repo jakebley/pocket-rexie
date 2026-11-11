@@ -24,3 +24,11 @@ Traditional keeps the current 3x5 font, 8x8 icons and chunky buttons exactly.
 4. Mini games at 96: HI-LO, CATCH, DASH and ECHO painters.
 5. Interface chrome at finer pixels (font, icons, buttons, sheets, pop-ups), Technicolor only.
 6. Swift port of 1 to 5, then widgets and Watch tiles.
+
+## Text screens at 96 (phase 3, done)
+Every non-scene LCD screen in Technicolor has a native 96x96 layout (`expo-prototype/src/ui/screens96.ts`, registered in `LAYOUT96`): feed, play menu, stats (care, growth, legacy), Dex, high scores, ready, result, ghost and the evolution flash. The HI-LO screen and the text mini-games stay on the scaled default (the games agent owns them).
+- Fonts: the 5x7 chrome font for titles and list rows, the LCD 3x5 font at scale 1 for dense text and at scale 2 for the score.
+- Extra detail: hunger in the feed title bar, food glyphs, best score and favourite star in the play menu, hearts and bars (discipline, weight with its heavy mark, smarts), the pet portrait and the next evolution's conditions with progress bars and ticks, a 24x24 thumbnail Dex (found forms in ink, locked forms as flat silhouettes, stage pips, a cycling highlight with name and blurb), record-holder sprites and rank stars on the scores, rank goals on the ready screen.
+- Tap rows stay in logic units: Technicolor lists start at logic row 12 (cell 18) so each 10-unit row is exactly 15 cells (`feedTop(look)` / `menuTop(look)`); Traditional keeps 11.
+- Dex paging is unchanged (8 Dex lines per page); a 96 page draws the species lines of its range as a 4-column thumbnail grid.
+- Tools: `tools/screens96-sheets.sh`, `tools/screens96-e2e.js`; tests: `test/screens96.ts`.

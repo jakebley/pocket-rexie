@@ -29,7 +29,7 @@ for (const fam of FAMS) {
     const s = newSession(dashGame, paramsFor(pet, 'dash'), 21);
     const base: Omit<ScreenCtx, 'mode'> = { pet, tick: 3, feedSel: 0, statsPage: 0, dexPage: 0, evo: null, scene: null, playSel: 2, scores: {}, session: s, ms: T + 4000 };
     const shot = (name: string) => {
-      const r = renderScreen({ ...base, mode: 'game', ms: T + 4000 + (s.game ? (s.game.state as DashState).t : 0) });
+      const r = renderScreen({ ...base, look: mode, mode: 'game', ms: T + 4000 + (s.game ? (s.game.state as DashState).t : 0) });
       const frame = buildFrame(r, { mode, dark: false, line: lineOf(pet), bodyHex: bodyOf(pet) });
       const sc = screenColors(mode, false);
       out.push({ fam, id: sp.id, mode, name, frame, ground: sc.ground, ink: sc.ink });

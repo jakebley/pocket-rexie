@@ -32,7 +32,8 @@ export const Layer = {
   STARFIELD: 89, PLANET: 90, PLANET_SHADE: 91, CRATER: 92, CRYSTAL: 93, HULL: 94,
 } as const;
 export type LayerCode = (typeof Layer)[keyof typeof Layer];
-export const LAYER_COUNT = 95;
+// biomes A: slot layers 95..127 (colours per biome in biome96/colorsA.ts). Codes must stay < 128 (DIM_FLAG 0x80 shares the byte): the slots are PER-BIOME meanings, so other biome agents reuse the same codes.
+export const LAYER_COUNT = 128;
 /** First biome-scenery layer. Codes from here up are Technicolor-only (Traditional draws them unlit), except the cue layers. */
 export const SCENERY_FROM = Layer.BARK;
 /** Does Traditional mode draw this layer code? (Shared layers 1..30 and the three cues: yes. Scenery: no.) */

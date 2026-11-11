@@ -1,48 +1,41 @@
 import React, { useMemo, useRef } from 'react';
 import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { FONT, textWidth } from './pixel';
+import type { Look } from './pixel';
+import { density, fitLinesD, fontPx, textWidthD } from './density';
+import { CRISP, PixelPressable, snapPx } from './PixelBox';
 import { useTheme } from './theme';
 
-/** Text drawn with the 3x5 LCD font. `ps` = size of one font pixel in points. */
-export function PixelText({ text, ps = 2, color }: { text: string; ps?: number; color: string }) {
+/** Text drawn with the look's pixel font (density.ts; 3x5 Traditional, 5x7 Technicolor). `ps` = size of one font pixel in 3x5-font points (scaled by the look's textScale); `exact` skips the whole-device-pixel snap (the caller already did it). */
+export function PixelText({ text, ps = 2, color, exact }: { text: string; ps?: number; color: string; exact?: boolean }) {
+  const { mode } = useTheme();
+  const dn = density(mode);
+  const font = dn.font;
   const d = useMemo(() => {
     let out = '';
     let x = 0;
     for (const ch of text.toUpperCase()) {
-      const g = FONT[ch] ?? FONT['?'];
-      for (let y = 0; y < 5; y++) for (let gx = 0; gx < 3; gx++) if (g[y][gx] === 'X') out += `M${x + gx} ${y}h1v1h-1z`;
-      x += 4;
+      const g = font.glyphs[ch] ?? font.glyphs['?'];
+      for (let y = 0; y < font.h; y++) for (let gx = 0; gx < font.w; gx++) if (g[y][gx] === 'X') out += `M${x + gx} ${y}h1v1h-1z`;
+      x += font.adv;
     }
     return out;
-  }, [text]);
-  const w = Math.max(1, text.length * 4 - 1);
-  return (
-    <Svg width={w * ps} height={5 * ps} viewBox={`0 0 ${w} 5`}>
-      <Path d={d} fill={color} />
+  }, [text, font]);
+  const w = Math.max(1, textWidthD(dn, text));
+  const px = dn.chrome === 'pixel' ? (exact ? fontPx(dn, ps) : snapPx(fontPx(dn, ps))) : ps;
+  const svg = (
+    <Svg width={w * px} height={font.h * px} viewBox={`0 0 ${w} ${font.h}`}>
+      <Path d={d} fill={color} {...(dn.chrome === 'pixel' ? CRISP : null)} />
     </Svg>
   );
+  // a positioned wrapper so the text paints above a pixel box drawn behind it (an unpositioned svg would sit under the absolute box layer)
+  return dn.chrome === 'pixel' ? <View>{svg}</View> : svg;
 }
 
-/** Wrap a message into at most two lines that fit `avail` points; returns lines and pixel size. */
-export function fitLines(text: string, avail: number, maxPs = 3, minPs = 2): { lines: string[]; ps: number } {
-  if (text.includes('\n')) {
-    const lines = text.split('\n').slice(0, 2);
-    const widest = Math.max(...lines.map((l) => textWidth(l)));
-    return { lines, ps: Math.max(1, Math.min(maxPs, avail / widest)) };
-  }
-  const one = Math.min(maxPs, avail / textWidth(text));
-  if (one >= minPs || text.length < 2) return { lines: [text], ps: Math.max(1, one) };
-  const per = Math.max(1, Math.floor((avail / minPs + 1) / 4));
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let cur = '';
-  for (const w of words) {
-    if (cur && (cur + ' ' + w).length > per) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w;
-  }
-  if (cur) lines.push(cur);
-  const widest = Math.max(...lines.map((l) => textWidth(l)));
-  return { lines: lines.slice(0, 2), ps: Math.max(1, Math.min(minPs, avail / widest)) };
+/** Wrap a message into at most two lines that fit `avail` points; returns lines and pixel size (callers' ps units). Pass the look so the right font metrics are used. */
+export function fitLines(text: string, avail: number, maxPs = 3, minPs = 2, look: Look = 'traditional'): { lines: string[]; ps: number } {
+  const dn = density(look);
+  return fitLinesD(dn, text, avail, maxPs, minPs, dn.chrome === 'pixel' ? (v) => snapPx(v, 'down') : undefined, dn.chrome === 'pixel' ? snapPx(0, 'down') : 0);
 }
 
 const WEB_TOUCH: object = Platform.OS === 'web'
@@ -52,22 +45,35 @@ const WEB_TOUCH: object = Platform.OS === 'web'
 export const touchStyle = WEB_TOUCH as ViewStyle;
 
 /**
- * Flat ink-outlined button; pressed (or `on`) state inverts the moment the finger lands.
- * `instant` fires onPress on press-in (A/B/C feel like toy buttons); otherwise it fires on release.
+ * Button: flat ink-outlined (Traditional) or pixel-drawn with stepped corners and a bevel (Technicolor); pressed (or `on`) state inverts the moment the finger lands.
+ * `instant` fires onPress on press-in (A/B/C feel like toy buttons); otherwise it fires on release. `big` is the A / B / C button shape.
  */
-export function PixelButton({ label, onPress, on, ps = 2, style, accessibilityLabel, instant }: {
-  label: string; onPress: () => void; on?: boolean; ps?: number; style?: StyleProp<ViewStyle>; accessibilityLabel?: string; instant?: boolean;
+export function PixelButton({ label, onPress, on, ps = 2, style, accessibilityLabel, instant, big }: {
+  label: string; onPress: () => void; on?: boolean; ps?: number; style?: StyleProp<ViewStyle>; accessibilityLabel?: string; instant?: boolean; big?: boolean;
 }) {
   const t = useTheme();
+  const dn = density(t.mode);
   const fired = useRef(false);
   // instant buttons act on finger-down; onPress is only a fallback for taps so quick (or synthetic) that press-in never reported
   const down = () => { fired.current = true; onPress(); };
   const up = () => { if (!fired.current) onPress(); fired.current = false; };
+  const common = { accessibilityRole: 'button' as const, accessibilityLabel: accessibilityLabel ?? label, hitSlop: 6, onPressIn: instant ? down : undefined, onPress: instant ? up : onPress };
+  if (dn.chrome === 'pixel') {
+    return (
+      <PixelPressable {...common} kind={(pressed) => (pressed || on ? 'down' : 'raised')} radius={big ? dn.cornerBig : dn.corner}
+        style={[{ alignItems: 'center', justifyContent: 'center', minHeight: dn.btnMinH, paddingHorizontal: 14, paddingVertical: 8 }, touchStyle, style]}>
+        {({ pressed }) => (
+          <View pointerEvents="none" style={{ alignItems: 'center' }}>
+            <PixelText text={label} ps={ps} color={pressed || on ? t.ground : t.ink} />
+          </View>
+        )}
+      </PixelPressable>
+    );
+  }
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} hitSlop={6}
-      onPressIn={instant ? down : undefined} onPress={instant ? up : onPress}
-      style={({ pressed }) => [{ borderWidth: 2, borderColor: t.ink, backgroundColor: pressed || on ? t.ink : 'transparent',
-        alignItems: 'center', justifyContent: 'center', minHeight: 48, paddingHorizontal: 12, paddingVertical: 8 }, touchStyle, style]}>
+    <Pressable {...common}
+      style={({ pressed }) => [{ borderWidth: dn.border, borderColor: t.ink, backgroundColor: pressed || on ? t.ink : 'transparent',
+        alignItems: 'center', justifyContent: 'center', minHeight: dn.btnMinH, paddingHorizontal: 12, paddingVertical: 8 }, touchStyle, style]}>
       {({ pressed }) => (
         <View pointerEvents="none" style={StyleSheet.flatten({ alignItems: 'center' })}>
           <PixelText text={label} ps={ps} color={pressed || on ? t.ground : t.ink} />

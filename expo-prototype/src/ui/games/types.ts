@@ -2,6 +2,7 @@
 import type { Pet } from '../../core/pet';
 import type { GameDef, GameParams, MiniGame } from '../../core/minigames/types';
 import type { Buf } from '../pixel';
+import type { HudOpts } from './common96';
 
 export interface PaintCtx {
   b: Buf;
@@ -22,4 +23,11 @@ export interface GameEntry {
    */
   layout: 'field' | 'text';
   paint: Painter;
+  /**
+   * Technicolor 96x96 painter (res96): the same state painted natively on the finer grid into a 96 buffer. Logic coordinates stay in 64-space units
+   * (multiply by 1.5 with `g96`). 'field' games get `paintField96` and `paintHud96` around it. Without one the screen falls back to the 64 painter enlarged 3/2.
+   */
+  paint96?: Painter;
+  /** extras for the 96 HUD strip (centre text, hearts, a blinking clock) */
+  hud96?: (c: PaintCtx) => HudOpts;
 }

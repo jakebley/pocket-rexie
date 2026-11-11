@@ -21,7 +21,7 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
 const [outFile, title, ...ids] = process.argv.slice(2);
 function dump(cwd) {
   const tmp = path.join(os.tmpdir(), `shading-${process.pid}-${Math.random().toString(36).slice(2)}.json`);
-  execSync(`npx tsx tools/shading-dump.ts ${tmp} ${ids.join(' ')}`, { cwd, stdio: 'inherit' });
+  execSync(`npx tsx tools/${process.env.DUMP || "shading-dump.ts"} ${tmp} ${ids.join(' ')}`, { cwd, stdio: 'inherit' });
   const d = JSON.parse(fs.readFileSync(tmp, 'utf8'));
   fs.unlinkSync(tmp);
   return d;
@@ -30,9 +30,9 @@ const after = dump(ROOT);
 const before = process.env.BEFORE ? dump(process.env.BEFORE) : null;
 const SIZE = Number(process.env.SIZE || 176);
 const VARS = process.env.VARS ? process.env.VARS.split(',') : null;
-const VIEW = process.env.CROP ? [10, 22, 40, 40] : null; // the pet stands near x 14..46, y 26..58
+const VIEW = process.env.CROP ? [10, 22, 40, 40] : null; // the pet stands near x 14..46, y 26..58 (64 grid; frames at 96 are scaled by 1.5)
 function svg(c) {
-  const f = c.frame, n = f.n, vb = VIEW ? VIEW.join(' ') : `0 0 ${n} ${n}`;
+  const f = c.frame, n = f.n, vb = VIEW ? VIEW.map((v) => v * n / 64).join(' ') : `0 0 ${n} ${n}`;
   return `<svg width="${SIZE}" height="${SIZE}" viewBox="${vb}" shape-rendering="crispEdges"><rect width="${n}" height="${n}" fill="${c.ground}"/>`
     + (f.soil ? `<rect y="${f.soil.y}" width="${n}" height="${n - f.soil.y}" fill="${f.soil.color}"/>` : '')
     + (f.sky ? `<rect width="${n}" height="${f.sky.h}" fill="${f.sky.color}"/>` : '')
@@ -47,7 +47,7 @@ function svg(c) {
     const cells = cs.map((c, i) => (bs ? `<div class="c">${svg(bs[i])}<i>${c.label} before</i></div>` : '') + `<div class="c">${svg(c)}<i>${c.label}${bs ? ' after' : ''}</i></div>`).join('');
     return `<div class="r"><b>${id}<br>${cs[0].stage}</b>${cells}</div>`;
   }).join('');
-  const cols = (VARS ? VARS.length : 5) * (before ? 2 : 1);
+  const cols = (VARS ? VARS.length : new Set(after.filter((d) => d.id === ids[0]).map((d) => d.label)).size) * (before ? 2 : 1);
   await pg.setViewportSize({ width: 100 + cols * (SIZE + 10), height: 400 });
   await pg.setContent(`<style>body{margin:0;background:#fff;font:12px ui-monospace,monospace;color:#111}h1{margin:8px 10px;font-size:15px}
     .r{display:flex;align-items:center;gap:8px;padding:4px 10px}.r>b{width:84px;overflow:hidden}.c{text-align:center}i{display:block;color:#666;font-style:normal}</style><h1>${title}</h1>${rows}`);

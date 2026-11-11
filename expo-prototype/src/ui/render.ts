@@ -2,7 +2,7 @@
 import { forceSpecies, newPet, SPECIES_BY_ID, type Pet } from '../core/pet';
 import { DIM_FLAG, LAYER_MASK, tradVisible, type Line } from './layers';
 import { darken, darkSky, DIM_DITHER, DIM_SKY, paletteTable, screenColors, skyFor, soilFor, type ColorMode, type PaletteCtx } from './palette';
-import { allCellsPath, litPath, type Buf } from './pixel';
+import { allCellsPath, gridFor, litPath, type Buf } from './pixel';
 import { GROUND_Y, TICK_MS, initScene, type Scene } from './scene';
 import { renderScreen, type Rendered } from './screens';
 
@@ -26,6 +26,8 @@ const scratch = (len: number) => (SCRATCH.length === len ? SCRATCH : (SCRATCH = 
 export function buildFrame(r: Rendered, st: FrameStyle): Frame {
   const { buf } = r;
   const n = buf.n;
+  // a buffer painted for one look must never be coloured as the other (the grids differ); legacy buffers without a look are unchecked
+  if (r.look !== undefined && (r.look !== st.mode || n !== gridFor(st.mode))) throw new Error(`buildFrame: ${n}x${n} buffer painted for ${r.look} but coloured as ${st.mode}`);
   if (st.mode === 'traditional') {
     const ink = screenColors('traditional', st.dark).ink;
     // biome scenery is Technicolor-only: it prints as unlit (a dimmed one keeps the dither dot of an unlit pixel)
@@ -55,8 +57,9 @@ export function buildFrame(r: Rendered, st: FrameStyle): Frame {
     groups.set(color, (groups.get(color) ?? '') + `M${x + 0.06} ${y + 0.06}h0.88v0.88h-0.88z`);
   }
   const arr = [...groups].map(([color, d]) => ({ color, d }));
-  const skyF = skyShown ? { color: skyShown, h: GROUND_Y } : null;
-  const soilF = r.sky ? { color: dim ? darken(soilFor(ctx, biome), DIM_SKY) : soilFor(ctx, biome), y: GROUND_Y } : null;
+  const gy = Math.round((GROUND_Y * n) / 64); // the ground row in cells of this grid
+  const skyF = skyShown ? { color: skyShown, h: gy } : null;
+  const soilF = r.sky ? { color: dim ? darken(soilFor(ctx, biome), DIM_SKY) : soilFor(ctx, biome), y: gy } : null;
   return {
     n, sky: skyF, soil: soilF, groups: arr,
     key: `${n}c${st.dark ? 'd' : 'l'}${skyShown ?? ''}${soilF?.color ?? ''}${arr.map((g) => g.color + g.d).join('|')}`,
@@ -78,7 +81,7 @@ export function previewFrame(species: string | null, st: FrameStyle, hour = 12):
   pet.named = true; pet.hunger = 3; pet.happy = 4; pet.poops = 0; pet.call = null; pet.temp = 0; pet.sick = false; pet.asleep = false; pet.lightOn = true;
   const sc0 = initScene(pet, T, hour);
   const sc: Scene = { ...sc0, state: 'idle', x: 14, facing: 1, still: true, dim: false, weather: 'clear', poopMask: 0, props: [], pops: [], hour, minute: 0, t: 0 };
-  const r = renderScreen({ pet, tick: 0, mode: 'home', feedSel: 0, play: null, statsPage: 0, dexPage: 0, evo: null, scene: sc });
+  const r = renderScreen({ pet, tick: 0, mode: 'home', feedSel: 0, play: null, statsPage: 0, dexPage: 0, evo: null, scene: sc, look: st.mode });
   return buildFrame(r, { ...st, line: lineOf(pet), bodyHex: bodyOf(pet) });
 }
 

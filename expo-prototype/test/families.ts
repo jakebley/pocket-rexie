@@ -100,8 +100,10 @@ for (const [fam, n] of Object.entries(COUNTS)) {
   const base: Omit<ScreenCtx, 'pet'> = { tick: 0, mode: 'home', feedSel: 0, play: null, statsPage: 0, dexPage: 0, evo: null };
   // the Traditional picture never depends on the family palette
   const p = newPet(T0, { seed: 3, family: 'fox' }); forceSpecies(p, 'stalker'); p.named = true;
-  const a = buildFrame(renderScreen({ ...base, pet: p }), { mode: 'traditional', dark: false });
-  const b = buildFrame(renderScreen({ ...base, pet: p }), { mode: 'traditional', dark: false, line: 'meat', bodyHex: '#123456' });
+  // one render, two colourings: two separate renders can straddle an animation tick and differ for reasons unrelated to colour
+  const scr = renderScreen({ ...base, pet: p });
+  const a = buildFrame(scr, { mode: 'traditional', dark: false });
+  const b = buildFrame(scr, { mode: 'traditional', dark: false, line: 'meat', bodyHex: '#123456' });
   ok(a.key === b.key, 'Traditional ignores line and bodyHex');
   // egg and ghost screens for every family
   for (const fam of FAMILIES) for (const stage of ['egg', 'ghost'] as const) {

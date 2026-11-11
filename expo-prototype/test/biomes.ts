@@ -201,7 +201,7 @@ const render = (p: Pet, sc: Scene, biome?: Biome) => { const b = new Buf(SCENE_N
       ok(contrast(t[Layer.HEART], sky) >= 1.6, `${biome} ${ph}${rain ? '/rain' : ''} ${dark ? 'dark' : 'light'}: heart vs sky ${contrast(t[Layer.HEART], sky).toFixed(2)} >= 1.6`);
     }
   }
-  const missing = ALL_LAYERS.filter((l) => l >= Layer.WAVE && !PET_LAYERS.has(l) && !seen.has(l));
+  const missing = ALL_LAYERS.filter((l) => l >= Layer.WAVE && l < 95 && !PET_LAYERS.has(l) && !seen.has(l));
   ok(missing.length === 0, `every biome layer appears in some scene (missing: ${missing.join(',')})`);
   ok(maxScenery <= 1300, `background pixel budget (max ${maxScenery} scenery pixels <= 1300)`);
   ok(maxGroups <= 70, `few SVG paths per biome frame (max ${maxGroups} <= 70)`);
