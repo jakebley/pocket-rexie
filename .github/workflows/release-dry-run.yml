@@ -47,7 +47,7 @@ jobs:
         run: |
           find "$RUNNER_TEMP/PocketRexie.xcarchive" -maxdepth 6 \( -name "*.app" -o -name "*.appex" -o -name Info.plist -o -name PrivacyInfo.xcprivacy -o -name Assets.car \) | sort || true
       - name: Verify archive
-        run: python3 tools/verify_archive.py "$RUNNER_TEMP/PocketRexie.xcarchive" "$BUILD_NUMBER" | tee verify.log
+        run: set -o pipefail; python3 tools/verify_archive.py "$RUNNER_TEMP/PocketRexie.xcarchive" "$BUILD_NUMBER" | tee verify.log
       - name: Verify Release code has no test-only symbols
         run: |
           set -e

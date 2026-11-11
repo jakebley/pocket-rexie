@@ -62,7 +62,7 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             2>&1 | tee archive.log | tail -n 40
       - name: Check the archive (icons, privacy manifests, versions, bundle ids)
-        run: python3 tools/verify_archive.py "$RUNNER_TEMP/PocketRexie.xcarchive" "$BUILD_NUMBER" | tee verify.log
+        run: set -o pipefail; python3 tools/verify_archive.py "$RUNNER_TEMP/PocketRexie.xcarchive" "$BUILD_NUMBER" | tee verify.log
       - name: Export and upload to App Store Connect
         run: |
           set -o pipefail
