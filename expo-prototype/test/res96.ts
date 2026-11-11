@@ -6,7 +6,7 @@ import { catchGame } from '../src/core/minigames/games/catch';
 import { newSession, pressButton, tickSession } from '../src/core/minigames/session';
 import { paramsFor } from '../src/core/minigames/tuning';
 import { GAME_ENTRIES } from '../src/ui/games/registry';
-import { BIOME96, biomes96Done } from '../src/ui/biome96';
+import { BIOME96 } from '../src/ui/biome96';
 import { BIOMES, FAMILY_BIOME } from '../src/ui/biomes';
 import { LAYOUT96 } from '../src/ui/layout96';
 import { Layer, PET_LAYER_CODES, SCENERY_FROM, LAYER_MASK } from '../src/ui/layers';
@@ -196,9 +196,9 @@ const bbox = (b: Buf, pred: (c: number) => boolean) => {
 // 5. the biome hook: generic fallback now, a registered painter is honoured and cannot overwrite the pet
 {
   ok(BIOMES.every((bm) => bm in BIOME96), 'a registry entry for every biome');
-  ok(biomes96Done().length === 0, 'phase 1: no biome has a 96 painter yet (generic fallback)');
+  // (the painters are covered by test/biomes96.ts; here the fallback is checked for the biomes that still have none)
   const fams = [...new Set(SPECIES.map((s) => s.family))];
-  for (const fam of fams) {
+  for (const fam of fams.filter((f) => !BIOME96[FAMILY_BIOME[f]])) {
     const sp = SPECIES.find((s) => s.family === fam && s.stage === 'adult')!;
     const p = mk(sp.id);
     for (const hour of [12, 23]) for (const facing of [1, -1] as const) {

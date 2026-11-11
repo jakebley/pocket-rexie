@@ -11,6 +11,13 @@
 import type { Biome } from './biomes';
 import type { Phase, Scene } from './scene';
 import type { Buf } from './pixel';
+import { meadow96 } from './biome96/meadow';
+import { woods96 } from './biome96/woods';
+import { underwater96 } from './biome96/underwater';
+import { sky96 } from './biome96/sky';
+import { yard96 } from './biome96/yard';
+import { clouds96 } from './biome96/clouds';
+import { ember96 } from './biome96/ember';
 
 export interface Ctx96 {
   b: Buf; s: Scene; phase: Phase; rain: boolean; biome: Biome;
@@ -28,6 +35,15 @@ export const BIOME96: Record<Biome, Biome96Painter | null> = {
   meadow: null, woods: null, underwater: null, sky: null, yard: null, clouds: null, ember: null,
   warren: null, crags: null, workshop: null, swamp: null, garden: null, space: null,
 };
+// ---- biomes A ----
+BIOME96.meadow = meadow96;
+BIOME96.woods = woods96;
+BIOME96.underwater = underwater96;
+BIOME96.sky = sky96;
+BIOME96.yard = yard96;
+BIOME96.clouds = clouds96;
+BIOME96.ember = ember96;
+// ---- biomes B ----
 
 /** Biomes that already have a 96 painter. */
 export const biomes96Done = (): Biome[] => (Object.keys(BIOME96) as Biome[]).filter((k) => BIOME96[k]);

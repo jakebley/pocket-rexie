@@ -3,6 +3,7 @@
 import { ALL_LAYERS, LAYER_COUNT, Layer, type Line } from './layers';
 import { ALWAYS_DARK, type Biome } from './biomes';
 import type { Phase } from './scene';
+import { A_FIRST, biomeAColors } from './biome96/colorsA'; // biomes A (96 slot colours, layers 95..127)
 
 export type ColorMode = 'traditional' | 'technicolor';
 export const COLOR_MODES: ColorMode[] = ['traditional', 'technicolor'];
@@ -204,7 +205,7 @@ const cache = new Map<string, string[]>();
 /** Layer-indexed color table (index = layer code) for one context. Index 0 (unlit) is the screen ground. */
 export function paletteTable(ctx: PaletteCtx): string[] {
   const biome = ctx.biome ?? 'meadow';
-  const key = `${ctx.mode}|${ctx.dark}|${ctx.line ?? ''}|${ctx.bodyHex ?? ''}|${ctx.night ? 'n' : ''}|${biome}|${biome === 'meadow' ? '' : `${ctx.phase ?? ''}${ctx.rain ? 'r' : ''}`}`;
+  const key = `${ctx.mode}|${ctx.dark}|${ctx.line ?? ''}|${ctx.bodyHex ?? ''}|${ctx.night ? 'n' : ''}|${biome}|${ctx.phase ?? ''}${ctx.rain ? 'r' : ''}`;
   let t = cache.get(key);
   if (t) return t;
   const sc = screenColors(ctx.mode, ctx.dark);
@@ -215,10 +216,11 @@ export function paletteTable(ctx: PaletteCtx): string[] {
     const tone = (light: string) => (ctx.dark ? mixHex(light, g, DARK_BLEND) : light);
     const remap = REMAP[biome];
     const shade = biome === 'meadow' ? null : shadeFor(ctx);
+    const slots = ctx.phase ? biomeAColors(biome, ctx.phase, !!ctx.rain) : undefined; // biome slot layers (95..) carry their own phase colours
     for (const l of ALL_LAYERS) {
-      let c = remap?.[l] ?? T_LIGHT[l] ?? T_LIGHT[Layer.INK];
-      if (shade && isScenery(l) && !GLOWS.has(l)) c = mixHex(c, shade[0], shade[1]);
-      t[l] = ctx.dark && DARK_OVERRIDE[l] ? DARK_OVERRIDE[l] : !ctx.dark && ctx.night && NIGHT_OVERRIDE[l] ? NIGHT_OVERRIDE[l] : tone(c);
+      let c = (l >= A_FIRST ? slots?.[l] : undefined) ?? remap?.[l] ?? T_LIGHT[l] ?? T_LIGHT[Layer.INK];
+      if (shade && isScenery(l) && !GLOWS.has(l) && !(l >= A_FIRST && slots)) c = mixHex(c, shade[0], shade[1]);
+      t[l] = ctx.dark && DARK_OVERRIDE[l] ? DARK_OVERRIDE[l] : !ctx.dark && ctx.night && NIGHT_OVERRIDE[l] ? NIGHT_OVERRIDE[l] : ctx.dark && l >= A_FIRST + 6 && slots ? mixHex(c, g, 0.4) : tone(c); // biome tones sink further on the dark appearance (glow slots 95..100 keep their light)
     }
     const body = ctx.bodyHex ?? BODY[ctx.line ?? 'baby'] ?? BODY.baby;
     t[Layer.BODY] = ctx.dark ? mixHex(body, g, ctx.line === 'baby' || !ctx.line ? DARK_BODY_BLEND_BABY : DARK_BODY_BLEND) : body;
