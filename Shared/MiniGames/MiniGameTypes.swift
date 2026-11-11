@@ -103,6 +103,9 @@ struct TapRow: Equatable {
     var id: String
     var y: Int
     var h: Int
+    /// Left edge and width in cells of the 64 grid (the default is the full width minus a one-cell margin, like HI-LO's rows).
+    var x: Int = 1
+    var w: Int = 62
 }
 
 struct GameDef {
@@ -119,6 +122,9 @@ struct GameDef {
     var rules: (FamilyTheme) -> [String]
     /// Rows a tap picks directly, if the game is menu-like.
     var tapRows: [TapRow] = []
+    /// Zones that depend on the running game (ECHO's pads change with the round); used instead of `tapRows` when set.
+    /// A tap on zone i is `GameInput.pick = i`; a game ignores indexes it has no use for.
+    var tapZones: ((MiniGame) -> [TapRow])? = nil
     /// The longest a game can run (ms), for tests and bots.
     var maxMs: Double
     var make: (Int, GameParams) -> MiniGame
