@@ -49,3 +49,11 @@ Tune thresholds with bots like the CATCH ones in the tests: a perfect player gol
 
 ## Status
 Expo: HI-LO, CATCH, DASH and ECHO are built (src/core/minigames/games/, src/ui/games/), with themes for all 12 families, tuning for all 123 body types, high scores and the daily reward cap. Swift port: not started.
+
+## Technicolor 96x96 painters (res96)
+Technicolor draws the four games natively on the 96 grid; Traditional's 64 painters are untouched (a test hashes their frames). A `GameEntry` may carry an optional `paint96` (and `hud96` for HUD extras):
+- `src/core/minigames/themes96.ts` + `glyphs96.ts`: the 10x10 glyphs for all 12 families, same slots and names as `themes.ts` (good, bonus, bad, obstacles low / tall / spiky, five symbols). Rules, hit boxes and tuning stay in the 7x7 logic units; an obstacle's 10x10 silhouette follows its 7x7 twin (checked by `test/games96.ts`).
+- `src/ui/games/common96.ts`: glyph drawing with a sticker outline (CABLE / DAISY, which keep their polarity on dark skies), the pet fitted to a box (32x32 art for small boxes, the 48x48 Scale3x art for big ones), the field backdrop (the family's 96 biome through `drawBackdrop96` in sceneDraw96.ts) and the HUD strip.
+- `catch96.ts`, `dash96.ts`, `echo96.ts`, `hilo96.ts`: positions are logic units times 1.5 (`g96`); animation reads the game state or the wall clock exactly as the 64 painters do.
+- `screens.ts` uses `paint96` for Technicolor game screens (field games get `paintField96`, `paintHud96` and the TIME UP banner around it); a game without one falls back to its 64 painter enlarged 3/2.
+Sheets: `node tools/games96-sheets.js <catch|dash|echo|hilo> [outDir] [fams] [size]`, `node tools/glyph96-sheets.js`. End to end: `MODE=technicolor node tools/play-e2e.js | dash-e2e.js | echo-e2e.js`.

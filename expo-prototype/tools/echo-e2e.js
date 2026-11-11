@@ -59,7 +59,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const menu = await page.locator('[aria-label^="Play menu row"]').count();
   ok(menu >= 4, `the Play menu lists ECHO (rows: ${menu})`);
   // ECHO is the third game (HI-LO, CATCH, [DASH], ECHO): move down with A until its row, by tapping the row labelled by its index
-  const idx = 2; // 0 HI-LO, 1 CATCH, 2 ECHO (DASH is not merged in this branch)
+  const idx = 3; // 0 HI-LO, 1 CATCH, 2 DASH, 3 ECHO
   // the session (and its seed) is created when the menu row is chosen, so pin Math.random around that click
   await page.evaluate(() => { const o = Math.random; Math.random = () => 0.5; setTimeout(() => { Math.random = o; }, 250); });
   await page.click(`[aria-label="Play menu row ${idx + 1}"]`);
