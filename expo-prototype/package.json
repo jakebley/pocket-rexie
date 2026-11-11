@@ -37,7 +37,8 @@
     "test:dash": "tsx test/dash.ts",
     "test:echo": "tsx test/echo.ts",
     "test:res96": "tsx test/res96.ts",
-    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading && npm run test:minigames && npm run test:dash && npm run test:echo && npm run test:res96",
+    "test:chrome96": "tsx test/chrome96.ts",
+    "test": "npm run test:sim && npm run test:scene && npm run test:color && npm run test:families && npm run test:biomes && npm run test:shading && npm run test:minigames && npm run test:dash && npm run test:echo && npm run test:res96 && npm run test:chrome96",
     "lint": "eslint .",
     "test:balance": "tsx test/balance.ts 20"
   },

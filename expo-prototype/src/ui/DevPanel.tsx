@@ -4,6 +4,8 @@ import { ageMs, leadFood, overweight, requirementMet, speciesName, SPECIES_BY_ID
 import { FAMILIES, SPECIES } from '../core/speciesData';
 import type { Requirement, Stage } from '../core/types';
 import { PixelButton, PixelText } from './PixelText';
+import { PixelPanel } from './PixelBox';
+import { density } from './density';
 import { useTheme } from './theme';
 import type { useGame } from './useGame';
 
@@ -43,7 +45,8 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
   const h = [s.h, { color: t.ink, fontFamily: mono }];
   return (
     <View style={[s.backdrop, { backgroundColor: t.scrim }]}>
-      <View style={[s.card, { backgroundColor: t.ground, borderColor: t.ink }]}>
+      <PixelPanel kind="raised" radius={density(t.mode).cornerBig} flatStyle={[s.card, { backgroundColor: t.ground, borderColor: t.ink }]}
+        style={[{ width: '100%', maxWidth: 440, maxHeight: '100%', flexShrink: 1 }, density(t.mode).chrome === 'pixel' && { padding: 18 }]}>
         <View style={s.head}>
           <PixelText text="DEV PANEL" ps={3} color={t.ink} />
           <PixelButton label="CLOSE" ps={2} onPress={onClose} />
@@ -146,7 +149,7 @@ export function DevPanel({ game, onClose }: { game: Game; onClose: () => void })
             </View>
           ))}
         </ScrollView>
-      </View>
+      </PixelPanel>
     </View>
   );
 }

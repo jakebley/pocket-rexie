@@ -3,7 +3,8 @@ import { AccessibilityInfo, Platform, type GestureResponderEvent } from 'react-n
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { allCellsPath, ICON_LABELS, ICON_ORDER, LOGIC_N, toLogic } from './pixel';
-import { density } from './density';
+import { density, widestD } from './density';
+import { CRISP, PixelPanel, snapPx } from './PixelBox';
 import { bodyOf, buildFrame, lineOf, type Frame } from './render';
 import { FEED_ROW_H, FEED_TOP, MENU_ROW_H, MENU_TOP, MENU_VISIBLE, menuFirst, playMenuRows, renderScreen } from './screens';
 import { initScene, step, type Scene } from './scene';
@@ -48,14 +49,14 @@ export function useTick(ms = 300) {
 function IconBitmap({ name, size, color }: { name: string; size: number; color: string }) {
   const { mode } = useTheme();
   const dn = density(mode);
-  const rows = dn.icons[name];
+  const rows = dn.icons[name] ?? dn.glyphs[name as 'gear']?.rows;
   const d = useMemo(() => {
     let s = '';
     rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) if (r[x] === 'X') s += `M${x} ${y}h1v1h-1z`; });
     return s;
   }, [rows]);
   return (
-    <Svg width={size} height={size} viewBox={`0 0 ${dn.iconSize} ${dn.iconSize}`}><Path d={d} fill={color} /></Svg>
+    <Svg width={size} height={size} viewBox={`0 0 ${dn.iconSize} ${dn.iconSize}`}><Path d={d} fill={color} {...(dn.chrome === 'pixel' ? CRISP : null)} /></Svg>
   );
 }
 export { IconBitmap };
@@ -183,9 +184,13 @@ export function Toy({ game, width, rowH: rowHProp }: { game: Game; width: number
   const rowH = Math.max(dn.iconRowMin, rowHProp ?? dn.iconRowMin);
   const hasPet = !!game.pet;
   const tileW = width / 5;
-  const labelPs = Math.max(1, Math.min(dn.labelPsMax, Math.floor((tileW - 2) / 32)));
-  const labelH = labelPs * dn.font.h;
+  const fine = dn.chrome === 'pixel';
+  // labels: Traditional in whole 3x5 points (as ever); Technicolor in the finer 5x7 font at the largest whole-device-pixel size that fits the tile
+  const labelPx = fine ? Math.min(snapPx(dn.labelPsMax * dn.textScale, 'near', 0.6), snapPx((tileW - 4) / widestD(dn, ICON_LABELS), 'down', 0.6)) : 0;
+  const labelPs = fine ? labelPx / dn.textScale : Math.max(1, Math.min(dn.labelPsMax, Math.floor((tileW - 2) / 32)));
+  const labelH = fine ? labelPx * dn.font.h : labelPs * dn.font.h;
   const box = Math.max(20, Math.floor(Math.min(rowH - labelH - 6, tileW - 8)));
+  const iconPx = fine ? 16 * snapPx((box * dn.iconFill) / dn.iconSize, 'down') : Math.round(box * dn.iconFill);
 
   const row = (from: number) => (
     <View style={{ width, height: rowH, flexDirection: 'row' }}>
@@ -198,10 +203,11 @@ export function Toy({ game, width, rowH: rowHProp }: { game: Game; width: number
             style={[{ width: tileW, height: rowH, alignItems: 'center', justifyContent: 'center' }, touchStyle]}>
             {({ pressed }) => (
               <View pointerEvents="none" style={{ alignItems: 'center', gap: 2 }}>
-                <View style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center', backgroundColor: selected || pressed ? th.ink : 'transparent' }}>
-                  <IconBitmap name={name} size={Math.round(box * dn.iconFill)} color={selected || pressed ? th.ground : th.ink} />
-                </View>
-                <PixelText text={ICON_LABELS[i]} ps={labelPs} color={th.ink} />
+                <PixelPanel kind={selected || pressed ? 'down' : 'tile'} flatStyle={{ backgroundColor: selected || pressed ? th.ink : 'transparent' }}
+                  style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center' }}>
+                  <IconBitmap name={name} size={iconPx} color={selected || pressed ? th.ground : th.ink} />
+                </PixelPanel>
+                <PixelText text={ICON_LABELS[i]} ps={labelPs} color={th.ink} exact />
               </View>
             )}
           </Pressable>
