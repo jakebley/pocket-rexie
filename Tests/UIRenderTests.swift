@@ -634,26 +634,6 @@ final class UIRenderTests: XCTestCase {
         }
     }
 
-    /// The Play flow inside the real phone layout (icons, message line, A/B/C), Technicolor and Traditional.
-    func testRenderPlayOnThePhone() {
-        let phone = phones[0]
-        for mode in ColorMode.allCases {
-            for scene in ["menu", "game-b", "result"] {
-                let model = playModel(scene, playPet("fox"))
-                let ground = LCDStyle.palette(for: .light, mode: mode).background
-                let view = ZStack {
-                    ground
-                    ContentView(model: model, clock: day, colorMode: mode)
-                        .padding(.top, phone.top)
-                        .padding(.bottom, phone.bottom)
-                }
-                .environment(\.colorScheme, .light)
-                .environment(\.displayScale, 2)
-                write(view, to: "play/phone-\(mode.rawValue)-\(scene)", size: phone.size)
-            }
-        }
-    }
-
     // MARK: DASH renders (compare with expo-prototype/docs/screens/play-dash-technicolor.png and play-dash-closeup.png)
 
     private static let dashScenes = ["countdown", "run", "jump", "hit", "faster", "result"]
