@@ -68,7 +68,7 @@ jobs:
           set -o pipefail
           xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -only-testing:PocketRexieTests/MiniGameTests \
+            -only-testing:PocketRexieTests/UIRenderTests \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee test-ios.log | tail -n 80
       - name: Test timings (TEMP)
         if: always()
