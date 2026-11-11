@@ -187,13 +187,25 @@ struct SceneRaster: Equatable {
 
     mutating func clear(_ x: Int, _ y: Int) { set(x, y, .off) }
 
-    /// Draws a string-row bitmap in one layer; `mirror` flips it left to right.
+    /// Draws a string-row bitmap in one layer; `mirror` flips it left to right. Rows are scanned as UTF-8 bytes
+    /// (sprites are ASCII), not as Characters: String character walking is slow, mostly in unoptimised builds.
     mutating func draw(_ rows: [String], x: Int, y: Int, mirror: Bool = false, layer: SceneLayer = .ink) {
-        for (r, row) in rows.enumerated() {
-            let chars = Array(row)
-            let w = chars.count
-            for (c, ch) in chars.enumerated() where ch == "X" {
-                set(x + (mirror ? w - 1 - c : c), y + r, layer)
+        let side = SceneRaster.side
+        let code = layer.rawValue
+        let mark = UInt8(ascii: "X")
+        var r = 0
+        for row in rows {
+            let py = y + r
+            r += 1
+            if py < 0 || py >= side { continue }
+            let w = row.utf8.count
+            var c = 0
+            for ch in row.utf8 {
+                if ch == mark {
+                    let px = x + (mirror ? w - 1 - c : c)
+                    if px >= 0 && px < side { cells[py * side + px] = code }
+                }
+                c += 1
             }
         }
     }
@@ -203,21 +215,21 @@ struct SceneRaster: Equatable {
     /// sprite's. Eye fills (Technicolor-only codes) go only on cells that are not already lit in Traditional,
     /// so Traditional output is unchanged. `family` picks the per-family rules.
     mutating func drawPet(_ rows: [String], x: Int, y: Int, mirror: Bool = false, family: String = "") {
-        let shown = mirror ? rows.map { String($0.reversed()) } : rows
-        let shaded = PetShading.layers(rows: shown, family: family)
+        let shaded = PetShading.layers(rows: rows, mirror: mirror, family: family)
+        let side = SceneRaster.side
+        let fillA = SceneLayer.eyeFill.rawValue, fillB = SceneLayer.eyeShine.rawValue
+        let w = shaded.width
         for r in 0..<shaded.height {
-            for c in 0..<shaded.width {
-                let code = shaded.codes[r * shaded.width + c]
+            let py = y + r
+            if py < 0 || py >= side { continue }
+            for c in 0..<w {
+                let code = shaded.codes[r * w + c]
                 if code == 0 { continue }
-                let px = x + c, py = y + r
-                if code == SceneLayer.eyeFill.rawValue || code == SceneLayer.eyeShine.rawValue {
-                    guard px >= 0, px < SceneRaster.side, py >= 0, py < SceneRaster.side else { continue }
-                    if SceneLayer.isTraditionalLit(cells[py * SceneRaster.side + px]) { continue }
-                    cells[py * SceneRaster.side + px] = code
-                } else {
-                    guard px >= 0, px < SceneRaster.side, py >= 0, py < SceneRaster.side else { continue }
-                    cells[py * SceneRaster.side + px] = code
-                }
+                let px = x + c
+                if px < 0 || px >= side { continue }
+                let i = py * side + px
+                if (code == fillA || code == fillB) && SceneLayer.isTraditionalLit(cells[i]) { continue }
+                cells[i] = code
             }
         }
     }
@@ -267,17 +279,18 @@ struct SceneRaster: Equatable {
             if xa > xb { continue }
             for xx in xa...xb {
                 let code = cells[yy * side + xx]
-                if SceneLayer.isScenery(code) || SceneRaster.skyCodes.contains(code) { cells[yy * side + xx] = 0 }
+                if SceneLayer.isScenery(code) || SceneRaster.skyCodeTable[Int(code)] { cells[yy * side + xx] = 0 }
             }
         }
     }
 
-    /// Sky glyphs and biome cues a pet's silhouette clears behind it (besides scenery).
-    private static let skyCodes: Set<UInt8> = [
-        SceneLayer.sun.rawValue, SceneLayer.moon.rawValue, SceneLayer.star.rawValue, SceneLayer.cloud.rawValue,
-        SceneLayer.rain.rawValue, SceneLayer.butterfly.rawValue,
-        SceneLayer.wave.rawValue, SceneLayer.hole.rawValue, SceneLayer.peak.rawValue,
-    ]
+    /// Sky glyphs and biome cues a pet's silhouette clears behind it (besides scenery), as a lookup by code.
+    private static let skyCodeTable: [Bool] = {
+        let codes: [SceneLayer] = [.sun, .moon, .star, .cloud, .rain, .butterfly, .wave, .hole, .peak]
+        var t = [Bool](repeating: false, count: 256)
+        for l in codes { t[Int(l.rawValue)] = true }
+        return t
+    }()
 
     /// Clears a rectangle (used to keep the HUD and bubbles legible over the scene).
     mutating func knockout(x: Int, y: Int, w: Int, h: Int) {
@@ -538,15 +551,44 @@ enum SceneRenderer {
 
     // MARK: pet placement
 
-    private static func inkExtent(_ rows: [String]) -> (c0: Int, c1: Int, r0: Int, r1: Int)? {
+    private typealias InkExtent = (c0: Int, c1: Int, r0: Int, r1: Int)
+
+    private static func scanInkExtent(_ rows: [String]) -> InkExtent? {
         var c0 = Int.max, c1 = -1, r0 = Int.max, r1 = -1
-        for (r, row) in rows.enumerated() {
-            for (c, ch) in row.enumerated() where ch == "X" {
-                c0 = min(c0, c); c1 = max(c1, c); r0 = min(r0, r); r1 = max(r1, r)
+        var r = 0
+        for row in rows {
+            var c = 0
+            for ch in row.utf8 {
+                if ch == 88 { // "X"
+                    c0 = min(c0, c); c1 = max(c1, c); r0 = min(r0, r); r1 = max(r1, r)
+                }
+                c += 1
             }
+            r += 1
         }
         if c1 < 0 { return nil }
         return (c0: c0, c1: c1, r0: r0, r1: r1)
+    }
+
+    private static let extentLock = NSLock()
+    /// Ink extents by the address of the sprite's row buffer. The entry keeps the rows alive (so the address is
+    /// never reused while cached) and a hit is confirmed with `==`, which is O(1) for the same buffer.
+    private static var extentCache: [Int: (rows: [String], extent: InkExtent?)] = [:]
+
+    /// Bounding box of the lit pixels of a sprite, cached: the same sprite frames are placed on every tick.
+    private static func inkExtent(_ rows: [String]) -> InkExtent? {
+        guard !rows.isEmpty else { return nil }
+        let key = rows.withUnsafeBufferPointer { Int(bitPattern: $0.baseAddress) }
+        extentLock.lock()
+        let hit = extentCache[key]
+        extentLock.unlock()
+        if let hit, hit.rows == rows { return hit.extent }
+        let made = scanInkExtent(rows)
+        extentLock.lock()
+        if extentCache.count >= 4096 { extentCache.removeAll() }
+        extentCache[key] = (rows: rows, extent: made)
+        extentLock.unlock()
+        return made
     }
 
     static func placement(pet: Pet, state: SceneState, frame: Int, motion: Bool,
@@ -583,7 +625,7 @@ enum SceneRenderer {
             mirror = (state.facing < 0) != pose.flip
         }
 
-        let width = rows.first?.count ?? SceneState.spriteSize
+        let width = rows.first?.utf8.count ?? SceneState.spriteSize
         let e = inkExtent(rows) ?? (c0: 0, c1: width - 1, r0: 0, r1: rows.count - 1)
         let top = SceneRaster.footY - e.r1 + dy
         var c0 = e.c0, c1 = e.c1

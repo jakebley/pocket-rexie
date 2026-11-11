@@ -124,25 +124,44 @@ enum BiomeDraw {
     // MARK: static caches
 
     private static let lock = NSLock()
-    private static var cache: [String: [UInt8]] = [:]
+    private static var cache: [Int: [UInt8]] = [:]
 
-    private static func periodKey(_ p: Period) -> String {
+    private static func periodSlot(_ p: Period) -> Int {
         switch p {
-        case .dawn: return "dawn"
-        case .day: return "day"
-        case .dusk: return "dusk"
-        case .night: return "night"
+        case .dawn: return 0
+        case .day: return 1
+        case .dusk: return 2
+        case .night: return 3
         }
     }
 
-    private static func cached(_ biome: Biome, _ part: String, _ period: Period, _ rain: Bool) -> [UInt8] {
-        let key = biome.rawValue + "|" + part + "|" + periodKey(period) + (rain ? "|r" : "|d")
+    private static func biomeSlot(_ b: Biome) -> Int {
+        switch b {
+        case .meadow: return 0
+        case .woods: return 1
+        case .underwater: return 2
+        case .sky: return 3
+        case .yard: return 4
+        case .clouds: return 5
+        case .ember: return 6
+        case .warren: return 7
+        case .crags: return 8
+        case .workshop: return 9
+        case .swamp: return 10
+        case .garden: return 11
+        case .space: return 12
+        }
+    }
+
+    /// The painted static layer for (biome, back or fore, period, rain), kept in `cache` under an integer key.
+    private static func cached(_ biome: Biome, back: Bool, _ period: Period, _ rain: Bool) -> [UInt8] {
+        let key = ((biomeSlot(biome) * 2 + (back ? 1 : 0)) * 4 + periodSlot(period)) * 2 + (rain ? 1 : 0)
         lock.lock()
         let hit = cache[key]
         lock.unlock()
         if let hit { return hit }
         var canvas = BiomeCanvas()
-        if part == "back" {
+        if back {
             paintBack(biome, &canvas, period, rain)
         } else {
             paintFore(biome, &canvas, period)
@@ -157,13 +176,18 @@ enum BiomeDraw {
     /// nothing drawn yet, before the sky.
     static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
         if biome == .meadow { return }
-        var canvas = BiomeCanvas(copying: cached(biome, "back", period, live.rain))
+        var canvas = BiomeCanvas(copying: cached(biome, back: true, period, live.rain))
         paintLive(biome, &canvas, period, live)
-        for y in 0..<BiomeCanvas.n {
-            let dy = rowMap[y]
-            for x in 0..<BiomeCanvas.n {
-                let v = canvas.px[y * BiomeCanvas.n + x]
-                if v != 0 { r.cells[dy * BiomeCanvas.n + x] = v }
+        let n = BiomeCanvas.n
+        canvas.px.withUnsafeBufferPointer { src in
+            r.cells.withUnsafeMutableBufferPointer { dst in
+                for y in 0..<n {
+                    let from = y * n, to = rowMap[y] * n
+                    for x in 0..<n {
+                        let v = src[from + x]
+                        if v != 0 { dst[to + x] = v }
+                    }
+                }
             }
         }
     }
@@ -171,12 +195,17 @@ enum BiomeDraw {
     /// Floor props, painted only into pixels the meadow layers left unlit. Call after the ground.
     static func fore(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool) {
         if biome == .meadow { return }
-        let src = cached(biome, "fore", period, rain)
-        for y in 0..<BiomeCanvas.n {
-            let dy = rowMap[y]
-            for x in 0..<BiomeCanvas.n {
-                let v = src[y * BiomeCanvas.n + x]
-                if v != 0 && r.cells[dy * BiomeCanvas.n + x] == 0 { r.cells[dy * BiomeCanvas.n + x] = v }
+        let src = cached(biome, back: false, period, rain)
+        let n = BiomeCanvas.n
+        src.withUnsafeBufferPointer { src in
+            r.cells.withUnsafeMutableBufferPointer { dst in
+                for y in 0..<n {
+                    let from = y * n, to = rowMap[y] * n
+                    for x in 0..<n {
+                        let v = src[from + x]
+                        if v != 0 && dst[to + x] == 0 { dst[to + x] = v }
+                    }
+                }
             }
         }
     }

@@ -68,10 +68,25 @@ struct RGB: Hashable, Sendable {
 
     /// "#RRGGBB" (the leading # is optional).
     init(hex: String) {
-        var text = hex
-        if text.hasPrefix("#") { text.removeFirst() }
+        // Hand-rolled hex parse (Scanner is slow and the palette parses hundreds of literals per frame):
+        // an optional leading "#", then hex digits up to the first other character.
         var value: UInt32 = 0
-        Scanner(string: text).scanHexInt32(&value)
+        var first = true
+        for ch in hex.utf8 {
+            if first {
+                first = false
+                if ch == 35 { continue } // "#"
+            }
+            let digit: UInt32
+            switch ch {
+            case 48...57: digit = UInt32(ch - 48)
+            case 65...70: digit = UInt32(ch - 55)
+            case 97...102: digit = UInt32(ch - 87)
+            default: digit = 99
+            }
+            if digit == 99 { break }
+            value = (value &<< 4) | digit
+        }
         self.init(r: Int((value >> 16) & 0xFF), g: Int((value >> 8) & 0xFF), b: Int(value & 0xFF))
     }
 
@@ -228,6 +243,46 @@ enum ScenePalette {
     /// the defaults give the dino meadow.
     static func table(mode: ColorMode, appearance: Appearance, night: Bool, line: PetLine, bodyHex: String? = nil,
                       biome: Biome = .meadow, period: SceneAmbient.Period? = nil, rain: Bool = false) -> [RGB] {
+        let key = TableKey(mode: mode, appearance: appearance, night: night, line: line, bodyHex: bodyHex, biome: biome,
+                           period: period.map { periodSlot($0) } ?? -1, rain: rain)
+        tableLock.lock()
+        let hit = tableCache[key]
+        tableLock.unlock()
+        if let hit { return hit }
+        let made = buildTable(mode: mode, appearance: appearance, night: night, line: line, bodyHex: bodyHex,
+                              biome: biome, period: period, rain: rain)
+        tableLock.lock()
+        if tableCache.count >= 512 { tableCache.removeAll() }
+        tableCache[key] = made
+        tableLock.unlock()
+        return made
+    }
+
+    // The painter asks for the table on every frame; it depends only on these inputs, so it is built once each.
+    private struct TableKey: Hashable {
+        let mode: ColorMode
+        let appearance: Appearance
+        let night: Bool
+        let line: PetLine
+        let bodyHex: String?
+        let biome: Biome
+        let period: Int
+        let rain: Bool
+    }
+    private static let tableLock = NSLock()
+    private static var tableCache: [TableKey: [RGB]] = [:]
+
+    private static func periodSlot(_ p: SceneAmbient.Period) -> Int {
+        switch p {
+        case .dawn: return 0
+        case .day: return 1
+        case .dusk: return 2
+        case .night: return 3
+        }
+    }
+
+    private static func buildTable(mode: ColorMode, appearance: Appearance, night: Bool, line: PetLine, bodyHex: String?,
+                                   biome: Biome, period: SceneAmbient.Period?, rain: Bool) -> [RGB] {
         let sc = screen(mode: mode, appearance: appearance)
         var t = [RGB](repeating: sc.ink, count: tableSize)
         t[0] = sc.ground

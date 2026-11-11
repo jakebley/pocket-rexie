@@ -72,15 +72,26 @@ extension EnvironmentValues {
 enum LCDPainter {
     static let grid = SceneRaster.side
 
-    /// Faint "unlit" pixels, for the LCD look.
+    private static let gridLock = NSLock()
+    private static var gridCache: [CGFloat: Path] = [:]
+
+    /// Faint "unlit" pixels, for the LCD look. 4096 rectangles: built once per cell size (the painter asks on every frame).
     static func gridPath(size: CGSize) -> Path {
         let cell = min(size.width, size.height) / CGFloat(grid)
+        gridLock.lock()
+        let hit = gridCache[cell]
+        gridLock.unlock()
+        if let hit { return hit }
         var path = Path()
         for y in 0..<grid {
             for x in 0..<grid {
                 path.addRect(pixelRect(x, y, cell))
             }
         }
+        gridLock.lock()
+        if gridCache.count >= 8 { gridCache.removeAll() }
+        gridCache[cell] = path
+        gridLock.unlock()
         return path
     }
 
@@ -137,22 +148,33 @@ enum LCDPainter {
             ctx.fill(path(raster, shade: true, size: size),
                      with: .color(ScenePalette.dimInk.color.opacity(ScenePalette.dimDither)))
         }
-        var groups: [RGB: Path] = [:]
+        // One path per layer code (the table is cached, so no hashing of colors per pixel); only the lights-off
+        // darkened scenery needs its own colors.
+        var byCode = [Path](repeating: Path(), count: table.count)
+        var used = [Bool](repeating: false, count: table.count)
+        var dimmed: [RGB: Path] = [:]
+        let inkIndex = Int(SceneLayer.ink.rawValue)
         for y in 0..<grid {
             for x in 0..<grid {
                 let i = y * grid + x
                 let raw = raster.cells[i]
                 if raw == 0 { continue }
                 let code = Int(raw)
-                var rgb = code < table.count ? table[code] : table[Int(SceneLayer.ink.rawValue)]
+                let idx = code < table.count ? code : inkIndex
                 // lights off: the dither also darkens scenery (it is unlit in Traditional, so it was marked like the sky)
                 if raster.dim && raster.shade[i] && SceneLayer.isScenery(raw) {
-                    rgb = rgb.mixed(with: ScenePalette.dimInk, ScenePalette.dimDither)
+                    let rgb = table[idx].mixed(with: ScenePalette.dimInk, ScenePalette.dimDither)
+                    dimmed[rgb, default: Path()].addRect(pixelRect(x, y, cell))
+                } else {
+                    byCode[idx].addRect(pixelRect(x, y, cell))
+                    used[idx] = true
                 }
-                groups[rgb, default: Path()].addRect(pixelRect(x, y, cell))
             }
         }
-        for (rgb, group) in groups {
+        for idx in 0..<table.count where used[idx] {
+            ctx.fill(byCode[idx], with: .color(table[idx].color))
+        }
+        for (rgb, group) in dimmed {
             ctx.fill(group, with: .color(rgb.color))
         }
     }

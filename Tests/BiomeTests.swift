@@ -112,7 +112,7 @@ final class BiomeTests: XCTestCase {
     func testEverySpeciesDrawsInEveryPeriodWeatherAndFacing() {
         let dry = seed(for: .clear), wet = seed(for: .rain)
         var draws = 0
-        for sp in Species.all.sampled(every: 4) {
+        for sp in Species.all {
             for (name, hour) in periodHours {
                 for rainy in [false, true] {
                     var p = makePet(sp, seed: rainy ? wet : dry)
@@ -127,7 +127,7 @@ final class BiomeTests: XCTestCase {
                 }
             }
         }
-        XCTAssertGreaterThan(draws, 700)
+        XCTAssertGreaterThan(draws, 3000)
         // every biome with every scene state the director uses
         let fox = Species.all.first { $0.family == "fox" && $0.stage == .adult }!
         let p = makePet(fox)
@@ -235,25 +235,20 @@ final class BiomeTests: XCTestCase {
         var cues = Set<UInt8>()
         var leaked = 0
         let dry = seed(for: .clear), wet = seed(for: .rain)
-        // one adult per non-dino family (the cues depend on the biome, not on the species), two periods;
-        // the full roster took about 53 minutes in the simulator
-        var seenFamilies = Set<String>()
-        let adults: [Species] = Species.all.filter { (sp: Species) -> Bool in
-            guard sp.stage == .adult && sp.family != "dino" else { return false }
-            return seenFamilies.insert(sp.family).inserted
-        }
-        for sp in adults {
-            for (_, hour) in periodHours.prefix(2) {
+        for sp in Species.all where sp.stage == .adult && sp.family != "dino" {
+            for (_, hour) in periodHours {
                 for rainy in [false, true] {
                     let p = makePet(sp, seed: rainy ? wet : dry)
                     let a = render(p, hour: hour, x: 14)
                     let m = render(p, hour: hour, x: 14, biome: .meadow)
                     var extra = 0
+                    // `ink` builds a whole 4096-cell array on every access: take it once per raster, not per cell
+                    let aInk = a.ink, mInk = m.ink
                     for i in 0..<a.cells.count {
                         let code = a.cells[i]
                         if isCue(code) { cues.insert(code) }
                         if SceneLayer.isScenery(code) && SceneLayer.isTraditionalLit(code) { leaked += 1 }
-                        if a.ink[i] != m.ink[i] { extra += 1 }
+                        if aInk[i] != mInk[i] { extra += 1 }
                     }
                     worst = max(worst, extra)
                 }
