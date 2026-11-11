@@ -71,10 +71,11 @@ struct GamePanel: View {
             case .ready: ReadyPanel(model: model, m: m, session: s)
             case .result: ResultPanel(model: model, m: m, session: s)
             case .play:
-                if s.def.tapRows.isEmpty {
+                let rows: [TapRow] = s.game.flatMap { g in s.def.tapZones?(g) } ?? s.def.tapRows
+                if rows.isEmpty {
                     Color.clear.allowsHitTesting(false)
                 } else {
-                    TapRowsOverlay(rows: s.def.tapRows) { model.pickRow($0) }
+                    TapRowsOverlay(rows: rows) { model.pickRow($0) }
                 }
             case .over: Color.clear.allowsHitTesting(false)
             }
@@ -93,8 +94,8 @@ struct TapRowsOverlay: View {
             ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
                 Color.clear
                     .contentShape(Rectangle())
-                    .frame(width: geo.size.width - cell * 2, height: cell * CGFloat(row.h))
-                    .position(x: geo.size.width / 2, y: cell * (CGFloat(row.y) + CGFloat(row.h) / 2))
+                    .frame(width: cell * CGFloat(row.w), height: cell * CGFloat(row.h))
+                    .position(x: cell * (CGFloat(row.x) + CGFloat(row.w) / 2), y: cell * (CGFloat(row.y) + CGFloat(row.h) / 2))
                     .onTapGesture { onPick(i) }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(row.id.uppercased())

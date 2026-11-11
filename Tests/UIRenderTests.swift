@@ -538,6 +538,122 @@ final class UIRenderTests: XCTestCase {
         }
     }
 
+    // MARK: ECHO scenes (compare with expo-prototype/docs/screens/echo-technicolor-1.png and echo-traditional.png)
+
+    private static let echoScenes = ["intro", "show", "input", "ok", "oops", "five", "result"]
+
+    /// A model showing ECHO at one moment, driven by the perfect bot (the same one the tests use).
+    private func echoModel(_ scene: String, _ p: Pet) -> GameModel {
+        let model = GameModel(pet: p, persist: { _ in })
+        model.selected = .play
+        let params = MiniTuning.params(for: p, game: "echo")
+        let s = MiniSession(def: EchoGame.def, params: params, seed: 6)
+        s.begin()
+        let bot = EchoBot(skill: "perfect", seed: 6)
+        var t: Double = 0
+        func g() -> EchoGame? { s.game as? EchoGame }
+        func run(until stop: (EchoState) -> Bool) {
+            var n = 0
+            while s.phase == .play && n < 4000 {
+                if let game = g(), stop(game.state) { return }
+                if let game = g() { s.pending = bot.decide(game, t) }
+                _ = s.tick(50)
+                t += 50
+                n += 1
+            }
+        }
+        switch scene {
+        case "intro":
+            run(until: { $0.phase == .intro && $0.phaseMs >= 100 })
+        case "show":
+            run(until: { $0.phase == .show && $0.shown >= 2 && $0.lit >= 0 })
+        case "input":
+            run(until: { $0.phase == .input && $0.entered >= 1 && $0.pressed >= 0 })
+        case "ok":
+            run(until: { $0.phase == .ok && $0.phaseMs >= 200 })
+        case "oops":
+            run(until: { $0.phase == .input && $0.entered >= 1 })
+            if let game = g() {
+                let want = game.state.pattern[game.state.entered]
+                s.pending = want == 0 ? GameInput(right: true) : GameInput(left: true)
+                _ = s.tick(50)
+                for _ in 0..<4 { _ = s.tick(50) }
+            }
+        case "five":
+            run(until: { $0.round >= 6 && $0.phase == .input && $0.entered >= 2 && $0.pressed >= 0 })
+        default:
+            run(until: { _ in false })
+            while !s.tick(100) {}
+            var pp = model.pet
+            s.settle(pet: &pp, store: model.scoreStore, now: day.timeIntervalSince1970)
+            model.pet = pp
+        }
+        model.present(s)
+        return model
+    }
+
+    private func echoTile(_ scene: String, _ p: Pet, palette: LCDPalette, side: CGFloat) -> AnyView {
+        let model = echoModel(scene, p)
+        let view = LCDScreen(model: model, framed: true)
+            .padding(4)
+            .background(palette.background)
+            .environment(\.lcdPalette, palette)
+            .environment(\.sceneDate, day)
+            .environment(\.displayScale, 2)
+            .frame(width: side, height: side)
+        return AnyView(view)
+    }
+
+    /// ECHO: intro, show, input, ok, oops, a five-pad round and the result, one pet per family, both looks; plus large tiles of one pet.
+    func testRenderEchoScreens() {
+        let side: CGFloat = 130
+        let scenes = Self.echoScenes
+        let families = Species.families.map { $0.id }
+        for mode in ColorMode.allCases {
+            let palette = LCDStyle.palette(for: .light, mode: mode)
+            for (index, start) in [0, 6].enumerated() {
+                let group = Array(families[start..<min(start + 6, families.count)])
+                let sheet = VStack(spacing: 3) {
+                    ForEach(group, id: \.self) { fam in
+                        HStack(spacing: 3) {
+                            ForEach(scenes, id: \.self) { scene in
+                                self.echoTile(scene, self.playPet(fam), palette: palette, side: side)
+                            }
+                        }
+                    }
+                }
+                .background(palette.background)
+                write(sheet, to: "echo/sheet-\(mode.rawValue)-\(index + 1)",
+                      size: CGSize(width: side * CGFloat(scenes.count) + 3 * CGFloat(scenes.count - 1),
+                                   height: side * CGFloat(group.count) + 3 * CGFloat(group.count - 1)))
+            }
+            for scene in scenes {
+                write(echoTile(scene, playPet("fox"), palette: palette, side: 358), to: "echo/fox-\(scene)-\(mode.rawValue)",
+                      size: CGSize(width: 358, height: 358))
+            }
+        }
+    }
+
+    /// The Play flow inside the real phone layout (icons, message line, A/B/C), Technicolor and Traditional.
+    func testRenderPlayOnThePhone() {
+        let phone = phones[0]
+        for mode in ColorMode.allCases {
+            for scene in ["menu", "game-b", "result"] {
+                let model = playModel(scene, playPet("fox"))
+                let ground = LCDStyle.palette(for: .light, mode: mode).background
+                let view = ZStack {
+                    ground
+                    ContentView(model: model, clock: day, colorMode: mode)
+                        .padding(.top, phone.top)
+                        .padding(.bottom, phone.bottom)
+                }
+                .environment(\.colorScheme, .light)
+                .environment(\.displayScale, 2)
+                write(view, to: "play/phone-\(mode.rawValue)-\(scene)", size: phone.size)
+            }
+        }
+    }
+
     // MARK: DASH renders (compare with expo-prototype/docs/screens/play-dash-technicolor.png and play-dash-closeup.png)
 
     private static let dashScenes = ["countdown", "run", "jump", "hit", "faster", "result"]

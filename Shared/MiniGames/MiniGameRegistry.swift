@@ -9,7 +9,8 @@ enum MiniGames {
         HiLoGame.entry,
         CatchGame.entry,
         DashGame.entry,
-        // ---- add new games here, one line each: DashGame.entry, EchoGame.entry ----
+        EchoGame.entry,
+        // ---- add new games here, one line each: more ----
     ]
 
     static func entry(_ id: String) -> GameEntry? { all.first { $0.def.id == id } }
