@@ -174,7 +174,7 @@ enum BiomeDraw {
 
     /// Scenery behind the meadow layers (trees, hills, mountains, walls, water light...). Call on a raster with
     /// nothing drawn yet, before the sky.
-    static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
+    static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive, rows: [Int] = BiomeDraw.rowMap) {
         if biome == .meadow { return }
         var canvas = BiomeCanvas(copying: cached(biome, back: true, period, live.rain))
         paintLive(biome, &canvas, period, live)
@@ -182,7 +182,7 @@ enum BiomeDraw {
         canvas.px.withUnsafeBufferPointer { src in
             r.cells.withUnsafeMutableBufferPointer { dst in
                 for y in 0..<n {
-                    let from = y * n, to = rowMap[y] * n
+                    let from = y * n, to = rows[y] * n
                     for x in 0..<n {
                         let v = src[from + x]
                         if v != 0 { dst[to + x] = v }
@@ -193,14 +193,14 @@ enum BiomeDraw {
     }
 
     /// Floor props, painted only into pixels the meadow layers left unlit. Call after the ground.
-    static func fore(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool) {
+    static func fore(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool, rows: [Int] = BiomeDraw.rowMap) {
         if biome == .meadow { return }
         let src = cached(biome, back: false, period, rain)
         let n = BiomeCanvas.n
         src.withUnsafeBufferPointer { src in
             r.cells.withUnsafeMutableBufferPointer { dst in
                 for y in 0..<n {
-                    let from = y * n, to = rowMap[y] * n
+                    let from = y * n, to = rows[y] * n
                     for x in 0..<n {
                         let v = src[from + x]
                         if v != 0 && dst[to + x] == 0 { dst[to + x] = v }

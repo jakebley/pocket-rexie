@@ -39,7 +39,8 @@ jobs:
         run: |
           python3 tools/gen_swift.py
           python3 tools/gen_ts.py
-          git diff --exit-code -- Shared/SpeciesData.swift expo-prototype/src/core/speciesData.ts
+          (cd expo-prototype && npx tsx ../tools/gen_minigames.ts)
+          git diff --exit-code -- Shared/SpeciesData.swift expo-prototype/src/core/speciesData.ts Shared/MiniGames/MiniGameData.swift
       - run: npx expo export --platform web
       - name: Native JS bundles (Hermes) build
         run: npx expo export --platform ios --platform android --output-dir /tmp/native-export

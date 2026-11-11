@@ -129,7 +129,7 @@ enum LCDPainter {
                                        bodyHex: raster.bodyHex, biome: raster.biome, period: period,
                                        rain: raster.weather == .rain)
         if raster.hasSky {
-            let ground = CGFloat(SceneRaster.groundY) * cell
+            let ground = CGFloat(raster.groundRow) * cell
             let skyRect = CGRect(x: 0, y: 0, width: cell * CGFloat(grid), height: ground)
             let soilRect = CGRect(x: 0, y: ground, width: cell * CGFloat(grid), height: cell * CGFloat(grid) - ground)
             let sky = ScenePalette.sky(mode: palette.mode, appearance: appearance, hour: raster.hour,

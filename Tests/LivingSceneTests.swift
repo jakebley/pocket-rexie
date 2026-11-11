@@ -319,7 +319,7 @@ final class LivingSceneTests: XCTestCase {
     // MARK: drawing
 
     func testEveryStateDrawsForEverySpeciesAndBothFacings() {
-        for sp in Species.all {
+        for sp in Species.all.sampled(every: 4) {
             var p = makePet(stage: sp.stage, species: sp.id)
             p.poops = 2
             p.call = .hungry

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Scale of the LCD overlays: `unit` is one text pixel in points, about side / 64 rounded down
 /// to a whole device pixel so the pixel font stays crisp.
-private struct Metrics {
+struct Metrics {
     let unit: CGFloat
     let side: CGFloat
 
@@ -74,16 +74,16 @@ struct LCDScreen: View {
 
     private func screenCanvas(side: CGFloat) -> some View {
         // The scene steps at 8 fps (one director tick); it pauses off screen and behind text screens.
-        let paused = scenePhase != .active || model.mode != .home || sceneDate != nil
-        return TimelineView(.animation(minimumInterval: SceneState.tickLength, paused: paused)) { timeline in
+        // While a mini-game plays, the canvas repaints at 20 fps from the session (the model steps it); otherwise the scene.
+        let playing = model.mode == .game && (model.session?.phase == .play || model.session?.phase == .over)
+        let paused = scenePhase != .active || (model.mode != .home && !playing) || sceneDate != nil
+        return TimelineView(.animation(minimumInterval: playing ? 0.05 : SceneState.tickLength, paused: paused)) { timeline in
             let pet = model.pet
             let flash = model.evolutionFlash
             let hatchedAt = model.hatchedAt
             let date = sceneDate ?? timeline.date
-            let raster = flash == nil
-                ? director.frame(pet: pet, date: date, reducedMotion: reduceMotion,
-                                 hatchedAt: hatchedAt)
-                : nil
+            let tick = model.gameTick
+            let raster = frameRaster(playing: playing, hasFlash: flash != nil, pet: pet, date: date, hatchedAt: hatchedAt, tick: tick)
             Canvas { ctx, size in
                 LCDScene.render(&ctx, size: size, raster: raster, flash: flash, date: date,
                                 palette: palette)
@@ -102,6 +102,16 @@ struct LCDScreen: View {
         .accessibilityIdentifier("lcd")
     }
 
+    /// The picture for this frame: the running mini-game, the living scene, or nothing while the evolution flash plays.
+    private func frameRaster(playing: Bool, hasFlash: Bool, pet: Pet, date: Date, hatchedAt: Date?, tick: Int) -> SceneRaster? {
+        _ = tick  // read in the timeline so a game step repaints even when the timeline is paused
+        if playing, let session = model.session {
+            return MiniPaint.frame(session: session, pet: pet, ms: date.timeIntervalSinceReferenceDate * 1000)
+        }
+        if hasFlash { return nil }
+        return director.frame(pet: pet, date: date, reducedMotion: reduceMotion, hatchedAt: hatchedAt)
+    }
+
     /// The model's summary plus the active look ("... look technicolor name Rexie"), for UI tests.
     private var uiTestValue: String {
         let summary = model.uiTestSummary
@@ -115,6 +125,10 @@ struct LCDScreen: View {
         let cx = Double(location.x / side) * Double(LCDPainter.grid)
         let cy = Double(location.y / side) * Double(LCDPainter.grid)
         let pet = model.pet
+        if model.mode == .game {
+            model.tapGame(side: cx < Double(LCDPainter.grid) / 2 ? -1 : 1)
+            return
+        }
         if pet.stage == .egg || !pet.isAlive {
             model.tapPet()
             return
@@ -149,6 +163,12 @@ struct LCDScreen: View {
             dexPanel(m)
         case .chooseEgg:
             chooserPanel(m)
+        case .playMenu:
+            PlayMenuPanel(model: model, m: m)
+        case .game:
+            GamePanel(model: model, m: m)
+        case .scores:
+            ScoresPanel(model: model, m: m)
         }
     }
 

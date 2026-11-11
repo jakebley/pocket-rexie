@@ -156,6 +156,8 @@ struct SceneRaster: Equatable {
     // Context for coloring (Technicolor): set by `SceneRenderer.render`.
     /// The picture is a room with sky (above `groundY`) and soil (below), not a text screen.
     var hasSky = false
+    /// First row of the soil in Technicolor (the home scene's ground line; the Play field's ground is lower).
+    var groundRow = SceneRaster.groundY
     var hour = 12
     var weather: SceneAmbient.Weather = .clear
     var line: PetLine = .baby
