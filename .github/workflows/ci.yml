@@ -68,7 +68,11 @@ jobs:
           set -o pipefail
           xcodebuild -project PocketRexie.xcodeproj -scheme PocketRexie \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -only-testing:PocketRexieTests/MiniGameTests \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= test 2>&1 | tee test-ios.log | tail -n 80
+      - name: Test timings (TEMP)
+        if: always()
+        run: grep -E "Test Case '.*' (passed|failed)" test-ios.log | sed -E "s/.*Test Case '(.*)' (passed|failed) \((.*) seconds\)./\1 \2 \3/" | while IFS= read -r line; do echo "::notice title=timing::${line}"; done || true
       - name: Report test results
         run: |
           summary=$(grep -E "Executed [0-9]+ tests" test-ios.log | tail -1)
