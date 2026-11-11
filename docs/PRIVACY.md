@@ -1,6 +1,6 @@
 # Privacy Policy - Pocket Rexie
 
-_Last updated: 2026-10-22_
+_Last updated: 2026-11-11_
 
 Pocket Rexie does not collect, transmit, sell or share any personal data. The same text is published on the support page (docs/index.html, served at https://jakebley.github.io/pocket-rexie/).
 
@@ -10,6 +10,7 @@ Pocket Rexie does not collect, transmit, sell or share any personal data. The sa
 - **Storage:** your pet's state is stored only on your device, in an App Group container shared between the app, its widgets and the Watch app. It never leaves your devices.
 - **Notifications:** reminders are optional local notifications scheduled on your device. No push server or remote notification service is used. You can turn them off in iOS Settings.
 - **Apple Watch sync:** if you use the Watch app, your pet is synced between your own iPhone and your own Apple Watch using Apple's WatchConnectivity framework, directly between the two devices. No other party receives it.
+- **TestFlight:** if you install a beta through Apple's TestFlight, any feedback or screenshots you choose to send are handled by Apple and delivered to the developer through TestFlight. The app itself sends nothing.
 - **Health data:** the app does not use HealthKit and does not read any health or fitness data.
 - **Children:** the app is not directed at children under 13 and is rated 12+. It collects nothing from anyone, including children.
 
