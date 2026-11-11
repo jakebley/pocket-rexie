@@ -49,7 +49,7 @@ Tune thresholds with bots like the CATCH ones in the tests: a perfect player gol
 
 ## Status
 Expo: HI-LO, CATCH, DASH and ECHO are built (src/core/minigames/games/, src/ui/games/), with themes for all 12 families, tuning for all 123 body types, high scores and the daily reward cap. Swift port: not started.
-Swift: phase 1 is ported (HI-LO and CATCH). DASH and ECHO are not ported yet and stay out of the menu until their Swift file exists.
+Swift: HI-LO, CATCH and DASH are ported (DASH: `Shared/MiniGames/DashGame.swift`, golden traces in `Tests/DashTests.swift`). ECHO is not ported yet and stays out of the menu until its Swift file exists.
 
 ## Status and how to add a game (Swift)
 Where things are:
