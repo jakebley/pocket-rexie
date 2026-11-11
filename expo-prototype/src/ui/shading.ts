@@ -39,7 +39,7 @@ const EYE_FRAC: Record<string, number> = { cat: 0.5, bot: 0.5 };
 const EYE_MAX_CELLS: Record<string, number> = { alien: 64 };
 const EYE_ROW_TOL: Record<string, number> = { alien: 5.5 };
 const EYE_ROW_MAX: Record<string, number> = { alien: 3 };
-const R_MAX = 7;
+const R_MAX_32 = 7;
 const T_HI = 0.42, T_SH = 0.5, T_DITHER = 0.28;
 const VBIAS = 0.22;
 
@@ -104,8 +104,13 @@ function dilate(m: Uint8Array, w: number, h: number, r: number): Uint8Array {
   return o;
 }
 
+/**
+ * `rows` is a 32x32 sprite (the Scale2x hiFrames, Traditional and the 64 grid) or a 48x48 one (Scale3x of the 16x16 base, Technicolor at 96).
+ * Every pixel-unit constant is expressed for 32 and scaled by k = size / 32 (1 or 1.5); at 32 the code path is exactly the original.
+ */
 export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
   const h = rows.length, w = rows[0]?.length ?? 0, n = w * h;
+  const k = h / 32, k2 = k * k, wide = k > 1;
   const out = new Uint8Array(n);
   if (!n) return out;
   const st = (family && STYLE[family]) || DEFAULT_STYLE;
@@ -122,18 +127,20 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
   const ext = exterior(on, w, h);
   const isExt = (x: number, y: number) => x < 0 || y < 0 || x >= w || y >= h || ext[y * w + x] === 1;
 
+  const RM = Math.ceil(R_MAX_32 * k);
   // distance to the outside (holes count as body, so an eye does not carve its own bevel)
   const dist = new Float32Array(n);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     if (isExt(x, y)) continue;
-    let best = R_MAX * R_MAX;
-    for (let dy = -R_MAX; dy <= R_MAX; dy++) for (let dx = -R_MAX; dx <= R_MAX; dx++) {
+    let best = RM * RM;
+    for (let dy = -RM; dy <= RM; dy++) for (let dx = -RM; dx <= RM; dx++) {
       const d2 = dx * dx + dy * dy;
       if (d2 < best && isExt(x + dx, y + dy)) best = d2;
     }
     dist[y * w + x] = Math.sqrt(best);
   }
-  const cap = area > 520 ? 3.6 : area > 280 ? 3.1 : 2.6;
+  const a32 = area / k2;
+  const cap = (a32 > 520 ? 3.6 : a32 > 280 ? 3.1 : 2.6) * k;
   const at = (x: number, y: number) => (x < 0 || y < 0 || x >= w || y >= h ? 0 : dist[y * w + x]);
   const sm = new Float32Array(n);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -153,7 +160,7 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
     const gx = (hh(x + 1, y) - hh(x - 1, y)) / 2, gy = (hh(x, y + 1) - hh(x, y - 1)) / 2;
     const vn = ((y - ymin) / span) * 2 - 1;
     const s = (gx + gy) * 0.7071 - VBIAS * vn;
-    if (isOl(x, y + 1) && vn > -0.1) out[i] = Layer.DEEP;
+    if ((isOl(x, y + 1) || (wide && isOl(x, y + 2) && ((x + y) & 1) === 0)) && vn > -0.1) out[i] = Layer.DEEP;
     else if (s >= T_HI) out[i] = Layer.BODY_LIGHT;
     else if (s <= -T_SH) out[i] = Layer.SHADE;
     else if (s <= -T_DITHER) out[i] = ((x + y) & 1) === 0 ? Layer.SHADE : Layer.BODY;
@@ -163,7 +170,8 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
   // the torso: the silhouette opened by a 5x5 window (thin ears, legs, tails and necks fall away)
   const filled = new Uint8Array(n);
   for (let i = 0; i < n; i++) filled[i] = on[i] || !ext[i] ? 1 : 0;
-  const core = dilate(erode(filled, w, h, 2), w, h, 2);
+  const cr = wide ? 3 : 2;
+  const core = dilate(erode(filled, w, h, cr), w, h, cr);
   let cx = 0, cy = 0, cn = 0, cy0 = h, cy1 = -1;
   for (let i = 0; i < n; i++) if (core[i]) { const y = (i / w) | 0; cx += i % w; cy += y; cn++; if (y < cy0) cy0 = y; if (y > cy1) cy1 = y; }
 
@@ -173,7 +181,7 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
     const belly = new Uint8Array(n);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const i = y * w + x;
-      if (on[i] && !ol[i] && core[i] && y >= line && dist[i] >= 2.6 && code(x, y) !== Layer.DEEP) belly[i] = 1;
+      if (on[i] && !ol[i] && core[i] && y >= line && dist[i] >= 2.6 * k && code(x, y) !== Layer.DEEP) belly[i] = 1;
     }
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const i = y * w + x;
@@ -185,15 +193,15 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
   }
 
   // ---- sheen: a tiny L-shaped glint on the upper-left of the body ----
-  if (st.sheen && area >= 70) {
+  if (st.sheen && area >= 70 * k2) {
     let bx = -1, by = -1, bs = 1e9;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const i = y * w + x;
-      if (!on[i] || ol[i] || dist[i] < 2.4) continue;
+      if (!on[i] || ol[i] || dist[i] < 2.4 * k) continue;
       const sc = x + y * 1.15;
       if (sc < bs) { bs = sc; bx = x; by = y; }
     }
-    if (bx >= 0) for (const [dx, dy] of [[0, 0], [1, 0], [0, 1]]) {
+    if (bx >= 0) for (const [dx, dy] of wide ? [[0, 0], [1, 0], [2, 0], [0, 1], [0, 2]] : [[0, 0], [1, 0], [0, 1]]) {
       const x = bx + dx, y = by + dy;
       if (isOn(x, y) && !isOl(x, y)) out[y * w + x] = Layer.GLINT;
     }
@@ -223,11 +231,11 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
       }
       const { list } = components(prot, w, h);
       for (const cells of list) {
-        if (cells.length < 5) continue;
+        if (cells.length < Math.round(5 * k2)) continue;
         let m = 0;
         for (const i of cells) if (gd[i] > m) m = gd[i];
-        if (m < 3) continue;
-        const thr = Math.max(2, m - 2); // the last three pixels: a sock, an ear tip, a tail tip
+        if (m < Math.round(3 * k)) continue;
+        const thr = Math.max(2, m - (Math.round(3 * k) - 1)); // the last three pixels (five at 48): a sock, an ear tip, a tail tip
         let tx = 0, ty = 0, tn = 0;
         for (const i of cells) if (gd[i] >= thr) { tx += i % w; ty += (i / w) | 0; tn++; }
         if (!tn) continue;
@@ -247,7 +255,7 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
     // eyes are the small holes highest up (a cat's back spots or a bot's vents are lower and stay plain outline)
     const eyes: { cells: number[]; y: number }[] = [];
     for (const cells of list) {
-      if (!cells.length || cells.length > (EYE_MAX_CELLS[family ?? ''] ?? 6)) continue;
+      if (!cells.length || cells.length > Math.round((EYE_MAX_CELLS[family ?? ''] ?? (wide ? 8 : 6)) * k2)) continue; // at 48 a 1x2 eye (18 cells) counts too
       let sy = 0;
       for (const i of cells) sy += (i / w) | 0;
       const y = sy / cells.length;
@@ -255,7 +263,7 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
     }
     // the topmost row of holes is the eyes; three or more in that row is a pattern (spots, vents, windows) and stays open
     const top = eyes.length ? Math.min(...eyes.map((e) => e.y)) : 0;
-    const row = eyes.filter((e) => e.y <= top + (EYE_ROW_TOL[family ?? ''] ?? 2.5));
+    const row = eyes.filter((e) => e.y <= top + (EYE_ROW_TOL[family ?? ''] ?? 2.5) * k);
     if (row.length && row.length <= (EYE_ROW_MAX[family ?? ''] ?? 2)) {
       for (const e of row) {
         let gx = w, gy = h;
@@ -270,7 +278,7 @@ export function shadedPetLayers(rows: Rows, family?: string): Uint8Array {
         for (const i of e.cells) { out[i] = Layer.EYE_FILL; if ((i % w) + ((i / w) | 0) < (gi % w) + ((gi / w) | 0)) gi = i; }
         if (e.cells.length >= 2) out[gi] = Layer.EYE_SHINE;
         // a big eye gets a second sparkle beside the first (the alien glow)
-        if (e.cells.length >= 10) for (const j of [gi + 1, gi + w]) if (out[j] === Layer.EYE_FILL) { out[j] = Layer.EYE_SHINE; break; }
+        if (e.cells.length >= Math.round(10 * k2)) for (const j of [gi + 1, gi + w]) if (out[j] === Layer.EYE_FILL) { out[j] = Layer.EYE_SHINE; break; }
         else if (isOn(gx - 1, gy - 1) && !isOl(gx - 1, gy - 1)) out[(gy - 1) * w + gx - 1] = Layer.GLINT;
       }
     }

@@ -7,6 +7,8 @@ import { biomeOf, type Biome } from './biomes';
 import { drawBackdrop, drawFore } from './biomeDraw';
 import { Buf, G7 } from './pixel';
 import { BED_X, GROUND_Y, HEAD_Y, MAX_X, POOP_X, SCENE_N, SPRITE_N, TICK_MS, maxXFor, phaseOf, type Pop, type Prop, type Scene } from './scene';
+import { FRAME_MS, flipRows, poseOf, type Pose } from './pose';
+import { drawScene96 } from './sceneDraw96';
 
 type Rows = string[];
 
@@ -47,12 +49,9 @@ export const ART: Record<string, Rows> = {
   bubble: ['..XXXXXXXXX..', '.X.........X.', 'X...........X', 'X...........X', 'X...........X', 'X...........X', 'X...........X', '.X.........X.', '..XXXXXXXXX..'],
 };
 
-const FRAME_MS = 600;
-export { GROUND_Y, HEAD_Y };
+export { GROUND_Y, HEAD_Y, poseOf, type Pose };
 const SKY_TOP = 16; // first free sky row under the HUD (also the thought bubble's top)
-const HOP = [0, -6, -8, -6, 0];
 
-function flipRows(rows: Rows): Rows { return rows.map((r) => [...r].reverse().join('')); }
 
 /** Stamp a bitmap in `layer`. halo: clear a 1px ring first so it stays legible over anything behind it. */
 function stamp(b: Buf, rows: Rows, x: number, y: number, halo = false, layer: number = Layer.INK, rowLayer?: (j: number) => number) {
@@ -63,33 +62,6 @@ function stamp(b: Buf, rows: Rows, x: number, y: number, halo = false, layer: nu
   }
   if (rowLayer) rows.forEach((r, j) => b.rows([r], x, y + j, 'X', rowLayer(j)));
   else b.rows(rows, x, y, 'X', layer);
-}
-
-export interface Pose { blink: boolean; dx: number; dy: number; facing: 1 | -1 }
-
-/** Derived poses: everything comes from the two existing sprite frames. */
-export function poseOf(s: Scene): Pose {
-  const t = s.t;
-  const amb = s.still ? 0 : Math.floor(s.nowMs / FRAME_MS);
-  let blink = false, dx = 0, dy = 0;
-  let facing = s.facing;
-  switch (s.state) {
-    case 'idle': dy = amb % 2 === 1 ? -1 : 0; break;
-    case 'walk': case 'play': dy = -(Math.floor(t / 2) % 2); break;
-    case 'look': dy = s.lookUp ? -1 : 0; break;
-    case 'hop': case 'greet': case 'train': dy = HOP[t % 5]; break;
-    case 'dance': dy = HOP[t % 5]; if (Math.floor((t * TICK_MS) / 300) % 2 === 1) facing = (facing * -1) as 1 | -1; break;
-    case 'sit': case 'droop': case 'sleep': dy = 1; blink = true; break;
-    case 'poop': dy = 1; blink = true; dx = t % 2 ? 2 : 0; break;
-    case 'eat': blink = Math.floor(t / 2) % 2 === 1; dx = blink ? 2 : 0; break;
-    case 'sneeze': dx = [-2, -2, 3, 3, 0, 0][Math.min(5, t)] ?? 0; blink = t < 4; break;
-    case 'shiver': dx = t % 2 ? 1 : -1; break;
-    case 'sweat': dy = 0; blink = Math.floor(t / 4) % 2 === 1; break;
-    case 'stretch': dy = t < 5 ? -2 : 0; blink = t < 5; break;
-    case 'react': dx = t < 2 ? -3 : 0; blink = true; break;
-    case 'battle': dy = 0; break;
-  }
-  return { blink, dx: dx + s.pdx, dy: dy + s.pdy, facing };
 }
 
 // pet layer grids per sprite frame and facing (the light always comes from the top-left of the screen, so a mirrored sprite is shaded again)
@@ -349,6 +321,7 @@ function drawButterfly(b: Buf, s: Scene) {
 
 /** Paint the whole home scene. */
 export function drawScene(b: Buf, s: Scene, pet: Pet, biomeOverride?: Biome) {
+  if (b.n !== SCENE_N) { drawScene96(b, s, pet, biomeOverride); return; } // the finer Technicolor painter (src/ui/sceneDraw96.ts)
   const biome = biomeOverride ?? biomeOf(pet);
   drawBackdrop(b, s, biome);
   drawSky(b, s);

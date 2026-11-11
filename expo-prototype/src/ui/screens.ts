@@ -8,11 +8,13 @@ import type { ScoreData } from '../core/minigames/scores';
 import { rankLabel, RANKS } from '../core/minigames/types';
 import type { HiLoState } from '../core/minigames/games/hilo';
 import { paintField, paintHud, STAR5 } from './games/common';
+import { paintField96, paintHud96, panel } from './games/common96';
 import { paintHiLo } from './games/hilo';
 import { GAME_ENTRIES, entryById } from './games/registry';
 import { Layer } from './layers';
 import { biomeOf, type Biome } from './biomes';
-import { Buf, EGG_SPRITE, GLYPHS, GRID, TEXT_GRID, TOMB_SPRITE, epx, textWidth } from './pixel';
+import { Buf, EGG_SPRITE, GLYPHS, GRID, GRID_TECH, TEXT_GRID, TOMB_SPRITE, epx, gridFor, scale3xCached, textWidth, type Look } from './pixel';
+import { LAYOUT96, scaledLayout, type ScreenKey } from './layout96';
 import { initScene, phaseOf, type Phase, type Scene } from './scene';
 import { drawScene } from './sceneDraw';
 
@@ -34,6 +36,8 @@ export interface ScreenCtx {
   dexFamily?: string;
   /** what the player may use; gates the locked Dex families */
   ent?: Entitlements;
+  /** the look decides the LCD grid (gridFor): 'technicolor' paints the 96x96 screen. Omitted = the classic 64 grid (what the golden tests use). */
+  look?: Look;
 }
 /** Feed menu rows: the three foods are named for the pet's family (Mice / Berries / Fish ...). */
 export const feedRows = (family: string) => [...foodLabels(family), 'SNACK', 'CANCEL'];
@@ -44,6 +48,7 @@ const spriteOf = (id: string, blink: boolean): string[] | null => {
 };
 const EGG_HI = epx(EGG_SPRITE);
 const TOMB_HI = epx(TOMB_SPRITE);
+const EGG_96 = scale3xCached(EGG_SPRITE);
 
 function hearts(b: Buf, n: number, full: string[], empty: string[], x: number, y: number, step = 6, layer: number = Layer.INK) {
   for (let i = 0; i < 4; i++) b.rows(i < n ? full : empty, x + i * step, y, 'X', layer);
@@ -60,6 +65,12 @@ export { HILO_ROWS as PLAY_ROWS } from '../core/minigames/games/hilo';
 /** Play menu: the registered games, then HIGH SCORES, then CANCEL; at most MENU_VISIBLE rows show at once. */
 export const MENU_TOP = 11;
 export const MENU_ROW_H = 10;
+/** Technicolor 96 lists start at logic row 12 (= cell 18) so every 10-unit row band is a whole 15 cells; the taps stay in logic units. */
+export const FEED_TOP96 = 12;
+export const MENU_TOP96 = 12;
+/** Top of the feed / play-menu tap rows (logic units) for a look. */
+export const feedTop = (look?: Look) => (look === 'technicolor' ? FEED_TOP96 : FEED_TOP);
+export const menuTop = (look?: Look) => (look === 'technicolor' ? MENU_TOP96 : MENU_TOP);
 export const MENU_VISIBLE = 5;
 export const playMenuRows = (): string[] => [...GAME_ENTRIES.map((e) => e.def.name), 'HIGH SCORES', 'CANCEL'];
 /** First visible row of the Play menu for a selection (the window follows the cursor). */
@@ -70,7 +81,6 @@ const center = (b: Buf, s: string, y: number, scale = 1) => b.text(s, (b.n - tex
 
 // ---- stats ----
 export const lineStr = (s: string) => s.toUpperCase();
-const DETAIL_LINES = 8;
 export function detailLines(p: Pet): string[] {
   return [
     lineStr(p.named ? p.name : 'NO NAME'),
@@ -89,7 +99,7 @@ export function legacyLines(p: Pet): string[] {
   p.legacy.forEach((l, i) => out.push(`#${i + 1} ${l}`));
   return out.map(lineStr);
 }
-const LEGACY_PER_PAGE = 8;
+export const LEGACY_PER_PAGE = 8;
 export const statsPageCount = (p: Pet) => 2 + Math.max(1, Math.ceil(legacyLines(p).length / LEGACY_PER_PAGE));
 
 /** Is this family's Dex open? A pet's own family always is; the rest follow the entitlement. */
@@ -107,7 +117,7 @@ export function dexLines(p: Pet, family: string = p.family): string[] {
   }
   return lines.map(lineStr);
 }
-const DEX_PER_PAGE = 8;
+export const DEX_PER_PAGE = 8;
 export const dexPageCount = (p: Pet, family: string = p.family, ent: Entitlements = NO_ENTITLEMENTS) =>
   dexUnlocked(p, family, ent) ? Math.ceil(dexLines(p, family).length / DEX_PER_PAGE) : 1;
 
@@ -176,7 +186,7 @@ function paintPlayMenu(b: Buf, ctx: ScreenCtx) {
   if (first + MENU_VISIBLE < rows.length) b.rows(['.XXX.', '..X..'], 29, 62);
 }
 
-const CONDITION_TEXT = { fine: '', heavy: 'A BIT HEAVY', hungry: 'TUMMY GRUMBLES', sick: 'FEELING SICK' } as const;
+export const CONDITION_TEXT = { fine: '', heavy: 'A BIT HEAVY', hungry: 'TUMMY GRUMBLES', sick: 'FEELING SICK' } as const;
 
 function paintReady(b: Buf, ctx: ScreenCtx, s: Session) {
   const th = s.params.theme;
@@ -256,12 +266,36 @@ function paintGame(b: Buf, ctx: ScreenCtx, s: Session, entryLayout: 'field' | 't
   } else e.paint(c);
 }
 
+
+/** Technicolor 96x96 mini-game screen: the entry's native painter inside the shared field and HUD (null when the game has no 96 painter yet). */
+function paintGame96(ctx: ScreenCtx, s: Session): Buf | null {
+  const e = entryById(s.def.id);
+  if (!e || !s.game || !e.paint96) return null;
+  const b = new Buf(GRID_TECH);
+  const c = { b, game: s.game, params: s.params, pet: ctx.pet, ms: ctx.ms ?? Date.now() };
+  if (e.layout === 'field') {
+    paintField96(b, ctx.pet, c.ms);
+    e.paint96(c);
+    const h = s.game.hud;
+    paintHud96(b, h.left, h.right, s.game.progress, e.hud96?.(c) ?? {});
+    if (s.phase === 'over') {
+      const label = s.game.overLabel ?? 'TIME UP';
+      const w = textWidth(label, 2) - 2;
+      const x = (b.n - w) >> 1;
+      panel(b, x - 5, 33, w + 10, 21, Layer.CABLE, Layer.DAISY);
+      b.as(Layer.CABLE, () => b.text(label, x, 38, 2));
+    }
+  } else e.paint96(c);
+  return b;
+}
+
 // ---- home ----
 function paintHome(b: Buf, ctx: ScreenCtx, sc: Scene) {
   const { pet: p, tick } = ctx;
   if (p.stage === 'egg') {
     const wob = [0, 0, -2, 0, 0, 0, 2, 0][tick % 8];
-    b.rows(EGG_HI, 16 + wob, 26);
+    if (b.n === GRID) b.rows(EGG_HI, 16 + wob, 26);
+    else b.rows(EGG_96, 24 + b.g(wob), 39);
     return;
   }
   drawScene(b, sc, p);
@@ -299,48 +333,86 @@ export function isTextMode(ctx: ScreenCtx): boolean {
 
 /** What the Technicolor renderer needs to paint behind the scene. */
 export interface SkyInfo { phase: Phase; rain: boolean; dim: boolean; biome: Biome }
-export interface Rendered { buf: Buf; dark: boolean; sky?: SkyInfo }
+export interface Rendered { buf: Buf; dark: boolean; sky?: SkyInfo; /** the look the buffer was painted for (buildFrame refuses to colour it as the other look) */ look?: Look }
+
+/** Which text-mode screen a context shows (key of LAYOUT96). */
+export function textScreenKey(ctx: ScreenCtx): ScreenKey {
+  if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') return 'ghost';
+  if (ctx.mode === 'game') {
+    const sn = ctx.session;
+    return sn?.phase === 'ready' ? 'ready' : sn?.phase === 'result' ? 'result' : 'textgame';
+  }
+  return ctx.mode as ScreenKey;
+}
+
+function paintTextScreen(b: Buf, ctx: ScreenCtx) {
+  const p = ctx.pet;
+  if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') { paintGhost(b, ctx); return; }
+  switch (ctx.mode) {
+    case 'feed': paintFeed(b, ctx); break;
+    case 'play': if (ctx.play) paintHiLo(b, ctx.play); break;
+    case 'playmenu': paintPlayMenu(b, ctx); break;
+    case 'scores': paintScores(b, ctx); break;
+    case 'game': {
+      const sn = ctx.session;
+      if (!sn) break;
+      if (sn.phase === 'ready') paintReady(b, ctx, sn);
+      else if (sn.phase === 'result') paintResult(b, ctx, sn);
+      else paintGame(b, ctx, sn, 'text');
+      break;
+    }
+    case 'stats': paintStats(b, ctx); break;
+    case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick, ctx.dexFamily ?? p.family, ctx.ent ?? NO_ENTITLEMENTS); break;
+  }
+}
 
 export function renderScreen(ctx: ScreenCtx): Rendered {
   const { pet: p } = ctx;
+  const look = ctx.look;
+  const tech = look === 'technicolor';
+  const N = gridFor(look);
   let dark = false;
   if (ctx.evo && ctx.evo.until > Date.now()) {
-    const b = new Buf(GRID);
+    const b = new Buf(N);
     const showNew = ctx.tick % 2 === 1;
-    const sprite = spriteOf(showNew ? ctx.evo.to : ctx.evo.from, false);
-    if (sprite) b.rows(sprite, 16, 16);
-    if (!showNew) b.invert(0, 0, GRID, GRID);
-    return { buf: b, dark };
+    const id = showNew ? ctx.evo.to : ctx.evo.from;
+    if (tech) {
+      const own = LAYOUT96.evo?.(ctx);
+      if (own) return { buf: own, dark, look };
+      const sp = SPECIES_BY_ID[id];
+      if (sp) b.rows(scale3xCached(sp.frames[0]), 24, 24);
+    } else {
+      const sprite = spriteOf(id, false);
+      if (sprite) b.rows(sprite, 16, 16);
+    }
+    if (!showNew) b.invert(0, 0, N, N);
+    return { buf: b, dark, look };
   }
   if (isTextMode(ctx)) {
-    const b = new Buf(TEXT_GRID);
-    if (ctx.pet.stage === 'ghost' && ctx.mode === 'home') { paintGhost(b, ctx); return { buf: b, dark }; }
-    switch (ctx.mode) {
-      case 'feed': paintFeed(b, ctx); break;
-      case 'play': if (ctx.play) paintHiLo(b, ctx.play); break;
-      case 'playmenu': paintPlayMenu(b, ctx); break;
-      case 'scores': paintScores(b, ctx); break;
-      case 'game': {
-        const sn = ctx.session;
-        if (!sn) break;
-        if (sn.phase === 'ready') paintReady(b, ctx, sn);
-        else if (sn.phase === 'result') paintResult(b, ctx, sn);
-        else paintGame(b, ctx, sn, 'text');
-        break;
-      }
-      case 'stats': paintStats(b, ctx); break;
-      case 'dex': paintDex(b, p, ctx.dexPage, ctx.tick, ctx.dexFamily ?? p.family, ctx.ent ?? NO_ENTITLEMENTS); break;
+    const key = textScreenKey(ctx);
+    if (tech) {
+      if (key === 'textgame' && ctx.session) { const nat = paintGame96(ctx, ctx.session); if (nat) return { buf: nat, dark, look }; }
+      const own = LAYOUT96[key]?.(ctx);
+      return { buf: own ?? scaledLayout((t) => paintTextScreen(t, ctx)), dark, look };
     }
-    return { buf: b, dark };
+    const b = new Buf(TEXT_GRID);
+    paintTextScreen(b, ctx);
+    return { buf: b, dark, look };
   }
   if (ctx.mode === 'game' && ctx.session) {
+    const sky = { phase: 'day' as Phase, rain: false, dim: false, biome: biomeOf(p) };
+    // mini-game fields are painted at 64 and enlarged for Technicolor in phase 1 (the games agent redesigns them at 96)
+    if (tech) {
+      const nat = paintGame96(ctx, ctx.session);
+      return { buf: nat ?? scaledLayout((t) => paintGame(t, ctx, ctx.session!, 'field')), dark, sky, look };
+    }
     const b = new Buf(GRID);
     paintGame(b, ctx, ctx.session, 'field');
-    return { buf: b, dark, sky: { phase: 'day', rain: false, dim: false, biome: biomeOf(p) } };
+    return { buf: b, dark, sky, look };
   }
-  const b = new Buf(GRID);
+  const b = new Buf(N);
   const sc = ctx.scene ?? initScene(p, Date.now());
   paintHome(b, ctx, sc);
-  if (p.stage === 'egg') return { buf: b, dark };
-  return { buf: b, dark, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim, biome: biomeOf(p) } };
+  if (p.stage === 'egg') return { buf: b, dark, look };
+  return { buf: b, dark, look, sky: { phase: phaseOf(sc.hour), rain: sc.weather === 'rain', dim: sc.dim, biome: biomeOf(p) } };
 }

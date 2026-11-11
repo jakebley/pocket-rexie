@@ -1,6 +1,20 @@
 // Pixel art tables + a tiny square bitmap buffer (64x64 scene and text mode) used by the LCD.
 import { DIM_FLAG, LAYER_MASK, Layer } from './layers';
 
+/** The two looks (same union as palette.ts ColorMode; declared here so pixel.ts has no runtime dependency on the palette). */
+export type Look = 'traditional' | 'technicolor';
+/** LCD grid per look: Traditional keeps the classic 64x64, Technicolor has the finer 96x96 (docs/RESOLUTION.md). */
+export const GRID_TRAD = 64;
+export const GRID_TECH = 96;
+export type GridN = typeof GRID_TRAD | typeof GRID_TECH;
+export const gridFor = (look: Look | undefined | null): GridN => (look === 'technicolor' ? GRID_TECH : GRID_TRAD);
+/** Simulation units ("logic units"): the pet's life always runs in 64-space; the 96 painters convert with this. */
+export const LOGIC_N = 64;
+/** logic units to grid cells for a grid of n (identity at 64, x1.5 at 96) */
+/** A pointer offset in points inside an LCD of `size` points to a logic cell 0..63 (taps work in logic units whatever the grid). */
+export const toLogic = (v: number, size: number) => Math.max(0, Math.min(LOGIC_N - 1, Math.floor(v / (size / LOGIC_N))));
+export const toGrid = (v: number, n: number) => Math.round((v * n) / LOGIC_N);
+
 /** Home-scene framebuffer: 64x64 (species sprites are 32x32 hiFrames, drawn 1:1). */
 export const GRID = 64;
 /** Text-mode framebuffer: 64x64 so a 3x5 line holds 16 characters. */
@@ -55,6 +69,42 @@ export function epx(rows: string[]): string[] {
     out.push(a, b);
   }
   return out;
+}
+
+/** Scale3x (AdvMAME3x) enlargement of an ink bitmap: every pixel becomes 3x3, with diagonal edges smoothed and corners kept crisp. */
+export function scale3x(rows: string[]): string[] {
+  const h = rows.length, w = rows[0].length;
+  const at = (x: number, y: number) => (x < 0 || y < 0 || x >= w || y >= h ? '.' : rows[y][x]);
+  const out: string[] = [];
+  for (let y = 0; y < h; y++) {
+    const r = ['', '', ''];
+    for (let x = 0; x < w; x++) {
+      const A = at(x - 1, y - 1), B = at(x, y - 1), C = at(x + 1, y - 1);
+      const D = at(x - 1, y), E = at(x, y), F = at(x + 1, y);
+      const G = at(x - 1, y + 1), H = at(x, y + 1), I = at(x + 1, y + 1);
+      let e0 = E, e1 = E, e2 = E, e3 = E, e5 = E, e6 = E, e7 = E, e8 = E;
+      if (B !== H && D !== F) {
+        e0 = D === B ? D : E;
+        e1 = (D === B && E !== C) || (B === F && E !== A) ? B : E;
+        e2 = B === F ? F : E;
+        e3 = (D === B && E !== G) || (D === H && E !== A) ? D : E;
+        e5 = (B === F && E !== I) || (H === F && E !== C) ? F : E;
+        e6 = D === H ? D : E;
+        e7 = (D === H && E !== I) || (H === F && E !== G) ? H : E;
+        e8 = H === F ? F : E;
+      }
+      r[0] += e0 + e1 + e2; r[1] += e3 + E + e5; r[2] += e6 + e7 + e8;
+    }
+    out.push(r[0], r[1], r[2]);
+  }
+  return out;
+}
+const s3Cache = new WeakMap<string[], string[]>();
+/** scale3x with a cache keyed on the (immutable) source rows. */
+export function scale3xCached(rows: string[]): string[] {
+  let o = s3Cache.get(rows);
+  if (!o) { o = scale3x(rows); s3Cache.set(rows, o); }
+  return o;
 }
 
 export const EGG_SPRITE = [
@@ -156,7 +206,29 @@ export class Buf {
   px: Uint8Array;
   /** layer written when a draw call gives none (INK unless inside `as`) */
   cur: number = Layer.INK;
-  constructor(n = GRID) { this.n = n; this.px = new Uint8Array(n * n); }
+  constructor(n: number = GRID) {
+    if (n !== GRID_TRAD && n !== GRID_TECH) throw new Error(`Buf: unsupported grid ${n} (use gridFor(look))`);
+    this.n = n; this.px = new Uint8Array(n * n);
+  }
+  /** A buffer sized for a look. */
+  static forLook(look: Look | undefined | null) { return new Buf(gridFor(look)); }
+  /** Logic units (64-space) to this buffer's cells. */
+  g(v: number) { return toGrid(v, this.n); }
+  /** Copy another buffer of the SAME size over this one (lit pixels only); mixing sizes is an error. */
+  blit(src: Buf) {
+    if (src.n !== this.n) throw new Error(`Buf.blit: size mismatch ${src.n} vs ${this.n}`);
+    for (let i = 0; i < src.px.length; i++) if (src.px[i]) this.px[i] = src.px[i];
+  }
+  /** Nearest-neighbour 3/2 upscale of a 64 buffer into a new 96 buffer (the simple scaled layout; see layout96.ts). */
+  upscale96(): Buf {
+    if (this.n !== GRID_TRAD) throw new Error('upscale96 needs a 64 buffer');
+    const o = new Buf(GRID_TECH);
+    for (let y = 0; y < GRID_TECH; y++) {
+      const sy = ((y * 2) / 3) | 0;
+      for (let x = 0; x < GRID_TECH; x++) o.px[y * GRID_TECH + x] = this.px[sy * GRID_TRAD + (((x * 2) / 3) | 0)];
+    }
+    return o;
+  }
   /** Run `fn` with `layer` as the default layer. */
   as(layer: number, fn: () => void) { const prev = this.cur; this.cur = layer; try { fn(); } finally { this.cur = prev; } }
   /** v: 0 clears, any other value is a layer code (default: the current layer). */
