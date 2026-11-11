@@ -32,18 +32,27 @@ enum EntitlementStore {
     /// only the free family is unlocked (so the locked tiles can be seen).
     static let chooserKey = "eggChooser"
 
-    static func previewEnabled(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled()) -> Bool {
-        testerTools && (defaults ?? PetStore.defaults).bool(forKey: previewKey)
+    /// `defaultOn` is the value used until the tester flips the switch: on in TestFlight builds, so
+    /// public testers see every family without digging through Settings, and off everywhere else
+    /// (Debug builds and the UI tests keep the single-family flow).
+    static func previewEnabled(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled(),
+                               defaultOn: Bool = TesterTools.isTestFlight()) -> Bool {
+        guard testerTools else { return false }
+        let store: UserDefaults = defaults ?? PetStore.defaults
+        if let explicit: Bool = store.object(forKey: previewKey) as? Bool { return explicit }
+        return defaultOn
     }
 
     /// The Choose your egg screen is shown when Plus is previewed or the chooser switch is on.
-    static func chooserEnabled(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled()) -> Bool {
+    static func chooserEnabled(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled(),
+                               defaultOn: Bool = TesterTools.isTestFlight()) -> Bool {
         guard testerTools else { return false }
-        let store = defaults ?? PetStore.defaults
-        return store.bool(forKey: previewKey) || store.bool(forKey: chooserKey)
+        let store: UserDefaults = defaults ?? PetStore.defaults
+        return previewEnabled(defaults: store, testerTools: testerTools, defaultOn: defaultOn) || store.bool(forKey: chooserKey)
     }
 
-    static func current(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled()) -> Entitlements {
-        previewEnabled(defaults: defaults, testerTools: testerTools) ? PreviewEntitlements() : FreeEntitlements()
+    static func current(defaults: UserDefaults? = nil, testerTools: Bool = TesterTools.isEnabled(),
+                        defaultOn: Bool = TesterTools.isTestFlight()) -> Entitlements {
+        previewEnabled(defaults: defaults, testerTools: testerTools, defaultOn: defaultOn) ? PreviewEntitlements() : FreeEntitlements()
     }
 }

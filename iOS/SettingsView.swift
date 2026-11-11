@@ -9,7 +9,7 @@ struct SettingsView: View {
     @AppStorage(Beeper.enabledKey) private var soundOn = true
     @AppStorage(Notifier.enabledKey) private var notificationsOn = true
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var storedMode: ColorMode = .traditional
-    @AppStorage(EntitlementStore.previewKey, store: PetStore.defaults) private var plusPreview = false
+    @AppStorage(EntitlementStore.previewKey, store: PetStore.defaults) private var plusPreview: Bool = TesterTools.isTestFlight()
     @AppStorage(EntitlementStore.chooserKey, store: PetStore.defaults) private var eggChooser = false
     @State private var confirmFamily: Family?
     private let testerTools = TesterTools.isEnabled()

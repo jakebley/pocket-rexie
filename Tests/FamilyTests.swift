@@ -135,6 +135,25 @@ final class FamilyTests: XCTestCase {
         XCTAssertFalse(TesterTools.isEnabled(debug: false, receiptURL: nil))
     }
 
+    func testTestFlightDefaultsPlusPreviewOnUntilSwitched() {
+        let suite = "com.pocketrexie.testflightdefault"
+        let defaults: UserDefaults = UserDefaults(suiteName: suite) ?? .standard
+        defaults.removePersistentDomain(forName: suite)
+        // fresh install in TestFlight: every family can be tried without opening Settings
+        XCTAssertTrue(EntitlementStore.previewEnabled(defaults: defaults, testerTools: true, defaultOn: true))
+        XCTAssertTrue(EntitlementStore.chooserEnabled(defaults: defaults, testerTools: true, defaultOn: true))
+        XCTAssertTrue(EntitlementStore.current(defaults: defaults, testerTools: true, defaultOn: true).canHatch(family: "fox"))
+        // the same fresh install in a Debug build or an App Store build stays free
+        XCTAssertFalse(EntitlementStore.previewEnabled(defaults: defaults, testerTools: true, defaultOn: false))
+        XCTAssertFalse(EntitlementStore.previewEnabled(defaults: defaults, testerTools: false, defaultOn: true))
+        // an explicit switch always wins over the default
+        defaults.set(false, forKey: EntitlementStore.previewKey)
+        XCTAssertFalse(EntitlementStore.previewEnabled(defaults: defaults, testerTools: true, defaultOn: true))
+        defaults.set(true, forKey: EntitlementStore.previewKey)
+        XCTAssertTrue(EntitlementStore.previewEnabled(defaults: defaults, testerTools: true, defaultOn: false))
+        defaults.removePersistentDomain(forName: suite)
+    }
+
     func testSwitchesIgnoredWhenToolsOff() {
         let suite = "com.pocketrexie.testergating"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
