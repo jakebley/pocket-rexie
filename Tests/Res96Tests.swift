@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 
 /// The finer Technicolor screen, stage 1 (docs/RESOLUTION.md): grid per look, 48x48 Scale3x pets with re-tuned shading and
 /// eyes (hashes taken from the Expo output), the 96 home scene, and Traditional staying exactly 64x64.
