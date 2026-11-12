@@ -56,9 +56,16 @@ final class WatchInputTests: XCTestCase {
     }
 
     func testTapPerformsSelectedActionAndHoldGoesBack() {
-        var pet = Pet(now: Date(timeIntervalSince1970: 1_772_632_800).addingTimeInterval(-72_000))
+        let day = Date(timeIntervalSince1970: 1_772_632_800)
+        let saved = AppClock.now
+        AppClock.now = { day }
+        defer { AppClock.now = saved }
+        var pet = Pet(now: day.addingTimeInterval(-72_000))
         pet.stage = .child
         pet.species = "rawr"
+        pet.lastTick = day
+        pet.hunger = 3
+        pet.happy = 3
         let model = GameModel(pet: pet, persist: { _ in })
         model.selected = .feed
         model.confirm()                       // the tap
