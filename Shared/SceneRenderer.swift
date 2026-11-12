@@ -332,12 +332,15 @@ struct SceneRaster: Equatable {
         // kept off the outline and each other
         let spots: [(Double, Double)] = [(0.64, 0.30), (0.34, 0.50), (0.62, 0.62), (0.44, 0.80)]
         let spot = SceneLayer.tool.rawValue
+        // at 48x48 (Technicolor, 96 grid) the dashes are 3x2 on the Scale3x cell grid
+        let wideEgg = h > 32
+        let dw = wideEgg ? 3 : 2, dh = wideEgg ? 2 : 1
         for (fx, fy) in spots {
-            let sx = (x0 + Int(Double(x1 - x0) * fx)) & ~1
-            let sy = (y0 + Int(Double(y1 - y0) * fy)) & ~1
+            let sx = wideEgg ? (x0 + Int(Double(x1 - x0) * fx)) / 3 * 3 : (x0 + Int(Double(x1 - x0) * fx)) & ~1
+            let sy = wideEgg ? (y0 + Int(Double(y1 - y0) * fy)) / 3 * 3 : (y0 + Int(Double(y1 - y0) * fy)) & ~1
             var ok = true
-            for dy in -1...1 {
-                for dx in -1...2 {
+            for dy in -1...dh {
+                for dx in -1...dw {
                     let i = (sy + dy) * w + sx + dx
                     guard sx + dx >= 0, sx + dx < w, sy + dy >= 0, sy + dy < h, solid[i],
                           codes[i] != SceneLayer.outline.rawValue, codes[i] != SceneLayer.rim.rawValue,
@@ -347,17 +350,17 @@ struct SceneRaster: Equatable {
                 if !ok { break }
             }
             if ok {
-                for dx in 0...1 { codes[sy * w + sx + dx] = spot }
+                for dy in 0..<dh { for dx in 0..<dw { codes[(sy + dy) * w + sx + dx] = spot } }
             }
         }
         for cy in 0..<h {
             let py = y + cy
-            if py < 0 || py >= SceneRaster.side { continue }
+            if py < 0 || py >= n { continue }
             for cx in 0..<w {
                 let code = codes[cy * w + cx]
                 let px = x + cx
-                if code == 0 || px < 0 || px >= SceneRaster.side { continue }
-                cells[py * SceneRaster.side + px] = code
+                if code == 0 || px < 0 || px >= n { continue }
+                cells[py * n + px] = code
             }
         }
     }

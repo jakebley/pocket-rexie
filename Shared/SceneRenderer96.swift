@@ -160,7 +160,11 @@ extension SceneRenderer {
         r.clearAroundPet(big.rows, x: big.x, y: big.top, mirror: big.mirror)
 
         if pet.stage == .ghost || pet.stage == .egg {
-            r.drawPet(big.rows, x: big.x, y: big.top, mirror: big.mirror, family: "")
+            if pet.stage == .egg {
+                r.drawEgg(big.rows, x: big.x, y: big.top)   // the dedicated egg: solid cream shell, no PetShading, readable at 48x48
+            } else {
+                r.drawPet(big.rows, x: big.x, y: big.top, mirror: big.mirror, family: "")
+            }
             return r
         }
 
