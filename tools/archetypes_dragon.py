@@ -121,13 +121,33 @@ SIZES = {1: 0.62, 2: 0.7, 3: 0.86, 4: 1.0, 5: 1.0}
 
 def TT(k, x, y): return (W - 1) / 2 * (1 - k) + x * k, 15 - (15 - y) * k
 
+def eye_spot(g, ex, ey):
+    """the pixel to punch as the eye: the intended one when it is solid ink with solid ink on all four sides (an enclosed
+    hole), otherwise the nearest such pixel, preferring the head side; if the head is too thin, the intended pixel is
+    fattened so the hole is enclosed"""
+    rows = g.rows(); n = len(rows)
+    def solid(x, y): return 0 <= x < n and 0 <= y < n and rows[y][x] == 'X'
+    def ok(x, y): return solid(x, y) and solid(x - 1, y) and solid(x + 1, y) and solid(x, y - 1) and solid(x, y + 1)
+    tx, ty = int(round(ex)), int(round(ey))
+    if ok(tx, ty) or not (0 <= tx < n and 0 <= ty < n): return tx, ty
+    best = None
+    for y in range(n):
+        for x in range(n):
+            if ok(x, y):
+                d = (x - tx) ** 2 + (y - ty) ** 2
+                if d <= 9 and (best is None or d < best[0]): best = (d, x, y)
+    if best: return best[1], best[2]
+    for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)): g._raw(tx + dx, ty + dy, 1)
+    return tx, ty
+
 def build(fn, hd, eye, body, **kw):
     by = {}
     for stage, k in SIZES.items():
         g = fn(k=k, **kw)
         hx, hy = TT(k, hd[0], hd[1]); ex, ey = TT(k, eye[0], eye[1])
+        ex, ey = eye_spot(g, ex, ey)
         g._raw(ex, ey, 0)
-        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(round(ex), round(ey)),
+        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(ex, ey),
                          body=(TT(k, body[0], 0)[0], TT(k, body[1], 0)[0]))
     return dict(by_stage=by)
 
@@ -152,8 +172,9 @@ def build2(fn, hd, eye, body, **kw):
         g = fn(k=k, **kw)
         hx, hy = TT(k, hd[0], hd[1]); ex, ey = TT(k, eye[0], eye[1])
         seal_holes(g)
+        ex, ey = eye_spot(g, ex, ey)
         g._raw(ex, ey, 0)
-        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(round(ex), round(ey)),
+        by[stage] = dict(rows=g.rows(), head=(hx, hy, max(1.6, hd[2] * k)), eye=(ex, ey),
                          body=(TT(k, body[0], 0)[0], TT(k, body[1], 0)[0]))
     return dict(by_stage=by)
 
