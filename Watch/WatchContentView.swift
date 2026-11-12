@@ -63,7 +63,7 @@ struct WatchContentView: View {
     private let tileGap: CGFloat = 2
     private let tileHeight: CGFloat = 32
     /// Two lines of 2pt text.
-    private let captionHeight: CGFloat = 21
+    private let captionHeight: CGFloat = 23
 
     /// The LCD face fills the screen (safe areas are handled here, by hand): a band for the clock, the scene as large as fits, a centred caption, and a row of labelled tiles.
     private var content: some View {
