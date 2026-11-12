@@ -9,30 +9,42 @@ import Foundation
 
 extension SceneRaster {
     /// Stamps a bitmap in one layer. `halo` first clears a 1px ring around every lit cell so the glyph reads over anything.
+    /// Rows are walked as UTF-8 bytes without copying (this runs dozens of times per frame).
     mutating func stamp(_ rows: [String], x: Int, y: Int, halo: Bool = false, layer: SceneLayer = .ink, mirror: Bool = false) {
         let mark = UInt8(ascii: "X")
         let code = layer.rawValue
-        for (j, row) in rows.enumerated() {
-            let bytes = Array(row.utf8)
-            let w = bytes.count
-            for i in 0..<w where bytes[i] == mark {
-                let px = x + (mirror ? w - 1 - i : i)
-                let py = y + j
-                if halo {
-                    for dy in -1...1 {
-                        for dx in -1...1 { set(px + dx, py + dy, .off) }
+        let size = n
+        if halo {
+            for (j, row) in rows.enumerated() {
+                let w = row.utf8.count
+                var i = 0
+                for ch in row.utf8 {
+                    if ch == mark {
+                        let px = x + (mirror ? w - 1 - i : i)
+                        let py = y + j
+                        let y0 = max(0, py - 1), y1 = min(size - 1, py + 1)
+                        let x0 = max(0, px - 1), x1 = min(size - 1, px + 1)
+                        if y0 <= y1 && x0 <= x1 {
+                            for yy in y0...y1 {
+                                for xx in x0...x1 { cells[yy * size + xx] = 0 }
+                            }
+                        }
                     }
+                    i += 1
                 }
             }
         }
         for (j, row) in rows.enumerated() {
-            let bytes = Array(row.utf8)
-            let w = bytes.count
             let py = y + j
-            if py < 0 || py >= n { continue }
-            for i in 0..<w where bytes[i] == mark {
-                let px = x + (mirror ? w - 1 - i : i)
-                if px >= 0 && px < n { cells[py * n + px] = code }
+            if py < 0 || py >= size { continue }
+            let w = row.utf8.count
+            var i = 0
+            for ch in row.utf8 {
+                if ch == mark {
+                    let px = x + (mirror ? w - 1 - i : i)
+                    if px >= 0 && px < size { cells[py * size + px] = code }
+                }
+                i += 1
             }
         }
     }
