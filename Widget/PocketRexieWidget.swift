@@ -140,35 +140,16 @@ struct PocketRexieWidgetView: View {
             .retroGlass(palette)
     }
 
-    /// Hunger hearts on the left, fun smiles on the right.
-    private func meterRow(pixel: CGFloat, width: CGFloat) -> some View {
-        HStack(spacing: 0) {
-            RetroMeter(kind: .heart7, filled: pet.hunger, pixel: pixel)
-            Spacer(minLength: pixel * 2)
-            RetroMeter(kind: .smile5, filled: pet.happy, pixel: pixel)
-        }
-        .frame(width: width, height: 7 * pixel)
-    }
-
     #if !os(watchOS)
     private func inner(_ size: CGSize) -> CGSize {
         CGSize(width: size.width - RetroMetrics.contentPad * 2, height: size.height - RetroMetrics.contentPad * 2)
     }
 
+    /// Just the landscape: its in-scene HUD (hearts, smiles, alerts) is the one status display.
     private func smallView(_ size: CGSize) -> some View {
         let box = inner(size)
-        let rowH: CGFloat = 14
-        let side = min(box.width, box.height - rowH - 5)
-        return VStack(spacing: 5) {
-            scene(side)
-            if living {
-                meterRow(pixel: 2, width: box.width)
-            } else {
-                RetroCaption(text: restLabel, width: box.width, maxPixel: 2, maxLines: 1, centered: true)
-                    .frame(height: rowH)
-            }
-        }
-        .frame(width: size.width, height: size.height)
+        return scene(min(box.width, box.height))
+            .frame(width: size.width, height: size.height)
     }
 
     private func mediumView(_ size: CGSize) -> some View {
@@ -181,7 +162,6 @@ struct PocketRexieWidgetView: View {
             VStack(alignment: .leading, spacing: 5) {
                 RetroCaption(text: pet.name, width: colW, maxPixel: 2, maxLines: 1)
                 RetroCaption(text: pet.statusLine, width: colW, maxPixel: 2, maxLines: 2)
-                if living { meterRow(pixel: 2, width: colW) }
                 Spacer(minLength: 0)
                 if living { buttons(width: colW, tileH: 38, glyphPixel: 2, labelMax: 2) }
             }
@@ -194,9 +174,8 @@ struct PocketRexieWidgetView: View {
         let box = inner(size)
         let spacing: CGFloat = 7
         let headerH: CGFloat = 15
-        let meterH: CGFloat = 21
         let tileH: CGFloat = 52
-        let fixed = headerH + (living ? meterH + tileH + spacing * 2 : 0) + spacing
+        let fixed = headerH + (living ? tileH + spacing : 0) + spacing
         let side = min(box.width, box.height - fixed)
         return VStack(spacing: spacing) {
             RetroCaption(text: living ? pet.statusLine : restLabel, width: box.width,
@@ -204,7 +183,6 @@ struct PocketRexieWidgetView: View {
                 .frame(height: headerH)
             scene(side)
             if living {
-                meterRow(pixel: 3, width: box.width)
                 buttons(width: box.width, tileH: tileH, glyphPixel: 3, labelMax: 2)
             }
         }
