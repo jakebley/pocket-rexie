@@ -366,23 +366,24 @@ final class UIRenderTests: XCTestCase {
     // MARK: watch
 
     func testRenderWatch() {
-        let sizes = [CGSize(width: 184, height: 224), CGSize(width: 162, height: 197)]
+        // 41, 45 and 49 mm (points), plus the smallest still supported (40 mm).
+        let sizes = [CGSize(width: 176, height: 215), CGSize(width: 198, height: 242),
+                     CGSize(width: 205, height: 251), CGSize(width: 162, height: 197)]
         for mode in ColorMode.allCases {
           // Technicolor: one size is enough to judge the colors.
-          for size in sizes where mode == .traditional || size.width == 184 {
-            for dark in [false, true] {
-                for sc in scenarios() where !sc.name.contains("-b") {
-                    let model = GameModel(pet: sc.pet, persist: { _ in })
-                    sc.setup(model)
-                    let view = ZStack(alignment: .top) {
-                        Color.black
-                        WatchContentView(model: model, palette: LCDStyle.palette(for: dark ? .dark : .light, mode: mode))
-                    }
-                    .environment(\.colorScheme, .dark)
-                    .environment(\.sceneDate, sc.clock)
-                    .environment(\.displayScale, 2)
-                    write(view, to: "\(folder("watch", mode))/\(Int(size.width))x\(Int(size.height))/\(dark ? "dark" : "light")/\(sc.name)", size: size)
+          for size in sizes where mode == .traditional || size.width == 198 {
+            // The watch UI is always dark (Always-On included).
+            for sc in scenarios() where !sc.name.contains("-b") {
+                let model = GameModel(pet: sc.pet, persist: { _ in })
+                sc.setup(model)
+                let view = ZStack(alignment: .top) {
+                    Color.black
+                    WatchContentView(model: model, palette: LCDStyle.palette(for: .dark, mode: mode))
                 }
+                .environment(\.colorScheme, .dark)
+                .environment(\.sceneDate, sc.clock)
+                .environment(\.displayScale, 2)
+                write(view, to: "\(folder("watch", mode))/\(Int(size.width))x\(Int(size.height))/dark/\(sc.name)", size: size)
             }
           }
         }
