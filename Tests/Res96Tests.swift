@@ -273,11 +273,16 @@ final class Res96Tests: XCTestCase {
         let sp = adults()[0]
         let rainy = render(makePet(sp, seed: wet), look: .technicolor)
         XCTAssertEqual(rainy.weather, .rain)
-        XCTAssertNil(bbox(rainy) { $0 == SceneLayer.sun.rawValue }, "no sun while it rains")
+        // (flower centres use the sun layer, so look at the sky rows only)
+        var skySun = 0
+        for i in 0..<(80 * 96) where rainy.cells[i] & 0x7f == SceneLayer.sun.rawValue { skySun += 1 }
+        XCTAssertEqual(skySun, 0, "no sun while it rains")
         XCTAssertNotNil(bbox(rainy) { $0 == SceneLayer.rain.rawValue })
         XCTAssertNotNil(bbox(rainy) { $0 == SceneLayer.cloud.rawValue })
         let clear = render(makePet(sp, seed: dry), look: .technicolor)
-        XCTAssertNotNil(bbox(clear) { $0 == SceneLayer.sun.rawValue })
+        var clearSun = 0
+        for i in 0..<(80 * 96) where clear.cells[i] & 0x7f == SceneLayer.sun.rawValue { clearSun += 1 }
+        XCTAssertGreaterThan(clearSun, 50, "the sun is out on a clear day")
         XCTAssertNil(bbox(clear) { $0 == SceneLayer.rain.rawValue })
     }
 

@@ -185,7 +185,7 @@ enum PetShading {
         let st = style(family: family)
         // 32x32 sprites (Scale2x, Traditional and the 64 grid) or 48x48 ones (Scale3x of the 16x16 art, Technicolor at 96):
         // every pixel-unit constant is expressed for 32 and scaled by k (1 or 1.5), exactly like shading.ts.
-        let k = Double(h) / 32.0
+        let k = h > 32 ? Double(h) / 32.0 : 1.0   // anything up to 32 rows (tests use tiny sprites) shades with the original constants
         let k2 = k * k
         let wide = k > 1
 
