@@ -54,10 +54,11 @@ final class ColorTests: XCTestCase {
         XCTAssertEqual(SceneLayer.leafBig.rawValue, 86)
         XCTAssertEqual(SceneLayer.starfield.rawValue, 89)
         XCTAssertEqual(SceneLayer.hull.rawValue, 94)
-        XCTAssertEqual(SceneLayer.maxCode, 94)
-        XCTAssertEqual(ScenePalette.tableSize, 95)
-        XCTAssertEqual(SceneLayer.allCases.count, 95)
-        XCTAssertEqual(SceneLayer.allCases.map { Int($0.rawValue) }.sorted(), Array(0...94))
+        XCTAssertEqual(SceneLayer.eggShade.rawValue, 97)
+        XCTAssertEqual(SceneLayer.maxCode, 97)
+        XCTAssertEqual(ScenePalette.tableSize, 98)
+        XCTAssertEqual(SceneLayer.allCases.count, 98)
+        XCTAssertEqual(SceneLayer.allCases.map { Int($0.rawValue) }.sorted(), Array(0...97))
     }
 
     func testPetLayerRule() {

@@ -69,7 +69,7 @@ H_STD = _P("""
 ..X..X..
 .XX..XX.
 .XXXXXX.
-.XXXeXX.
+.XXeXXfX
 .XXXXXXX
 ..XXXXX.
 """)
@@ -77,7 +77,7 @@ H_KIT = _P("""
 .X..X...
 .XX.XX..
 .XXXXX..
-.XXeXXX.
+.XeXXfX.
 .XXXXXXX
 ..XXXX..
 """)
@@ -85,7 +85,7 @@ H_DOWN = _P("""
 .X..X...
 .XX.XX..
 .XXXXX..
-.XXeXXX.
+.XeXXfX.
 ..XXXXXX
 ....XXX.
 """)
@@ -94,7 +94,7 @@ H_FEN = _P("""
 .XX..XX.
 .XX..XX.
 .XXXXXX.
-.XXXeXX.
+.XXeXXfX
 .XXXXXXX
 ..XXXXX.
 """)
@@ -103,7 +103,7 @@ H_FEN_TORN = _P("""
 .XX...XX
 .XX...XX
 .XXXXXXX
-.XXXeXXX
+.XXeXXfX
 .XXXXXXX
 ..XXXXX.
 """)
@@ -111,7 +111,7 @@ H_ROUND = _P("""
 .X..X...
 .XXXXX..
 XXXXXXX.
-XXXeXXXX
+XXeXXfXX
 XXXXXXX.
 .XXXXX..
 """)
@@ -119,7 +119,7 @@ H_ROYAL = _P("""
 ..X..X..
 ..XX.XX.
 .XXXXXX.
-.XXXeXX.
+.XXeXXfX
 .XXXXXXX
 ..XXXXX.
 """)
@@ -131,16 +131,18 @@ def _canvas(torso, top, stamps, carve=()):
     for j, r in enumerate(torso):
         for i, c in enumerate(r):
             if c == 'X': g[top + j][i] = 'X'
-    eye = None
+    eye = eye2 = None
     for part, x, y in stamps:
         for j, r in enumerate(part):
             for i, c in enumerate(r):
                 X, Y = x + i, y + j
                 if c == 'e': g[Y][X] = '.'; eye = (X, Y)
+                elif c == 'f': g[Y][X] = '.'; eye2 = (X, Y)
                 elif c == 'X' and 0 <= X < W and 0 <= Y < W: g[Y][X] = 'X'
     for x, y in carve: g[y][x] = '.'
     if eye: g[eye[1]][eye[0]] = '.'
-    return [''.join(r) for r in g], eye
+    if eye2: g[eye2[1]][eye2[0]] = '.'
+    return [''.join(r) for r in g], eye, eye2
 
 
 # ---- tails ---------------------------------------------------------------------------------------------------------------
@@ -183,9 +185,9 @@ X.XX
 
 # ================================ stage 1: kits ================================================================================
 _s('dewkit', 9, """
-.X..............
-XX......XXXXX...
-XXX..XXXXXXXX...
+XX..............
+XXX.....XXXXX...
+XXXX.XXXXXXXX...
 .XXXXXXXXXXXX...
 ..XXXXXXXXXX....
 ...X.X..X.X.....
@@ -210,8 +212,8 @@ _SZ = {  # stage: head y, head part, body top, body spans (x0, x1) per row, leg 
 }
 
 
-def _fill_holes(g, eye):
-    """fill every enclosed gap except the eye so the eye is the only hole"""
+def _fill_holes(g, *eyes):
+    """fill every enclosed gap except the eyes (the near eye and the far-side eye) so they are the only holes"""
     seen = set(); st = [(x, y) for x in range(W) for y in (0, W - 1) if g[y][x] == '.'] + [(x, y) for y in range(W) for x in (0, W - 1) if g[y][x] == '.']
     seen.update(st)
     while st:
@@ -221,7 +223,7 @@ def _fill_holes(g, eye):
             if 0 <= u < W and 0 <= v < W and g[v][u] == '.' and (u, v) not in seen: seen.add((u, v)); st.append((u, v))
     for y in range(W):
         for x in range(W):
-            if g[y][x] == '.' and (x, y) not in seen and (x, y) != eye: g[y][x] = 'X'
+            if g[y][x] == '.' and (x, y) not in seen and (x, y) not in eyes: g[y][x] = 'X'
 
 
 def _plume(g, bx, by, ang, L, w, peak=0.4, hook=False):
@@ -280,12 +282,13 @@ def _std(name, stage, tail='up', head='std', fat=0, dy=0, spikes=False, rag=Fals
     hp = {'std': H_STD if stage >= 4 else H_KIT, 'down': H_DOWN, 'torn': H_FEN_TORN}[head]
     hyy = z['hy'] + dy + (2 if head == 'down' else 0)
     fix = [r for r in range(len(hp))]
-    eye = None
+    eye = eye2 = None
     for j, r in enumerate(hp):
         for i, c in enumerate(r):
             X, Y = 8 + i, hyy + j
             if not (0 <= X < W and 0 <= Y < W): continue
             if c == 'e': eye = (X, Y)
+            if c == 'f': eye2 = (X, Y)
             if c == 'X': g[Y][X] = 'X'
     # neck: make sure the head joins the body
     for y in range(hyy + len(hp) - 1, top + 1):
@@ -295,8 +298,9 @@ def _std(name, stage, tail='up', head='std', fat=0, dy=0, spikes=False, rag=Fals
             for i, c in enumerate(r):
                 if c == 'X' and hyy + len(hp) + j - 1 < W and 12 + i < W: g[hyy + len(hp) - 1 + j][12 + i] = 'X'
     g[eye[1]][eye[0]] = '.'
-    _fill_holes(g, eye)
-    SPR[name] = ([''.join(r) for r in g], eye)
+    g[eye2[1]][eye2[0]] = '.'
+    _fill_holes(g, eye, eye2)
+    SPR[name] = ([''.join(r) for r in g], eye, eye2)
 
 
 # ================================ stage 2-4 ===================================================================================
@@ -404,17 +408,19 @@ def _kitsune(name, n, base, d, a, b, a0, a1, bodyhy=1):
         for x in range(x0, x1 + 1): g[top + j][x] = 'X'
     for y in range(top + len(body), 16):
         for x in (8, 9, 13, 14): g[y][x] = 'X'
-    eye = None
+    eye = eye2 = None
     for j, r in enumerate(H_ROYAL):
         for i, c in enumerate(r):
             X, Y = 8 + i, bodyhy + j
             if c == 'e': eye = (X, Y)
+            if c == 'f': eye2 = (X, Y)
             if c == 'X': g[Y][X] = 'X'
     for y in range(bodyhy + len(H_ROYAL) - 1, top + 1):
         for x in (9, 10, 11, 12): g[y][x] = 'X'
     g[eye[1]][eye[0]] = '.'
-    _fill_holes(g, eye)
-    SPR[name] = ([''.join(r) for r in g], eye)
+    g[eye2[1]][eye2[0]] = '.'
+    _fill_holes(g, eye, eye2)
+    SPR[name] = ([''.join(r) for r in g], eye, eye2)
 
 
 _kitsune('moonveil', 3, (8, 12), 5.5, 6.5, 1.35, -180, -112)
@@ -447,17 +453,19 @@ def _frost(name='frostpelt', two=True, hy=3):
     ell(7.5, 11.0, 5.3, 3.6)     # fluffy round body
     for x in (4, 5, 7, 8, 10, 11): g[15][x] = 'X'
     for x in (4, 5, 10, 11): g[14][x] = 'X'
-    eye = None
+    eye = eye2 = None
     for j, r in enumerate(H_ROUND):
         for i, c in enumerate(r):
             X, Y = 8 + i, hy + j
             if c == 'e': eye = (X, Y)
+            if c == 'f': eye2 = (X, Y)
             if c == 'X': g[Y][X] = 'X'
     for y in range(hy + 5, hy + 7):
         for x in range(9, 13): g[y][x] = 'X'
     g[eye[1]][eye[0]] = '.'
-    _fill_holes(g, eye)
-    SPR[name] = ([''.join(r) for r in g], eye)
+    g[eye2[1]][eye2[0]] = '.'
+    _fill_holes(g, eye, eye2)
+    SPR[name] = ([''.join(r) for r in g], eye, eye2)
 
 
 _frost()
@@ -479,9 +487,9 @@ XXX.X.....X.....
 
 
 # ---- registry: every species has its own archetype 'fox_<id>' (same drawing at every stage; a species only ever has one) -------
-def _anchors(rows, eye):
+def _anchors(rows, eye, eye2):
     xs = [x for r in rows for x, c in enumerate(r) if c == 'X']
-    return dict(rows=rows, head=(eye[0] - 0.5, eye[1] + 0.8, 2.2), eye=eye, body=(min(xs) + 1, max(xs) - 3))
+    return dict(rows=rows, head=(eye[0] - 0.5, eye[1] + 0.8, 2.2), eye=eye, eye2=eye2, body=(min(xs) + 1, max(xs) - 3))
 
 
-ARCH_FOX = {'fox_' + k: dict(by_stage={s: _anchors(rows, eye) for s in (1, 2, 3, 4, 5)}) for k, (rows, eye) in SPR.items()}
+ARCH_FOX = {'fox_' + k: dict(by_stage={s: _anchors(rows, eye, eye2) for s in (1, 2, 3, 4, 5)}) for k, (rows, eye, eye2) in SPR.items()}

@@ -215,6 +215,80 @@ final class UIRenderTests: XCTestCase {
         }
     }
 
+    // MARK: phone scene checks (egg, fox, weather, every family's baby)
+
+    /// A moment at `hour` UTC on a day whose weather for the render seed (4242) is `weather`.
+    private func moment(_ weather: SceneAmbient.Weather, hour: Int) -> Date {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let start = cal.startOfDay(for: day)
+        for d in 0..<60 {
+            let t = start.addingTimeInterval(Double(d) * 86400 + Double(hour) * 3600)
+            if SceneAmbient(seed: 4242, date: t, calendar: cal).weather == weather { return t }
+        }
+        return start.addingTimeInterval(Double(hour) * 3600)
+    }
+
+    private func sceneTile(_ pet: Pet, clock: Date, palette: LCDPalette, side: CGFloat) -> AnyView {
+        let model = GameModel(pet: pet, persist: { _ in })
+        let view = LCDScreen(model: model, framed: true)
+            .padding(6)
+            .background(palette.background)
+            .environment(\.lcdPalette, palette)
+            .environment(\.sceneDate, clock)
+            .environment(\.displayScale, 2)
+            .frame(width: side, height: side)
+        return AnyView(view)
+    }
+
+    /// The pets the owner flagged, in clear, rain and night, in both looks: single tiles under `scenes/`.
+    func testRenderSceneChecks() {
+        let looks: [(String, ColorMode, ColorScheme)] = [("tech-light", .technicolor, .light), ("tech-dark", .technicolor, .dark),
+                                                         ("trad", .traditional, .light)]
+        let moments: [(String, Date)] = [("clear", moment(.clear, hour: 12)), ("cloudy", moment(.cloudy, hour: 12)),
+                                         ("rain", moment(.rain, hour: 12)), ("night", moment(.clear, hour: 23))]
+        for (look, mode, scheme) in looks {
+            let palette = LCDStyle.palette(for: scheme, mode: mode)
+            for (mname, clock) in moments {
+                let pets: [(String, Pet)] = [
+                    ("egg", pet(.egg, "", at: clock, ageHours: 0.05) { $0.named = false }),
+                    ("fox-kit", pet(.baby, "dewkit", at: clock, ageHours: 2) { $0.family = "fox" }),
+                    ("fox-child", pet(.child, "scamp", at: clock, ageHours: 20) { $0.family = "fox" }),
+                    ("fox-teen", pet(.teen, "tracker", at: clock, ageHours: 60) { $0.family = "fox" }),
+                ]
+                for (name, p) in pets {
+                    write(sceneTile(p, clock: clock, palette: palette, side: 358), to: "scenes/\(look)/\(name)-\(mname)",
+                          size: CGSize(width: 358, height: 358))
+                }
+            }
+            // every family's baby, one contact sheet per look, in clear weather and in rain
+            for (mname, clock) in [("clear", moments[0].1), ("rain", moments[2].1)] {
+                var tiles: [AnyView] = []
+                for fam in Species.families {
+                    guard let sp = Species.all.first(where: { $0.family == fam.id && $0.stage == .baby }) else { continue }
+                    let id = fam.id
+                    tiles.append(sceneTile(pet(.baby, sp.id, at: clock, ageHours: 2) { $0.family = id }, clock: clock,
+                                           palette: palette, side: 250))
+                }
+                let cols = 4
+                let all = tiles
+                let rows = (all.count + cols - 1) / cols
+                let sheet = VStack(spacing: 4) {
+                    ForEach(0..<rows, id: \.self) { row in
+                        HStack(spacing: 4) {
+                            ForEach(0..<cols, id: \.self) { col in
+                                if row * cols + col < all.count { all[row * cols + col] } else { Color.clear.frame(width: 250, height: 250) }
+                            }
+                        }
+                    }
+                }
+                .background(palette.background)
+                write(sheet, to: "scenes/\(look)/babies-\(mname)",
+                      size: CGSize(width: 250 * CGFloat(cols) + 4 * CGFloat(cols - 1), height: 250 * CGFloat(rows) + 4 * CGFloat(rows - 1)))
+            }
+        }
+    }
+
     // MARK: output
 
     private func write<V: View>(_ view: V, to relative: String, size: CGSize, scale: CGFloat = 2,

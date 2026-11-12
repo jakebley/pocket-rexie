@@ -216,6 +216,8 @@ def draw(r, blink=False):
         elif e in EXTRA_HANDLERS:
             EXTRA_HANDLERS[e](g, dict(hx=hx, hy=hy, hr=hr, ex=ex, ey=ey, b0=b0, b1=b1, f=f, ox=ox, oy=oy))
     g.set(ex, ey, 1 if blink else 0)
+    if arch.get('eye2'):  # a far-side eye (fox faces): blinks with the near one
+        g.set(arch['eye2'][0] * f + ox, arch['eye2'][1] * f + oy, 1 if blink else 0)
     return g
 
 def render(r):
