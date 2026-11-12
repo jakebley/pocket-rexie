@@ -266,9 +266,10 @@ final class FamilyTests: XCTestCase {
     }
 
     func testLineColorsAnchorTheSpread() {
-        // Hatchlings keep the family's plain line color; the other species spread around theirs.
+        // Fox kits are fox-orange (tools/families/fox.py COLOR_OVERRIDES; they were cream and read as a dog or wolf);
+        // the other species spread around their line color.
         for sp in Species.all where sp.family == "fox" && sp.line == "baby" {
-            XCTAssertEqual(sp.bodyHex, "#E7DCC0", sp.id)
+            XCTAssertTrue(["#F28C32", "#E97A2C"].contains(sp.bodyHex ?? ""), sp.id)
         }
         let foxHex = Set(Species.all.filter { $0.family == "fox" }.compactMap { $0.bodyHex })
         XCTAssertGreaterThan(foxHex.count, 10, "look-alike species get different colors")

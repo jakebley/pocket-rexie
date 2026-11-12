@@ -315,15 +315,15 @@ struct SceneRaster: Equatable {
                 codes[i] = code.rawValue
             }
         }
-        // speckles: 2x2 blocks (one 16x16 pixel) at fixed spots on the shell, snapped to the sprite's 2-cell grid,
+        // speckles: small 2x1 dashes at fixed spots on the shell, snapped to the sprite's 2-cell grid,
         // kept off the outline and each other
-        let spots: [(Double, Double)] = [(0.30, 0.34), (0.66, 0.28), (0.52, 0.55), (0.28, 0.66), (0.72, 0.62), (0.50, 0.82)]
+        let spots: [(Double, Double)] = [(0.64, 0.30), (0.34, 0.50), (0.62, 0.62), (0.44, 0.80)]
         let spot = SceneLayer.tool.rawValue
         for (fx, fy) in spots {
             let sx = (x0 + Int(Double(x1 - x0) * fx)) & ~1
             let sy = (y0 + Int(Double(y1 - y0) * fy)) & ~1
             var ok = true
-            for dy in -1...2 {
+            for dy in -1...1 {
                 for dx in -1...2 {
                     let i = (sy + dy) * w + sx + dx
                     guard sx + dx >= 0, sx + dx < w, sy + dy >= 0, sy + dy < h, solid[i],
@@ -334,7 +334,7 @@ struct SceneRaster: Equatable {
                 if !ok { break }
             }
             if ok {
-                for dy in 0...1 { for dx in 0...1 { codes[(sy + dy) * w + sx + dx] = spot } }
+                for dx in 0...1 { codes[sy * w + sx + dx] = spot }
             }
         }
         for cy in 0..<h {
