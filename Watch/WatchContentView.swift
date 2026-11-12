@@ -10,7 +10,7 @@ struct WatchContentView: View {
     @State private var crown: Double = 0
     /// A hold already described the icon, so the release must not also act.
     @State private var described = false
-    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.displayScale) private var displayScale
     /// The look, synced from the phone (see PetSync); Traditional until the phone says otherwise.
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var mode: ColorMode = .traditional
 
@@ -21,7 +21,9 @@ struct WatchContentView: View {
 
     private let icons = MenuIcon.allCases
 
-    private var colors: LCDPalette { palette ?? LCDStyle.palette(dark: dimmed, mode: mode) }
+    /// The watch UI is always dark, so it uses the phone's dark palette in the synced look
+    /// (Traditional or Technicolor), in Always-On too.
+    private var colors: LCDPalette { palette ?? LCDStyle.palette(for: .dark, mode: mode) }
 
     var body: some View {
         #if os(watchOS)
@@ -50,59 +52,102 @@ struct WatchContentView: View {
 
     // MARK: layout
 
-    private let margin: CGFloat = 4
-    /// Space above and below the face content (the bezel and the display corners).
-    private let edge: CGFloat = 6
-    private let tileGap: CGFloat = 3
-    private let tileHeight: CGFloat = 40
-    private let meterHeight: CGFloat = 14
-    private let captionHeight: CGFloat = 11
+    /// Side margin of the whole face (the watch corners are round).
+    private let margin: CGFloat = 8
+    /// Extra inset of the tile row, which sits in the bottom corners.
+    private let tileInset: CGFloat = 2
+    private let top: CGFloat = 6
+    private let bottom: CGFloat = 8
+    private let gap: CGFloat = 3
+    private let tileGap: CGFloat = 2
+    private let tileHeight: CGFloat = 34
+    /// Hearts (14) + 1 line of text (10) + gap, or two lines of text (21).
+    private let infoHeight: CGFloat = 27
 
-    /// The LCD face fills the screen: scene on top, a pixel status line, hearts, and a row of glyph tiles.
+    /// The LCD face fills the screen: scene on top (the largest whole-pixel square that fits),
+    /// hearts and a centred caption, and a row of labelled tiles.
     private var content: some View {
         GeometryReader { geo in
             let width = geo.size.width
             let inner = width - margin * 2
-            let tiles = width >= 176 ? 4 : 3
-            let tileWidth = floor((inner - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
-            let gaps: CGFloat = 3 * 3
-            let side = max(40, min(inner, geo.size.height - captionHeight - meterHeight - tileHeight - gaps - edge * 2))
-            VStack(spacing: 3) {
+            let tilesWidth = inner - tileInset * 2
+            let tiles = tilesWidth >= 168 ? 4 : 3
+            let tileWidth = floor((tilesWidth - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
+            let room = geo.size.height - top - bottom - tileHeight - infoHeight - gap * 2
+            let side = sceneSide(room: room, width: inner)
+            VStack(spacing: gap) {
                 LCDScreen(model: model)
                     .frame(width: side, height: side)
                     .retroGlass(colors, corner: 8)
-                caption(width: inner - 6)
-                    .frame(height: captionHeight)
-                meters(width: inner)
-                    .frame(height: meterHeight)
+                info(width: inner)
+                    .frame(width: inner, height: infoHeight)
                 tileRow(count: tiles, tileWidth: tileWidth)
+                    .padding(.horizontal, tileInset)
             }
             .padding(.horizontal, margin)
-            .padding(.top, edge)
+            .padding(.top, top)
             .frame(width: width, height: geo.size.height, alignment: .top)
         }
         .environment(\.lcdPalette, colors)
         .background(RetroBackdrop(palette: colors, inset: 1, corner: 28).ignoresSafeArea())
     }
 
-    /// One line at 2pt pixels when it fits, else two lines at 1pt.
-    private func caption(width: CGFloat) -> some View {
-        let text = model.message.isEmpty ? model.pet.statusLine : model.message
-        let single = RetroFit.lines(text, width: width, maxPixel: 2, maxLines: 1)
-        return RetroCaption(text: text, width: width, maxPixel: 2, maxLines: single.fits ? 1 : 2, centered: true)
+    /// The scene is 64 cells wide; it is sized to a whole number of device pixels per cell so it stays crisp.
+    private func sceneSide(room: CGFloat, width: CGFloat) -> CGFloat {
+        let scale = max(displayScale, 1)
+        let fit = max(40, min(room, width))
+        let step = 64 / scale
+        let snapped = (fit / step).rounded(.down) * step
+        return max(step, snapped)
     }
 
-    @ViewBuilder private func meters(width: CGFloat) -> some View {
-        if model.pet.isAlive && model.pet.stage != .egg {
-            HStack(spacing: 0) {
-                RetroMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
-                Spacer(minLength: 4)
-                RetroMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
+    /// Hearts over a one-line caption, or a two-line caption alone when the text is long.
+    private func info(width: CGFloat) -> some View {
+        let text = model.message.isEmpty ? model.pet.statusLine : model.message
+        let lines = captionLines(text, width: width)
+        let showMeters = lines.pixel == 2 && lines.lines.count == 1
+            && model.pet.isAlive && model.pet.stage != .egg
+        return VStack(spacing: 3) {
+            if showMeters {
+                HStack(spacing: 0) {
+                    RetroMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
+                    Spacer(minLength: 4)
+                    RetroMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
+                }
+                .frame(width: width - 4)
             }
-            .frame(width: width)
-        } else {
-            Color.clear
+            VStack(spacing: lines.pixel) {
+                ForEach(Array(lines.lines.enumerated()), id: \.offset) { _, line in
+                    PixelText(line, pixel: lines.pixel)
+                }
+            }
         }
+        .frame(width: width, height: infoHeight, alignment: showMeters ? .top : .center)
+    }
+
+    /// 2pt pixels on one line when it fits; else two lines of balanced length ("AN EGG IS" / "WARMING UP");
+    /// else 1pt pixels for very long texts.
+    private func captionLines(_ text: String, width: CGFloat) -> (pixel: CGFloat, lines: [String]) {
+        let fit = RetroFit.lines(text, width: width, maxPixel: 2, maxLines: 2)
+        guard fit.pixel == 2, fit.lines.count == 2 else { return (fit.pixel, fit.lines) }
+        var chars = RetroFit.maxChars(width: width, pixel: 2)
+        while chars > 4, PixelFont.wrap(text, maxChars: chars - 1).count <= 2 { chars -= 1 }
+        return (2, PixelFont.wrap(text, maxChars: chars))
+    }
+
+    /// Short labels so they fit a tile at a legible pixel size.
+    private func watchLabel(_ icon: MenuIcon) -> String {
+        switch icon {
+        case .medicine: return "MEDS"
+        case .climate: return "TEMP"
+        case .battle: return "FIGHT"
+        default: return icon.label
+        }
+    }
+
+    /// The largest pixel size (2, else 1) at which `text` fits a tile.
+    private func labelPixel(_ text: String, tileWidth: CGFloat) -> CGFloat {
+        CGFloat(PixelFont.width(of: text)) * 2 + 4 <= tileWidth ? 2 : 1
     }
 
     /// A window onto the menu that follows the selection, so the selected tile is always visible.
@@ -118,8 +163,9 @@ struct WatchContentView: View {
                 } label: {
                     EmptyView()
                 }
-                .buttonStyle(RetroTileStyle(icon: icon, title: icon.label, selected: icon == model.selected, glyphPixel: 3,
-                                            labelPixel: tileWidth >= 70 ? 2 : 1, width: tileWidth, height: tileHeight))
+                .buttonStyle(RetroTileStyle(icon: icon, title: watchLabel(icon), selected: icon == model.selected, glyphPixel: 2,
+                                            labelPixel: labelPixel(watchLabel(icon), tileWidth: tileWidth),
+                                            width: tileWidth, height: tileHeight))
                 .simultaneousGesture(
                     LongPressGesture(minimumDuration: 0.3).onEnded { _ in
                         described = true
