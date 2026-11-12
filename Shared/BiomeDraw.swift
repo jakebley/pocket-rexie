@@ -154,7 +154,7 @@ enum BiomeDraw {
     }
 
     /// The painted static layer for (biome, back or fore, period, rain), kept in `cache` under an integer key.
-    private static func cached(_ biome: Biome, back: Bool, _ period: Period, _ rain: Bool) -> [UInt8] {
+    static func cached(_ biome: Biome, back: Bool, _ period: Period, _ rain: Bool) -> [UInt8] {
         let key = ((biomeSlot(biome) * 2 + (back ? 1 : 0)) * 4 + periodSlot(period)) * 2 + (rain ? 1 : 0)
         lock.lock()
         let hit = cache[key]
@@ -246,7 +246,7 @@ enum BiomeDraw {
         }
     }
 
-    private static func paintLive(_ biome: Biome, _ b: inout BiomeCanvas, _ phase: Period, _ s: BiomeLive) {
+    static func paintLive(_ biome: Biome, _ b: inout BiomeCanvas, _ phase: Period, _ s: BiomeLive) {
         switch biome {
         case .meadow: break
         case .woods: woodsLive(&b, s, phase)
@@ -886,5 +886,51 @@ enum BiomeDraw {
             b.set(p.0, p.1, l)
         }
         if (t >> 3) % 4 == 0 { b.set(56, 41, .twinkle); b.set(56, 40, .twinkle) }
+    }
+}
+
+// MARK: - 96x96 (Technicolor)
+
+extension BiomeDraw {
+    /// Until the 96 biome painters land (docs/RESOLUTION.md stage 2) the Technicolor scene upscales the 64 art with a clean
+    /// 3/2 nearest-neighbour map straight from the Expo-coordinate canvas (ground at row 60 -> 90), so the biome's ground
+    /// line lands exactly on the 96 ground. Source cell of target index t is t * 2 / 3 (integer division).
+    private static func up(_ t: Int) -> Int { (t * 2) / 3 }
+
+    /// Biome scenery behind the 96 meadow layers. Call on an empty 96 raster before the sky.
+    static func backdrop96(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
+        if biome == .meadow || r.n != 96 { return }
+        var canvas = BiomeCanvas(copying: cached(biome, back: true, period, live.rain))
+        paintLive(biome, &canvas, period, live)
+        let n = BiomeCanvas.n
+        canvas.px.withUnsafeBufferPointer { src in
+            r.cells.withUnsafeMutableBufferPointer { dst in
+                for y in 0..<96 {
+                    let from = up(y) * n, to = y * 96
+                    for x in 0..<96 {
+                        let v = src[from + up(x)]
+                        if v != 0 { dst[to + x] = v }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Floor props at 96, only into cells the meadow layers left unlit. Call after the ground.
+    static func fore96(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool) {
+        if biome == .meadow || r.n != 96 { return }
+        let src = cached(biome, back: false, period, rain)
+        let n = BiomeCanvas.n
+        src.withUnsafeBufferPointer { src in
+            r.cells.withUnsafeMutableBufferPointer { dst in
+                for y in 0..<96 {
+                    let from = up(y) * n, to = y * 96
+                    for x in 0..<96 {
+                        let v = src[from + up(x)]
+                        if v != 0 && dst[to + x] == 0 { dst[to + x] = v }
+                    }
+                }
+            }
+        }
     }
 }

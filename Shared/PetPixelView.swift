@@ -70,38 +70,45 @@ extension EnvironmentValues {
 
 /// Builds paths for the 64x64 pixel scene (see SceneRenderer), shared by the animated screen and the static view.
 enum LCDPainter {
+    /// The logic grid (taps, positions): always 64 whatever the look; a 96 picture converts with x1.5.
     static let grid = SceneRaster.side
 
+    private struct GridKey: Hashable {
+        let n: Int
+        let cell: CGFloat
+    }
     private static let gridLock = NSLock()
-    private static var gridCache: [CGFloat: Path] = [:]
+    private static var gridCache: [GridKey: Path] = [:]
 
-    /// Faint "unlit" pixels, for the LCD look. 4096 rectangles: built once per cell size (the painter asks on every frame).
-    static func gridPath(size: CGSize) -> Path {
-        let cell = min(size.width, size.height) / CGFloat(grid)
+    /// Faint "unlit" pixels, for the LCD look. n x n rectangles: built once per cell size (the painter asks on every frame).
+    static func gridPath(size: CGSize, n: Int = LCDPainter.grid) -> Path {
+        let cell = min(size.width, size.height) / CGFloat(n)
+        let key = GridKey(n: n, cell: cell)
         gridLock.lock()
-        let hit = gridCache[cell]
+        let hit = gridCache[key]
         gridLock.unlock()
         if let hit { return hit }
         var path = Path()
-        for y in 0..<grid {
-            for x in 0..<grid {
+        for y in 0..<n {
+            for x in 0..<n {
                 path.addRect(pixelRect(x, y, cell))
             }
         }
         gridLock.lock()
         if gridCache.count >= 8 { gridCache.removeAll() }
-        gridCache[cell] = path
+        gridCache[key] = path
         gridLock.unlock()
         return path
     }
 
     /// The dark (or, with `shade`, the dithered) pixels of a rendered scene.
     static func path(_ raster: SceneRaster, shade: Bool = false, size: CGSize) -> Path {
-        let cell = min(size.width, size.height) / CGFloat(grid)
+        let n = raster.n
+        let cell = min(size.width, size.height) / CGFloat(n)
         var path = Path()
-        for y in 0..<grid {
-            for x in 0..<grid {
-                let i = y * grid + x
+        for y in 0..<n {
+            for x in 0..<n {
+                let i = y * n + x
                 if shade ? raster.shade[i] : SceneLayer.isTraditionalLit(raster.cells[i]) {
                     path.addRect(pixelRect(x, y, cell))
                 }
@@ -115,11 +122,12 @@ enum LCDPainter {
     /// into one path per color (a handful of fills per frame).
     static func paint(_ ctx: inout GraphicsContext, raster: SceneRaster, size: CGSize, palette: LCDPalette) {
         if palette.mode == .traditional {
-            ctx.fill(gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+            ctx.fill(gridPath(size: size, n: raster.n), with: .color(palette.ink.opacity(0.06)))
             ctx.fill(path(raster, shade: true, size: size), with: .color(palette.ink.opacity(0.4)))
             ctx.fill(path(raster, size: size), with: .color(palette.ink))
             return
         }
+        let grid = raster.n
         let cell = min(size.width, size.height) / CGFloat(grid)
         let appearance = palette.appearance
         let period = SceneAmbient.Period.of(hour: raster.hour)
@@ -143,7 +151,7 @@ enum LCDPainter {
                 ctx.fill(both, with: .color(ScenePalette.dimInk.color.opacity(ScenePalette.dimSky)))
             }
         }
-        ctx.fill(gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+        ctx.fill(gridPath(size: size, n: raster.n), with: .color(palette.ink.opacity(0.06)))
         if raster.dim {
             ctx.fill(path(raster, shade: true, size: size),
                      with: .color(ScenePalette.dimInk.color.opacity(ScenePalette.dimDither)))
@@ -180,17 +188,17 @@ enum LCDPainter {
     }
 
     /// A single bitmap placed on the 64x64 grid (used for full-screen effects).
-    static func glyphPath(_ rows: [String], x: Int, y: Int, size: CGSize) -> Path {
-        let cell = min(size.width, size.height) / CGFloat(grid)
+    static func glyphPath(_ rows: [String], x: Int, y: Int, size: CGSize, n: Int = LCDPainter.grid) -> Path {
+        let cell = min(size.width, size.height) / CGFloat(n)
         var path = Path()
-        addGlyph(rows, x, y, cell, to: &path)
+        addGlyph(rows, x, y, cell, n: n, to: &path)
         return path
     }
 
     /// Shell with a zigzag crack, shown in alternation with the new baby after hatching.
     static let crackEgg: [String] = Sprite.scale2x(crackEgg16)
 
-    private static let crackEgg16: [String] = [
+    static let crackEgg16: [String] = [
         "................",
         ".....XXXXXX.....",
         "....XXXXXXXX....",
@@ -209,13 +217,13 @@ enum LCDPainter {
         "................",
     ]
 
-    private static func addGlyph(_ rows: [String], _ x0: Int, _ y0: Int, _ cell: CGFloat,
+    private static func addGlyph(_ rows: [String], _ x0: Int, _ y0: Int, _ cell: CGFloat, n: Int,
                                  to path: inout Path) {
         for (r, row) in rows.enumerated() {
             for (c, ch) in row.enumerated() where ch == "X" {
                 let x = x0 + c
                 let y = y0 + r
-                guard x >= 0, x < grid, y >= 0, y < grid else { continue }
+                guard x >= 0, x < n, y >= 0, y < n else { continue }
                 path.addRect(pixelRect(x, y, cell))
             }
         }
@@ -242,7 +250,7 @@ struct PetPixelView: View {
 
     var body: some View {
         let colors = palette ?? environmentPalette
-        let raster = SceneRenderer.still(pet: pet)
+        let raster = SceneRenderer.still(pet: pet, look: colors.mode)
         Canvas { ctx, size in
             LCDPainter.paint(&ctx, raster: raster, size: size, palette: colors)
         }
