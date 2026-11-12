@@ -54,31 +54,29 @@ struct WatchContentView: View {
 
     /// Side margin of the whole face (the watch corners are round).
     private let margin: CGFloat = 8
-    /// Extra inset of the tile row, which sits in the bottom corners.
-    private let tileInset: CGFloat = 2
-    /// The system clock overlays the top right corner: that band holds the hearts, on the left.
-    private let topBand: CGFloat = 26
-    private let bottom: CGFloat = 6
+    /// Extra inset of the tile row, which sits in the bottom corners (the screen corners are round).
+    private let tileInset: CGFloat = 6
+    /// The system clock overlays the top right corner: the scene starts below it.
+    private let topBand: CGFloat = 22
+    private let bottom: CGFloat = 10
     private let gap: CGFloat = 2
     private let tileGap: CGFloat = 2
     private let tileHeight: CGFloat = 32
     /// Two lines of 2pt text.
     private let captionHeight: CGFloat = 21
 
-    /// The LCD face fills the screen (safe areas are handled here, by hand): a band for the clock with
-    /// the hearts, the scene as large as fits, a centred caption, and a row of labelled tiles.
+    /// The LCD face fills the screen (safe areas are handled here, by hand): a band for the clock, the scene as large as fits, a centred caption, and a row of labelled tiles.
     private var content: some View {
         GeometryReader { geo in
             let width = geo.size.width
             let inner = width - margin * 2
             let tilesWidth = inner - tileInset * 2
-            let tiles = tilesWidth >= 168 ? 4 : 3
+            let tiles = 3
             let tileWidth = floor((tilesWidth - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
             let room = geo.size.height - topBand - bottom - tileHeight - captionHeight - gap * 3
             let side = sceneSide(room: room, width: inner)
             VStack(spacing: gap) {
-                meters(width: inner)
-                    .frame(width: inner, height: topBand - gap)
+                Color.clear.frame(height: topBand - gap)
                 LCDScreen(model: model)
                     .frame(width: side, height: side)
                     .retroGlass(colors, corner: 8)
@@ -107,20 +105,6 @@ struct WatchContentView: View {
             return max(half, (fit / half).rounded(.down) * half)
         }
         return max(step, whole)
-    }
-
-    /// Hearts and smiles, top left, clear of the clock. Not for eggs and the dead.
-    @ViewBuilder private func meters(width: CGFloat) -> some View {
-        if model.pet.isAlive && model.pet.stage != .egg {
-            HStack(spacing: 8) {
-                RetroMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
-                RetroMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
-                Spacer(minLength: 0)
-            }
-            .frame(width: width - 4, alignment: .leading)
-        } else {
-            Color.clear
-        }
     }
 
     /// Centred, 1 or 2 lines at 2pt pixels with balanced line lengths; 1pt pixels only for very long texts.
@@ -156,7 +140,7 @@ struct WatchContentView: View {
 
     /// The largest pixel size (2, else 1) at which `text` fits a tile.
     private func labelPixel(_ text: String, tileWidth: CGFloat) -> CGFloat {
-        CGFloat(PixelFont.width(of: text)) * 2 + 4 <= tileWidth ? 2 : 1
+        CGFloat(PixelFont.width(of: text)) * 2 + 8 <= tileWidth ? 2 : 1
     }
 
     /// A window onto the menu that follows the selection, so the selected tile is always visible.
