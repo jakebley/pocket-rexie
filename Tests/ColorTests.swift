@@ -56,7 +56,7 @@ final class ColorTests: XCTestCase {
         XCTAssertEqual(SceneLayer.hull.rawValue, 94)
         XCTAssertEqual(SceneLayer.eggShade.rawValue, 97)
         XCTAssertEqual(SceneLayer.maxCode, 97)
-        XCTAssertEqual(ScenePalette.tableSize, 98)
+        XCTAssertEqual(ScenePalette.tableSize, 128, "98 layers plus the biome slot codes up to 127")
         XCTAssertEqual(SceneLayer.allCases.count, 98)
         XCTAssertEqual(SceneLayer.allCases.map { Int($0.rawValue) }.sorted(), Array(0...97))
     }

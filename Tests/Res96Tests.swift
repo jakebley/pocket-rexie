@@ -381,7 +381,7 @@ final class Res96Tests: XCTestCase {
         var withScenery = 0
         for sp in adults() {
             let r = render(makePet(sp), look: .technicolor)
-            if r.cells.contains(where: { $0 >= SceneLayer.sceneryFrom && !SceneLayer(rawValue: $0 & 0x7f)!.isPetLayer }) { withScenery += 1 }
+            if r.cells.contains(where: { $0 >= SceneLayer.sceneryFrom && SceneLayer(rawValue: $0)?.isPetLayer != true }) { withScenery += 1 }
             // pets keep a clear ring
             var ringBad = 0
             for i in 0..<r.cells.count where isPetCode(r.cells[i]) {

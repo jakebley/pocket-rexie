@@ -110,6 +110,11 @@ enum SceneLayer: UInt8, CaseIterable {
     /// Highest code in use; color tables have `maxCode + 1` entries.
     static let maxCode: UInt8 = 97
 
+    /// Slot layers (96x96 biomes, BiomeSlots96.swift): codes slotFirst...slotLast mean something different per biome.
+    /// Scenery for every purpose here (Technicolor-only, cleared around the pet); the colour table covers them.
+    static let slotFirst: UInt8 = 98
+    static let slotLast: UInt8 = 127
+
     /// Does Traditional mode draw this code? (Every shared layer, the pet shading layers and the cues: yes, as
     /// ink. Scenery and the eye fills: no, they print as unlit.) Mirrors `tradVisible` in layers.ts.
     static func isTraditionalLit(_ code: UInt8) -> Bool { code != 0 && code < sceneryFrom }

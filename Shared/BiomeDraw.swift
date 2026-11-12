@@ -897,9 +897,25 @@ extension BiomeDraw {
     /// line lands exactly on the 96 ground. Source cell of target index t is t * 2 / 3 (integer division).
     private static func up(_ t: Int) -> Int { (t * 2) / 3 }
 
+    /// Which painter owns the 96 backdrop of a biome. Biomes without a native painter fall back to the enlarged 64 art.
+    /// Add a case here when a biome gets its painter (set A in Biome96A*.swift, set B in Biome96B*.swift).
+    static func ownsGround96(_ biome: Biome) -> Bool {
+        switch biome {
+        case .sky, .ember, .crags, .workshop, .swamp, .space: return true
+        default: return false
+        }
+    }
+
     /// Biome scenery behind the 96 meadow layers. Call on an empty 96 raster before the sky.
     static func backdrop96(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
         if biome == .meadow || r.n != 96 { return }
+        switch biome {
+        case .sky, .ember, .crags, .workshop, .swamp, .space:
+            Biome96B.backdrop(into: &r, biome: biome, period: period, live: live)
+            return
+        default:
+            break
+        }
         var canvas = BiomeCanvas(copying: cached(biome, back: true, period, live.rain))
         paintLive(biome, &canvas, period, live)
         let n = BiomeCanvas.n
@@ -917,8 +933,16 @@ extension BiomeDraw {
     }
 
     /// Floor props at 96, only into cells the meadow layers left unlit. Call after the ground.
-    static func fore96(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool) {
+    static func fore96(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
         if biome == .meadow || r.n != 96 { return }
+        switch biome {
+        case .sky, .ember, .crags, .workshop, .swamp, .space:
+            Biome96B.fore(into: &r, biome: biome, period: period, live: live)
+            return
+        default:
+            break
+        }
+        let rain = live.rain
         let src = cached(biome, back: false, period, rain)
         let n = BiomeCanvas.n
         src.withUnsafeBufferPointer { src in

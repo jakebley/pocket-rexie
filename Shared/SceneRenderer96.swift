@@ -158,15 +158,17 @@ extension SceneRenderer {
         let bubble = bubbleLayout(pet: pet, place: place)
 
         let rain = amb.weather == .rain
+        let live = BiomeLive(tick: motion ? Int((t * 8).rounded(.down)) : 0, seconds: motion ? t : 0,
+                             seed: Int(pet.seed % 4096), rain: rain)
         if biome != .meadow {
-            let live = BiomeLive(tick: motion ? Int((t * 8).rounded(.down)) : 0, seconds: motion ? t : 0,
-                                 seed: Int(pet.seed % 4096), rain: rain)
             BiomeDraw.backdrop96(into: &r, biome: biome, period: amb.period, live: live)
         }
         drawSky96(&r, amb: amb, seed: pet.seed, t: t, frame: frame, motion: motion, avoid: bubble?.avoidRect)
-        drawGround96(&r, seed: pet.seed, frame: frame, motion: motion)
+        if !BiomeDraw.ownsGround96(biome) {
+            drawGround96(&r, seed: pet.seed, frame: frame, motion: motion)
+        }
         if biome != .meadow {
-            BiomeDraw.fore96(into: &r, biome: biome, period: amb.period, rain: rain)
+            BiomeDraw.fore96(into: &r, biome: biome, period: amb.period, live: live)
         }
         // Sun, clouds, rain and scenery stay off the pet and its 1px ring in every biome, the meadow included.
         r.clearAroundPet(big.rows, x: big.x, y: big.top, mirror: big.mirror)
