@@ -154,20 +154,33 @@ enum SceneLayer: UInt8, CaseIterable {
 /// A 64x64 picture of layer codes plus the dim dither mask. Everything that is not `.off` is lit.
 struct SceneRaster: Equatable {
     static let side = 64
+    /// The 96 grid: ground line row and the row the feet stand on (the Expo 96 scene, x1.5 of its 60).
+    static let groundY96 = 90
+    static let footY96 = 89
     /// Row of the ground line (two rows thick); the pet's feet rest on the row above it.
     static let groundY = 58
     /// Bottom row of a standing sprite.
     static let footY = 57
 
+    /// Grid size of this picture: 64 (Traditional, text screens, mini-games) or 96 (the Technicolor home scene).
+    let n: Int
+
     /// Layer code per cell, row by row (`SceneLayer.rawValue`).
-    var cells = [UInt8](repeating: 0, count: SceneRaster.side * SceneRaster.side)
-    var shade = [Bool](repeating: false, count: SceneRaster.side * SceneRaster.side)
+    var cells: [UInt8]
+    var shade: [Bool]
+
+    init(n: Int = SceneRaster.side) {
+        self.n = n
+        cells = [UInt8](repeating: 0, count: n * n)
+        shade = [Bool](repeating: false, count: n * n)
+        groundRow = n == SceneRaster.side ? SceneRaster.groundY : SceneRaster.groundY96
+    }
 
     // Context for coloring (Technicolor): set by `SceneRenderer.render`.
     /// The picture is a room with sky (above `groundY`) and soil (below), not a text screen.
     var hasSky = false
     /// First row of the soil in Technicolor (the home scene's ground line; the Play field's ground is lower).
-    var groundRow = SceneRaster.groundY
+    var groundRow: Int
     var hour = 12
     var weather: SceneAmbient.Weather = .clear
     var line: PetLine = .baby
@@ -183,18 +196,18 @@ struct SceneRaster: Equatable {
     var ink: [Bool] { cells.map { SceneLayer.isTraditionalLit($0) } }
 
     func isSet(_ x: Int, _ y: Int) -> Bool {
-        guard x >= 0, x < SceneRaster.side, y >= 0, y < SceneRaster.side else { return false }
-        return SceneLayer.isTraditionalLit(cells[y * SceneRaster.side + x])
+        guard x >= 0, x < n, y >= 0, y < n else { return false }
+        return SceneLayer.isTraditionalLit(cells[y * n + x])
     }
 
     func layer(_ x: Int, _ y: Int) -> SceneLayer {
-        guard x >= 0, x < SceneRaster.side, y >= 0, y < SceneRaster.side else { return .off }
-        return SceneLayer(rawValue: cells[y * SceneRaster.side + x]) ?? .ink
+        guard x >= 0, x < n, y >= 0, y < n else { return .off }
+        return SceneLayer(rawValue: cells[y * n + x]) ?? .ink
     }
 
     mutating func set(_ x: Int, _ y: Int, _ layer: SceneLayer = .ink) {
-        guard x >= 0, x < SceneRaster.side, y >= 0, y < SceneRaster.side else { return }
-        cells[y * SceneRaster.side + x] = layer.rawValue
+        guard x >= 0, x < n, y >= 0, y < n else { return }
+        cells[y * n + x] = layer.rawValue
     }
 
     mutating func clear(_ x: Int, _ y: Int) { set(x, y, .off) }
@@ -202,7 +215,7 @@ struct SceneRaster: Equatable {
     /// Draws a string-row bitmap in one layer; `mirror` flips it left to right. Rows are scanned as UTF-8 bytes
     /// (sprites are ASCII), not as Characters: String character walking is slow, mostly in unoptimised builds.
     mutating func draw(_ rows: [String], x: Int, y: Int, mirror: Bool = false, layer: SceneLayer = .ink) {
-        let side = SceneRaster.side
+        let side = n
         let code = layer.rawValue
         let mark = UInt8(ascii: "X")
         var r = 0
@@ -228,7 +241,7 @@ struct SceneRaster: Equatable {
     /// so Traditional output is unchanged. `family` picks the per-family rules.
     mutating func drawPet(_ rows: [String], x: Int, y: Int, mirror: Bool = false, family: String = "") {
         let shaded = PetShading.layers(rows: rows, mirror: mirror, family: family)
-        let side = SceneRaster.side
+        let side = n
         let fillA = SceneLayer.eyeFill.rawValue, fillB = SceneLayer.eyeShine.rawValue
         let w = shaded.width
         for r in 0..<shaded.height {
@@ -319,12 +332,15 @@ struct SceneRaster: Equatable {
         // kept off the outline and each other
         let spots: [(Double, Double)] = [(0.64, 0.30), (0.34, 0.50), (0.62, 0.62), (0.44, 0.80)]
         let spot = SceneLayer.tool.rawValue
+        // at 48x48 (Technicolor, 96 grid) the dashes are 3x2 on the Scale3x cell grid
+        let wideEgg = h > 32
+        let dw = wideEgg ? 3 : 2, dh = wideEgg ? 2 : 1
         for (fx, fy) in spots {
-            let sx = (x0 + Int(Double(x1 - x0) * fx)) & ~1
-            let sy = (y0 + Int(Double(y1 - y0) * fy)) & ~1
+            let sx = wideEgg ? (x0 + Int(Double(x1 - x0) * fx)) / 3 * 3 : (x0 + Int(Double(x1 - x0) * fx)) & ~1
+            let sy = wideEgg ? (y0 + Int(Double(y1 - y0) * fy)) / 3 * 3 : (y0 + Int(Double(y1 - y0) * fy)) & ~1
             var ok = true
-            for dy in -1...1 {
-                for dx in -1...2 {
+            for dy in -1...dh {
+                for dx in -1...dw {
                     let i = (sy + dy) * w + sx + dx
                     guard sx + dx >= 0, sx + dx < w, sy + dy >= 0, sy + dy < h, solid[i],
                           codes[i] != SceneLayer.outline.rawValue, codes[i] != SceneLayer.rim.rawValue,
@@ -334,17 +350,17 @@ struct SceneRaster: Equatable {
                 if !ok { break }
             }
             if ok {
-                for dx in 0...1 { codes[sy * w + sx + dx] = spot }
+                for dy in 0..<dh { for dx in 0..<dw { codes[(sy + dy) * w + sx + dx] = spot } }
             }
         }
         for cy in 0..<h {
             let py = y + cy
-            if py < 0 || py >= SceneRaster.side { continue }
+            if py < 0 || py >= n { continue }
             for cx in 0..<w {
                 let code = codes[cy * w + cx]
                 let px = x + cx
-                if code == 0 || px < 0 || px >= SceneRaster.side { continue }
-                cells[py * SceneRaster.side + px] = code
+                if code == 0 || px < 0 || px >= n { continue }
+                cells[py * n + px] = code
             }
         }
     }
@@ -374,7 +390,7 @@ struct SceneRaster: Equatable {
                 hi[j] = mirror ? width - 1 - first : last
             }
         }
-        let side = SceneRaster.side
+        let side = n
         for j in -1...h {
             var l = Int.max, hh = -1
             for k in (j - 1)...(j + 1) where k >= 0 && k < h && hi[k] >= 0 {
@@ -545,19 +561,26 @@ struct SceneRenderOptions {
     var spriteOverride: [String]?
     /// Draw this background instead of the pet's family biome (tests and previews).
     var biome: Biome?
+    /// The look the picture is for: Technicolor paints the finer 96x96 scene (`SceneRenderer.render96`),
+    /// Traditional the 64x64 one, exactly as before.
+    var look: ColorMode = .traditional
 }
 
 enum SceneRenderer {
     /// The pet at rest in its room, for widgets: deterministic from the Pet and its `lastTick`.
-    static func still(pet: Pet, calendar: Calendar = .current) -> SceneRaster {
+    static func still(pet: Pet, calendar: Calendar = .current, look: ColorMode = .traditional) -> SceneRaster {
         var options = SceneRenderOptions()
         options.animated = false
         options.calendar = calendar
+        options.look = look
         return render(pet: pet, state: SceneState.still(for: pet), date: pet.lastTick, options: options)
     }
 
     static func render(pet: Pet, state: SceneState, date: Date,
                        options: SceneRenderOptions = SceneRenderOptions()) -> SceneRaster {
+        if options.look == .technicolor {
+            return render96(pet: pet, state: state, date: date, options: options)
+        }
         var r = SceneRaster()
         let t = date.timeIntervalSinceReferenceDate
         let motion = options.animated && !options.reducedMotion

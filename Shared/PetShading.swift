@@ -64,22 +64,26 @@ enum PetShading {
     /// How far down the silhouette an eye hole may sit; cats and bots carry spots and vents lower down.
     private static func eyeFrac(_ family: String) -> Double { (family == "cat" || family == "bot") ? 0.5 : 0.75 }
     /// Aliens have big eyes (up to three): the cell cap, the row tolerance and the count per frame grow for them.
-    private static func eyeMaxCells(_ family: String) -> Int { family == "alien" ? 64 : 6 }
+    private static func eyeMaxCells(_ family: String, wide: Bool) -> Int { family == "alien" ? 64 : (wide ? 8 : 6) }
     private static func eyeRowTol(_ family: String) -> Double { family == "alien" ? 5.5 : 2.5 }
     private static func eyeRowMax(_ family: String) -> Int { family == "alien" ? 3 : 2 }
 
-    private static let rMax = 7
-    /// Window offsets with squared distance below rMax^2, nearest first (see the distance map in `shade`).
-    private static let reach: (dx: [Int], dy: [Int], d2: [Int]) = {
+    /// Window offsets with squared distance below rm^2, nearest first (see the distance map in `shade`).
+    private static func makeReach(_ rm: Int) -> (dx: [Int], dy: [Int], d2: [Int]) {
         var list: [(dx: Int, dy: Int, d2: Int)] = []
-        for dy in -rMax...rMax {
-            for dx in -rMax...rMax where dx * dx + dy * dy < rMax * rMax {
+        for dy in -rm...rm {
+            for dx in -rm...rm where dx * dx + dy * dy < rm * rm {
                 list.append((dx: dx, dy: dy, d2: dx * dx + dy * dy))
             }
         }
         list.sort { $0.d2 < $1.d2 }
         return (dx: list.map { $0.dx }, dy: list.map { $0.dy }, d2: list.map { $0.d2 })
-    }()
+    }
+    private static let reach7 = makeReach(7)
+    /// 48x48 sprites: radius ceil(7 * 1.5) = 11.
+    private static let reach11 = makeReach(11)
+    /// Expo Math.round (half up) for the positive values used here.
+    private static func jsRound(_ v: Double) -> Int { Int((v + 0.5).rounded(.down)) }
     private static let tHi = 0.42
     private static let tSh = 0.5
     private static let tDither = 0.28
@@ -179,6 +183,11 @@ enum PetShading {
         var out = [UInt8](repeating: 0, count: n)
         if n == 0 { return ShadedPet(width: w, height: h, codes: out) }
         let st = style(family: family)
+        // 32x32 sprites (Scale2x, Traditional and the 64 grid) or 48x48 ones (Scale3x of the 16x16 art, Technicolor at 96):
+        // every pixel-unit constant is expressed for 32 and scaled by k (1 or 1.5), exactly like shading.ts.
+        let k = h > 32 ? Double(h) / 32.0 : 1.0   // anything up to 32 rows (tests use tiny sprites) shades with the original constants
+        let k2 = k * k
+        let wide = k > 1
 
         let X: UInt8 = 88 // "X"
         var on = [Bool](repeating: false, count: n)
@@ -207,7 +216,7 @@ enum PetShading {
 
         // distance to the outside (holes count as body, so an eye does not carve its own bevel)
         var dist = [Float](repeating: 0, count: n)
-        let rm = rMax
+        let rm = Int((7.0 * k).rounded(.up))
         // the exterior map padded by rMax cells of "outside" on every side, so the window scan needs no bounds checks
         let pw = w + 2 * rm
         var padded = [Bool](repeating: true, count: pw * (h + 2 * rm))
@@ -216,7 +225,8 @@ enum PetShading {
         }
         // Nearest outside cell within the window: the offsets are tried nearest first (squared distance below
         // rMax^2), so the first hit is the minimum; no hit keeps the cap.
-        let reachDX = PetShading.reach.dx, reachDY = PetShading.reach.dy, reachD2 = PetShading.reach.d2
+        let table = rm == 7 ? PetShading.reach7 : PetShading.reach11
+        let reachDX = table.dx, reachDY = table.dy, reachD2 = table.d2
         let reachCount = reachD2.count
         padded.withUnsafeBufferPointer { pad in
             for y in 0..<h {
@@ -232,7 +242,8 @@ enum PetShading {
                 }
             }
         }
-        let cap: Double = area > 520 ? 3.6 : (area > 280 ? 3.1 : 2.6)
+        let a32 = Double(area) / k2
+        let cap: Double = (a32 > 520 ? 3.6 : (a32 > 280 ? 3.1 : 2.6)) * k
         func at(_ x: Int, _ y: Int) -> Double { (x < 0 || y < 0 || x >= w || y >= h) ? 0 : Double(dist[y * w + x]) }
         var sm = [Float](repeating: 0, count: n)
         for y in 0..<h {
@@ -272,7 +283,7 @@ enum PetShading {
                 let gy = (hh(x, y + 1) - hh(x, y - 1)) / 2
                 let vn = (Double(y - ymin) / span) * 2 - 1
                 let s = (gx + gy) * 0.7071 - vBias * vn
-                if isOl(x, y + 1) && vn > -0.1 {
+                if (isOl(x, y + 1) || (wide && isOl(x, y + 2) && ((x + y) & 1) == 0)) && vn > -0.1 {
                     out[i] = cDeep
                 } else if s >= tHi {
                     out[i] = cBodyLight
@@ -289,7 +300,8 @@ enum PetShading {
         // the torso: the silhouette opened by a 5x5 window (thin ears, legs, tails and necks fall away)
         var filled = [Bool](repeating: false, count: n)
         for i in 0..<n { filled[i] = on[i] || !ext[i] }
-        let core = dilate(erode(filled, w, h, 2), w, h, 2)
+        let cr = wide ? 3 : 2
+        let core = dilate(erode(filled, w, h, cr), w, h, cr)
         var cx: Double = 0, cy: Double = 0
         var cn = 0, cy0 = h, cy1 = -1
         for i in 0..<n where core[i] {
@@ -306,7 +318,7 @@ enum PetShading {
             for y in 0..<h {
                 for x in 0..<w {
                     let i = y * w + x
-                    if on[i] && !ol[i] && core[i] && Double(y) >= line && Double(dist[i]) >= 2.6 && out[i] != cDeep {
+                    if on[i] && !ol[i] && core[i] && Double(y) >= line && Double(dist[i]) >= 2.6 * k && out[i] != cDeep {
                         belly[i] = true
                     }
                 }
@@ -323,19 +335,19 @@ enum PetShading {
         }
 
         // ---- sheen: a tiny L-shaped glint on the upper-left of the body ----
-        if st.sheen && area >= 70 {
+        if st.sheen && Double(area) >= 70 * k2 {
             var bx = -1, by = -1
             var bs: Double = 1e9
             for y in 0..<h {
                 for x in 0..<w {
                     let i = y * w + x
-                    if !on[i] || ol[i] || Double(dist[i]) < 2.4 { continue }
+                    if !on[i] || ol[i] || Double(dist[i]) < 2.4 * k { continue }
                     let sc = Double(x) + Double(y) * 1.15
                     if sc < bs { bs = sc; bx = x; by = y }
                 }
             }
             if bx >= 0 {
-                let offs: [(Int, Int)] = [(0, 0), (1, 0), (0, 1)]
+                let offs: [(Int, Int)] = wide ? [(0, 0), (1, 0), (2, 0), (0, 1), (0, 2)] : [(0, 0), (1, 0), (0, 1)]
                 for (dx, dy) in offs {
                     let x = bx + dx, y = by + dy
                     if isOn(x, y) && !isOl(x, y) { out[y * w + x] = cGlint }
@@ -370,11 +382,11 @@ enum PetShading {
                 frontier = next
             }
             for cells in components(prot, w, h) {
-                if cells.count < 5 { continue }
+                if cells.count < jsRound(5 * k2) { continue }
                 var m = 0
                 for i in cells where gd[i] > m { m = gd[i] }
-                if m < 3 { continue }
-                let thr = max(2, m - 2) // the last three pixels: a sock, an ear tip, a tail tip
+                if m < jsRound(3 * k) { continue }
+                let thr = max(2, m - (jsRound(3 * k) - 1)) // the last three pixels: a sock, an ear tip, a tail tip
                 var tx: Double = 0, ty: Double = 0
                 var tn = 0
                 for i in cells where gd[i] >= thr {
@@ -402,7 +414,7 @@ enum PetShading {
         // eyes are the small holes highest up (a cat's back spots or a bot's vents are lower and stay plain outline)
         var eyeCells: [[Int]] = []
         var eyeY: [Double] = []
-        let maxCells = eyeMaxCells(family)
+        let maxCells = jsRound(Double(eyeMaxCells(family, wide: wide)) * k2)
         let frac = eyeFrac(family)
         for cells in components(hole, w, h) {
             if cells.isEmpty || cells.count > maxCells { continue }
@@ -418,7 +430,7 @@ enum PetShading {
         if !eyeCells.isEmpty {
             var top = eyeY[0]
             for y in eyeY where y < top { top = y }
-            let tol = eyeRowTol(family)
+            let tol = eyeRowTol(family) * k
             var row: [Int] = []
             for k in 0..<eyeCells.count where eyeY[k] <= top + tol { row.append(k) }
             if !row.isEmpty && row.count <= eyeRowMax(family) {
@@ -440,7 +452,7 @@ enum PetShading {
                     }
                     if cells.count >= 2 { out[gi] = cShine }
                     // a big eye gets a second sparkle beside the first (the alien glow)
-                    if cells.count >= 10 {
+                    if cells.count >= jsRound(10 * k2) {
                         for j in [gi + 1, gi + w] {
                             if j < n && out[j] == cFill {
                                 out[j] = cShine

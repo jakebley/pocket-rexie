@@ -109,7 +109,7 @@ struct LCDScreen: View {
             return MiniPaint.frame(session: session, pet: pet, ms: date.timeIntervalSinceReferenceDate * 1000)
         }
         if hasFlash { return nil }
-        return director.frame(pet: pet, date: date, reducedMotion: reduceMotion, hatchedAt: hatchedAt)
+        return director.frame(pet: pet, date: date, reducedMotion: reduceMotion, hatchedAt: hatchedAt, look: palette.mode)
     }
 
     /// The model's summary plus the active look ("... look technicolor name Rexie"), for UI tests.
@@ -478,8 +478,9 @@ final class SceneDirector {
 
     /// Advance to `date` and draw. Safe to call more than once per tick.
     func frame(pet: Pet, date: Date, reducedMotion: Bool, hatchedAt: Date?,
-               calendar: Calendar = .current) -> SceneRaster {
+               calendar: Calendar = .current, look: ColorMode = .traditional) -> SceneRaster {
         var options = SceneRenderOptions()
+        options.look = look
         options.reducedMotion = reducedMotion
         options.calendar = calendar
 
@@ -495,7 +496,7 @@ final class SceneDirector {
         // Hatching: for a few seconds the new baby alternates with a cracked shell.
         if pet.stage == .baby, let hatchedAt, date.timeIntervalSince(hatchedAt) < 4,
            Int(date.timeIntervalSinceReferenceDate / 0.6) % 2 == 0 {
-            options.spriteOverride = LCDPainter.crackEgg
+            options.spriteOverride = look == .technicolor ? Sprite96.crackEgg : LCDPainter.crackEgg
         }
         return SceneRenderer.render(pet: pet, state: state, date: date, options: options)
     }
@@ -513,20 +514,23 @@ enum LCDScene {
             let step = Int(t / 0.2)
             let inverted = (step / 2) % 2 == 0
             let id = step % 2 == 0 ? flash.from : flash.to
-            let rows = Species.named(id)?.hiFrames.first ?? Sprite.eggHi
-            let sprite = LCDPainter.glyphPath(rows, x: 16, y: 16, size: size)
+            let big = palette.mode == .technicolor
+            let n = SceneGrid.n(for: palette.mode)
+            // Technicolor: the 48x48 Scale3x frame at the centre of the 96 grid; Traditional: the 32x32 frame on the 64 grid
+            let rows: [String] = big ? Sprite96.firstFrame(id: id) : (Species.named(id)?.hiFrames.first ?? Sprite.eggHi)
+            let sprite = LCDPainter.glyphPath(rows, x: big ? 24 : 16, y: big ? 24 : 16, size: size, n: n)
             if inverted {
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(palette.ink))
                 ctx.fill(sprite, with: .color(palette.background))
             } else {
-                ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+                ctx.fill(LCDPainter.gridPath(size: size, n: n), with: .color(palette.ink.opacity(0.06)))
                 ctx.fill(sprite, with: .color(palette.ink))
             }
             return
         }
 
         guard let raster else {
-            ctx.fill(LCDPainter.gridPath(size: size), with: .color(palette.ink.opacity(0.06)))
+            ctx.fill(LCDPainter.gridPath(size: size, n: SceneGrid.n(for: palette.mode)), with: .color(palette.ink.opacity(0.06)))
             return
         }
         LCDPainter.paint(&ctx, raster: raster, size: size, palette: palette)

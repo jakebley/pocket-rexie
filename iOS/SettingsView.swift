@@ -42,10 +42,10 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    let raster = SceneRenderer.still(pet: model.pet)
                     HStack(spacing: 12) {
                         ForEach(ColorMode.allCases, id: \.self) { mode in
-                            LookTile(mode: mode, selected: colorMode == mode, raster: raster,
+                            LookTile(mode: mode, selected: colorMode == mode,
+                                     raster: SceneRenderer.still(pet: model.pet, look: mode),
                                      preview: LCDStyle.palette(for: scheme, mode: mode),
                                      chrome: palette) { choose(mode) }
                         }
