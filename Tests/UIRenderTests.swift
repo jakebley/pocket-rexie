@@ -289,6 +289,45 @@ final class UIRenderTests: XCTestCase {
         }
     }
 
+    /// The Technicolor 96 scene: one adult per family on a rainy day, plus an egg, a baby and a hungry adult (compare with
+    /// expo-prototype/docs/screens/res96-*.png).
+    func testRender96Scenes() {
+        let side: CGFloat = 250
+        let cols = 4
+        var rainy = day
+        for d in 0..<60 {
+            let c = day.addingTimeInterval(Double(d) * 86400)
+            if SceneAmbient(seed: 4242, date: c, calendar: Calendar.current).weather == .rain { rainy = c; break }
+        }
+        let palette = LCDStyle.palette(for: .light, mode: .technicolor)
+        var pets = biomePets(at: rainy)
+        pets.append(("egg", pet(.egg, "", at: rainy, ageHours: 0.05) { $0.named = false }))
+        pets.append(("baby", pet(.baby, "pip", at: rainy, ageHours: 2)))
+        pets.append(("hungry", pet(.adult, "chomper", at: rainy, ageHours: 200) { $0.hunger = 0; $0.call = .hungry; $0.poops = 2 }))
+        let tiles: [AnyView] = pets.map { biomeTile($0.1, clock: rainy, palette: palette, side: side) }
+        let rows = (tiles.count + cols - 1) / cols
+        let sheet = VStack(spacing: 4) {
+            ForEach(0..<rows, id: \.self) { row in
+                HStack(spacing: 4) {
+                    ForEach(0..<cols, id: \.self) { col in
+                        if row * cols + col < tiles.count { tiles[row * cols + col] } else { Color.clear.frame(width: side, height: side) }
+                    }
+                }
+            }
+        }
+        .background(palette.background)
+        write(sheet, to: "scene96/sheet-rain",
+              size: CGSize(width: side * CGFloat(cols) + 4 * CGFloat(cols - 1), height: side * CGFloat(rows) + 4 * CGFloat(rows - 1)))
+        for (name, p) in pets.suffix(3) {
+            write(biomeTile(p, clock: rainy, palette: palette, side: 358), to: "scene96/tile-\(name)", size: CGSize(width: 358, height: 358))
+        }
+        // lights off, night and the same adult in Traditional for comparison
+        let off = pet(.adult, "chomper", at: night, ageHours: 200) { $0.asleep = true; $0.lightOn = false }
+        write(biomeTile(off, clock: night, palette: palette, side: 358), to: "scene96/tile-lights-off", size: CGSize(width: 358, height: 358))
+        let trad = LCDStyle.palette(for: .light, mode: .traditional)
+        write(biomeTile(pets[0].1, clock: rainy, palette: trad, side: 358), to: "scene96/tile-traditional", size: CGSize(width: 358, height: 358))
+    }
+
     // MARK: output
 
     private func write<V: View>(_ view: V, to relative: String, size: CGSize, scale: CGFloat = 2,
