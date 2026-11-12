@@ -4,7 +4,7 @@ import Foundation
 // (`SceneState`, `SceneRenderer.placement`); this painter converts every logic position with `g(v) = round(v * 1.5)` and
 // uses finer art (`SceneGlyph96`): a 48x48 pet (Scale3x of the 16x16 base frames, shaded by `PetShading` at k = 1.5),
 // 10x10 HUD glyphs, 13x13 props. It follows expo-prototype/src/ui/sceneDraw96.ts; the behaviour (poses, effects,
-// bubbles, weather, lights off) is the native 64 scene's. Biome scenery is the 64 art enlarged 3/2 until stage 2.
+// bubbles, weather, lights off) is the native 64 scene's. Biome scenery is native 96 art (Biome96*.swift) where a biome has a painter, else the 64 art enlarged 3/2.
 // Traditional never comes here: it stays the 64x64 scene exactly.
 
 extension SceneRaster {
@@ -158,16 +158,13 @@ extension SceneRenderer {
         let bubble = bubbleLayout(pet: pet, place: place)
 
         let rain = amb.weather == .rain
-        if biome != .meadow {
-            let live = BiomeLive(tick: motion ? Int((t * 8).rounded(.down)) : 0, seconds: motion ? t : 0,
-                                 seed: Int(pet.seed % 4096), rain: rain)
-            BiomeDraw.backdrop96(into: &r, biome: biome, period: amb.period, live: live)
-        }
+        let live = BiomeLive(tick: motion ? Int((t * 8).rounded(.down)) : 0, seconds: motion ? t : 0,
+                             seed: Int(pet.seed % 4096), rain: rain)
+        let native = Biome96.handles(biome)
+        BiomeDraw.backdrop96(into: &r, biome: biome, period: amb.period, live: live)
         drawSky96(&r, amb: amb, seed: pet.seed, t: t, frame: frame, motion: motion, avoid: bubble?.avoidRect)
-        drawGround96(&r, seed: pet.seed, frame: frame, motion: motion)
-        if biome != .meadow {
-            BiomeDraw.fore96(into: &r, biome: biome, period: amb.period, rain: rain)
-        }
+        if !native { drawGround96(&r, seed: pet.seed, frame: frame, motion: motion) }   // a native painter owns its ground band
+        BiomeDraw.fore96(into: &r, biome: biome, period: amb.period, live: live)
         // Sun, clouds, rain and scenery stay off the pet and its 1px ring in every biome, the meadow included.
         r.clearAroundPet(big.rows, x: big.x, y: big.top, mirror: big.mirror)
 

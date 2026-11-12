@@ -61,7 +61,7 @@ final class Res96Tests: XCTestCase {
 
     private func bbox(_ r: SceneRaster, _ pred: (UInt8) -> Bool) -> (x0: Int, y0: Int, x1: Int, y1: Int)? {
         var x0 = Int.max, y0 = Int.max, x1 = -1, y1 = -1
-        for i in 0..<r.cells.count where r.cells[i] != 0 && pred(r.cells[i] & 0x7f) {
+        for i in 0..<r.cells.count where r.cells[i] != 0 && pred(r.cells[i]) {
             let x = i % r.n, y = i / r.n
             x0 = min(x0, x); y0 = min(y0, y); x1 = max(x1, x); y1 = max(y1, y)
         }
@@ -327,10 +327,10 @@ final class Res96Tests: XCTestCase {
         for sp in adults() {
             for look in [ColorMode.technicolor, .traditional] {
                 let r = render(makePet(sp), hour: 23, look: look)
-                XCTAssertTrue(r.cells.allSatisfy { $0 < 128 }, "layer codes stay <= 127 (the dim flag is 0x80)")
+                XCTAssertTrue(r.cells.allSatisfy { $0 <= Slot96.last }, "layer codes stay inside the colour table (layers + biome slots)")
             }
         }
-        XCTAssertLessThanOrEqual(SceneLayer.maxCode, 127)
+        XCTAssertLessThan(SceneLayer.maxCode, Slot96.first)
     }
 
     func testEveryStateAndCallDrawsAt96() {
@@ -381,7 +381,7 @@ final class Res96Tests: XCTestCase {
         var withScenery = 0
         for sp in adults() {
             let r = render(makePet(sp), look: .technicolor)
-            if r.cells.contains(where: { $0 >= SceneLayer.sceneryFrom && !SceneLayer(rawValue: $0 & 0x7f)!.isPetLayer }) { withScenery += 1 }
+            if r.cells.contains(where: { $0 >= SceneLayer.sceneryFrom && !(SceneLayer(rawValue: $0)?.isPetLayer ?? false) }) { withScenery += 1 }
             // pets keep a clear ring
             var ringBad = 0
             for i in 0..<r.cells.count where isPetCode(r.cells[i]) {

@@ -899,6 +899,7 @@ extension BiomeDraw {
 
     /// Biome scenery behind the 96 meadow layers. Call on an empty 96 raster before the sky.
     static func backdrop96(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
+        if Biome96.backdrop(into: &r, biome: biome, period: period, live: live) { return }
         if biome == .meadow || r.n != 96 { return }
         var canvas = BiomeCanvas(copying: cached(biome, back: true, period, live.rain))
         paintLive(biome, &canvas, period, live)
@@ -917,9 +918,10 @@ extension BiomeDraw {
     }
 
     /// Floor props at 96, only into cells the meadow layers left unlit. Call after the ground.
-    static func fore96(into r: inout SceneRaster, biome: Biome, period: Period, rain: Bool) {
+    static func fore96(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
+        if Biome96.fore(into: &r, biome: biome, period: period, live: live) { return }
         if biome == .meadow || r.n != 96 { return }
-        let src = cached(biome, back: false, period, rain)
+        let src = cached(biome, back: false, period, live.rain)
         let n = BiomeCanvas.n
         src.withUnsafeBufferPointer { src in
             r.cells.withUnsafeMutableBufferPointer { dst in
