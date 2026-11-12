@@ -433,6 +433,55 @@ final class UIRenderTests: XCTestCase {
         .environment(\.colorScheme, dark || isAccessory ? .dark : .light)
     }
 
+    /// Technicolor interface chrome (docs/RESOLUTION.md "Interface chrome"): the sheets and dialogs on a phone in both looks, plus a
+    /// contact sheet of the 5x7 font and the 16x16 icons. Compare with expo-prototype/docs/screens/chrome96/.
+    func testRenderChrome96() {
+        let phone = phones[0]
+        let model = GameModel(pet: pet(.child, "rawr", at: day), persist: { _ in })
+        for mode in ColorMode.allCases {
+            for scheme in [ColorScheme.light, .dark] {
+                let schemeName = scheme == .dark ? "dark" : "light"
+                let palette = LCDStyle.palette(for: scheme, mode: mode)
+                let settings = ZStack {
+                    palette.background
+                    SettingsView(model: model, colorModeOverride: mode)
+                        .padding(.top, 10)
+                }
+                .environment(\.colorScheme, scheme)
+                .environment(\.displayScale, 2)
+                write(settings, to: "chrome96/\(mode.rawValue)-\(schemeName)-settings", size: CGSize(width: phone.size.width, height: 900))
+            }
+        }
+        let tech = LCDStyle.palette(for: .light, mode: .technicolor)
+        for (scheme, name) in [(ColorScheme.light, "light"), (.dark, "dark")] {
+            let palette = LCDStyle.palette(for: scheme, mode: .technicolor)
+            let prompt = ChromeNamePrompt(title: "Your dino hatched!", keepName: "Rexie", name: .constant("Bartholomew"), onName: {}, keep: {})
+                .environment(\.lcdPalette, palette)
+                .environment(\.colorScheme, scheme)
+                .environment(\.displayScale, 2)
+                .background(palette.background)
+            write(prompt, to: "chrome96/technicolor-\(name)-name-prompt", size: phone.size)
+        }
+        // the font and every icon, large
+        let glyphs = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?:;/-+=*'\"%#&@$|<>()[]~^_")
+        let names = MenuIcon.allCases.map { $0.title.lowercased() } + ["gear", "lock", "tick", "close"]
+        let sheet = VStack(alignment: .leading, spacing: 12) {
+            ChromeText("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG 0123456789", ps: 3.5)
+            ChromeText(String(glyphs), ps: 3.5)
+            HStack(spacing: 8) { ForEach(names.prefix(7), id: \.self) { ChromeIcon(name: $0, pixel: 3).chromeBox(.tile) } }
+            HStack(spacing: 8) { ForEach(names.suffix(7), id: \.self) { ChromeIcon(name: $0, pixel: 3).chromeBox(.tileOn, radius: 4) } }
+            HStack(spacing: 8) {
+                ChromeButton(title: "RAISED", ps: 3) {}
+                ChromeButton(title: "ON", ps: 3, on: true) {}
+            }
+        }
+        .padding(16)
+        .background(tech.background)
+        .environment(\.lcdPalette, tech)
+        .environment(\.displayScale, 2)
+        write(sheet, to: "chrome96/font-icons", size: CGSize(width: 700, height: 360))
+    }
+
     func testRenderWidgets() {
         let families: [(String, WidgetFamily, CGSize)] = [
             ("small", .systemSmall, CGSize(width: 170, height: 170)),

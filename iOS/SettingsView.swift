@@ -39,6 +39,104 @@ struct SettingsView: View {
     }
 
     var body: some View {
+        if colorMode == .technicolor { fineBody } else { classicBody }
+    }
+
+    // MARK: Technicolor: the pixel chrome sheet
+
+    private var fineBody: some View {
+        NavigationStack {
+            GeometryReader { geo in
+                let inner = geo.size.width - 12 - 28   // sheet margin and panel padding
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack {
+                            ChromeText("SETTINGS", ps: 6)
+                            Spacer(minLength: 8)
+                            ChromeButton(title: "CLOSE", ps: 2.6, minHeight: 44, identifier: "settings-done") { dismiss() }
+                        }
+                        ChromeSectionHeader(title: "LOOK")
+                        HStack(spacing: 12) {
+                            ForEach(ColorMode.allCases, id: \.self) { mode in
+                                LookTile(mode: mode, selected: colorMode == mode,
+                                         raster: SceneRenderer.still(pet: model.pet, look: mode),
+                                         preview: LCDStyle.palette(for: scheme, mode: mode),
+                                         chrome: palette) { choose(mode) }
+                            }
+                        }
+                        ChromeParagraph(text: "Traditional is the green-gray monochrome LCD. Technicolor paints the room in muted, nostalgic colors. It applies to the widgets and the watch too.",
+                                        ps: 2.6, avail: inner, color: palette.ink.opacity(0.75))
+                        ChromeSectionHeader(title: "PLAY")
+                        ChromeToggleRow(title: "SOUND", subtitle: "BEEPS AND TUNES", isOn: $soundOn, identifier: "toggle-sound", width: inner)
+                        ChromeToggleRow(title: "NOTIFICATIONS", subtitle: "CALLS WHEN IT NEEDS YOU", isOn: $notificationsOn,
+                                        identifier: "toggle-notifications", width: inner)
+                        ChromeToggleRow(title: "CLASSIC", subtitle: "THE 1997 RULES, A NEGLECTED DINO CAN DIE",
+                                        isOn: Binding(get: { !model.pet.gentle }, set: { model.setGentle(!$0) }),
+                                        identifier: "toggle-classic", width: inner)
+                        ChromeToggleRow(title: "VACATION", subtitle: "PAUSE THE PET WHILE YOU ARE AWAY",
+                                        isOn: Binding(get: { model.pet.paused }, set: { model.setPaused($0) }),
+                                        identifier: "toggle-vacation", width: inner)
+                        if testerTools {
+                            ChromeSectionHeader(title: "TESTING")
+                            ChromeToggleRow(title: "PREVIEW PLUS", subtitle: "UNLOCK PLUS FAMILIES, NO PAYMENT", isOn: $plusPreview,
+                                            identifier: "toggle-plus-preview", width: inner)
+                            ChromeToggleRow(title: "SHOW EGG CHOOSER", isOn: $eggChooser, identifier: "toggle-egg-chooser", width: inner)
+                            ChromeText("NEW EGG OF ANY FAMILY", ps: 3.5)
+                            let cols = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+                            LazyVGrid(columns: cols, spacing: 8) {
+                                ForEach(Species.families, id: \.id) { fam in
+                                    ChromeButton(title: fam.name, ps: 2, fill: true, hpad: 6, identifier: "tester-egg-" + fam.id) { confirmFamily = fam }
+                                }
+                            }
+                            HStack {
+                                ChromeText("VERSION", ps: 3.5)
+                                Spacer()
+                                ChromeText(version, ps: 3.5)
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier("tester-version")
+                            ChromeParagraph(text: "Only in test builds, never in the App Store version. New egg replaces your current pet and keeps your Dex.",
+                                            ps: 2.6, avail: inner, color: palette.ink.opacity(0.75))
+                        }
+                        ChromeSectionHeader(title: "MORE")
+                        NavigationLink {
+                            AboutView(version: version)
+                        } label: {
+                            ChromeText("ABOUT POCKET REXIE", ps: 4)
+                                .frame(maxWidth: .infinity, minHeight: 52)
+                                .chromeBox(.raised)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("About Pocket Rexie")
+                        .accessibilityIdentifier("settings-about")
+                    }
+                    .padding(14)
+                }
+                .chromeBox(.raised, radius: 5)
+                .padding(6)
+            }
+            .background(palette.background.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .confirmationDialog("Replace your pet with a new \(confirmFamily?.name ?? "") egg?",
+                                isPresented: Binding(get: { confirmFamily != nil }, set: { if !$0 { confirmFamily = nil } }),
+                                titleVisibility: .visible) {
+                Button("Replace pet", role: .destructive) {
+                    if let fam = confirmFamily { model.testerNewEgg(family: fam.id) }
+                    confirmFamily = nil
+                }
+                Button("Cancel", role: .cancel) { confirmFamily = nil }
+            }
+            .onChange(of: notificationsOn) { _, on in
+                if on { Notifier.requestAuthorizationIfNeeded() }
+                Notifier.reschedule(model.pet)
+            }
+        }
+        .tint(palette.ink)
+        .environment(\.lcdPalette, palette)
+    }
+
+    private var classicBody: some View {
         NavigationStack {
             Form {
                 Section {
@@ -152,8 +250,40 @@ private struct LookTile: View {
     let action: () -> Void
 
     var body: some View {
+        if chrome.mode == .technicolor { fineBody } else { classicBody }
+    }
+
+    private var fineBody: some View {
         let fg = selected ? chrome.background : chrome.ink
-        Button(action: action) {
+        return Button(action: action) {
+            VStack(spacing: 8) {
+                Canvas { ctx, size in
+                    LCDPainter.paint(&ctx, raster: raster, size: size, palette: preview)
+                }
+                .aspectRatio(1, contentMode: .fit)
+                .background(preview.background)
+                .overlay(Rectangle().strokeBorder(preview.ink.opacity(0.5), lineWidth: 1))
+                HStack(spacing: 4) {
+                    if selected { ChromeIcon(name: "tick", pixel: 1, color: fg) }
+                    ChromeText(mode.title, ps: 2.6, color: fg)
+                }
+                .frame(maxWidth: .infinity, minHeight: 28)
+            }
+            .padding(10)
+            .chromeBox(selected ? .tileOn : .tile, radius: 4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(mode.title)
+        .accessibilityValue(selected ? "Selected" : "Not selected")
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityIdentifier("look-" + mode.rawValue)
+    }
+
+    private var classicBody: some View {
+        let fg = selected ? chrome.background : chrome.ink
+        return Button(action: action) {
             VStack(spacing: 8) {
                 Canvas { ctx, size in
                     LCDPainter.paint(&ctx, raster: raster, size: size, palette: preview)
@@ -189,7 +319,38 @@ private struct AboutView: View {
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var mode: ColorMode = .traditional
     private var rowColor: Color { LCDStyle.palette(for: scheme, mode: mode).ink.opacity(0.1) }
 
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
+        if mode == .technicolor { fineBody } else { classicBody }
+    }
+
+    private var fineBody: some View {
+        let palette = LCDStyle.palette(for: scheme, mode: mode)
+        return GeometryReader { geo in
+            let inner = geo.size.width - 12 - 28
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        ChromeText("ABOUT", ps: 6)
+                        Spacer(minLength: 8)
+                        ChromeButton(title: "BACK", ps: 2.6, minHeight: 44, identifier: "about-back") { dismiss() }
+                    }
+                    ChromeParagraph(text: "Pocket Rexie is free. There are no ads, no in-app purchases and no tracking.", ps: 3, avail: inner)
+                    ChromeParagraph(text: "Pocket Rexie is an independent homage to the virtual pets of the 1990s. It is not affiliated with Bandai or any other toy maker.", ps: 3, avail: inner)
+                    ChromeText("VERSION " + version, ps: 3.5)
+                }
+                .padding(14)
+            }
+            .chromeBox(.raised, radius: 5)
+            .padding(6)
+        }
+        .background(palette.background.ignoresSafeArea())
+        .environment(\.lcdPalette, palette)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    private var classicBody: some View {
         Form {
             Section {
                 Text("Pocket Rexie is free. There are no ads, no in-app purchases and no tracking.")

@@ -9,6 +9,7 @@ struct ContentView: View {
     private let injected: Bool
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.displayScale) private var displayScale
     @State private var showSettings = false
     @State private var nameDraft = "Rexie"
     /// The look chosen in Settings (App Group defaults, shared with the widgets and watch).
@@ -26,13 +27,16 @@ struct ContentView: View {
     private var needsName: Bool { model.pet.stage == .baby && !model.pet.named }
 
     private var palette: LCDPalette { LCDStyle.palette(for: scheme, mode: modeOverride ?? storedMode) }
+    /// Technicolor draws the interface from finer pixels (Shared/Chrome96.swift); Traditional keeps the chunky one.
+    private var fine: Bool { palette.mode == .technicolor }
 
     var body: some View {
         GeometryReader { geo in
-            let layout = Layout(size: geo.size)
+            let layout = Layout(size: geo.size, fine: fine, scale: displayScale)
             VStack(spacing: 0) {
-                HStack {
-                    Spacer(minLength: 0)
+                HStack(spacing: 6) {
+                    if fine { titleBar }
+                    else { Spacer(minLength: 0) }
                     gearButton
                 }
                 .frame(height: Layout.topBar)
@@ -67,7 +71,8 @@ struct ContentView: View {
             SettingsView(model: model, colorModeOverride: modeOverride)
                 .presentationDetents([.medium, .large])
         }
-        .alert(model.pet.family == "dino" ? "Your dino hatched!" : "Your pet hatched!", isPresented: Binding(get: { needsName }, set: { _ in })) {
+        .overlay { if fine && needsName { namePrompt } }
+        .alert(model.pet.family == "dino" ? "Your dino hatched!" : "Your pet hatched!", isPresented: Binding(get: { needsName && !fine }, set: { _ in })) {
             TextField("Name", text: $nameDraft)
             Button("Name it") { model.rename(nameDraft) }
             Button("Keep \(model.pet.name)") { model.rename(model.pet.name) }
@@ -120,14 +125,39 @@ struct ContentView: View {
 
     // MARK: pieces
 
+    /// Technicolor title bar: an inset pixel box with the name of the toy.
+    private var titleBar: some View {
+        ChromeText("POCKET REXIE", ps: 5.5)
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 40, alignment: .leading)
+            .chromeBox(.inset)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Pocket Rexie")
+    }
+
+    /// The naming prompt in the pixel chrome (the system alert stays for Traditional).
+    private var namePrompt: some View {
+        ChromeNamePrompt(title: model.pet.family == "dino" ? "Your dino hatched!" : "Your pet hatched!",
+                         keepName: model.pet.name, name: $nameDraft,
+                         onName: { model.rename(nameDraft) }, keep: { model.rename(model.pet.name) })
+            .environment(\.lcdPalette, palette)
+    }
+
     private var gearButton: some View {
         Button {
             Haptics.tap()
             showSettings = true
         } label: {
-            PixelGlyphView(rows: PixelBitmap.gear, pixel: 3)
-                .frame(width: 48, height: 48)
-                .contentShape(Rectangle())
+            if fine {
+                ChromeIcon(name: "gear", pixel: 2)
+                    .frame(width: 44, height: 44)
+                    .chromeBox(.raised)
+                    .contentShape(Rectangle())
+            } else {
+                PixelGlyphView(rows: PixelBitmap.gear, pixel: 3)
+                    .frame(width: 48, height: 48)
+                    .contentShape(Rectangle())
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Settings")
@@ -147,7 +177,7 @@ struct ContentView: View {
     private func messageLine(layout: Layout) -> some View {
         let width = layout.side
         let text = model.message.isEmpty ? model.pet.statusLine : model.message
-        return PixelParagraph(text: text, pixel: 3, maxChars: max(8, Int(width / 12)), centered: true)
+        return messageBody(text: text, width: width, layout: layout)
             .frame(width: width, height: layout.messageHeight, alignment: .center)
             .contentShape(Rectangle())
             .onTapGesture { model.dismissMessage() }
@@ -157,11 +187,28 @@ struct ContentView: View {
             .accessibilityAddTraits(.isButton)
     }
 
+    @ViewBuilder
+    private func messageBody(text: String, width: CGFloat, layout: Layout) -> some View {
+        if fine {
+            let d = ChromeDensity.technicolor
+            let fit = d.fitLines(text, avail: width - 24, maxPs: 4.5, minPs: 3, scale: displayScale)
+            VStack(spacing: d.fontPixel(fit.ps, scale: displayScale) * 2) {
+                ForEach(Array(fit.lines.enumerated()), id: \.offset) { _, line in
+                    ChromeText(line, ps: fit.ps, exact: true)
+                }
+            }
+            .frame(width: width, height: layout.messageHeight)
+            .chromeBox(.inset)
+        } else {
+            PixelParagraph(text: text, pixel: 3, maxChars: max(8, Int(width / 12)), centered: true)
+        }
+    }
+
     private func controls(layout: Layout) -> some View {
         HStack(spacing: Layout.controlGap) {
-            ControlButton(label: "A", height: layout.buttonHeight) { model.cycleSelection() }
-            ControlButton(label: "B", height: layout.buttonHeight) { model.confirm() }
-            ControlButton(label: "C", height: layout.buttonHeight) { model.cancel() }
+            ControlButton(label: "A", height: layout.buttonHeight, fine: fine) { model.cycleSelection() }
+            ControlButton(label: "B", height: layout.buttonHeight, fine: fine) { model.confirm() }
+            ControlButton(label: "C", height: layout.buttonHeight, fine: fine) { model.cancel() }
         }
         .frame(width: layout.side)
     }
@@ -202,17 +249,27 @@ private struct Layout {
         return min(3, max(1, fit))
     }
 
-    init(size: CGSize) {
+    /// The 5x7 label size in real points per font pixel: whole device pixels, the largest that fits MEDICINE in a tile.
+    static func fitFineLabel(tileWidth: CGFloat, scale: CGFloat) -> CGFloat {
+        let d = ChromeDensity.technicolor
+        let want = ChromeDensity.snap(2 * d.textScale, scale: scale, minPt: 0.6)
+        let fit = ChromeDensity.snap((tileWidth - 4) / CGFloat(d.width(of: "MEDICINE")), scale: scale, down: true, minPt: 0.6)
+        return min(want, fit)
+    }
+
+    init(size: CGSize, fine: Bool = false, scale: CGFloat = 2) {
+        let fontH: CGFloat = fine ? 7 : 5
+        func label(_ tileWidth: CGFloat) -> CGFloat { fine ? Layout.fitFineLabel(tileWidth: tileWidth, scale: scale) : Layout.fitLabel(tileWidth: tileWidth) }
         // top bar, two icon rows, message, controls, five gaps, bottom padding and a little slack
         var widthSide = size.width - Layout.gutter * 2
         if size.width >= 600 { widthSide = min(widthSide, Layout.padMaxSide) }
         // Five tiles share the width; leave 8pt of slack inside each for the highlight.
-        let lp0: CGFloat = Layout.fitLabel(tileWidth: widthSide / 5)
-        let fixed = Layout.topBar + (Layout.baseRow + (5 * lp0 + 4).rounded(.up)) * 2 + Layout.baseMessage
+        let lp0: CGFloat = label(widthSide / 5)
+        let fixed = Layout.topBar + (Layout.baseRow + (fontH * lp0 + 4).rounded(.up)) * 2 + Layout.baseMessage
             + Layout.baseButton + Layout.gap * 5 + Layout.bottomPad + 4
         side = max(160, min(widthSide, size.height - fixed)).rounded(.down)
-        let lp: CGFloat = Layout.fitLabel(tileWidth: side / 5)
-        let lb: CGFloat = (5 * lp + 4).rounded(.up)
+        let lp: CGFloat = label(side / 5)
+        let lb: CGFloat = (fontH * lp + 4).rounded(.up)
         labelPixel = lp
         labelBlock = lb
         let grow = min(max(0, size.height - fixed - side), Layout.maxGrow)
@@ -230,6 +287,7 @@ private struct IconTile: View {
     let layout: Layout
     let palette: LCDPalette
     @ObservedObject var model: GameModel
+    @Environment(\.displayScale) private var displayScale
     /// Set when a hold already described the icon, so the release does not also act.
     @State private var described = false
 
@@ -241,17 +299,23 @@ private struct IconTile: View {
             Beeper.shared.blip()
             model.perform(icon)
         } label: {
-            VStack(spacing: 3) {
-                PixelGlyphView(rows: icon.glyph, pixel: layout.glyphPixel, color: ink)
-                PixelText(icon.label, pixel: layout.labelPixel, color: ink)
-                    .accessibilityHidden(true)
+            Group {
+                if palette.mode == .technicolor {
+                    fineBody(ink: ink)
+                } else {
+                    VStack(spacing: 3) {
+                        PixelGlyphView(rows: icon.glyph, pixel: layout.glyphPixel, color: ink)
+                        PixelText(icon.label, pixel: layout.labelPixel, color: ink)
+                            .accessibilityHidden(true)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: layout.rowHeight, maxHeight: layout.rowHeight)
+                    .background(
+                        Rectangle()
+                            .fill(selected ? palette.ink : Color.clear)
+                            .padding(2)
+                    )
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: layout.rowHeight, maxHeight: layout.rowHeight)
-            .background(
-                Rectangle()
-                    .fill(selected ? palette.ink : Color.clear)
-                    .padding(2)
-            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -270,21 +334,39 @@ private struct IconTile: View {
     }
 }
 
+extension IconTile {
+    /// Technicolor: a pixel tile box with the 16x16 icon, and the 5x7 label under it.
+    @ViewBuilder
+    fileprivate func fineBody(ink: Color) -> some View {
+        let d = ChromeDensity.technicolor
+        let tileW = layout.side / 5
+        let labelH = layout.labelPixel * CGFloat(d.fontHeight)
+        let box = max(20, floor(min(layout.rowHeight - labelH - 6, tileW - 8)))
+        let iconPx = 16 * ChromeDensity.snap(box * d.iconFill / 16, scale: displayScale, down: true)
+        VStack(spacing: 2) {
+            ChromeIcon(name: icon.title.lowercased(), pixel: iconPx / 16, color: ink)
+                .frame(width: box, height: box)
+                .chromeBox(selected ? .tileOn : .tile)
+            ChromeText(icon.label, ps: layout.labelPixel / d.textScale, color: palette.ink, exact: true)
+                .accessibilityHidden(true)
+        }
+        .frame(maxWidth: .infinity, minHeight: layout.rowHeight, maxHeight: layout.rowHeight)
+    }
+}
+
 /// One flat A / B / C control: pixel label, ink outline, inverted while pressed. It acts on touch
 /// down (a quick tap never waits for the finger to lift) and stays a button for VoiceOver.
 private struct ControlButton: View {
     let label: String
     let height: CGFloat
+    var fine = false
     let action: () -> Void
     @GestureState private var down = false
     @State private var fired = false
     @Environment(\.lcdPalette) private var palette
 
     var body: some View {
-        PixelText(label, pixel: 5, color: down ? palette.background : palette.ink)
-            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-            .background(down ? palette.ink : Color.clear)
-            .overlay(Rectangle().strokeBorder(palette.ink, lineWidth: 2))
+        face
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
@@ -304,6 +386,21 @@ private struct ControlButton: View {
             .accessibilityIdentifier("btn-\(label)")
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { fire() }
+    }
+
+    @ViewBuilder
+    private var face: some View {
+        if fine {
+            let d = ChromeDensity.technicolor
+            ChromeText(label, ps: d.bigLabelPs, color: down ? palette.background : palette.ink)
+                .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+                .chromeBox(down ? .down : .raised, radius: d.cornerBig)
+        } else {
+            PixelText(label, pixel: 5, color: down ? palette.background : palette.ink)
+                .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+                .background(down ? palette.ink : Color.clear)
+                .overlay(Rectangle().strokeBorder(palette.ink, lineWidth: 2))
+        }
     }
 
     private func fire() {
