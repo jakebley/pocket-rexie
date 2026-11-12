@@ -83,7 +83,7 @@ const lum = (hex: string) => {
   cat.hiFrames[0].forEach((r, y) => [...r].forEach((c, x) => { if (c !== 'X' && Lc[y * 32 + x] === 0 && x > 5 && x < 27) unlitInside++; }));
   ok(unlitInside > 20, 'cat back spots are still holes');
   // Technicolor frame: the eye cells are painted with the pupil and shine colours; Traditional prints them as unlit
-  const fox = newPet(T0, { seed: 5 }); forceSpecies(fox, 'stalker'); fox.named = true;
+  const fox = /* a dino: fox eyes are one cell, which carries no catch-light */ newPet(T0, { seed: 5 }); forceSpecies(fox, 'chomper'); fox.named = true;
   const b = new Buf(SCENE_N);
   drawScene(b, { ...initScene(fox, T0, 12), nowMs: T0 + 1234, still: true, weather: 'clear' }, fox);
   const eyeCells = [...b.px].filter((v) => v === Layer.EYE_FILL || v === Layer.EYE_SHINE).length;
