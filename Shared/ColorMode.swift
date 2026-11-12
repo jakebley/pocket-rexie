@@ -223,8 +223,12 @@ enum ScenePalette {
 
     private static let darkBlend = 0.18
     private static let darkSkyBlend = 0.68
-    private static let darkBodyBlend = 0.44
-    private static let darkBodyBlendBaby = 0.62
+    // A body keeps its colour in the dark appearance (a light touch of the night ground only): the old 44 and 62 percent
+    // blends toward the navy ground turned orange foxes and cream eggs into grey. The outline adapts instead (below).
+    private static let darkBodyBlend = 0.1
+    private static let darkBodyBlendBaby = 0.06
+    /// Outline of a body too light to stand apart from the cream dark-appearance outline.
+    private static let darkOutlineInk = RGB(hex: "#1A1626")
     private static let rimLight = RGB(hex: "#E4DCC4")
 
     /// Lights-off darkening: the whole sky, and the extra dither, blend toward this near-black.
@@ -299,7 +303,7 @@ enum ScenePalette {
             } else {
                 var base = techLight(l) ?? techLight(.ink) ?? sc.ink
                 if let hex = remap?[l] { base = RGB(hex: hex) }
-                if let sh = shade, biomeIsScenery(l), !biomeGlows.contains(l) { base = base.mixed(with: sh.0, sh.1) }
+                if let sh = shade, biomeIsScenery(l), !l.isPetLayer, !biomeGlows.contains(l) { base = base.mixed(with: sh.0, sh.1) }
                 t[i] = dark ? base.mixed(with: sc.ground, darkBlend) : base
             }
         }
@@ -308,6 +312,11 @@ enum ScenePalette {
         t[bodyIndex] = dark
             ? body.mixed(with: sc.ground, line == .baby ? darkBodyBlendBaby : darkBodyBlend)
             : body
+        // Dark appearance: a bright body against the cream outline has little contrast, so it takes a dark outline
+        // (its lit edge still glows through the rim layer below); only bodies dark enough keep the cream one.
+        if dark, RGB.contrast(t[bodyIndex], t[Int(SceneLayer.outline.rawValue)]) < 3 {
+            t[Int(SceneLayer.outline.rawValue)] = darkOutlineInk
+        }
         // Against the night sky a dark outline vanishes: rim-light it, but only for bodies dark enough
         // to stand apart from a light rim (the rest keep the dark outline and read against the sky).
         if night, !dark, RGB.contrast(t[bodyIndex], rimLight) >= 3 {
@@ -331,6 +340,12 @@ enum ScenePalette {
         t[Int(SceneLayer.accentDark.rawValue)] = ramp.accentDark
         t[Int(SceneLayer.accentLight.rawValue)] = ramp.accentLight
         t[Int(SceneLayer.glint.rawValue)] = ramp.glint
+        // egg shell: eggshell cream with a soft highlight and a warm (not cool grey) shade; the dark appearance only
+        // takes a touch of the night ground so the egg stays light
+        func eggTone(_ hex: String) -> RGB { dark ? RGB(hex: hex).mixed(with: sc.ground, 0.08) : RGB(hex: hex) }
+        t[Int(SceneLayer.eggShell.rawValue)] = eggTone("#F0E5C6")
+        t[Int(SceneLayer.eggLight.rawValue)] = eggTone("#FCF6E2")
+        t[Int(SceneLayer.eggShade.rawValue)] = eggTone("#D2BF95")
         // eyes: an opaque dark pupil with a bright catch-light; on a very dark body the ring around it turns cream
         let pupil = dark ? RGB(hex: "#12141F") : RGB(hex: "#1E2030")
         t[Int(SceneLayer.eyeFill.rawValue)] = pupil

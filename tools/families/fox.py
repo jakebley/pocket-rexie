@@ -65,7 +65,10 @@ LINE = {
  'plumptail': 'riverside', 'angler': 'riverside', 'reedwalker': 'riverside', 'tidecaller': 'riverside', 'frostpelt': 'riverside',
  'ashpaw': 'stray', 'scrabble': 'stray', 'tatter': 'stray', 'raggedy': 'stray', 'scrapfox': 'stray', 'gloamfox': 'stray',
 }
-LINE_COLORS = {'hunter': '#C2623A', 'forager': '#D9A441', 'riverside': '#8FA3B5', 'stray': '#9A948C', 'baby': '#E7DCC0'}
+LINE_COLORS = {'hunter': '#E06A26', 'forager': '#E3A12E', 'riverside': '#8FA3B5', 'stray': '#9A948C', 'baby': '#EE8B34'}
+# Kits and children read as foxes only when they are fox-orange (not cream or grey-blue, which look like a dog or a wolf).
+COLOR_OVERRIDES = {'dewkit': '#F28C32', 'cinder': '#E97A2C', 'scamp': '#EE7B2A', 'bramble': '#E8962F',
+                   'ripple': '#DE8E4E', 'ashpaw': '#C48A5C'}
 
 # parent -> ordered (child, requirements); first match wins; the last entry has no requirements.
 EVO = {

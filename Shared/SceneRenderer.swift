@@ -94,12 +94,21 @@ enum SceneLayer: UInt8, CaseIterable {
 
     case starfield = 89, planet = 90, planetShade = 91, crater = 92, crystal = 93, hull = 94
 
+    // MARK: egg shell (Technicolor only, like the eye fills: Traditional draws the egg as a clean outline plus speckles)
+
+    /// eggshell cream, the body of the egg
+    case eggShell = 95
+    /// soft highlight on the top-left of the shell
+    case eggLight = 96
+    /// warm shade on the bottom-right of the shell
+    case eggShade = 97
+
     /// First biome-scenery code. Codes from here up are Technicolor-only: Traditional draws them unlit
     /// (the biome cue codes 40...42 are below it and print as ink, like the Expo `SCENERY_FROM`).
     static let sceneryFrom: UInt8 = 43
 
     /// Highest code in use; color tables have `maxCode + 1` entries.
-    static let maxCode: UInt8 = 94
+    static let maxCode: UInt8 = 97
 
     /// Does Traditional mode draw this code? (Every shared layer, the pet shading layers and the cues: yes, as
     /// ink. Scenery and the eye fills: no, they print as unlit.) Mirrors `tradVisible` in layers.ts.
@@ -108,13 +117,14 @@ enum SceneLayer: UInt8, CaseIterable {
     /// Biome scenery: the codes Traditional leaves unlit and the pet-ring clear removes (not the cues, not the pet's eye fills).
     static func isScenery(_ code: UInt8) -> Bool {
         code >= sceneryFrom && code != SceneLayer.eyeFill.rawValue && code != SceneLayer.eyeShine.rawValue
+            && !(code >= SceneLayer.eggShell.rawValue && code <= SceneLayer.eggShade.rawValue)
     }
 
     /// Codes a pet sprite can carry (the scenery must never overwrite these).
     var isPetLayer: Bool {
         switch self {
         case .outline, .body, .bodyLight, .shade, .deep, .belly, .accent, .accentDark, .accentLight,
-             .rim, .eye, .glint, .eyeFill, .eyeShine: return true
+             .rim, .eye, .glint, .eyeFill, .eyeShine, .eggShell, .eggLight, .eggShade: return true
         default: return false
         }
     }
@@ -236,9 +246,112 @@ struct SceneRaster: Equatable {
         }
     }
 
+    /// Draws the egg: a dedicated path, not PetShading (an egg has no eyes, and its few interior holes are not eyes).
+    /// The shell is solid eggshell cream (`eggShell`, with a soft `eggLight` patch top-left and `eggShade` bottom-right,
+    /// all Technicolor-only), the outline is the usual outline and rim, and a few speckle spots (`tool`, a warm brown)
+    /// are lit in both looks. Traditional therefore draws a clean outline egg with a couple of speckle pixels.
+    /// `rows` is the 32x32 egg sprite; `x`, `y` place its top-left cell.
+    mutating func drawEgg(_ rows: [String], x: Int, y: Int) {
+        let h = rows.count
+        guard h > 0 else { return }
+        let w = rows[0].utf8.count
+        var lit = [Bool](repeating: false, count: w * h)
+        for (j, row) in rows.enumerated() {
+            var c = 0
+            for ch in row.utf8 {
+                if ch == UInt8(ascii: "X") { lit[j * w + c] = true }
+                c += 1
+            }
+        }
+        // the shell is solid: unlit cells that cannot reach the edge of the picture are inside it
+        var outside = [Bool](repeating: false, count: w * h)
+        var stack: [Int] = []
+        func push(_ cx: Int, _ cy: Int) {
+            guard cx >= 0, cy >= 0, cx < w, cy < h else { return }
+            let i = cy * w + cx
+            if !lit[i] && !outside[i] { outside[i] = true; stack.append(i) }
+        }
+        for cx in 0..<w { push(cx, 0); push(cx, h - 1) }
+        for cy in 0..<h { push(0, cy); push(w - 1, cy) }
+        while let i = stack.popLast() {
+            let cx = i % w, cy = i / w
+            push(cx - 1, cy); push(cx + 1, cy); push(cx, cy - 1); push(cx, cy + 1)
+        }
+        var solid = [Bool](repeating: false, count: w * h)
+        var x0 = w, x1 = -1, y0 = h, y1 = -1
+        for i in 0..<(w * h) where !outside[i] {
+            solid[i] = true
+            let cx = i % w, cy = i / w
+            x0 = min(x0, cx); x1 = max(x1, cx); y0 = min(y0, cy); y1 = max(y1, cy)
+        }
+        guard x1 >= 0 else { return }
+        func isSolid(_ cx: Int, _ cy: Int) -> Bool { cx >= 0 && cy >= 0 && cx < w && cy < h && solid[cy * w + cx] }
+        func isEdge(_ cx: Int, _ cy: Int) -> Bool {
+            isSolid(cx, cy) && !(isSolid(cx - 1, cy) && isSolid(cx + 1, cy) && isSolid(cx, cy - 1) && isSolid(cx, cy + 1))
+        }
+        let cxm = Double(x0 + x1) / 2, cym = Double(y0 + y1) / 2
+        let rx = Double(x1 - x0 + 1) / 2, ry = Double(y1 - y0 + 1) / 2
+        var codes = [UInt8](repeating: 0, count: w * h)
+        for cy in 0..<h {
+            for cx in 0..<w where solid[cy * w + cx] {
+                let i = cy * w + cx
+                if isEdge(cx, cy) {
+                    codes[i] = (!isSolid(cx - 1, cy) || !isSolid(cx, cy - 1))
+                        ? SceneLayer.rim.rawValue : SceneLayer.outline.rawValue
+                    continue
+                }
+                let u = (Double(cx) - cxm) / rx, v = (Double(cy) - cym) / ry
+                let lightSide = (u + v) * 0.7071       // negative: toward the top-left
+                var code = SceneLayer.eggShell
+                if lightSide < -0.42 && u * u + v * v < 0.8 {
+                    code = .eggLight
+                } else if lightSide > 0.5 {
+                    code = .eggShade
+                } else if lightSide > 0.3 && (cx + cy) & 1 == 0 {
+                    code = .eggShade
+                }
+                // the row above the bottom outline is always in shade
+                if isEdge(cx, cy + 1) && v > 0.3 { code = .eggShade }
+                codes[i] = code.rawValue
+            }
+        }
+        // speckles: 2x2 blocks (one 16x16 pixel) at fixed spots on the shell, snapped to the sprite's 2-cell grid,
+        // kept off the outline and each other
+        let spots: [(Double, Double)] = [(0.30, 0.34), (0.66, 0.28), (0.52, 0.55), (0.28, 0.66), (0.72, 0.62), (0.50, 0.82)]
+        let spot = SceneLayer.tool.rawValue
+        for (fx, fy) in spots {
+            let sx = (x0 + Int(Double(x1 - x0) * fx)) & ~1
+            let sy = (y0 + Int(Double(y1 - y0) * fy)) & ~1
+            var ok = true
+            for dy in -1...2 {
+                for dx in -1...2 {
+                    let i = (sy + dy) * w + sx + dx
+                    guard sx + dx >= 0, sx + dx < w, sy + dy >= 0, sy + dy < h, solid[i],
+                          codes[i] != SceneLayer.outline.rawValue, codes[i] != SceneLayer.rim.rawValue,
+                          codes[i] != spot
+                    else { ok = false; break }
+                }
+                if !ok { break }
+            }
+            if ok {
+                for dy in 0...1 { for dx in 0...1 { codes[(sy + dy) * w + sx + dx] = spot } }
+            }
+        }
+        for cy in 0..<h {
+            let py = y + cy
+            if py < 0 || py >= SceneRaster.side { continue }
+            for cx in 0..<w {
+                let code = codes[cy * w + cx]
+                let px = x + cx
+                if code == 0 || px < 0 || px >= SceneRaster.side { continue }
+                cells[py * SceneRaster.side + px] = code
+            }
+        }
+    }
+
     /// Keeps biome scenery off the pet (Expo `drawPet`): clears scenery in a 1px ring around the silhouette, and the
     /// scenery plus the sky glyphs (cloud, sun...) inside the silhouette's row spans, so nothing shows through an eye
-    /// hole. `rows` are the unmirrored sprite rows (`mirror` as for `drawPet`). Call before `drawPet`; not for the meadow.
+    /// hole. `rows` are the unmirrored sprite rows (`mirror` as for `drawPet`). Call before `drawPet` (every biome, the meadow too). The 1px ring clears the sky glyphs as well.
     mutating func clearAroundPet(_ rows: [String], x: Int, y: Int, mirror: Bool) {
         let h = rows.count
         guard h > 0 else { return }
@@ -272,7 +385,10 @@ struct SceneRaster: Equatable {
             if yy < 0 || yy >= side { continue }
             let xa = max(0, x + l - 1), xb = min(side - 1, x + hh + 1)
             if xa > xb { continue }
-            for xx in xa...xb where SceneLayer.isScenery(cells[yy * side + xx]) { cells[yy * side + xx] = 0 }
+            for xx in xa...xb {
+                let code = cells[yy * side + xx]
+                if SceneLayer.isScenery(code) || SceneRaster.skyCodeTable[Int(code)] { cells[yy * side + xx] = 0 }
+            }
         }
         for j in 0..<h where hi[j] >= 0 {
             let yy = y + j
@@ -470,10 +586,15 @@ enum SceneRenderer {
         drawGround(&r, seed: pet.seed, frame: frame, motion: motion)
         if biome != .meadow {
             BiomeDraw.fore(into: &r, biome: biome, period: amb.period, rain: rain)
-            r.clearAroundPet(place.rows, x: place.x, y: place.top, mirror: place.mirror)
         }
+        // Sun, clouds, rain and scenery stay off the pet and its 1px ring in every biome, the meadow included.
+        r.clearAroundPet(place.rows, x: place.x, y: place.top, mirror: place.mirror)
 
-        if pet.stage == .ghost || pet.stage == .egg {
+        if pet.stage == .egg {
+            r.drawEgg(place.rows, x: place.x, y: place.top)
+            return r
+        }
+        if pet.stage == .ghost {
             r.drawPet(place.rows, x: place.x, y: place.top, mirror: place.mirror, family: "")
             return r
         }
@@ -654,7 +775,11 @@ enum SceneRenderer {
                                 t: Double, frame: Int, motion: Bool, avoid: AvoidRect? = nil) {
         let fh = amb.fractionalHour
         // The sun is 11x11 and the moon 9x9; positions are their centres.
-        func sun(_ cx: Int, _ cy: Int) { r.draw(SceneGlyph.sun, x: cx - 5, y: cy - 5, layer: .sun) }
+        // Weather is exclusive: when it rains there is no sun, only clouds and rain.
+        let sunny = amb.weather != .rain
+        func sun(_ cx: Int, _ cy: Int) {
+            if sunny { r.draw(SceneGlyph.sun, x: cx - 5, y: cy - 5, layer: .sun) }
+        }
 
         switch amb.period {
         case .dawn:
