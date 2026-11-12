@@ -56,16 +56,17 @@ struct WatchContentView: View {
     private let margin: CGFloat = 8
     /// Extra inset of the tile row, which sits in the bottom corners.
     private let tileInset: CGFloat = 2
-    private let top: CGFloat = 6
-    private let bottom: CGFloat = 8
-    private let gap: CGFloat = 3
+    /// The system clock overlays the top right corner: that band holds the hearts, on the left.
+    private let topBand: CGFloat = 26
+    private let bottom: CGFloat = 6
+    private let gap: CGFloat = 2
     private let tileGap: CGFloat = 2
-    private let tileHeight: CGFloat = 34
-    /// Hearts (14) + 1 line of text (10) + gap, or two lines of text (21).
-    private let infoHeight: CGFloat = 27
+    private let tileHeight: CGFloat = 32
+    /// Two lines of 2pt text.
+    private let captionHeight: CGFloat = 21
 
-    /// The LCD face fills the screen: scene on top (the largest whole-pixel square that fits),
-    /// hearts and a centred caption, and a row of labelled tiles.
+    /// The LCD face fills the screen (safe areas are handled here, by hand): a band for the clock with
+    /// the hearts, the scene as large as fits, a centred caption, and a row of labelled tiles.
     private var content: some View {
         GeometryReader { geo in
             let width = geo.size.width
@@ -73,60 +74,68 @@ struct WatchContentView: View {
             let tilesWidth = inner - tileInset * 2
             let tiles = tilesWidth >= 168 ? 4 : 3
             let tileWidth = floor((tilesWidth - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
-            let room = geo.size.height - top - bottom - tileHeight - infoHeight - gap * 2
+            let room = geo.size.height - topBand - bottom - tileHeight - captionHeight - gap * 3
             let side = sceneSide(room: room, width: inner)
             VStack(spacing: gap) {
+                meters(width: inner)
+                    .frame(width: inner, height: topBand - gap)
                 LCDScreen(model: model)
                     .frame(width: side, height: side)
                     .retroGlass(colors, corner: 8)
-                info(width: inner)
-                    .frame(width: inner, height: infoHeight)
+                caption(width: inner)
+                    .frame(width: inner, height: captionHeight)
                 tileRow(count: tiles, tileWidth: tileWidth)
                     .padding(.horizontal, tileInset)
             }
             .padding(.horizontal, margin)
-            .padding(.top, top)
             .frame(width: width, height: geo.size.height, alignment: .top)
         }
         .environment(\.lcdPalette, colors)
-        .background(RetroBackdrop(palette: colors, inset: 1, corner: 28).ignoresSafeArea())
+        .background(RetroBackdrop(palette: colors, inset: 1, corner: 28))
+        .ignoresSafeArea()
     }
 
-    /// The scene is 64 cells wide; it is sized to a whole number of device pixels per cell so it stays crisp.
+    /// The scene is 64 cells wide. Whole device pixels per cell keep it crisp: the side is a multiple of
+    /// 64/scale; when that would waste more than 12 pt, a multiple of half of it is used instead.
     private func sceneSide(room: CGFloat, width: CGFloat) -> CGFloat {
         let scale = max(displayScale, 1)
         let fit = max(40, min(room, width))
         let step = 64 / scale
-        let snapped = (fit / step).rounded(.down) * step
-        return max(step, snapped)
+        let whole = (fit / step).rounded(.down) * step
+        if fit - whole > 12 {
+            let half = step / 2
+            return max(half, (fit / half).rounded(.down) * half)
+        }
+        return max(step, whole)
     }
 
-    /// Hearts over a one-line caption, or a two-line caption alone when the text is long.
-    private func info(width: CGFloat) -> some View {
-        let text = model.message.isEmpty ? model.pet.statusLine : model.message
-        let lines = captionLines(text, width: width)
-        let showMeters = lines.pixel == 2 && lines.lines.count == 1
-            && model.pet.isAlive && model.pet.stage != .egg
-        return VStack(spacing: 3) {
-            if showMeters {
-                HStack(spacing: 0) {
-                    RetroMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
-                    Spacer(minLength: 4)
-                    RetroMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
-                }
-                .frame(width: width - 4)
+    /// Hearts and smiles, top left, clear of the clock. Not for eggs and the dead.
+    @ViewBuilder private func meters(width: CGFloat) -> some View {
+        if model.pet.isAlive && model.pet.stage != .egg {
+            HStack(spacing: 8) {
+                RetroMeter(kind: .heart7, filled: model.pet.hunger, pixel: 2)
+                RetroMeter(kind: .smile5, filled: model.pet.happy, pixel: 2)
+                Spacer(minLength: 0)
             }
-            VStack(spacing: lines.pixel) {
-                ForEach(Array(lines.lines.enumerated()), id: \.offset) { _, line in
-                    PixelText(line, pixel: lines.pixel)
-                }
+            .frame(width: width - 4, alignment: .leading)
+        } else {
+            Color.clear
+        }
+    }
+
+    /// Centred, 1 or 2 lines at 2pt pixels with balanced line lengths; 1pt pixels only for very long texts.
+    private func caption(width: CGFloat) -> some View {
+        let raw = model.message.isEmpty ? model.pet.statusLine : model.message
+        let text = model.message.isEmpty && model.pet.stage == .egg && model.pet.isAlive ? "Egg warming up" : raw
+        let lines = captionLines(text, width: width)
+        return VStack(spacing: lines.pixel) {
+            ForEach(Array(lines.lines.enumerated()), id: \.offset) { _, line in
+                PixelText(line, pixel: lines.pixel)
             }
         }
-        .frame(width: width, height: infoHeight, alignment: showMeters ? .top : .center)
+        .frame(width: width, height: captionHeight, alignment: .center)
     }
 
-    /// 2pt pixels on one line when it fits; else two lines of balanced length ("AN EGG IS" / "WARMING UP");
-    /// else 1pt pixels for very long texts.
     private func captionLines(_ text: String, width: CGFloat) -> (pixel: CGFloat, lines: [String]) {
         let fit = RetroFit.lines(text, width: width, maxPixel: 2, maxLines: 2)
         guard fit.pixel == 2, fit.lines.count == 2 else { return (fit.pixel, fit.lines) }
