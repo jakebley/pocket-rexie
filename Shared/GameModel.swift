@@ -454,6 +454,9 @@ final class GameModel: ObservableObject {
     }
 
     func backToPlayMenu() { mode = .playMenu }
+
+    /// Leave the running or waiting game for the Play menu (the watch's long press; a game's own C button may mean something else).
+    func quitGame() { if mode == .game { mode = .playMenu } }
     func goHome() { mode = .home }
 
     /// Play the same game again from its ready screen.
@@ -483,6 +486,16 @@ final class GameModel: ObservableObject {
         if before == .ready && s.phase == .play { beginLoop() }
         gameTick &+= 1
         if exit == .menu { mode = .playMenu }
+    }
+
+    /// Taps translated into game input by the host (the watch): left/right/act edges and a direct pick.
+    func sendGameInput(_ input: GameInput) {
+        guard let s = session, s.phase == .play else { return }
+        if input.left { s.pending.left = true }
+        if input.right { s.pending.right = true }
+        if input.act { s.pending.act = true }
+        if let p = input.pick { s.pending.pick = p }
+        gameTick &+= 1
     }
 
     /// A tap on a row the game declared (HI-LO's HIGHER and LOWER).

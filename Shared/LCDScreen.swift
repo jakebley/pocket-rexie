@@ -42,8 +42,53 @@ struct LCDScreen: View {
     /// Square corners and a full-strength ink hairline (the phone layout). Otherwise a softly
     /// rounded screen (watch).
     var framed = false
+    /// The watch: the view fills its whole (taller) frame. The scene keeps whole device pixels and is topped and
+    /// footed with its own sky and soil; text screens are full-screen panels. Taps are the host's business.
+    var fullScreen = false
+    /// Full screen only: room kept free at the top for the system clock.
+    var topInset: CGFloat = 0
+    /// Full screen only: room kept free at the bottom of text screens (the round corners).
+    var bottomInset: CGFloat = 0
 
     var body: some View {
+        if fullScreen { fullBody } else { squareBody }
+    }
+
+    private var fullBody: some View {
+        GeometryReader { geo in
+            let fit = SceneFit(size: geo.size, scale: displayScale, topInset: topInset)
+            let metrics = Metrics(side: min(geo.size.width, geo.size.height), displayScale: displayScale)
+            let textScreen = showsTextScreen
+            ZStack {
+                palette.background
+                screenCanvas(side: fit.side, fit: fit)
+                if palette.backlit && palette.mode == .traditional && !model.pet.lightOn && model.pet.isAlive {
+                    palette.background.opacity(0.55).allowsHitTesting(false)
+                }
+                if model.pet.asleep && !model.pet.lightOn && model.mode != .home {
+                    Color.black.opacity(0.5).allowsHitTesting(false)
+                }
+                if textScreen || model.mode == .home {
+                    modeOverlay(metrics)
+                        .padding(.top, topInset)
+                        .padding(.bottom, bottomInset)
+                        .background(textScreen ? palette.background : Color.clear)
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+        }
+    }
+
+    /// A text screen (menu, stats, ready, result...) that replaces the scene; false for the scene itself and a game in play.
+    private var showsTextScreen: Bool {
+        switch model.mode {
+        case .home: return false
+        case .game: return model.session?.phase == .ready || model.session?.phase == .result
+        default: return true
+        }
+    }
+
+    private var squareBody: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
             let metrics = Metrics(side: side, displayScale: displayScale)
@@ -72,7 +117,7 @@ struct LCDScreen: View {
 
     // MARK: pixels
 
-    private func screenCanvas(side: CGFloat) -> some View {
+    private func screenCanvas(side: CGFloat, fit: SceneFit? = nil) -> some View {
         // The scene steps at 8 fps (one director tick); it pauses off screen and behind text screens.
         // While a mini-game plays, the canvas repaints at 20 fps from the session (the model steps it); otherwise the scene.
         let playing = model.mode == .game && (model.session?.phase == .play || model.session?.phase == .over)
@@ -85,12 +130,19 @@ struct LCDScreen: View {
             let tick = model.gameTick
             let raster = frameRaster(playing: playing, hasFlash: flash != nil, pet: pet, date: date, hatchedAt: hatchedAt, tick: tick)
             Canvas { ctx, size in
-                LCDScene.render(&ctx, size: size, raster: raster, flash: flash, date: date,
-                                palette: palette)
+                if let fit {
+                    surround(&ctx, size: size, fit: fit, raster: flash == nil ? raster : nil)
+                    ctx.translateBy(x: fit.origin.x, y: fit.origin.y)
+                    LCDScene.render(&ctx, size: CGSize(width: fit.side, height: fit.side), raster: raster, flash: flash,
+                                    date: date, palette: palette)
+                } else {
+                    LCDScene.render(&ctx, size: size, raster: raster, flash: flash, date: date,
+                                    palette: palette)
+                }
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { location in handleTap(location, side: side) }
+        .onTapGesture { location in if fit == nil { handleTap(location, side: side) } }
         .onChange(of: model.sceneEvents) { _, events in
             guard !events.isEmpty else { return }
             director.events.append(contentsOf: events)
@@ -100,6 +152,26 @@ struct LCDScreen: View {
         .accessibilityLabel(model.pet.statusLine)
         .accessibilityValue(GameModel.deterministic ? uiTestValue : "")
         .accessibilityIdentifier("lcd")
+    }
+
+    /// Full screen: the sky above and the soil below the scene continue to the edges of the screen (Technicolor).
+    /// Traditional is ink on the plain LCD ground, which is already there.
+    private func surround(_ ctx: inout GraphicsContext, size: CGSize, fit: SceneFit, raster: SceneRaster?) {
+        guard palette.mode != .traditional, let raster, raster.hasSky else { return }
+        let appearance = palette.appearance
+        let ground = fit.origin.y + CGFloat(raster.groundRow) * fit.cell
+        let skyRect = CGRect(x: 0, y: 0, width: size.width, height: ground)
+        let soilRect = CGRect(x: 0, y: ground, width: size.width, height: max(0, size.height - ground))
+        let sky = ScenePalette.sky(mode: palette.mode, appearance: appearance, hour: raster.hour,
+                                   weather: raster.weather, biome: raster.biome)
+        ctx.fill(Path(skyRect), with: .color(sky.color))
+        ctx.fill(Path(soilRect), with: .color(ScenePalette.soil(mode: palette.mode, appearance: appearance, biome: raster.biome).color))
+        if raster.dim {
+            var both = Path()
+            both.addRect(skyRect)
+            both.addRect(soilRect)
+            ctx.fill(both, with: .color(ScenePalette.dimInk.color.opacity(ScenePalette.dimSky)))
+        }
     }
 
     /// The picture for this frame: the running mini-game, the living scene, or nothing while the evolution flash plays.

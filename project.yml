@@ -157,6 +157,7 @@ targets:
       - iOS/UITestSupport.swift
       - Widget/PocketRexieWidget.swift
       - Watch/WatchContentView.swift
+      - Watch/WatchInput.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pocketrexie.app.tests

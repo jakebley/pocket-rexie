@@ -3,20 +3,35 @@ import SwiftUI
 import WatchKit
 #endif
 
+/// The watch app: the pixel scene fills the whole screen.
+///
+///  - Digital Crown: flips through the actions (and through the rows of a menu).
+///  - Tap: does the selected action, like the phone's B button; in a mini-game, the tap is the game input (WatchInput).
+///  - Long press: back (home: says what the selected action does; in a game: quits to the Play menu).
+///  - A translucent panel over the scene names the selected action; messages and the status caption fade in and out.
 struct WatchContentView: View {
     @ObservedObject var model: GameModel
-    /// Explicit LCD palette (tests). Otherwise the light LCD, or the backlit one in Always-On.
+    /// Explicit LCD palette (tests). Otherwise the dark palette in the synced look.
     let palette: LCDPalette?
+    /// False in renders: the caption stays visible instead of fading after a few seconds.
+    let fades: Bool
     @State private var crown: Double = 0
-    /// A hold already described the icon, so the release must not also act.
-    @State private var described = false
+    @State private var lastDetent = 0
+    /// A long press just fired, so the release must not also count as a tap.
+    @State private var held = false
+    @State private var caption: String
+    @State private var captionVisible = true
+    @State private var captionToken = 0
     @Environment(\.displayScale) private var displayScale
+    @Environment(\.isLuminanceReduced) private var dimmed
     /// The look, synced from the phone (see PetSync); Traditional until the phone says otherwise.
     @AppStorage(ColorModeStore.key, store: PetStore.defaults) private var mode: ColorMode = .traditional
 
-    init(model: GameModel, palette: LCDPalette? = nil) {
+    init(model: GameModel, palette: LCDPalette? = nil, fades: Bool = true) {
         self.model = model
         self.palette = palette
+        self.fades = fades
+        _caption = State(initialValue: Self.captionText(model))
     }
 
     private let icons = MenuIcon.allCases
@@ -28,23 +43,25 @@ struct WatchContentView: View {
     var body: some View {
         #if os(watchOS)
         content
-            .focusable()
-            .digitalCrownRotation($crown, from: 0, through: Double(icons.count - 1), by: 1,
-                                  sensitivity: .medium, isContinuous: true, isHapticFeedbackEnabled: true)
+            .focusable(crownCount != nil)
+            .digitalCrownRotation($crown, from: -1_000_000, through: 1_000_000, by: 1,
+                                  sensitivity: .medium, isContinuous: false, isHapticFeedbackEnabled: true)
             .onChange(of: crown) { _, value in
-                let index = min(max(Int(value.rounded()), 0), icons.count - 1)
-                if icons[index] != model.selected { model.selected = icons[index] }
-            }
-            .onChange(of: model.message) { _, text in
-                guard !text.isEmpty else { return }
-                WKInterfaceDevice.current().play(hapticFor(text))
+                let detent = Int(value.rounded())
+                let delta = detent - lastDetent
+                lastDetent = detent
+                if delta != 0 { turn(by: delta) }
             }
             .onChange(of: model.pet.call) { old, new in
                 if new != nil && old == nil && !model.pet.asleep {
                     WKInterfaceDevice.current().play(.notification)
                 }
             }
-            .onAppear { syncCrown() }
+            .onChange(of: model.message) { _, text in
+                guard !text.isEmpty else { return }
+                WKInterfaceDevice.current().play(hapticFor(text))
+            }
+            .onChange(of: model.mode) { _, _ in lastDetent = Int(crown.rounded()) }
         #else
         content
         #endif
@@ -52,146 +69,198 @@ struct WatchContentView: View {
 
     // MARK: layout
 
-    /// Side margin of the whole face (the watch corners are round).
-    private let margin: CGFloat = 8
-    /// Extra inset of the tile row, which sits in the bottom corners (the screen corners are round).
-    private let tileInset: CGFloat = 6
-    /// The system clock overlays the top right corner: the scene starts below it.
+    /// The system clock overlays the top right corner: nothing important is drawn in this band.
     private let topBand: CGFloat = 22
-    private let bottom: CGFloat = 10
-    private let gap: CGFloat = 2
-    private let tileGap: CGFloat = 2
-    private let tileHeight: CGFloat = 32
-    /// Two lines of 2pt text.
-    private let captionHeight: CGFloat = 23
+    /// The bottom corners are round.
+    private let bottomBand: CGFloat = 8
 
-    /// The LCD face fills the screen (safe areas are handled here, by hand): a band for the clock, the scene as large as fits, a centred caption, and a row of labelled tiles.
     private var content: some View {
         GeometryReader { geo in
-            let width = geo.size.width
-            let inner = width - margin * 2
-            let tilesWidth = inner - tileInset * 2
-            let tiles = 3
-            let tileWidth = floor((tilesWidth - tileGap * CGFloat(tiles - 1)) / CGFloat(tiles))
-            let room = geo.size.height - topBand - bottom - tileHeight - captionHeight - gap * 3
-            let side = sceneSide(room: room, width: inner)
-            VStack(spacing: gap) {
-                Color.clear.frame(height: topBand - gap)
-                LCDScreen(model: model)
-                    .frame(width: side, height: side)
-                    .retroGlass(colors, corner: 8)
-                caption(width: inner)
-                    .frame(width: inner, height: captionHeight)
-                tileRow(count: tiles, tileWidth: tileWidth)
-                    .padding(.horizontal, tileInset)
+            let size = geo.size
+            let fit = SceneFit(size: size, scale: displayScale, topInset: topBand)
+            ZStack {
+                Color.black
+                LCDScreen(model: model, fullScreen: true, topInset: topBand, bottomInset: bottomBand)
+                    .opacity(dimmed ? 0.62 : 1)
+                if model.mode == .home && model.pet.isAlive {
+                    overlays(size: size, fit: fit)
+                        .allowsHitTesting(false)
+                }
             }
-            .padding(.horizontal, margin)
-            .frame(width: width, height: geo.size.height, alignment: .top)
+            .frame(width: size.width, height: size.height)
+            .contentShape(Rectangle())
+            .gesture(SpatialTapGesture().onEnded { tap(at: $0.location, size: size, fit: fit) })
+            .simultaneousGesture(LongPressGesture(minimumDuration: 0.45).onEnded { _ in hold() })
         }
         .environment(\.lcdPalette, colors)
-        .background(RetroBackdrop(palette: colors, inset: 1, corner: 28))
         .ignoresSafeArea()
-    }
-
-    /// The scene is 64 cells wide. Whole device pixels per cell keep it crisp: the side is a multiple of
-    /// 64/scale; when that would waste more than 12 pt, a multiple of half of it is used instead.
-    private func sceneSide(room: CGFloat, width: CGFloat) -> CGFloat {
-        let scale = max(displayScale, 1)
-        let fit = max(40, min(room, width))
-        let step = 64 / scale
-        let whole = (fit / step).rounded(.down) * step
-        if fit - whole > 12 {
-            let half = step / 2
-            return max(half, (fit / half).rounded(.down) * half)
+        .task(id: captionToken) {
+            guard fades, captionToken > 0 else { return }
+            try? await Task.sleep(nanoseconds: 3_500_000_000)
+            if !Task.isCancelled { withAnimation(.easeOut(duration: 0.5)) { captionVisible = false } }
         }
-        return max(step, whole)
+        .onAppear { showCaption(Self.captionText(model)) }
+        .onChange(of: model.message) { _, text in if !text.isEmpty { showCaption(text) } }
+        .onChange(of: model.pet.statusLine) { _, _ in
+            if model.message.isEmpty { showCaption(Self.captionText(model)) }
+        }
     }
 
-    /// Centred, 1 or 2 lines at 2pt pixels with balanced line lengths; 1pt pixels only for very long texts.
-    private func caption(width: CGFloat) -> some View {
-        let raw = model.message.isEmpty ? model.pet.statusLine : model.message
-        let text = model.message.isEmpty && model.pet.stage == .egg && model.pet.isAlive ? "Egg warming up" : raw
-        let lines = captionLines(text, width: width)
-        return VStack(spacing: lines.pixel) {
-            ForEach(Array(lines.lines.enumerated()), id: \.offset) { _, line in
-                PixelText(line, pixel: lines.pixel)
+    // MARK: overlays
+
+    private func overlays(size: CGSize, fit: SceneFit) -> some View {
+        let unit: CGFloat = 2
+        return ZStack {
+            if !caption.isEmpty && !dimmed {
+                VStack {
+                    captionPanel(width: size.width - 20, unit: unit)
+                        .padding(.top, topBand + 4)
+                        .opacity(captionVisible || !fades ? 1 : 0)
+                    Spacer(minLength: 0)
+                }
+            }
+            VStack {
+                Spacer(minLength: 0)
+                actionPanel(unit: unit)
+                    .padding(.bottom, bottomBand)
+                    .opacity(dimmed ? 0.7 : 1)
             }
         }
-        .frame(width: width, height: captionHeight, alignment: .center)
+        .frame(width: size.width, height: size.height)
+    }
+
+    /// The panel behind overlay text: translucent black with an ink hairline, square like a pixel.
+    private func panel<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .background(Color.black.opacity(0.72))
+            .overlay(Rectangle().strokeBorder(colors.ink.opacity(0.7), lineWidth: 1))
+    }
+
+    /// The selected action: its pixel icon, its name and where it sits in the list the crown turns through.
+    private func actionPanel(unit: CGFloat) -> some View {
+        let index = icons.firstIndex(of: model.selected) ?? 0
+        return panel {
+            HStack(spacing: 6) {
+                PixelGlyphView(rows: model.selected.glyph, pixel: unit * 2, color: colors.ink)
+                VStack(alignment: .leading, spacing: 4) {
+                    PixelText(model.selected.label, pixel: unit, color: colors.ink)
+                    HStack(spacing: 2) {
+                        ForEach(0..<icons.count, id: \.self) { i in
+                            Rectangle()
+                                .fill(colors.ink.opacity(i == index ? 1 : 0.35))
+                                .frame(width: 3, height: i == index ? 3 : 2)
+                        }
+                    }
+                    .frame(height: 3, alignment: .center)
+                }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(model.selected.title)
+        .accessibilityHint("Turn the Digital Crown to change, tap to do it")
+        .accessibilityIdentifier("watch-action")
+    }
+
+    /// One or two lines of 2pt text, balanced.
+    private func captionPanel(width: CGFloat, unit: CGFloat) -> some View {
+        let inner = width - 12
+        let lines = captionLines(caption, width: inner)
+        return panel {
+            VStack(spacing: lines.pixel) {
+                ForEach(Array(lines.lines.enumerated()), id: \.offset) { _, line in
+                    PixelText(line, pixel: lines.pixel, color: colors.ink)
+                }
+            }
+        }
+        .accessibilityIdentifier("watch-caption")
     }
 
     private func captionLines(_ text: String, width: CGFloat) -> (pixel: CGFloat, lines: [String]) {
-        let fit = RetroFit.lines(text, width: width, maxPixel: 2, maxLines: 2)
-        guard fit.pixel == 2, fit.lines.count == 2 else { return (fit.pixel, fit.lines) }
+        let fit = RetroFit.lines(text, width: width, maxPixel: 2, maxLines: 3)
+        guard fit.pixel == 2, fit.lines.count > 1 else { return (fit.pixel, fit.lines) }
+        let count = fit.lines.count
         var chars = RetroFit.maxChars(width: width, pixel: 2)
-        while chars > 4, PixelFont.wrap(text, maxChars: chars - 1).count <= 2 { chars -= 1 }
+        while chars > 4, PixelFont.wrap(text, maxChars: chars - 1).count <= count { chars -= 1 }
         return (2, PixelFont.wrap(text, maxChars: chars))
     }
 
-    /// Short labels so they fit a tile at a legible pixel size.
-    private func watchLabel(_ icon: MenuIcon) -> String {
-        switch icon {
-        case .medicine: return "MEDS"
-        case .climate: return "TEMP"
-        case .battle: return "FIGHT"
-        default: return icon.label
+    /// The message if there is one, else what the pet is up to.
+    static func captionText(_ model: GameModel) -> String {
+        if !model.message.isEmpty { return model.message }
+        if model.pet.stage == .egg && model.pet.isAlive { return "Egg warming up" }
+        return model.pet.statusLine
+    }
+
+    private func showCaption(_ text: String) {
+        caption = text
+        captionVisible = true
+        captionToken += 1
+    }
+
+    // MARK: input
+
+    /// Rows the crown moves through on this screen; nil where it scrolls (stats, dex) or is unused (games).
+    private var crownCount: Int? {
+        WatchInput.crownCount(for: model.mode, playRows: MiniGames.menuRows.count, games: MiniGames.all.count,
+                              families: Species.families.count)
+    }
+
+    private func turn(by delta: Int) {
+        guard let count = crownCount else { return }
+        switch model.mode {
+        case .home:
+            let i = icons.firstIndex(of: model.selected) ?? 0
+            model.selected = icons[WatchInput.wrap(i, by: delta, count: count)]
+        case .feedMenu, .chooseEgg:
+            model.menuIndex = WatchInput.wrap(model.menuIndex, by: delta, count: count)
+        case .playMenu:
+            model.playSel = WatchInput.wrap(model.playSel, by: delta, count: count)
+        case .scores:
+            model.scoresPage = WatchInput.wrap(model.scoresPage, by: delta, count: count)
+        default:
+            break
         }
     }
 
-    /// The largest pixel size (2, else 1) at which `text` fits a tile.
-    private func labelPixel(_ text: String, tileWidth: CGFloat) -> CGFloat {
-        CGFloat(PixelFont.width(of: text)) * 2 + 8 <= tileWidth ? 2 : 1
-    }
-
-    /// A window onto the menu that follows the selection, so the selected tile is always visible.
-    private func tileRow(count: Int, tileWidth: CGFloat) -> some View {
-        let selectedIndex = icons.firstIndex(of: model.selected) ?? 0
-        let start = min(max(selectedIndex - 1, 0), max(0, icons.count - count))
-        let visible = Array(icons[start..<min(start + count, icons.count)])
-        return HStack(spacing: tileGap) {
-            ForEach(visible) { icon in
-                Button {
-                    if described { described = false; return }
-                    tap(icon)
-                } label: {
-                    EmptyView()
-                }
-                .buttonStyle(RetroTileStyle(icon: icon, title: watchLabel(icon), selected: icon == model.selected, glyphPixel: 2,
-                                            labelPixel: labelPixel(watchLabel(icon), tileWidth: tileWidth),
-                                            width: tileWidth, height: tileHeight))
-                .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.3).onEnded { _ in
-                        described = true
-                        click()
-                        model.describe(icon)
-                    }
-                )
-                .accessibilityLabel(icon.title)
-                .accessibilityHint("Hold to see what it does")
-                .accessibilityIdentifier("watch-" + icon.title.lowercased())
-            }
-        }
-    }
-
-    private func tap(_ icon: MenuIcon) {
-        if icon == model.selected {
+    private func tap(at point: CGPoint, size: CGSize, fit: SceneFit) {
+        if held { held = false; return }
+        switch WatchInput.tapAction(mode: model.mode, phase: model.session?.phase) {
+        case .confirm:
             click()
             model.confirm()
-        } else {
-            model.selected = icon
-            syncCrown()
+        case .gameScreen:
             click()
+            model.tapGame(side: point.x < size.width / 2 ? -1 : 1)
+        case .gameInput:
+            guard let session = model.session, let game = session.game else { return }
+            let zones = session.def.tapZones?(game) ?? session.def.tapRows
+            var pet: (x: Double, half: Double, width: Double)?
+            if let catcher = game as? CatchGame {
+                pet = (catcher.state.petX, catcher.state.petW / 2, CatchGame.width)
+            }
+            model.sendGameInput(WatchInput.gameInput(gameID: session.def.id, tap: point, screen: size, fit: fit,
+                                                     zones: zones, catchPet: pet))
+        case .ignore:
+            break
+        }
+    }
+
+    private func hold() {
+        held = true
+        click()
+        switch WatchInput.holdAction(mode: model.mode) {
+        case .describe: model.describe(model.selected)
+        case .back: model.cancel()
+        case .quitGame: model.quitGame()
         }
     }
 
     private func click() {
         #if os(watchOS)
-        WKInterfaceDevice.current().play(.click)
+        if !dimmed { WKInterfaceDevice.current().play(.click) }
         #endif
-    }
-
-    private func syncCrown() {
-        if let i = icons.firstIndex(of: model.selected) { crown = Double(i) }
     }
 
     #if os(watchOS)

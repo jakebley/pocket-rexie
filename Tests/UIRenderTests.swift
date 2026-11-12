@@ -531,24 +531,48 @@ final class UIRenderTests: XCTestCase {
     // MARK: watch
 
     func testRenderWatch() {
-        // 41, 45 and 49 mm (points), plus the smallest still supported (40 mm).
-        let sizes = [CGSize(width: 176, height: 215), CGSize(width: 198, height: 242),
-                     CGSize(width: 205, height: 251), CGSize(width: 162, height: 197)]
+        // 41, 45 and 49 mm (points). The watch UI is always dark (Always-On included).
+        let sizes = [CGSize(width: 176, height: 215), CGSize(width: 198, height: 242), CGSize(width: 205, height: 251)]
+        let keep: Set<String> = ["01-egg", "02-hatched-a", "03-child-hungry", "04-adult-asleep-night-light-off", "06-sick-3-poops",
+                                 "08-feed-menu", "11-stats-status", "12-stats-detail", "14-dex", "15-dead", "16-message-long",
+                                 "17-happy-fed"]
         for mode in ColorMode.allCases {
-          // Technicolor: one size is enough to judge the colors.
-          for size in sizes where mode == .traditional || size.width == 198 {
-            // The watch UI is always dark (Always-On included).
-            for sc in scenarios() where !sc.name.contains("-b") {
+          // Technicolor at every size; Traditional only at 45 mm (the palette is the only difference).
+          for size in sizes where mode == .technicolor || size.width == 198 {
+            var items: [(String, GameModel, Date)] = []
+            for sc in scenarios() where keep.contains(sc.name) {
                 let model = GameModel(pet: sc.pet, persist: { _ in })
                 sc.setup(model)
+                items.append((sc.name, model, sc.clock))
+            }
+            // an action selected far along the list, with its overlay on top of the scene
+            let action = GameModel(pet: pet(.child, "rawr", at: day), persist: { _ in })
+            action.selected = .medicine
+            items.append(("20-action-overlay-medicine", action, day))
+            let message = GameModel(pet: pet(.child, "rawr", at: day), persist: { _ in })
+            message.selected = .play
+            message.message = "Yum! Rexie loved it"
+            items.append(("21-message-overlay", message, day))
+            let p = playPet("fox")
+            items.append(("30-game-hilo", playModel("hilo", p), day))
+            items.append(("31-game-hilo-reveal", playModel("hilo-reveal", p), day))
+            items.append(("32-game-catch", playModel("game-a", p), day))
+            items.append(("33-game-dash", dashModel("run", p), day))
+            items.append(("34-game-dash-jump", dashModel("jump", p), day))
+            items.append(("35-game-echo-input", echoModel("input", p), day))
+            items.append(("36-game-echo-five", echoModel("five", p), day))
+            items.append(("37-game-ready", playModel("ready", p), day))
+            items.append(("38-play-menu", playModel("menu", p), day))
+            items.append(("39-game-result", playModel("result", p), day))
+            for (name, model, clock) in items {
                 let view = ZStack(alignment: .top) {
                     Color.black
-                    WatchContentView(model: model, palette: LCDStyle.palette(for: .dark, mode: mode))
+                    WatchContentView(model: model, palette: LCDStyle.palette(for: .dark, mode: mode), fades: false)
                 }
                 .environment(\.colorScheme, .dark)
-                .environment(\.sceneDate, sc.clock)
+                .environment(\.sceneDate, clock)
                 .environment(\.displayScale, 2)
-                write(view, to: "\(folder("watch", mode))/\(Int(size.width))x\(Int(size.height))/dark/\(sc.name)", size: size)
+                write(view, to: "\(folder("watch", mode))/\(Int(size.width))x\(Int(size.height))/dark/\(name)", size: size)
             }
           }
         }
