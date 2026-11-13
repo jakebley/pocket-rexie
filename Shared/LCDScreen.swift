@@ -61,7 +61,7 @@ struct LCDScreen: View {
             let textScreen = showsTextScreen
             ZStack {
                 palette.background
-                screenCanvas(side: fit.side, fit: fit)
+                screenCanvas(side: fit.side, fullInset: topInset)
                 if palette.backlit && palette.mode == .traditional && !model.pet.lightOn && model.pet.isAlive {
                     palette.background.opacity(0.55).allowsHitTesting(false)
                 }
@@ -117,7 +117,7 @@ struct LCDScreen: View {
 
     // MARK: pixels
 
-    private func screenCanvas(side: CGFloat, fit: SceneFit? = nil) -> some View {
+    private func screenCanvas(side: CGFloat, fullInset: CGFloat? = nil) -> some View {
         // The scene steps at 8 fps (one director tick); it pauses off screen and behind text screens.
         // While a mini-game plays, the canvas repaints at 20 fps from the session (the model steps it); otherwise the scene.
         let playing = model.mode == .game && (model.session?.phase == .play || model.session?.phase == .over)
@@ -130,7 +130,9 @@ struct LCDScreen: View {
             let tick = model.gameTick
             let raster = frameRaster(playing: playing, hasFlash: flash != nil, pet: pet, date: date, hatchedAt: hatchedAt, tick: tick)
             Canvas { ctx, size in
-                if let fit {
+                if let inset = fullInset {
+                    // the picture is 64 or 96 cells wide: whole device pixels per cell either way
+                    let fit = SceneFit(size: size, scale: displayScale, topInset: inset, grid: raster?.n ?? SceneRaster.side)
                     surround(&ctx, size: size, fit: fit, raster: flash == nil ? raster : nil)
                     ctx.translateBy(x: fit.origin.x, y: fit.origin.y)
                     LCDScene.render(&ctx, size: CGSize(width: fit.side, height: fit.side), raster: raster, flash: flash,
@@ -142,7 +144,7 @@ struct LCDScreen: View {
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { location in if fit == nil { handleTap(location, side: side) } }
+        .onTapGesture { location in if fullInset == nil { handleTap(location, side: side) } }
         .onChange(of: model.sceneEvents) { _, events in
             guard !events.isEmpty else { return }
             director.events.append(contentsOf: events)
