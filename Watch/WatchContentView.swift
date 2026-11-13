@@ -114,7 +114,7 @@ struct WatchContentView: View {
             if !caption.isEmpty && !dimmed {
                 VStack {
                     captionPanel(width: size.width - 20, unit: unit)
-                        .padding(.top, topBand + 4)
+                        .padding(.top, topBand + 50)  // below the scene's hearts and smileys
                         .opacity(captionVisible || !fades ? 1 : 0)
                     Spacer(minLength: 0)
                 }
@@ -143,7 +143,7 @@ struct WatchContentView: View {
         let index = icons.firstIndex(of: model.selected) ?? 0
         return panel {
             HStack(spacing: 6) {
-                PixelGlyphView(rows: model.selected.glyph, pixel: unit * 2, color: colors.ink)
+                PixelGlyphView(rows: model.selected.glyph, pixel: unit * 1.5, color: colors.ink)
                 VStack(alignment: .leading, spacing: 4) {
                     PixelText(model.selected.label, pixel: unit, color: colors.ink)
                     HStack(spacing: 2) {
