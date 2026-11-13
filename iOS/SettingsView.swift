@@ -46,7 +46,7 @@ struct SettingsView: View {
 
     // MARK: Technicolor: the pixel chrome sheet
 
-    private var fineBody: some View {
+    @ViewBuilder private var fineBody: some View {
         if staticRender {
             fineSheet
         } else {
@@ -261,7 +261,7 @@ private struct LookTile: View {
         if chrome.mode == .technicolor { fineBody } else { classicBody }
     }
 
-    private var fineBody: some View {
+    @ViewBuilder private var fineBody: some View {
         let fg = selected ? chrome.background : chrome.ink
         return Button(action: action) {
             VStack(spacing: 8) {
@@ -334,7 +334,7 @@ private struct AboutView: View {
         if mode == .technicolor { fineBody } else { classicBody }
     }
 
-    private var fineBody: some View {
+    @ViewBuilder private var fineBody: some View {
         let palette = LCDStyle.palette(for: scheme, mode: mode)
         return GeometryReader { geo in
             let inner = geo.size.width - 12 - 28
