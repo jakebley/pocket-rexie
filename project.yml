@@ -153,6 +153,7 @@ targets:
       - iOS/Beeper.swift
       - iOS/Notifier.swift
       - iOS/SettingsView.swift
+      - iOS/ChromeSheet.swift
       - iOS/UITestSupport.swift
       - Widget/PocketRexieWidget.swift
       - Watch/WatchContentView.swift
