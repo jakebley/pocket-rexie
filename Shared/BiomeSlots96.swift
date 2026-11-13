@@ -14,8 +14,8 @@ struct SlotSpec {
 }
 
 enum BiomeSlots96 {
-    static let first = Slot96.first
-    static let last = Slot96.last
+    static let first = SceneLayer.slotFirst
+    static let last = SceneLayer.slotLast
 
     struct Slot {
         let code: UInt8
@@ -80,7 +80,7 @@ enum BiomeSlots96 {
             var slots: [Slot] = []
             var codes: [String: UInt8] = [:]
             parse(s.glow, glow: true, from: Int(first), into: &slots, codes: &codes)
-            parse(s.tones, glow: false, from: Int(first) + Slot96.glowCount, into: &slots, codes: &codes)
+            parse(s.tones, glow: false, from: Int(first) + slots.count, into: &slots, codes: &codes)
             made = Def(codes: codes, slots: slots)
         }
         lock.lock()
