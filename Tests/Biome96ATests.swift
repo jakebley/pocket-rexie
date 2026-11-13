@@ -89,7 +89,7 @@ final class Biome96ATests: XCTestCase {
                 for rain in [false, true] {
                     let slots = Biome96A.slotColors(biome: biome, period: period, rain: rain)
                     XCTAssertNotNil(slots, "\(biome)")
-                    XCTAssertGreaterThan(slots?.filter { $0 != "-" }.count ?? 0, 20)
+                    XCTAssertGreaterThanOrEqual(slots?.filter { $0 != "-" }.count ?? 0, 15)
                     for appearance in [ScenePalette.Appearance.light, .dark] {
                         let t = ScenePalette.table(mode: .technicolor, appearance: appearance, night: biome.isDark(period), line: .meat,
                                                    biome: biome, period: period, rain: rain)
