@@ -305,7 +305,8 @@ final class BiomeTests: XCTestCase {
             let plain = ScenePalette.table(mode: .technicolor, appearance: appearance, night: false, line: .meat)
             let withBiome = ScenePalette.table(mode: .technicolor, appearance: appearance, night: false, line: .meat,
                                                biome: .meadow, period: .day, rain: true)
-            XCTAssertEqual(plain, withBiome)
+            // the 96 meadow painter adds slot colours (SceneLayer.slotFirst...) that the plain table does not have
+            XCTAssertEqual(Array(plain.prefix(Int(SceneLayer.slotFirst))), Array(withBiome.prefix(Int(SceneLayer.slotFirst))))
         }
     }
 
