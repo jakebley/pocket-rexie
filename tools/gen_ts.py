@@ -17,7 +17,7 @@ for fam, sid, (name, stage, blurb, rec) in all_species():
     # Technicolor body colour per family: line names collide across families (hunter/stray/baby), so the hex travels with the species.
     if sid in BODY:
         entry["bodyHex"] = BODY[sid]
-    entry.update({"frames": [a, b], "hiFrames": [spritegen.scale2x(a), spritegen.scale2x(b)], "evolutions": evo})
+    entry.update({"frames": [a, b], "hiFrames": [spritegen.scale2x(a, FAMILY == 'fox'), spritegen.scale2x(b, FAMILY == 'fox')], "evolutions": evo})
     out.append(entry)
 path = os.path.join(os.path.dirname(__file__), "..", "expo-prototype", "src", "core", "speciesData.ts")
 os.makedirs(os.path.dirname(path), exist_ok=True)

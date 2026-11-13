@@ -224,8 +224,21 @@ def render(r):
     return draw(r).rows(), draw(r, blink=True).rows()
 
 
-def scale2x(rows):
-    """EPX / Scale2x pixel-art upscale: 16x16 -> 32x32 with diagonals smoothed and no blur."""
+def _shrink_eyes(out):
+    """An enclosed 2x2 hole (a one-pixel eye after the 2x upscale) becomes a single cell. The shader rings every eye hole with a
+    dark cell on each side, so a 2x2 eye turns into a 4x4 black block that reads as goggles on a small face; one cell keeps it a dot."""
+    n = len(out)
+    for y in range(0, n - 1, 2):
+        for x in range(0, n - 1, 2):
+            if all(out[y + j][x + i] == 0 for j in (0, 1) for i in (0, 1)):
+                ring = [(x - 1, y), (x - 1, y + 1), (x + 2, y), (x + 2, y + 1), (x, y - 1), (x + 1, y - 1), (x, y + 2), (x + 1, y + 2)]
+                if all(0 <= u < n and 0 <= v < n and out[v][u] for u, v in ring):
+                    out[y][x + 1] = out[y + 1][x] = out[y + 1][x + 1] = 1
+    return out
+
+
+def scale2x(rows, small_eyes=False):
+    """EPX / Scale2x pixel-art upscale: 16x16 -> 32x32 with diagonals smoothed and no blur.  small_eyes: one-cell eyes (fox)."""
     n = len(rows)
     g = [[1 if c == 'X' else 0 for c in r] for r in rows]
     def at(x, y):
@@ -241,4 +254,5 @@ def scale2x(rows):
             if b == d and b != a and d != c: e4 = d
             out[2 * y][2 * x] = e1; out[2 * y][2 * x + 1] = e2
             out[2 * y + 1][2 * x] = e3; out[2 * y + 1][2 * x + 1] = e4
+    if small_eyes: _shrink_eyes(out)
     return ["".join("X" if v else "." for v in r) for r in out]

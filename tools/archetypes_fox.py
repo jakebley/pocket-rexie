@@ -69,23 +69,23 @@ H_STD = _P("""
 ..X..X..
 .XX..XX.
 .XXXXXX.
-.XXeXXfX
+.XeXXfXX
 .XXXXXXX
 ..XXXXX.
 """)
 H_KIT = _P("""
 .X..X...
 .XX.XX..
-.XXXXX..
-.XeXXfX.
+.XXXXXX.
+.XeXXfXX
 .XXXXXXX
-..XXXX..
+..XXXXX.
 """)
 H_DOWN = _P("""
 .X..X...
 .XX.XX..
-.XXXXX..
-.XeXXfX.
+.XXXXXX.
+.XeXXfXX
 ..XXXXXX
 ....XXX.
 """)
@@ -93,8 +93,8 @@ H_FEN = _P("""
 .X....X.
 .XX..XX.
 .XX..XX.
-.XXXXXX.
-.XXeXXfX
+.XXXXXXX
+.XeXXfXX
 .XXXXXXX
 ..XXXXX.
 """)
@@ -103,7 +103,7 @@ H_FEN_TORN = _P("""
 .XX...XX
 .XX...XX
 .XXXXXXX
-.XXeXXfX
+.XeXXfXX
 .XXXXXXX
 ..XXXXX.
 """)
@@ -119,7 +119,7 @@ H_ROYAL = _P("""
 ..X..X..
 ..XX.XX.
 .XXXXXX.
-.XXeXXfX
+.XeXXfXX
 .XXXXXXX
 ..XXXXX.
 """)

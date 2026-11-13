@@ -34,7 +34,7 @@ for fam, sid, (name, stage, blurb, rec) in all_species():
         evo.append(f'            Evolution(to: "{child}", req: Requirement({", ".join(parts)}))')
     out.append(f'        Species(id: "{sid}", name: "{name}", stage: {STAGE[stage]}, blurb: "{blurb}", family: "{FAMILY}", line: "{LINE[sid]}", bodyHex: {'"%s"' % BODY[sid] if sid in BODY else 'nil'},')
     out.append(f'            frames: [rows("{"/".join(a)}"), rows("{"/".join(b)}")],')
-    hi_a, hi_b = spritegen.scale2x(a), spritegen.scale2x(b)
+    hi_a, hi_b = spritegen.scale2x(a, FAMILY == 'fox'), spritegen.scale2x(b, FAMILY == 'fox')
     out.append(f'            hiFrames: [rows("{"/".join(hi_a)}"), rows("{"/".join(hi_b)}")],')
     out.append('            evolutions: [' + ("\n" + ",\n".join(evo) + "\n        " if evo else "") + ']),')
 out.append("    ]")
