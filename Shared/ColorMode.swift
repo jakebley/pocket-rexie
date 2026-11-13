@@ -239,7 +239,7 @@ enum ScenePalette {
     // MARK: tables
 
     /// Number of entries in a color table: index = layer code, 0 is the screen ground.
-    static let tableSize = Int(SceneLayer.slotLast) + 1
+    static let tableSize = Int(Slot96.last) + 1
 
     /// Layer-indexed colors for one context. Traditional: every lit layer is the ink.
     /// `night` is whether the scene sky is dark (the night sky, or an always-dark biome: it flips ink-like layers light in
@@ -307,10 +307,11 @@ enum ScenePalette {
                 t[i] = dark ? base.mixed(with: sc.ground, darkBlend) : base
             }
         }
-        // 96x96 biome slot layers carry their own phase colours; the tones sink further on the dark appearance
-        if let period, let slots = BiomeSlots96.colors(biome, period: period, rain: rain) {
-            for s in slots {
-                t[Int(s.code)] = dark ? s.rgb.mixed(with: sc.ground, s.glow ? darkBlend : 0.4) : s.rgb
+        // Biome slot layers (Biome96.swift): colours resolved per biome, phase and rain; tones sink further in the dark appearance.
+        if let period, let slots = Biome96.slotColors(biome: biome, period: period, rain: rain) {
+            for (i, hex) in slots.enumerated() where hex != "-" {
+                let base = RGB(hex: hex)
+                t[Int(Slot96.first) + i] = dark ? base.mixed(with: sc.ground, i < Slot96.glowCount ? darkBlend : 0.4) : base
             }
         }
         let body = bodyColor(line: line, hex: bodyHex)

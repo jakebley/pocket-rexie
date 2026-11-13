@@ -75,7 +75,7 @@ final class Biome96BTests: XCTestCase {
     func testPaintersDrawNativeScenery() {
         for b in set {
             XCTAssertTrue(Biome96B.handles(b), "\(b)")
-            XCTAssertTrue(BiomeDraw.ownsGround96(b), "\(b) paints its own ground")
+            XCTAssertTrue(Biome96.handles(b), "\(b) paints its own ground")
             let pet = makePet(species(b, .adult)!)
             let r = render(pet, biome: b, hour: 12)
             XCTAssertEqual(r.n, 96)
@@ -202,8 +202,8 @@ final class Biome96BTests: XCTestCase {
             guard let def = BiomeSlots96.def(b) else { XCTFail("\(b) has slots"); continue }
             XCTAssertGreaterThan(def.slots.count, 20)
             for s in def.slots {
-                XCTAssertGreaterThanOrEqual(s.code, SceneLayer.slotFirst)
-                XCTAssertLessThanOrEqual(s.code, SceneLayer.slotLast)
+                XCTAssertGreaterThanOrEqual(s.code, Slot96.first)
+                XCTAssertLessThanOrEqual(s.code, Slot96.last)
             }
             XCTAssertEqual(Set(def.slots.map { $0.code }).count, def.slots.count, "slot codes are unique")
             for appearance in [ScenePalette.Appearance.light, .dark] {
