@@ -75,11 +75,15 @@ extension ScenePalette {
     private static let remapClouds: [SceneLayer: String] = [.sun: "#F6DFA0", .moon: "#F4EEFF", .star: "#FFFFFF", .cloud: "#FFFFFF", .rain: "#A9B6DE", .grass: "#DDD6F0", .ground: "#F6F2FD", .dirt: "#CFC6E6", .flowerA: "#F2A6C8", .flowerB: "#F6E08A", .butterfly: "#9FD0F0"]
     private static let remapEmber: [SceneLayer: String] = [.sun: "#FF9A4A", .moon: "#F0A070", .star: "#FFB060", .cloud: "#6E5E5E", .rain: "#A09490", .grass: "#8A5A3A", .ground: "#4A3C3C", .dirt: "#32282A", .flowerA: "#E8602E", .flowerB: "#F0B040", .butterfly: "#FF8A4A"]
     private static let remapWarren: [SceneLayer: String] = [.ground: "#9A7B55", .dirt: "#7C6044"]
-    private static let remapCrags: [SceneLayer: String] = [.sun: "#F0A850", .cloud: "#BCABA2", .rain: "#7C8A98", .grass: "#7E7A58", .ground: "#7A6E64", .dirt: "#5A5048", .flowerA: "#D8683C", .flowerB: "#E8B848", .butterfly: "#E88050"]
-    private static let remapWorkshop: [SceneLayer: String] = [.sun: "#F6E6A0", .moon: "#E8EEF4", .star: "#7CE0C8", .cloud: "#C8CED8", .rain: "#8AB4D0", .grass: "#7A88A6", .ground: "#5A6684", .dirt: "#3E465C", .flowerA: "#E86060", .flowerB: "#F0C850", .butterfly: "#6FD0E0"]
-    private static let remapSwamp: [SceneLayer: String] = [.sun: "#C8E8A0", .moon: "#B8D8C0", .star: "#8CF0C0", .cloud: "#5E7C70", .rain: "#6CC0A0", .grass: "#4F7A3E", .ground: "#3C4A34", .dirt: "#2A3628", .flowerA: "#7CE0B0", .flowerB: "#B8E86C", .butterfly: "#B8F070"]
+    private static let remapCrags: [SceneLayer: String] = [.sun: "#F0A850", .cloud: "#BCABA2", .rain: "#7C8A98", .grass: "#7E7A58", .ground: "#7A6E64", .dirt: "#5A5048", .flowerA: "#D8683C", .flowerB: "#E8B848", .butterfly: "#E88050",
+                                                         .peak: "#AEA2AC", .wall: "#C2B6B8", .stalac: "#4F454C", .rock: "#6F6560", .crag: "#988A98", .ash: "#8E8688"]
+    private static let remapWorkshop: [SceneLayer: String] = [.sun: "#F6E6A0", .moon: "#E8EEF4", .star: "#7CE0C8", .cloud: "#C8CED8", .rain: "#8AB4D0", .grass: "#7A88A6", .ground: "#5A6684", .dirt: "#3E465C", .flowerA: "#E86060", .flowerB: "#F0C850", .butterfly: "#6FD0E0",
+                                                            .panel: "#667392", .wall: "#8794B2", .roof: "#B0764E", .litter: "#D79A68", .bark: "#6E4A38", .wood: "#9A7A58", .hole: "#6A5040", .cloudShade: "#C4D0E2", .cable: "#2A3044"]
+    private static let remapSwamp: [SceneLayer: String] = [.sun: "#C8E8A0", .moon: "#B8D8C0", .star: "#8CF0C0", .cloud: "#5E7C70", .rain: "#6CC0A0", .grass: "#4F7A3E", .ground: "#3C4A34", .dirt: "#2A3628", .flowerA: "#7CE0B0", .flowerB: "#B8E86C", .butterfly: "#B8F070",
+                                                         .rock: "#3E5248", .crag: "#5E7666", .cave: "#18262A", .stalac: "#2F4238", .moss: "#6C9A52", .fern: "#3A6644", .cloudShade: "#A6CDB8", .puddle: "#2D6C66", .litter: "#6E5E3C", .bark: "#5A4634"]
     private static let remapGarden: [SceneLayer: String] = [.grass: "#5C9A44", .ground: "#8E7048", .dirt: "#6E5636"]
-    private static let remapSpace: [SceneLayer: String] = [.sun: "#FFE7A0", .moon: "#E8E4F6", .star: "#FFFFFF", .cloud: "#6D5CA6", .rain: "#9CE8F0", .grass: "#8C8EAA", .ground: "#6E7090", .dirt: "#52546E", .flowerA: "#6CF0D8", .flowerB: "#F08AD0", .butterfly: "#FFD870", .crag: "#C8B2F0", .rock: "#5A5C7C"]
+    private static let remapSpace: [SceneLayer: String] = [.sun: "#FFE7A0", .moon: "#E8E4F6", .star: "#FFFFFF", .cloud: "#6D5CA6", .rain: "#9CE8F0", .grass: "#8C8EAA", .ground: "#6E7090", .dirt: "#52546E", .flowerA: "#6CF0D8", .flowerB: "#F08AD0", .butterfly: "#FFD870", .crag: "#C8B2F0", .rock: "#5A5C7C",
+                                                        .hill: "#352E72", .sand: "#42368A", .cloudShade: "#7A76B4", .coralA: "#D8A0A8", .stalac: "#4A4C6A", .window: "#FFE08A"]
     static func biomeRemap(_ biome: Biome) -> [SceneLayer: String]? {
         switch biome {
         case .meadow: return nil
@@ -146,7 +150,7 @@ extension ScenePalette {
         case .clouds: return ["#F0D4DC", "#C3D2F2", "#D8BCE4", "#3A3E7A", "#B1B8D4"]
         case .ember: return ["#74423E", "#6C3A3A", "#7A3234", "#2C1620", "#523638"]
         case .warren: return ["#E3C9A9", "#AACBD4", "#D0A38F", "#2F3A5A", "#9AA8B0"]
-        case .crags: return ["#E2B496", "#C9B6A2", "#C9785A", "#251D30", "#8C8490"]
+        case .crags: return ["#E2B496", "#C9B6A2", "#C9785A", "#251D30", "#A9A1AB"]
         case .workshop: return ["#4F5B76", "#56627C", "#4E5872", "#262B40", "#56627C"]
         case .swamp: return ["#2E4A42", "#2F4C44", "#2A403C", "#16262A", "#28403E"]
         case .garden: return ["#E3D2A8", "#B5D8A0", "#D0A78F", "#26364A", "#9DB0A0"]

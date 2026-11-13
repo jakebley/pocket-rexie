@@ -87,15 +87,15 @@ final class Biome96ATests: XCTestCase {
         for biome in slotBiomes {
             for period in [SceneAmbient.Period.dawn, .day, .dusk, .night] {
                 for rain in [false, true] {
-                    let slots = Biome96.slotColors(biome: biome, period: period, rain: rain)
+                    let slots = Biome96A.slotColors(biome: biome, period: period, rain: rain)
                     XCTAssertNotNil(slots, "\(biome)")
                     XCTAssertGreaterThan(slots?.filter { $0 != "-" }.count ?? 0, 20)
                     for appearance in [ScenePalette.Appearance.light, .dark] {
                         let t = ScenePalette.table(mode: .technicolor, appearance: appearance, night: biome.isDark(period), line: .meat,
                                                    biome: biome, period: period, rain: rain)
                         XCTAssertEqual(t.count, ScenePalette.tableSize)
-                        for (i, hex) in (slots ?? []).enumerated() where hex != "-" && i >= Slot96.glowCount {
-                            XCTAssertNotEqual(t[Int(Slot96.first) + i], t[Int(SceneLayer.ink.rawValue)], "\(biome) slot \(i)")
+                        for (i, hex) in (slots ?? []).enumerated() where hex != "-" && i >= Biome96A.glowSlots {
+                            XCTAssertNotEqual(t[Int(SceneLayer.slotFirst) + i], t[Int(SceneLayer.ink.rawValue)], "\(biome) slot \(i)")
                         }
                     }
                 }
@@ -109,7 +109,7 @@ final class Biome96ATests: XCTestCase {
         let rainSeed = seed(for: .rain), dryHour = seed(for: .clear)
         var scenes = 0, bad = 0, ringBad = 0, hudBad = 0, richMin = Int.max
         for (biome, family) in Biome96ATests.set {
-            XCTAssertTrue(Biome96.handles(biome))
+            XCTAssertTrue(BiomeDraw.ownsGround96(biome))
             let sp = adult(family)
             for sd in [dryHour, rainSeed] {
                 let pet = makePet(sp, seed: sd)
@@ -120,7 +120,7 @@ final class Biome96ATests: XCTestCase {
                             let plain = render(pet, hour: hour, x: x, facing: facing, biome: .sky)
                             scenes += 1
                             XCTAssertEqual(a.n, 96)
-                            if !a.cells.allSatisfy({ $0 <= Slot96.last }) { bad += 1 }
+                            if !a.cells.allSatisfy({ $0 <= SceneLayer.slotLast }) { bad += 1 }
                             for i in 0..<a.cells.count where isPet(a.cells[i]) != isPet(plain.cells[i]) { bad += 1; break }
                             for i in 0..<a.cells.count where isPet(a.cells[i]) {
                                 let cx = i % 96, cy = i / 96

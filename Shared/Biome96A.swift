@@ -6,6 +6,8 @@ import Foundation
 // ground band: the scene skips the generic ground for these biomes.
 enum Biome96A {
     typealias Period = SceneAmbient.Period
+    /// The first slots are glow slots by convention: they keep their light in the dark appearance.
+    static let glowSlots = 6
     private static let G = 90
     private static let N = 96
 
@@ -13,6 +15,24 @@ enum Biome96A {
         switch biome {
         case .meadow, .woods, .underwater, .clouds, .garden, .yard, .warren: return true
         default: return false
+        }
+    }
+
+    static func periodName(_ p: Period) -> String {
+        switch p {
+        case .dawn: return "dawn"
+        case .day: return "day"
+        case .dusk: return "dusk"
+        case .night: return "night"
+        }
+    }
+
+    static func periodSlot(_ p: Period) -> Int {
+        switch p {
+        case .dawn: return 0
+        case .day: return 1
+        case .dusk: return 2
+        case .night: return 3
         }
     }
 
@@ -56,11 +76,11 @@ enum Biome96A {
 
     /// The decoded static layer for (biome, part, period, rain); empty when the biome has none there.
     private static func layer(_ biome: Biome, _ part: Part, _ period: Period, _ rain: Bool) -> [UInt8] {
-        let key = ((biomeIndex(biome) * 8 + part.rawValue) * 4 + Biome96.periodSlot(period)) * 2 + (rain ? 1 : 0)
+        let key = ((biomeIndex(biome) * 8 + part.rawValue) * 4 + Biome96A.periodSlot(period)) * 2 + (rain ? 1 : 0)
         lock.lock()
         if let hit = resolved[key] { lock.unlock(); return hit }
         lock.unlock()
-        let name = "\(biome.rawValue).\(Biome96.periodName(period)).\(rain ? 1 : 0).\(part.name)"
+        let name = "\(biome.rawValue).\(Biome96A.periodName(period)).\(rain ? 1 : 0).\(part.name)"
         var cells: [UInt8] = []
         if let id = index[name], id < Biome96AData.grids.count {
             lock.lock()
@@ -79,7 +99,7 @@ enum Biome96A {
 
     /// Hex slot colours of a biome in a phase (nil for the biomes that use the shared layers only).
     static func slotColors(biome: Biome, period: Period, rain: Bool) -> [String]? {
-        colorRows["\(biome.rawValue).\(Biome96.periodName(period)).\(rain ? 1 : 0)"]
+        colorRows["\(biome.rawValue).\(Biome96A.periodName(period)).\(rain ? 1 : 0)"]
     }
 
     /// FNV-1a hashes the generator recorded for the Expo backdrop layers ("biome.phase.rain.back=hash"), for the tests.

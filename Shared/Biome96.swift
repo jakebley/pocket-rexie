@@ -8,80 +8,8 @@ import Foundation
 // biome without a native painter, and the scene then falls back to the 3/2 nearest enlargement of the 64 art (BiomeDraw.backdrop96).
 //
 // Slot layers: the Expo painters use layer codes 95...127 as per-biome "slots" (bark, kelp, window ...). Swift's SceneLayer already owns
-// 95...97 for the egg shell, so a slot code here is the Expo code + 3: `Slot96.first` = 98 ... `Slot96.last` = 130. A slot means one thing
-// per biome; ScenePalette asks `Biome96.slotColors` for the hex table of the biome and phase being drawn.
-
-/// Slot layer codes. Raster cells are bytes, so there is no dim flag to avoid (the lights-off dither is its own mask).
-enum Slot96 {
-    static let first: UInt8 = 98
-    /// The first six slots are glow slots by convention: they keep their light in the dark appearance.
-    static let glowCount = 6
-    static let last: UInt8 = 130
-}
-
-enum Biome96 {
-    typealias Period = SceneAmbient.Period
-
-    /// Does this biome have a native 96 painter (so the generic ground band is not drawn under it)?
-    static func handles(_ biome: Biome) -> Bool {
-        switch biome {
-        case .meadow, .woods, .underwater, .clouds, .garden, .yard, .warren: return Biome96A.handles(biome)
-        default: return Biome96B.handles(biome)
-        }
-    }
-
-    /// Scenery behind the sky. Returns false when the biome has no native painter (nothing drawn).
-    static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) -> Bool {
-        guard r.n == 96 else { return false }
-        switch biome {
-        case .meadow, .woods, .underwater, .clouds, .garden, .yard, .warren:
-            Biome96A.backdrop(into: &r, biome: biome, period: period, live: live)
-            return true
-        default:
-            return Biome96B.backdrop(into: &r, biome: biome, period: period, live: live)
-        }
-    }
-
-    /// Floor scenery after the ground (and the whole ground band itself: every native painter owns its ground).
-    static func fore(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) -> Bool {
-        guard r.n == 96 else { return false }
-        switch biome {
-        case .meadow, .woods, .underwater, .clouds, .garden, .yard, .warren:
-            Biome96A.fore(into: &r, biome: biome, period: period, live: live)
-            return true
-        default:
-            return Biome96B.fore(into: &r, biome: biome, period: period, live: live)
-        }
-    }
-
-    /// Hex colours ("RRGGBB", "-" for an unused slot) of the slot layers, index = code - `Slot96.first`.
-    static func slotColors(biome: Biome, period: Period, rain: Bool) -> [String]? {
-        switch biome {
-        case .meadow, .woods, .underwater, .clouds, .garden, .yard, .warren:
-            return Biome96A.slotColors(biome: biome, period: period, rain: rain)
-        default:
-            return Biome96B.slotColors(biome: biome, period: period, rain: rain)
-        }
-    }
-
-    static func periodName(_ p: Period) -> String {
-        switch p {
-        case .dawn: return "dawn"
-        case .day: return "day"
-        case .dusk: return "dusk"
-        case .night: return "night"
-        }
-    }
-
-    static func periodSlot(_ p: Period) -> Int {
-        switch p {
-        case .dawn: return 0
-        case .day: return 1
-        case .dusk: return 2
-        case .night: return 3
-        }
-    }
-}
+// 95...97 for the egg shell, so a slot code here is the Expo code + 3: `SceneLayer.slotFirst` = 98 ... `slotLast` = 130. A slot means one thing
+// per biome; ScenePalette asks `Biome96A.slotColors` for the hex table of the biome and phase being drawn.
 
 // MARK: - run-length layers
 

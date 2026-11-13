@@ -327,10 +327,10 @@ final class Res96Tests: XCTestCase {
         for sp in adults() {
             for look in [ColorMode.technicolor, .traditional] {
                 let r = render(makePet(sp), hour: 23, look: look)
-                XCTAssertTrue(r.cells.allSatisfy { $0 <= Slot96.last }, "layer codes stay inside the colour table (layers + biome slots)")
+                XCTAssertTrue(r.cells.allSatisfy { $0 < 128 }, "layer codes stay <= 127 (the dim flag is 0x80)")
             }
         }
-        XCTAssertLessThan(SceneLayer.maxCode, Slot96.first)
+        XCTAssertLessThanOrEqual(SceneLayer.maxCode, 127)
     }
 
     func testEveryStateAndCallDrawsAt96() {
@@ -381,7 +381,7 @@ final class Res96Tests: XCTestCase {
         var withScenery = 0
         for sp in adults() {
             let r = render(makePet(sp), look: .technicolor)
-            if r.cells.contains(where: { $0 >= SceneLayer.sceneryFrom && !(SceneLayer(rawValue: $0)?.isPetLayer ?? false) }) { withScenery += 1 }
+            if r.cells.contains(where: { $0 >= SceneLayer.sceneryFrom && SceneLayer(rawValue: $0)?.isPetLayer != true }) { withScenery += 1 }
             // pets keep a clear ring
             var ringBad = 0
             for i in 0..<r.cells.count where isPetCode(r.cells[i]) {
