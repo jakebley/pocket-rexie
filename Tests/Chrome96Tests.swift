@@ -75,7 +75,7 @@ final class Chrome96Tests: XCTestCase {
         XCTAssertEqual(r.fontPixel(3, scale: 3), 3)
         // snapping goes to whole device pixels
         XCTAssertEqual(ChromeDensity.snap(1.5, scale: 3), 5.0 / 3.0, accuracy: 1e-9)
-        XCTAssertEqual(ChromeDensity.snap(1.5, scale: 3, down: true), 1.5, accuracy: 1e-9)
+        XCTAssertEqual(ChromeDensity.snap(1.5, scale: 3, down: true), 4.0 / 3.0, accuracy: 1e-9)
         XCTAssertGreaterThanOrEqual(ChromeDensity.snap(0, scale: 2), 1.15)
     }
 
