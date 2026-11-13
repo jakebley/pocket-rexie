@@ -261,8 +261,8 @@ final class Res96Tests: XCTestCase {
         XCTAssertLessThanOrEqual(smiles?.y1 ?? 99, 22)
         XCTAssertEqual(hearts?.x0, 1)
         // ground band starts at row 90 and is only ground below the feet
-        // the meadow painter owns its ground band (a sod edge in a slot colour): row 90 is lit all along
-        for x in 0..<96 { XCTAssertNotEqual(r.cells[90 * 96 + x], 0) }
+        // the meadow painter owns its ground band (a sod edge in a slot colour); only the pet's 1px ring clears it
+        XCTAssertGreaterThanOrEqual((0..<96).filter { r.cells[90 * 96 + $0] != 0 }.count, 40)
         XCTAssertEqual(r.groundRow, 90)
         XCTAssertTrue(r.hasSky)
     }
