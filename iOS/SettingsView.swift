@@ -48,7 +48,7 @@ struct SettingsView: View {
 
     @ViewBuilder private var fineBody: some View {
         if staticRender {
-            fineSheet
+            fineSheet.environment(\.lcdPalette, palette)
         } else {
             NavigationStack { fineSheet }
                 .tint(palette.ink)
@@ -72,7 +72,7 @@ struct SettingsView: View {
                                 LookTile(mode: mode, selected: colorMode == mode,
                                          raster: SceneRenderer.still(pet: model.pet, look: mode),
                                          preview: LCDStyle.palette(for: scheme, mode: mode),
-                                         chrome: palette) { choose(mode) }
+                                         chrome: palette, side: (inner - 12) / 2 - 20) { choose(mode) }
                             }
                         }
                         ChromeParagraph(text: "Traditional is the green-gray monochrome LCD. Technicolor paints the room in muted, nostalgic colors. It applies to the widgets and the watch too.",
@@ -255,6 +255,8 @@ private struct LookTile: View {
     let preview: LCDPalette
     /// The settings sheet's own palette (frame and label).
     let chrome: LCDPalette
+    /// Side of the preview square in the pixel sheet (nil: fill the width).
+    var side: CGFloat?
     let action: () -> Void
 
     var body: some View {
@@ -268,6 +270,7 @@ private struct LookTile: View {
                 Canvas { ctx, size in
                     LCDPainter.paint(&ctx, raster: raster, size: size, palette: preview)
                 }
+                .frame(width: side, height: side)
                 .aspectRatio(1, contentMode: .fit)
                 .background(preview.background)
                 .overlay(Rectangle().strokeBorder(preview.ink.opacity(0.5), lineWidth: 1))
