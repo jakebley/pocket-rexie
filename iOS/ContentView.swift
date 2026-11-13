@@ -127,7 +127,7 @@ struct ContentView: View {
 
     /// Technicolor title bar: an inset pixel box with the name of the toy.
     private var titleBar: some View {
-        ChromeText("POCKET REXIE", ps: 5.5)
+        ChromeText("POCKET REXIE", ps: 4)
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 40, alignment: .leading)
             .chromeBox(.inset)

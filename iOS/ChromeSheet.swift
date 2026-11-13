@@ -102,3 +102,23 @@ struct ChromeNamePrompt: View {
         .accessibilityAddTraits(.isModal)
     }
 }
+
+private struct ChromeStaticRenderKey: EnvironmentKey { static let defaultValue = false }
+
+extension EnvironmentValues {
+    /// Render tests only: lay sheets out flat (no ScrollView / NavigationStack, which ImageRenderer cannot draw).
+    var chromeStaticRender: Bool {
+        get { self[ChromeStaticRenderKey.self] }
+        set { self[ChromeStaticRenderKey.self] = newValue }
+    }
+}
+
+/// A vertical ScrollView, or its content alone when rendering statically.
+struct ChromeScroll<Content: View>: View {
+    let staticRender: Bool
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        if staticRender { content().frame(maxHeight: .infinity, alignment: .top) } else { ScrollView { content() } }
+    }
+}

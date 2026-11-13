@@ -13,6 +13,8 @@ struct SettingsView: View {
     @AppStorage(EntitlementStore.chooserKey, store: PetStore.defaults) private var eggChooser = false
     @State private var confirmFamily: Family?
     private let testerTools = TesterTools.isEnabled()
+    /// Render tests: ImageRenderer cannot draw ScrollView or NavigationStack, so the sheet is laid out flat.
+    @Environment(\.chromeStaticRender) private var staticRender
 
     init(model: GameModel, colorModeOverride: ColorMode? = nil) {
         _model = ObservedObject(wrappedValue: model)
@@ -45,10 +47,19 @@ struct SettingsView: View {
     // MARK: Technicolor: the pixel chrome sheet
 
     private var fineBody: some View {
-        NavigationStack {
+        if staticRender {
+            fineSheet
+        } else {
+            NavigationStack { fineSheet }
+                .tint(palette.ink)
+                .environment(\.lcdPalette, palette)
+        }
+    }
+
+    private var fineSheet: some View {
             GeometryReader { geo in
                 let inner = geo.size.width - 12 - 28   // sheet margin and panel padding
-                ScrollView {
+                ChromeScroll(staticRender: staticRender) {
                     VStack(alignment: .leading, spacing: 14) {
                         HStack {
                             ChromeText("SETTINGS", ps: 6)
@@ -131,9 +142,6 @@ struct SettingsView: View {
                 if on { Notifier.requestAuthorizationIfNeeded() }
                 Notifier.reschedule(model.pet)
             }
-        }
-        .tint(palette.ink)
-        .environment(\.lcdPalette, palette)
     }
 
     private var classicBody: some View {
@@ -320,6 +328,7 @@ private struct AboutView: View {
     private var rowColor: Color { LCDStyle.palette(for: scheme, mode: mode).ink.opacity(0.1) }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.chromeStaticRender) private var staticRender
 
     var body: some View {
         if mode == .technicolor { fineBody } else { classicBody }
@@ -329,7 +338,7 @@ private struct AboutView: View {
         let palette = LCDStyle.palette(for: scheme, mode: mode)
         return GeometryReader { geo in
             let inner = geo.size.width - 12 - 28
-            ScrollView {
+            ChromeScroll(staticRender: staticRender) {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack {
                         ChromeText("ABOUT", ps: 6)

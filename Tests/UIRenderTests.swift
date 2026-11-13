@@ -445,6 +445,7 @@ final class UIRenderTests: XCTestCase {
                 let settings = ZStack {
                     palette.background
                     SettingsView(model: model, colorModeOverride: mode)
+                        .environment(\.chromeStaticRender, true)
                         .padding(.top, 10)
                 }
                 .environment(\.colorScheme, scheme)
@@ -467,19 +468,21 @@ final class UIRenderTests: XCTestCase {
         let names = MenuIcon.allCases.map { $0.title.lowercased() } + ["gear", "lock", "tick", "close"]
         let sheet = VStack(alignment: .leading, spacing: 12) {
             ChromeText("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG 0123456789", ps: 3.5)
-            ChromeText(String(glyphs), ps: 3.5)
+            ChromeText(String(glyphs.prefix(36)), ps: 3.5)
+            ChromeText(String(glyphs.dropFirst(36)), ps: 3.5)
             HStack(spacing: 8) { ForEach(names.prefix(7), id: \.self) { ChromeIcon(name: $0, pixel: 3).chromeBox(.tile) } }
-            HStack(spacing: 8) { ForEach(names.suffix(7), id: \.self) { ChromeIcon(name: $0, pixel: 3).chromeBox(.tileOn, radius: 4) } }
+            HStack(spacing: 8) { ForEach(names.suffix(7), id: \.self) { ChromeIcon(name: $0, pixel: 3, color: tech.background).chromeBox(.tileOn, radius: 4) } }
             HStack(spacing: 8) {
                 ChromeButton(title: "RAISED", ps: 3) {}
                 ChromeButton(title: "ON", ps: 3, on: true) {}
             }
         }
         .padding(16)
+        .frame(width: 760, height: 380, alignment: .topLeading)
         .background(tech.background)
         .environment(\.lcdPalette, tech)
         .environment(\.displayScale, 2)
-        write(sheet, to: "chrome96/font-icons", size: CGSize(width: 700, height: 360))
+        write(sheet, to: "chrome96/font-icons", size: CGSize(width: 760, height: 380))
     }
 
     func testRenderWidgets() {
