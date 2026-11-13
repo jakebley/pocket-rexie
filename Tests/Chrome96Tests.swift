@@ -132,9 +132,12 @@ final class Chrome96Tests: XCTestCase {
                     let r = t.fitLines(s, avail: avail, maxPs: 4.5, minPs: 3, scale: scale)
                     XCTAssertLessThanOrEqual(r.lines.count, 2)
                     let px = t.fontPixel(r.ps, scale: scale)
-                    let widest = r.lines.map { CGFloat(t.width(of: $0)) * px }.max() ?? 0
+                    let widths: [CGFloat] = r.lines.map { CGFloat(t.width(of: $0)) * px }
+                    let widest: CGFloat = widths.max() ?? 0
                     // a message that cannot fit even two lines at the floor size is cut by the caller; the rest must fit
-                    if s.count * 6 * px < avail * 3 { XCTAssertLessThanOrEqual(widest, avail + 0.02, "\(s) at \(avail)") }
+                    let natural: CGFloat = CGFloat(s.count) * 6 * px
+                    let limit: CGFloat = avail * 3
+                    if natural < limit { XCTAssertLessThanOrEqual(widest, avail + 0.02, "\(s) at \(avail)") }
                 }
             }
         }
