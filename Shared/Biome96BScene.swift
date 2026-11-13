@@ -16,7 +16,8 @@ enum Biome96B {
 
     /// Scenery drawn before the sky (sun, moon, clouds and the ground follow).
     static func backdrop(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
-        var cv = CvB(copying: r.cells)
+        var cv = CvB(empty: ())
+        swap(&cv.px, &r.cells)   // move the cells in and out: no copy of the 96x96 grid
         switch biome {
         case .sky: SkyB.backdrop(&cv, period, live)
         case .ember: EmberB.backdrop(&cv, period, live)
@@ -24,14 +25,15 @@ enum Biome96B {
         case .workshop: WorkshopB.backdrop(&cv, period, live)
         case .swamp: SwampB.backdrop(&cv, period, live)
         case .space: SpaceB.backdrop(&cv, period, live)
-        default: return
+        default: break
         }
-        r.cells = cv.px
+        swap(&cv.px, &r.cells)
     }
 
     /// The floor and the animated parts, after the sky and before the HUD and the pet.
     static func fore(into r: inout SceneRaster, biome: Biome, period: Period, live: BiomeLive) {
-        var cv = CvB(copying: r.cells)
+        var cv = CvB(empty: ())
+        swap(&cv.px, &r.cells)   // move the cells in and out: no copy of the 96x96 grid
         switch biome {
         case .sky: SkyB.fore(&cv, period, live)
         case .ember: EmberB.fore(&cv, period, live)
@@ -39,8 +41,8 @@ enum Biome96B {
         case .workshop: WorkshopB.fore(&cv, period, live)
         case .swamp: SwampB.fore(&cv, period, live)
         case .space: SpaceB.fore(&cv, period, live)
-        default: return
+        default: break
         }
-        r.cells = cv.px
+        swap(&cv.px, &r.cells)
     }
 }

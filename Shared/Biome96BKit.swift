@@ -36,6 +36,8 @@ struct CvB {
 
     init() { px = [UInt8](repeating: 0, count: CvB.n * CvB.n) }
     init(copying cells: [UInt8]) { px = cells }
+    /// No storage yet: the caller swaps the raster's cells in.
+    init(empty: Void) { px = [] }
 
     @inline(__always) mutating func set(_ x: Int, _ y: Int, _ l: UInt8) {
         if x >= 0 && y >= 0 && x < 96 && y < 96 { px[y * 96 + x] = l }
